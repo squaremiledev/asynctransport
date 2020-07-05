@@ -3,22 +3,14 @@ package com.michaelszymczak.sample.sockets;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
-import com.michaelszymczak.sample.sockets.support.FreePort;
+import com.michaelszymczak.sample.sockets.support.AcceptingServer;
 
 import org.junit.jupiter.api.Test;
 
@@ -42,104 +34,39 @@ class BootstrapTest
      */
 
     private static final int ONE_SECOND_IN_MS = (int)TimeUnit.SECONDS.toMillis(1);
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Test
     void bootstrap() throws IOException, InterruptedException, ExecutionException
     {
-        final ExecutorService executorService = Executors.newSingleThreadExecutor();
-        final CountDownLatch serverReadyLatch = new CountDownLatch(1);
-        final int serverPort = FreePort.freePort(0); // dump used 2023
-        Future<?> serverTask = executorService.submit(
-                () ->
-                {
-                    try (
-                            ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
-                            Selector selector = Selector.open()
-                    )
-                    {
-                        serverSocketChannel.configureBlocking(false);
-                        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-                        serverSocketChannel.bind(new InetSocketAddress(serverPort));
-                        serverReadyLatch.countDown();
-                        while (!Thread.currentThread().isInterrupted())
-                        {
-                            final int availableCount = selector.selectNow();
-                            if (availableCount > 0)
-                            {
-                                final Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
-                                while (keyIterator.hasNext())
-                                {
-                                    final SelectionKey key = keyIterator.next();
-                                    keyIterator.remove();
-                                    if (!key.isValid())
-                                    {
-                                        continue;
-                                    }
-                                    if (key.isAcceptable())
-                                    {
-                                        System.out.println("ACCEPTED");
-                                        final ServerSocketChannel serverChannel = ((ServerSocketChannel)key.channel());
-                                        final SocketChannel channel = serverChannel.accept();
-                                        if (channel != null)
-                                        {
-                                            channel.configureBlocking(false);
-                                            channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
-                                            final ByteBuffer byteBuffer = ByteBuffer.wrap("hello!\n".getBytes(US_ASCII));
-                                            channel.write(byteBuffer);
-                                        }
-                                    }
-                                    else if (key.isConnectable())
-                                    {
-                                        System.out.println("CONNECT");
-                                    }
-                                    else if (key.isReadable())
-                                    {
-                                        System.out.println("READ");
-                                        SocketChannel channel = (SocketChannel)key.channel();
-                                        int read = channel.read(ByteBuffer.allocate(10));
-                                        System.out.println("read = " + read);
-                                    }
-                                    else if (key.isWritable())
-                                    {
-                                        System.out.println("WRITE");
-                                    }
-                                    else
-                                    {
-                                        throw new IllegalStateException();
-                                    }
-                                }
+        // Given
+        final AcceptingServer server = new AcceptingServer(0);
+        Future<?> serverTask = startServer(server);
 
-
-                            }
-                            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(200));
-                        }
-                        System.out.println("Server shutting down...");
-                    }
-                    catch (IOException e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-                    finally
-                    {
-                        System.out.println("Server shut down");
-                        serverReadyLatch.countDown();
-                    }
-                });
-        serverReadyLatch.await();
-        if (serverTask.isDone())
-        {
-            serverTask.get();
-        }
-
+        // When
         Socket socket = new Socket();
         final byte[] expectedContent = "hello!\n".getBytes(US_ASCII);
         byte[] expectedReceivedContent = Arrays.copyOf(expectedContent, 10);
         byte[] receivedContent = new byte[expectedReceivedContent.length];
-        socket.connect(new InetSocketAddress("127.0.0.1", serverPort), ONE_SECOND_IN_MS);
+        socket.connect(new InetSocketAddress("127.0.0.1", server.port()), ONE_SECOND_IN_MS);
         socket.setSoTimeout(ONE_SECOND_IN_MS * 2);
         int bytesRead = socket.getInputStream().read(receivedContent);
+
+        // Then
         assertEquals(new String(expectedReceivedContent, US_ASCII), new String(receivedContent, US_ASCII));
         assertEquals(expectedContent.length, bytesRead);
         serverTask.cancel(true);
     }
+
+    private Future<?> startServer(final AcceptingServer acceptingServer) throws InterruptedException, ExecutionException
+    {
+        Future<?> serverTask = executorService.submit(acceptingServer::startServer);
+        acceptingServer.waitUntilReady();
+        if (serverTask.isDone())
+        {
+            serverTask.get();
+        }
+        return serverTask;
+    }
+
 }
