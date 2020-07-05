@@ -6,12 +6,8 @@ import com.michaelszymczak.sample.sockets.support.ServerRun;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 
 import static com.michaelszymczak.sample.sockets.support.ServerRun.startServer;
-import static com.michaelszymczak.sample.sockets.support.StringFixtures.byteArrayWith;
-import static com.michaelszymczak.sample.sockets.support.StringFixtures.stringWith;
 
 class ServerTest
 {
@@ -20,16 +16,12 @@ class ServerTest
     {
         // Given
         try (
-                ServerRun serverRun = startServer(DelegatingServer.returningUponConnection(0, byteArrayWith("hello!\n")));
+                ServerRun serverRun = startServer(new DelegatingServer(0));
                 ReadingClient client = new ReadingClient()
         )
         {
-            // When
-            final byte[] actualReadContent = client.connectedTo(serverRun.serverPort())
-                    .read(byteArrayWith("hello!\n").length, 10);
-
             // Then
-            assertEquals(stringWith(byteArrayWith("hello!\n"), 10), stringWith(actualReadContent));
+            client.connectedTo(serverRun.serverPort());
         }
     }
 }

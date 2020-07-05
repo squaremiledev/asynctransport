@@ -1,32 +1,22 @@
 package com.michaelszymczak.sample.sockets.support;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
+
+import com.michaelszymczak.sample.sockets.ReactiveSocket;
+import com.michaelszymczak.sample.sockets.Resources;
 
 public class DelegatingServer implements FakeServer
 {
     private final int serverPort;
     private final ServerReadiness onReady;
-    private byte[] contentReturnedUponConnection;
+    private final ReactiveSocket reactiveSocket;
 
-    public static DelegatingServer returningUponConnection(final int serverPort, final byte[] contentReturnedUponConnection)
-    {
-        return new DelegatingServer(serverPort, contentReturnedUponConnection);
-    }
-
-    private DelegatingServer(final int serverPort, final byte[] contentReturnedUponConnection)
+    public DelegatingServer(final int serverPort)
     {
         this.serverPort = FreePort.freePort(serverPort);
         this.onReady = new ServerReadiness();
-        this.contentReturnedUponConnection = contentReturnedUponConnection;
+        this.reactiveSocket = new ReactiveSocket();
     }
 
     @Override
@@ -41,78 +31,19 @@ public class DelegatingServer implements FakeServer
         onReady.waitUntilReady();
     }
 
+
     @Override
     public void startServer()
     {
-        try (
-                ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
-                Selector selector = Selector.open()
-        )
+        reactiveSocket.accept(serverPort);
+        onReady.onReady();
+        while (!Thread.currentThread().isInterrupted())
         {
-            serverSocketChannel.configureBlocking(false);
-            serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-            serverSocketChannel.bind(new InetSocketAddress(serverPort));
-            onReady.onReady();
-            while (!Thread.currentThread().isInterrupted())
-            {
-                final int availableCount = selector.selectNow();
-                if (availableCount > 0)
-                {
-                    final Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
-                    while (keyIterator.hasNext())
-                    {
-                        final SelectionKey key = keyIterator.next();
-                        keyIterator.remove();
-                        if (!key.isValid())
-                        {
-                            continue;
-                        }
-                        if (key.isAcceptable())
-                        {
-                            System.out.println("ACCEPTED");
-                            final ServerSocketChannel serverChannel = ((ServerSocketChannel)key.channel());
-                            final SocketChannel channel = serverChannel.accept();
-                            if (channel != null)
-                            {
-                                channel.configureBlocking(false);
-                                channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
-                                final ByteBuffer byteBuffer = ByteBuffer.wrap(contentReturnedUponConnection);
-                                channel.write(byteBuffer);
-                            }
-                        }
-                        else if (key.isConnectable())
-                        {
-                            System.out.println("CONNECT");
-                        }
-                        else if (key.isReadable())
-                        {
-                            System.out.println("READ");
-                            SocketChannel channel = (SocketChannel)key.channel();
-                            int read = channel.read(ByteBuffer.allocate(10));
-                            System.out.println("read = " + read);
-                        }
-                        else if (key.isWritable())
-                        {
-                            System.out.println("WRITE");
-                        }
-                        else
-                        {
-                            throw new IllegalStateException();
-                        }
-                    }
-                }
-                LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
-            }
-            System.out.println("Server shutting down...");
+            reactiveSocket.doWork();
+            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
         }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-        finally
-        {
-            System.out.println("Server shut down");
-            onReady.onReady();
-        }
+        System.out.println("Server shutting down...");
+        Resources.close(reactiveSocket);
     }
 }
+
