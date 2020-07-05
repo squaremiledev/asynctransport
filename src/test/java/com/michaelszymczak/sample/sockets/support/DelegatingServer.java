@@ -8,21 +8,19 @@ import com.michaelszymczak.sample.sockets.Resources;
 
 public class DelegatingServer implements FakeServer
 {
-    private final int serverPort;
     private final ServerReadiness onReady;
     private final ReactiveSocket reactiveSocket;
 
-    public DelegatingServer(final int serverPort)
+    public DelegatingServer(final ReactiveSocket reactiveSocket)
     {
-        this.serverPort = FreePort.freePort(serverPort);
         this.onReady = new ServerReadiness();
-        this.reactiveSocket = new ReactiveSocket();
+        this.reactiveSocket = reactiveSocket;
     }
 
     @Override
     public int port()
     {
-        return serverPort;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -35,7 +33,6 @@ public class DelegatingServer implements FakeServer
     @Override
     public void startServer()
     {
-        reactiveSocket.accept(serverPort);
         onReady.onReady();
         while (!Thread.currentThread().isInterrupted())
         {
