@@ -1,8 +1,5 @@
 package com.michaelszymczak.sample.sockets;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
 import com.michaelszymczak.sample.sockets.support.AcceptingServer;
 import com.michaelszymczak.sample.sockets.support.ReadingClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
@@ -35,7 +32,7 @@ Wireshark's capturing filter: tcp.port == 4847
      */
 
     @Test
-    void shouldReadContent() throws IOException, InterruptedException, ExecutionException
+    void shouldReadContent() throws Exception
     {
         // Given
         try (
