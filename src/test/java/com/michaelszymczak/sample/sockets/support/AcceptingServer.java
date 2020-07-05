@@ -11,30 +11,37 @@ import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-
-import static java.nio.charset.StandardCharsets.US_ASCII;
-
-public class AcceptingServer
+public class AcceptingServer implements FakeServer
 {
     private final int serverPort;
     private final ServerReadiness onReady;
+    private byte[] contentReturnedUponConnection;
 
+    public static AcceptingServer returningUponConnection(final int serverPort, final byte[] contentReturnedUponConnection)
+    {
+        return new AcceptingServer(serverPort, contentReturnedUponConnection);
+    }
+
+    private AcceptingServer(final int serverPort, final byte[] contentReturnedUponConnection)
+    {
+        this.serverPort = FreePort.freePort(serverPort);
+        this.onReady = new ServerReadiness();
+        this.contentReturnedUponConnection = contentReturnedUponConnection;
+    }
+
+    @Override
     public int port()
     {
         return serverPort;
     }
 
-    public AcceptingServer(final int serverPort)
-    {
-        this.serverPort = FreePort.freePort(serverPort);
-        this.onReady = new ServerReadiness();
-    }
-
+    @Override
     public void waitUntilReady()
     {
         onReady.waitUntilReady();
     }
 
+    @Override
     public void startServer()
     {
         try (
@@ -69,7 +76,7 @@ public class AcceptingServer
                             {
                                 channel.configureBlocking(false);
                                 channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
-                                final ByteBuffer byteBuffer = ByteBuffer.wrap("hello!\n".getBytes(US_ASCII));
+                                final ByteBuffer byteBuffer = ByteBuffer.wrap(contentReturnedUponConnection);
                                 channel.write(byteBuffer);
                             }
                         }
@@ -93,10 +100,8 @@ public class AcceptingServer
                             throw new IllegalStateException();
                         }
                     }
-
-
                 }
-                LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(200));
+                LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
             }
             System.out.println("Server shutting down...");
         }
