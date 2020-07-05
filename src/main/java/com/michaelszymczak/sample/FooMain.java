@@ -3,57 +3,56 @@ package com.michaelszymczak.sample;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.Arrays;
+import java.nio.channels.*;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
 public class FooMain {
 
     public static void main(String[] args) throws IOException {
-        System.out.println(new FooMain().foo());
-        byte[] arr = new byte[1000];
-        ByteBuffer byteBuffer = ByteBuffer.wrap(arr);
         ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
-        Selector serverSocketSelector = Selector.open();
-        serverSocketChannel.register(serverSocketSelector, serverSocketChannel.validOps());
+        Selector selector = Selector.open();
+        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
         serverSocketChannel.bind(new InetSocketAddress(2023));
         System.out.println("serverSocketChannel.socket().getReceiveBufferSize() = " + serverSocketChannel.socket().getReceiveBufferSize());
-        while (true)
-        {
-            int selectedKeys = serverSocketSelector.selectNow();
+        while (true) {
+            int selectedKeys = selector.selectNow();
             if (selectedKeys > 0) {
-                for (SelectionKey selectedKey : serverSocketSelector.selectedKeys()) {
-                    if (!selectedKey.isValid())
-                    {
+                Iterator<SelectionKey> selectionKeyIterator = selector.selectedKeys().iterator();
+                while (selectionKeyIterator.hasNext())
+                {
+                    SelectionKey selectedKey = selectionKeyIterator.next();
+                    selectionKeyIterator.remove();
+                    if (!selectedKey.isValid()) {
                         continue;
                     }
-                    if (selectedKey.isAcceptable())
-                    {
+                    if (selectedKey.isAcceptable()) {
                         System.out.println("ACCEPTABLE selectedKey = " + selectedKey);
-                    }
-                    else
-                    {
-                        throw new IllegalStateException(selectedKey.toString());
+                        ServerSocketChannel channel = (ServerSocketChannel) selectedKey.channel();
+                        SocketChannel socketChannel = channel.accept();
+                        if (socketChannel != null) {
+                            socketChannel.configureBlocking(false);
+                            socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
+                        }
+                    } else if (selectedKey.isConnectable()) {
+                        System.out.println("CONNECT");
+                    } else if (selectedKey.isReadable()) {
+                        System.out.println("READ");
+                        SocketChannel channel = (SocketChannel)selectedKey.channel();
+                        int read = channel.read(ByteBuffer.allocate(10));
+                        System.out.println("read = " + read);
+                    } else if (selectedKey.isWritable()) {
+                        System.out.println("WRITE");
+                    } else {
+                        System.out.println("SOMETHING_ELSE?");
                     }
 
                 }
             }
-            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10));
+            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(100));
         }
-//        while (true) {
-//            SocketChannel accept = serverSocketChannel.accept();
-//            System.out.println("accept.socket().getReceiveBufferSize() = " + accept.socket().getReceiveBufferSize());
-//            System.out.println("accept.socket().getSendBufferSize() = " + accept.socket().getSendBufferSize());
-//            System.out.println("accepted");
-//            int read = accept.read(byteBuffer);
-//            System.out.println("read " + read + ": " + Arrays.toString(byteBuffer.array()));
-//            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10));
-//        }
     }
 
     public String foo() {
