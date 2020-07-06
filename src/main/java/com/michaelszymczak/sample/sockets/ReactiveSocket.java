@@ -11,7 +11,7 @@ public class ReactiveSocket implements AutoCloseable
     private ServerSocketChannel serverSocketChannel;
     private Selector selector;
 
-    public void accept(final int serverPort)
+    public void listen(final int serverPort)
     {
         try
         {

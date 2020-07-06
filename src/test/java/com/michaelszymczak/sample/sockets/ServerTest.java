@@ -28,7 +28,7 @@ class ServerTest
         {
             // When
             final int port = FreePort.freePort(0);
-            reactiveSocket.accept(port);
+            reactiveSocket.listen(port);
 
             // Then
             client.connectedTo(port);
@@ -63,7 +63,7 @@ class ServerTest
         {
             // When
             final int port = FreePort.freePort(0);
-            reactiveSocket.accept(port);
+            reactiveSocket.listen(port);
 
             // Then
             assertThrows(ConnectException.class, () -> client.connectedTo(FreePort.freePortOtherThan(port)));
