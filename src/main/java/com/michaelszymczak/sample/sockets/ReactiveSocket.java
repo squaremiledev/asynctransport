@@ -1,25 +1,17 @@
 package com.michaelszymczak.sample.sockets;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
 
 public class ReactiveSocket implements AutoCloseable
 {
-    private ServerSocketChannel serverSocketChannel;
-    private Selector selector;
+    private Acceptor acceptor;
 
     public long listen(final int serverPort)
     {
         try
         {
-            serverSocketChannel = ServerSocketChannel.open();
-            selector = Selector.open();
-            serverSocketChannel.configureBlocking(false);
-            serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-            serverSocketChannel.bind(new InetSocketAddress(serverPort));
+            acceptor = new Acceptor();
+            acceptor.listen(serverPort);
         }
         catch (IOException e)
         {
@@ -62,8 +54,7 @@ public class ReactiveSocket implements AutoCloseable
     @Override
     public void close()
     {
-        Resources.close(serverSocketChannel);
-        Resources.close(selector);
+        Resources.close(acceptor);
     }
 
     public long stopListening(final long responseId)
@@ -72,14 +63,9 @@ public class ReactiveSocket implements AutoCloseable
         {
             return -1L;
         }
-        try
-        {
-            serverSocketChannel.close();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+
+        Resources.close(acceptor);
+
         return 0L;
     }
 }
