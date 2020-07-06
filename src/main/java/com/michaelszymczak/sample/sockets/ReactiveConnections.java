@@ -1,23 +1,28 @@
 package com.michaelszymczak.sample.sockets;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ReactiveConnections implements AutoCloseable
 {
-    private Acceptor acceptor;
+    private final Map<Long, Acceptor> acceptors = new HashMap<>(10);
+    private long requestIdGenerator = 0;
 
     public long listen(final int serverPort)
     {
+        final long currentRequestId = requestIdGenerator++;
         try
         {
-            acceptor = new Acceptor();
+            final Acceptor acceptor = new Acceptor(currentRequestId);
             acceptor.listen(serverPort);
+            acceptors.put(acceptor.id(), acceptor);
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
         }
-        return 0L;
+        return currentRequestId;
 
     }
 
@@ -54,17 +59,17 @@ public class ReactiveConnections implements AutoCloseable
     @Override
     public void close()
     {
-        Resources.close(acceptor);
+        acceptors.values().forEach(Resources::close);
     }
 
-    public long stopListening(final long responseId)
+    public long stopListening(final long listenRequestId)
     {
-        if (responseId != 0L)
+        if (!acceptors.containsKey(listenRequestId))
         {
             return -1L;
         }
 
-        Resources.close(acceptor);
+        Resources.close(acceptors.get(listenRequestId));
 
         return 0L;
     }

@@ -8,8 +8,19 @@ import java.nio.channels.ServerSocketChannel;
 
 public class Acceptor implements AutoCloseable
 {
+    private final long id;
     private ServerSocketChannel serverSocketChannel;
     private Selector selector;
+
+    Acceptor(final long id)
+    {
+        this.id = id;
+    }
+
+    long id()
+    {
+        return id;
+    }
 
     void listen(final int serverPort) throws IOException
     {
@@ -25,5 +36,15 @@ public class Acceptor implements AutoCloseable
     {
         Resources.close(serverSocketChannel);
         Resources.close(selector);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Acceptor{" +
+               "id=" + id +
+               ", serverSocketChannel=" + serverSocketChannel +
+               ", selector=" + selector +
+               '}';
     }
 }

@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.net.ConnectException;
 
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
-import com.michaelszymczak.sample.sockets.support.FreePort;
 import com.michaelszymczak.sample.sockets.support.ReadingClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,6 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
+import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
+import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
 import static com.michaelszymczak.sample.sockets.support.ServerRun.startServer;
 
 class ServerTest
@@ -27,7 +27,7 @@ class ServerTest
         runTest((reactiveConnections, client) ->
                 {
                     // When
-                    final int port = FreePort.freePort(0);
+                    final int port = freePort();
                     reactiveConnections.listen(port);
 
                     // Then
@@ -39,7 +39,7 @@ class ServerTest
     @Test
     void shouldNotAcceptIfNotAsked()
     {
-        runTest((reactiveConnections, client) -> assertThrows(ConnectException.class, () -> client.connectedTo(FreePort.freePort(0))));
+        runTest((reactiveConnections, client) -> assertThrows(ConnectException.class, () -> client.connectedTo(freePort())));
     }
 
     // timeout required
@@ -49,11 +49,11 @@ class ServerTest
         runTest((reactiveConnections, client) ->
                 {
                     // When
-                    final int port = FreePort.freePort(0);
+                    final int port = freePort();
                     reactiveConnections.listen(port);
 
                     // Then
-                    assertThrows(ConnectException.class, () -> client.connectedTo(FreePort.freePortOtherThan(port)));
+                    assertThrows(ConnectException.class, () -> client.connectedTo(freePortOtherThan(port)));
                 }
         );
     }
@@ -64,7 +64,7 @@ class ServerTest
         runTest((reactiveConnections, client) ->
                 {
                     // Given
-                    final int port = FreePort.freePort(0);
+                    final int port = freePort();
                     final long requestId = reactiveConnections.listen(port);
 
                     // When
@@ -82,7 +82,7 @@ class ServerTest
         runTest((reactiveConnections, client) ->
                 {
                     // Given
-                    final int port = FreePort.freePort(0);
+                    final int port = freePort();
                     final long requestId = reactiveConnections.listen(port);
 
                     // When
@@ -108,9 +108,9 @@ class ServerTest
             )
             {
                 // When
-                final int port1 = FreePort.freePort(0);
+                final int port1 = freePort();
                 reactiveConnections.listen(port1);
-                final int port2 = FreePort.freePortOtherThan(port1);
+                final int port2 = freePortOtherThan(port1);
                 reactiveConnections.listen(port2);
 
                 // Then
@@ -125,7 +125,6 @@ class ServerTest
     }
 
     @Test
-    @Disabled
     void shouldUseRequestIdToFindThePortItShouldStopListeningOn()
     {
         try
@@ -133,15 +132,17 @@ class ServerTest
             final ReactiveConnections reactiveConnections = new ReactiveConnections();
             try (
                     ServerRun ignored = startServer(new DelegatingServer(reactiveConnections));
-                    ReadingClient client = new ReadingClient()
+                    ReadingClient client1 = new ReadingClient();
+                    ReadingClient client2 = new ReadingClient();
+                    ReadingClient client3 = new ReadingClient()
             )
             {
                 // Given
-                final int port1 = FreePort.freePort(0);
+                final int port1 = freePort();
                 reactiveConnections.listen(port1);
-                final int port2 = FreePort.freePort(0);
+                final int port2 = freePortOtherThan(port1);
                 final long requestId = reactiveConnections.listen(port2);
-                final int port3 = FreePort.freePort(0);
+                final int port3 = freePortOtherThan(port1, port2);
                 reactiveConnections.listen(port3);
 
                 // When
@@ -149,9 +150,9 @@ class ServerTest
                 assertNotEquals(-1, result);
 
                 // Then
-                client.connectedTo(port1);
-                assertThrows(ConnectException.class, () -> client.connectedTo(port2));
-                client.connectedTo(port3);
+                client1.connectedTo(port1);
+                assertThrows(ConnectException.class, () -> client2.connectedTo(port2));
+                client3.connectedTo(port3);
 
             }
         }
