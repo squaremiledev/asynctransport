@@ -11,7 +11,7 @@ public class ReactiveSocket implements AutoCloseable
     private ServerSocketChannel serverSocketChannel;
     private Selector selector;
 
-    public void listen(final int serverPort)
+    public long listen(final int serverPort)
     {
         try
         {
@@ -25,6 +25,7 @@ public class ReactiveSocket implements AutoCloseable
         {
             throw new RuntimeException(e);
         }
+        return 0L;
 
     }
 
@@ -63,5 +64,22 @@ public class ReactiveSocket implements AutoCloseable
     {
         Resources.close(serverSocketChannel);
         Resources.close(selector);
+    }
+
+    public long stopListening(final long responseId)
+    {
+        if (responseId != 0L)
+        {
+            return -1L;
+        }
+        try
+        {
+            serverSocketChannel.close();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+        return 0L;
     }
 }
