@@ -2,7 +2,7 @@ package com.michaelszymczak.sample.sockets;
 
 import java.io.IOException;
 
-public class ReactiveSocket implements AutoCloseable
+public class ReactiveConnections implements AutoCloseable
 {
     private Acceptor acceptor;
 

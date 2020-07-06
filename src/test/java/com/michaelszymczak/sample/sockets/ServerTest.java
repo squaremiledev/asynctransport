@@ -24,11 +24,11 @@ class ServerTest
     void shouldAcceptConnections()
     {
         // Given
-        runTest((reactiveSocket, client) ->
+        runTest((reactiveConnections, client) ->
                 {
                     // When
                     final int port = FreePort.freePort(0);
-                    reactiveSocket.listen(port);
+                    reactiveConnections.listen(port);
 
                     // Then
                     client.connectedTo(port);
@@ -39,18 +39,18 @@ class ServerTest
     @Test
     void shouldNotAcceptIfNotAsked()
     {
-        runTest((reactiveSocket, client) -> assertThrows(ConnectException.class, () -> client.connectedTo(FreePort.freePort(0))));
+        runTest((reactiveConnections, client) -> assertThrows(ConnectException.class, () -> client.connectedTo(FreePort.freePort(0))));
     }
 
     // timeout required
     @Test
     void shouldNotAcceptIfListeningOnAnotherPort()
     {
-        runTest((reactiveSocket, client) ->
+        runTest((reactiveConnections, client) ->
                 {
                     // When
                     final int port = FreePort.freePort(0);
-                    reactiveSocket.listen(port);
+                    reactiveConnections.listen(port);
 
                     // Then
                     assertThrows(ConnectException.class, () -> client.connectedTo(FreePort.freePortOtherThan(port)));
@@ -61,14 +61,14 @@ class ServerTest
     @Test
     void shouldStopListeningWhenAsked()
     {
-        runTest((reactiveSocket, client) ->
+        runTest((reactiveConnections, client) ->
                 {
                     // Given
                     final int port = FreePort.freePort(0);
-                    final long requestId = reactiveSocket.listen(port);
+                    final long requestId = reactiveConnections.listen(port);
 
                     // When
-                    reactiveSocket.stopListening(requestId);
+                    reactiveConnections.stopListening(requestId);
 
                     // Then
                     assertThrows(ConnectException.class, () -> client.connectedTo(port));
@@ -79,14 +79,14 @@ class ServerTest
     @Test
     void shouldIgnoreStopListeningCommandForNonExistingRequest()
     {
-        runTest((reactiveSocket, client) ->
+        runTest((reactiveConnections, client) ->
                 {
                     // Given
                     final int port = FreePort.freePort(0);
-                    final long requestId = reactiveSocket.listen(port);
+                    final long requestId = reactiveConnections.listen(port);
 
                     // When
-                    final long result = reactiveSocket.stopListening(requestId + 1);
+                    final long result = reactiveConnections.stopListening(requestId + 1);
                     assertEquals(-1, result);
 
                     // Then
@@ -100,18 +100,18 @@ class ServerTest
     {
         try
         {
-            final ReactiveSocket reactiveSocket = new ReactiveSocket();
+            final ReactiveConnections reactiveConnections = new ReactiveConnections();
             try (
-                    ServerRun ignored = startServer(new DelegatingServer(reactiveSocket));
+                    ServerRun ignored = startServer(new DelegatingServer(reactiveConnections));
                     ReadingClient client1 = new ReadingClient();
                     ReadingClient client2 = new ReadingClient()
             )
             {
                 // When
                 final int port1 = FreePort.freePort(0);
-                reactiveSocket.listen(port1);
+                reactiveConnections.listen(port1);
                 final int port2 = FreePort.freePortOtherThan(port1);
-                reactiveSocket.listen(port2);
+                reactiveConnections.listen(port2);
 
                 // Then
                 client1.connectedTo(port1);
@@ -130,22 +130,22 @@ class ServerTest
     {
         try
         {
-            final ReactiveSocket reactiveSocket = new ReactiveSocket();
+            final ReactiveConnections reactiveConnections = new ReactiveConnections();
             try (
-                    ServerRun ignored = startServer(new DelegatingServer(reactiveSocket));
+                    ServerRun ignored = startServer(new DelegatingServer(reactiveConnections));
                     ReadingClient client = new ReadingClient()
             )
             {
                 // Given
                 final int port1 = FreePort.freePort(0);
-                reactiveSocket.listen(port1);
+                reactiveConnections.listen(port1);
                 final int port2 = FreePort.freePort(0);
-                final long requestId = reactiveSocket.listen(port2);
+                final long requestId = reactiveConnections.listen(port2);
                 final int port3 = FreePort.freePort(0);
-                reactiveSocket.listen(port3);
+                reactiveConnections.listen(port3);
 
                 // When
-                final long result = reactiveSocket.stopListening(requestId);
+                final long result = reactiveConnections.stopListening(requestId);
                 assertNotEquals(-1, result);
 
                 // Then
@@ -165,13 +165,13 @@ class ServerTest
     {
         try
         {
-            final ReactiveSocket reactiveSocket = new ReactiveSocket();
+            final ReactiveConnections reactiveConnections = new ReactiveConnections();
             try (
-                    ServerRun ignored = startServer(new DelegatingServer(reactiveSocket));
+                    ServerRun ignored = startServer(new DelegatingServer(reactiveConnections));
                     ReadingClient client = new ReadingClient()
             )
             {
-                testScenario.test(reactiveSocket, client);
+                testScenario.test(reactiveConnections, client);
             }
         }
         catch (Exception e)
@@ -183,7 +183,7 @@ class ServerTest
 
     interface TestScenario
     {
-        void test(ReactiveSocket reactiveSocket, ReadingClient client) throws IOException;
+        void test(ReactiveConnections reactiveConnections, ReadingClient client) throws IOException;
     }
 
 }
