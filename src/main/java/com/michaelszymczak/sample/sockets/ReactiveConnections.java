@@ -1,28 +1,29 @@
 package com.michaelszymczak.sample.sockets;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReactiveConnections implements AutoCloseable
 {
-    private final Map<Long, Acceptor> acceptors = new HashMap<>(10);
+    private final List<Acceptor> acceptors = new ArrayList<>(10);
     private long requestIdGenerator = 0;
 
     public long listen(final int serverPort)
     {
         final long currentRequestId = requestIdGenerator++;
+        final Acceptor acceptor = new Acceptor(currentRequestId);
         try
         {
-            final Acceptor acceptor = new Acceptor(currentRequestId);
             acceptor.listen(serverPort);
-            acceptors.put(acceptor.id(), acceptor);
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e);
+            Resources.close(acceptor);
+            throw new RuntimeException(e); // TODO: error as an event
         }
-        return currentRequestId;
+        acceptors.add(acceptor);
+        return currentRequestId; // TODO: confirmation as an event, potentially later when 100% sure
 
     }
 
@@ -59,18 +60,23 @@ public class ReactiveConnections implements AutoCloseable
     @Override
     public void close()
     {
-        acceptors.values().forEach(Resources::close);
+        for (int k = 0; k < acceptors.size(); k++)
+        {
+            final Acceptor acceptor = acceptors.get(k);
+            Resources.close(acceptor);
+        }
     }
 
     public long stopListening(final long listenRequestId)
     {
-        if (!acceptors.containsKey(listenRequestId))
+        for (int k = 0; k < acceptors.size(); k++)
         {
-            return -1L;
+            if (acceptors.get(k).id() == listenRequestId)
+            {
+                Resources.close(acceptors.get(k));
+                return 0L;
+            }
         }
-
-        Resources.close(acceptors.get(listenRequestId));
-
-        return 0L;
+        return -1L;
     }
 }
