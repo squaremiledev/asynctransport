@@ -25,7 +25,7 @@ public class FreePort
         {
             newPort = freePort(0);
         }
-        while (newPort != reservedPort);
+        while (newPort == reservedPort);
         return newPort;
     }
 }

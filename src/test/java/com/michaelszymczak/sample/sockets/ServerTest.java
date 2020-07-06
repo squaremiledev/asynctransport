@@ -7,10 +7,7 @@ import com.michaelszymczak.sample.sockets.support.FreePort;
 import com.michaelszymczak.sample.sockets.support.ReadingClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -55,7 +52,6 @@ class ServerTest
 
     // timeout required
     @Test
-    @Disabled
     void shouldNotAcceptIfListeningOnAnotherPort() throws Exception
     {
         // Given
