@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets;
 
-public class RequestIdSource
+public class SessionIdSource
 {
     private long nextId = 0;
 

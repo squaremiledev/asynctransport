@@ -20,4 +20,16 @@ public class Events implements EventsListener
     {
         return new ArrayList<>(events);
     }
+
+    public <T> T last(final Class<T> clazz)
+    {
+        for (int k = events.size() - 1; k >= 0; k--)
+        {
+            if (clazz.isInstance(events.get(k)))
+            {
+                return clazz.cast(events.get(k));
+            }
+        }
+        return null;
+    }
 }

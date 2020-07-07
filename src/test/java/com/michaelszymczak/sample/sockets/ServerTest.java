@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.michaelszymczak.sample.sockets.commands.Listen;
 import com.michaelszymczak.sample.sockets.events.Event;
 import com.michaelszymczak.sample.sockets.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
@@ -39,10 +40,13 @@ class ServerTest
                 {
                     // When
                     final int port = freePort();
-                    reactiveConnections.listen(port);
+                    reactiveConnections.handle(new Listen(7, port));
 
                     // Then
-                    assertEventsEquals(events.events(), new StartedListening());
+                    final StartedListening event = events.last(StartedListening.class);
+                    assertEquals(0, event.sessionId());
+                    assertEquals(7, event.commandId());
+                    assertEventsEquals(events.events(), new StartedListening(7, 0));
                     client.connectedTo(port);
                 }
         );
@@ -62,7 +66,7 @@ class ServerTest
                 {
                     // When
                     final int port = freePort();
-                    reactiveConnections.listen(port);
+                    reactiveConnections.handle(new Listen(0, port));
 
                     // Then
                     assertThrows(ConnectException.class, () -> client.connectedTo(freePortOtherThan(port)));
@@ -77,10 +81,10 @@ class ServerTest
                 {
                     // Given
                     final int port = freePort();
-                    final long requestId = reactiveConnections.listen(port);
+                    reactiveConnections.handle(new Listen(0, port));
 
                     // When
-                    reactiveConnections.stopListening(requestId);
+                    reactiveConnections.stopListening(events.last(StartedListening.class).sessionId());
 
                     // Then
                     assertThrows(ConnectException.class, () -> client.connectedTo(port));
@@ -95,10 +99,10 @@ class ServerTest
                 {
                     // Given
                     final int port = freePort();
-                    final long requestId = reactiveConnections.listen(port);
+                    reactiveConnections.handle(new Listen(0, port));
 
                     // When
-                    final long result = reactiveConnections.stopListening(requestId + 1);
+                    final long result = reactiveConnections.stopListening(events.last(StartedListening.class).sessionId() + 1);
                     assertEquals(-1, result);
 
                     // Then
@@ -121,9 +125,9 @@ class ServerTest
             {
                 // When
                 final int port1 = freePort();
-                reactiveConnections.listen(port1);
+                reactiveConnections.handle(new Listen(0, port1));
                 final int port2 = freePortOtherThan(port1);
-                reactiveConnections.listen(port2);
+                reactiveConnections.handle(new Listen(1, port2));
 
                 // Then
                 client1.connectedTo(port1);
@@ -151,14 +155,20 @@ class ServerTest
             {
                 // Given
                 final int port1 = freePort();
-                reactiveConnections.listen(port1);
+                reactiveConnections.handle(new Listen(5, port1));
                 final int port2 = freePortOtherThan(port1);
-                final long requestId = reactiveConnections.listen(port2);
+                reactiveConnections.handle(new Listen(6, port2));
                 final int port3 = freePortOtherThan(port1, port2);
-                reactiveConnections.listen(port3);
+                reactiveConnections.handle(new Listen(7, port3));
+                assertEventsEquals(
+                        events.events(),
+                        new StartedListening(5, 0),
+                        new StartedListening(6, 1),
+                        new StartedListening(7, 2)
+                );
 
                 // When
-                final long result = reactiveConnections.stopListening(requestId);
+                final long result = reactiveConnections.stopListening(1);
                 assertNotEquals(-1, result);
 
                 // Then

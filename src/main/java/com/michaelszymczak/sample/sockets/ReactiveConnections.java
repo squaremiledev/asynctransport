@@ -4,13 +4,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.michaelszymczak.sample.sockets.commands.Command;
+import com.michaelszymczak.sample.sockets.commands.Listen;
 import com.michaelszymczak.sample.sockets.events.EventsListener;
 import com.michaelszymczak.sample.sockets.events.StartedListening;
 
 public class ReactiveConnections implements AutoCloseable
 {
     private final List<Acceptor> acceptors = new ArrayList<>(10);
-    private final RequestIdSource requestIdSource = new RequestIdSource();
+    private final SessionIdSource sessionIdSource = new SessionIdSource();
     private final EventsListener eventsListener;
 
     public ReactiveConnections(final EventsListener eventsListener)
@@ -19,10 +21,19 @@ public class ReactiveConnections implements AutoCloseable
         this.eventsListener = eventsListener;
     }
 
-    public long listen(final int serverPort)
+    public void handle(final Command command)
     {
-        final long currentRequestId = requestIdSource.newId();
-        final Acceptor acceptor = new Acceptor(currentRequestId);
+        if (command instanceof Listen)
+        {
+            final Listen cmd = (Listen)command;
+            listen(cmd.commandId(), cmd.port());
+        }
+    }
+
+    private long listen(final long currentRequestId, final int serverPort)
+    {
+        final long sessionId = sessionIdSource.newId();
+        final Acceptor acceptor = new Acceptor(sessionId);
         try
         {
             acceptor.listen(serverPort);
@@ -33,8 +44,8 @@ public class ReactiveConnections implements AutoCloseable
             throw new RuntimeException(e); // TODO: error as an event
         }
         acceptors.add(acceptor);
-        eventsListener.onEvent(new StartedListening());
-        return currentRequestId;
+        eventsListener.onEvent(new StartedListening(currentRequestId, sessionId));
+        return sessionId;
 
     }
 
