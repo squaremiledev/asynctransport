@@ -4,11 +4,13 @@ public class CommandFailed implements Event
 {
     private final long commandId;
     private final long sessionId;
+    private final String details;
 
-    public CommandFailed(final long commandId, final long sessionId)
+    public CommandFailed(final long commandId, final long sessionId, final String details)
     {
         this.commandId = commandId;
         this.sessionId = sessionId;
+        this.details = details;
     }
 
     @Override

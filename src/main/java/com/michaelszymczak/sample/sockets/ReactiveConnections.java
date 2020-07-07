@@ -20,7 +20,6 @@ public class ReactiveConnections implements AutoCloseable
 
     public ReactiveConnections(final EventsListener eventsListener)
     {
-
         this.eventsListener = eventsListener;
     }
 
@@ -38,7 +37,7 @@ public class ReactiveConnections implements AutoCloseable
         }
     }
 
-    private long listen(final long currentRequestId, final int serverPort)
+    private void listen(final long currentRequestId, final int serverPort)
     {
         final long sessionId = sessionIdSource.newId();
         final Acceptor acceptor = new Acceptor(sessionId);
@@ -49,11 +48,10 @@ public class ReactiveConnections implements AutoCloseable
         catch (IOException e)
         {
             Resources.close(acceptor);
-            throw new RuntimeException(e); // TODO: error as an event
+            eventsListener.onEvent(new CommandFailed(currentRequestId, sessionId, e.getMessage()));
         }
         acceptors.add(acceptor);
         eventsListener.onEvent(new StartedListening(currentRequestId, sessionId));
-        return sessionId;
 
     }
 
@@ -68,7 +66,7 @@ public class ReactiveConnections implements AutoCloseable
                 return;
             }
         }
-        eventsListener.onEvent(new CommandFailed(commandId, listeningSessionId));
+        eventsListener.onEvent(new CommandFailed(commandId, listeningSessionId, ""));
     }
 
     public void doWork()
