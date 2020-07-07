@@ -7,11 +7,11 @@ import java.util.List;
 public class ReactiveConnections implements AutoCloseable
 {
     private final List<Acceptor> acceptors = new ArrayList<>(10);
-    private long requestIdGenerator = 0;
+    private final RequestIdSource requestIdSource = new RequestIdSource();
 
     public long listen(final int serverPort)
     {
-        final long currentRequestId = requestIdGenerator++;
+        final long currentRequestId = requestIdSource.newId();
         final Acceptor acceptor = new Acceptor(currentRequestId);
         try
         {
