@@ -7,8 +7,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.michaelszymczak.sample.sockets.commands.Listen;
+import com.michaelszymczak.sample.sockets.commands.StopListening;
+import com.michaelszymczak.sample.sockets.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.events.Event;
 import com.michaelszymczak.sample.sockets.events.StartedListening;
+import com.michaelszymczak.sample.sockets.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
 import com.michaelszymczak.sample.sockets.support.Events;
 import com.michaelszymczak.sample.sockets.support.ReadingClient;
@@ -19,7 +22,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
@@ -84,7 +86,7 @@ class ServerTest
                     reactiveConnections.handle(new Listen(0, port));
 
                     // When
-                    reactiveConnections.stopListening(events.last(StartedListening.class).sessionId());
+                    reactiveConnections.handle(new StopListening(9, events.last(StartedListening.class).sessionId()));
 
                     // Then
                     assertThrows(ConnectException.class, () -> client.connectedTo(port));
@@ -99,13 +101,15 @@ class ServerTest
                 {
                     // Given
                     final int port = freePort();
-                    reactiveConnections.handle(new Listen(0, port));
+                    reactiveConnections.handle(new Listen(2, port));
+                    final long lastSessionId = events.last(StartedListening.class).sessionId();
 
                     // When
-                    final long result = reactiveConnections.stopListening(events.last(StartedListening.class).sessionId() + 1);
-                    assertEquals(-1, result);
+                    reactiveConnections.handle(new StopListening(4, lastSessionId + 1));
 
                     // Then
+                    assertThat(events.last(CommandFailed.class).commandId()).isEqualTo(4);
+                    assertThat(events.last(CommandFailed.class).sessionId()).isEqualTo(lastSessionId + 1);
                     client.connectedTo(port);
                 }
         );
@@ -168,10 +172,11 @@ class ServerTest
                 );
 
                 // When
-                final long result = reactiveConnections.stopListening(1);
-                assertNotEquals(-1, result);
+                reactiveConnections.handle(new StopListening(9, 1));
 
                 // Then
+                assertThat(events.last(StoppedListening.class).commandId()).isEqualTo(9);
+                assertThat(events.last(StoppedListening.class).sessionId()).isEqualTo(1);
                 client1.connectedTo(port1);
                 assertThrows(ConnectException.class, () -> client2.connectedTo(port2));
                 client3.connectedTo(port3);

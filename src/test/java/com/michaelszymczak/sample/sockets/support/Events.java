@@ -30,6 +30,6 @@ public class Events implements EventsListener
                 return clazz.cast(events.get(k));
             }
         }
-        return null;
+        throw new IllegalStateException(clazz.getCanonicalName() + " not received");
     }
 }

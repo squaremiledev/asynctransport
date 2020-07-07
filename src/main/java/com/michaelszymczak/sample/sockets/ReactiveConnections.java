@@ -6,8 +6,11 @@ import java.util.List;
 
 import com.michaelszymczak.sample.sockets.commands.Command;
 import com.michaelszymczak.sample.sockets.commands.Listen;
+import com.michaelszymczak.sample.sockets.commands.StopListening;
+import com.michaelszymczak.sample.sockets.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.events.EventsListener;
 import com.michaelszymczak.sample.sockets.events.StartedListening;
+import com.michaelszymczak.sample.sockets.events.StoppedListening;
 
 public class ReactiveConnections implements AutoCloseable
 {
@@ -27,6 +30,11 @@ public class ReactiveConnections implements AutoCloseable
         {
             final Listen cmd = (Listen)command;
             listen(cmd.commandId(), cmd.port());
+        }
+        if (command instanceof StopListening)
+        {
+            final StopListening cmd = (StopListening)command;
+            stopListening(cmd.commandId(), cmd.sessionId());
         }
     }
 
@@ -49,17 +57,18 @@ public class ReactiveConnections implements AutoCloseable
 
     }
 
-    public long stopListening(final long listeningSessionId)
+    private void stopListening(final long commandId, final long listeningSessionId)
     {
         for (int k = 0; k < acceptors.size(); k++)
         {
             if (acceptors.get(k).id() == listeningSessionId)
             {
                 Resources.close(acceptors.get(k));
-                return 0L;
+                eventsListener.onEvent(new StoppedListening(commandId, listeningSessionId));
+                return;
             }
         }
-        return -1L;
+        eventsListener.onEvent(new CommandFailed(commandId, listeningSessionId));
     }
 
     public void doWork()
