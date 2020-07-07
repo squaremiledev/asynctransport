@@ -49,6 +49,19 @@ public class ReactiveConnections implements AutoCloseable
 
     }
 
+    public long stopListening(final long listeningSessionId)
+    {
+        for (int k = 0; k < acceptors.size(); k++)
+        {
+            if (acceptors.get(k).id() == listeningSessionId)
+            {
+                Resources.close(acceptors.get(k));
+                return 0L;
+            }
+        }
+        return -1L;
+    }
+
     public void doWork()
     {
 //        final int availableCount;
@@ -87,18 +100,5 @@ public class ReactiveConnections implements AutoCloseable
             final Acceptor acceptor = acceptors.get(k);
             Resources.close(acceptor);
         }
-    }
-
-    public long stopListening(final long listenRequestId)
-    {
-        for (int k = 0; k < acceptors.size(); k++)
-        {
-            if (acceptors.get(k).id() == listenRequestId)
-            {
-                Resources.close(acceptors.get(k));
-                return 0L;
-            }
-        }
-        return -1L;
     }
 }
