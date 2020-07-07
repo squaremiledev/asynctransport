@@ -4,10 +4,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.michaelszymczak.sample.sockets.events.EventsListener;
+import com.michaelszymczak.sample.sockets.events.StartedListening;
+
 public class ReactiveConnections implements AutoCloseable
 {
     private final List<Acceptor> acceptors = new ArrayList<>(10);
     private final RequestIdSource requestIdSource = new RequestIdSource();
+    private final EventsListener eventsListener;
+
+    public ReactiveConnections(final EventsListener eventsListener)
+    {
+
+        this.eventsListener = eventsListener;
+    }
 
     public long listen(final int serverPort)
     {
@@ -23,7 +33,8 @@ public class ReactiveConnections implements AutoCloseable
             throw new RuntimeException(e); // TODO: error as an event
         }
         acceptors.add(acceptor);
-        return currentRequestId; // TODO: confirmation as an event, potentially later when 100% sure
+        eventsListener.onEvent(new StartedListening());
+        return currentRequestId;
 
     }
 
