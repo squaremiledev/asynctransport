@@ -2,19 +2,13 @@ package com.michaelszymczak.sample.sockets.events;
 
 public class StoppedListening implements TransportEvent
 {
-    private final long commandId;
     private final int port;
+    private final long commandId;
 
-    public StoppedListening(final long commandId, final int port)
+    public StoppedListening(final int port, final long commandId)
     {
-        this.commandId = commandId;
         this.port = port;
-    }
-
-    @Override
-    public long commandId()
-    {
-        return commandId;
+        this.commandId = commandId;
     }
 
     @Override
@@ -24,11 +18,17 @@ public class StoppedListening implements TransportEvent
     }
 
     @Override
+    public long commandId()
+    {
+        return commandId;
+    }
+
+    @Override
     public String toString()
     {
-        return "StartedListening{" +
-               "commandId=" + commandId +
-               ", port=" + port +
+        return "StoppedListening{" +
+               "port=" + port +
+               ", commandId=" + commandId +
                '}';
     }
 

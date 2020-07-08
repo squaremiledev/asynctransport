@@ -48,7 +48,7 @@ class ServerTest
                     final StartedListening event = events.last(StartedListening.class);
                     assertEquals(port, event.port());
                     assertEquals(7, event.commandId());
-                    assertEventsEquals(events.events(), new StartedListening(7, port));
+                    assertEventsEquals(events.events(), new StartedListening(port, 7));
                     client.connectedTo(port);
                 }
         );
@@ -166,9 +166,9 @@ class ServerTest
                 transport.handle(new Listen(7, port3));
                 assertEventsEquals(
                         events.events(),
-                        new StartedListening(5, port1),
-                        new StartedListening(6, port2),
-                        new StartedListening(7, port3)
+                        new StartedListening(port1, 5),
+                        new StartedListening(port2, 6),
+                        new StartedListening(port3, 7)
                 );
 
                 // When

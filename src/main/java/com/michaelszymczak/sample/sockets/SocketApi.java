@@ -11,37 +11,37 @@ import com.michaelszymczak.sample.sockets.events.TransportEvent;
 
 public class SocketApi implements AutoCloseable
 {
-    private final List<Acceptor> acceptors = new ArrayList<>(10);
+    private final List<ListeningSocket> listeningSockets = new ArrayList<>(10);
 
-    TransportEvent listen(final long commandId, final int serverPort)
+    TransportEvent listen(final int port, final long commandId)
     {
-        final Acceptor acceptor = new Acceptor(serverPort);
+        final ListeningSocket listeningSocket = new ListeningSocket(port);
         try
         {
-            acceptor.listen(serverPort);
+            listeningSocket.listen(port);
         }
         catch (IOException e)
         {
-            Resources.close(acceptor);
-            return new CommandFailed(commandId, serverPort, e.getMessage());
+            Resources.close(listeningSocket);
+            return new CommandFailed(port, commandId, e.getMessage());
 
 
         }
-        acceptors.add(acceptor);
-        return new StartedListening(commandId, serverPort);
+        listeningSockets.add(listeningSocket);
+        return new StartedListening(port, commandId);
     }
 
-    TransportEvent stopListening(final long commandId, final int port)
+    TransportEvent stopListening(final int port, final long commandId)
     {
-        for (int k = 0; k < acceptors.size(); k++)
+        for (int k = 0; k < listeningSockets.size(); k++)
         {
-            if (acceptors.get(k).id() == port)
+            if (listeningSockets.get(k).port() == port)
             {
-                Resources.close(acceptors.get(k));
-                return new StoppedListening(commandId, port);
+                Resources.close(listeningSockets.get(k));
+                return new StoppedListening(port, commandId);
             }
         }
-        return new CommandFailed(commandId, port, "");
+        return new CommandFailed(port, commandId, "");
     }
 
     public void doWork()
@@ -77,10 +77,10 @@ public class SocketApi implements AutoCloseable
     @Override
     public void close()
     {
-        for (int k = 0; k < acceptors.size(); k++)
+        for (int k = 0; k < listeningSockets.size(); k++)
         {
-            final Acceptor acceptor = acceptors.get(k);
-            Resources.close(acceptor);
+            final ListeningSocket listeningSocket = listeningSockets.get(k);
+            Resources.close(listeningSocket);
         }
     }
 }

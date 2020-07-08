@@ -21,12 +21,12 @@ public class Transport implements AutoCloseable
         if (command instanceof Listen)
         {
             final Listen cmd = (Listen)command;
-            transportEventsListener.onEvent(socketApi.listen(cmd.commandId(), cmd.port()));
+            transportEventsListener.onEvent(socketApi.listen(cmd.port(), cmd.commandId()));
         }
         if (command instanceof StopListening)
         {
             final StopListening cmd = (StopListening)command;
-            transportEventsListener.onEvent(socketApi.stopListening(cmd.commandId(), cmd.port()));
+            transportEventsListener.onEvent(socketApi.stopListening(cmd.port(), cmd.commandId()));
         }
     }
 
