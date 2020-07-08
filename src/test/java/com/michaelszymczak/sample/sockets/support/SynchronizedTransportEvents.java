@@ -2,8 +2,8 @@ package com.michaelszymczak.sample.sockets.support;
 
 import java.util.List;
 
-import com.michaelszymczak.sample.sockets.events.TransportEvent;
-import com.michaelszymczak.sample.sockets.events.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.api.TransportEvent;
+import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 
 public class SynchronizedTransportEvents implements TransportEventsListener
 {

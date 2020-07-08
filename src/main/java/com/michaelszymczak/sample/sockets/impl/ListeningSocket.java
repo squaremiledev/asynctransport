@@ -1,4 +1,4 @@
-package com.michaelszymczak.sample.sockets;
+package com.michaelszymczak.sample.sockets.impl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -6,8 +6,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 
-import com.michaelszymczak.sample.sockets.events.ConnectionEstablished;
-import com.michaelszymczak.sample.sockets.events.TransportEvent;
+import com.michaelszymczak.sample.sockets.api.TransportEvent;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionEstablished;
 
 public class ListeningSocket implements AutoCloseable
 {

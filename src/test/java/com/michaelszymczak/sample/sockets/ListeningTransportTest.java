@@ -3,11 +3,13 @@ package com.michaelszymczak.sample.sockets;
 import java.io.IOException;
 import java.net.ConnectException;
 
-import com.michaelszymczak.sample.sockets.commands.Listen;
-import com.michaelszymczak.sample.sockets.commands.StopListening;
-import com.michaelszymczak.sample.sockets.events.CommandFailed;
-import com.michaelszymczak.sample.sockets.events.StartedListening;
-import com.michaelszymczak.sample.sockets.events.StoppedListening;
+import com.michaelszymczak.sample.sockets.api.Transport;
+import com.michaelszymczak.sample.sockets.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.api.commands.StopListening;
+import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
+import com.michaelszymczak.sample.sockets.api.events.StartedListening;
+import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
+import com.michaelszymczak.sample.sockets.impl.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
@@ -116,7 +118,7 @@ class ListeningTransportTest
     {
         try
         {
-            final Transport transport = new Transport(events);
+            final NIOBackedTransport transport = new NIOBackedTransport(events);
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
                     SampleClient client1 = new SampleClient();
@@ -145,7 +147,7 @@ class ListeningTransportTest
     {
         try
         {
-            final Transport transport = new Transport(events);
+            final NIOBackedTransport transport = new NIOBackedTransport(events);
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
                     SampleClient client1 = new SampleClient();
@@ -184,7 +186,7 @@ class ListeningTransportTest
     {
         try
         {
-            final Transport transport = new Transport(events);
+            final NIOBackedTransport transport = new NIOBackedTransport(events);
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
                     SampleClient client = new SampleClient()

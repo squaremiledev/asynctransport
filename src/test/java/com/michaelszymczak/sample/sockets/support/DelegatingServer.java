@@ -3,15 +3,15 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-import com.michaelszymczak.sample.sockets.Resources;
-import com.michaelszymczak.sample.sockets.Transport;
+import com.michaelszymczak.sample.sockets.impl.NIOBackedTransport;
+import com.michaelszymczak.sample.sockets.impl.Resources;
 
 public class DelegatingServer implements FakeServer
 {
     private final Progress onReady;
-    private final Transport transport;
+    private final NIOBackedTransport transport;
 
-    public DelegatingServer(final Transport transport)
+    public DelegatingServer(final NIOBackedTransport transport)
     {
         this.onReady = new Progress();
         this.transport = transport;

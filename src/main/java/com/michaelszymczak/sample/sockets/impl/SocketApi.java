@@ -1,4 +1,4 @@
-package com.michaelszymczak.sample.sockets;
+package com.michaelszymczak.sample.sockets.impl;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.michaelszymczak.sample.sockets.events.CommandFailed;
-import com.michaelszymczak.sample.sockets.events.StartedListening;
-import com.michaelszymczak.sample.sockets.events.StoppedListening;
-import com.michaelszymczak.sample.sockets.events.TransportEvent;
-import com.michaelszymczak.sample.sockets.events.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.api.TransportEvent;
+import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
+import com.michaelszymczak.sample.sockets.api.events.StartedListening;
+import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 
 public class SocketApi implements AutoCloseable
 {

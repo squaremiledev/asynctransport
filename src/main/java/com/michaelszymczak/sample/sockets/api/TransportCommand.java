@@ -1,4 +1,4 @@
-package com.michaelszymczak.sample.sockets.commands;
+package com.michaelszymczak.sample.sockets.api;
 
 public interface TransportCommand
 {

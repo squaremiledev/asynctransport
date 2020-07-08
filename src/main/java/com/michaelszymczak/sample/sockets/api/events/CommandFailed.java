@@ -1,4 +1,6 @@
-package com.michaelszymczak.sample.sockets.events;
+package com.michaelszymczak.sample.sockets.api.events;
+
+import com.michaelszymczak.sample.sockets.api.TransportEvent;
 
 public class CommandFailed implements TransportEvent
 {

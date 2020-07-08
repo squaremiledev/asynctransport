@@ -1,23 +1,25 @@
-package com.michaelszymczak.sample.sockets;
+package com.michaelszymczak.sample.sockets.impl;
 
 import java.io.IOException;
 
-import com.michaelszymczak.sample.sockets.commands.Listen;
-import com.michaelszymczak.sample.sockets.commands.StopListening;
-import com.michaelszymczak.sample.sockets.commands.TransportCommand;
-import com.michaelszymczak.sample.sockets.events.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.api.Transport;
+import com.michaelszymczak.sample.sockets.api.TransportCommand;
+import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 
-public class Transport implements AutoCloseable
+public class NIOBackedTransport implements AutoCloseable, Transport
 {
     private final TransportEventsListener transportEventsListener;
     private SocketApi socketApi;
 
-    public Transport(final TransportEventsListener transportEventsListener) throws IOException
+    public NIOBackedTransport(final TransportEventsListener transportEventsListener) throws IOException
     {
         this.socketApi = new SocketApi(transportEventsListener);
         this.transportEventsListener = transportEventsListener;
     }
 
+    @Override
     public void handle(final TransportCommand command)
     {
         if (command instanceof Listen)
