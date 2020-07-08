@@ -11,12 +11,12 @@ public class Listen implements TransportCommand
         this.commandId = commandId;
     }
 
+    @Override
     public int port()
     {
         return port;
     }
 
-    @Override
     public long commandId()
     {
         return commandId;

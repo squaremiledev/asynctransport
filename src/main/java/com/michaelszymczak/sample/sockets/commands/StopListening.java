@@ -12,13 +12,13 @@ public class StopListening implements TransportCommand
     }
 
     @Override
-    public long commandId()
-    {
-        return commandId;
-    }
-
     public int port()
     {
         return port;
+    }
+
+    public long commandId()
+    {
+        return commandId;
     }
 }
