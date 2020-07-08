@@ -2,22 +2,17 @@ package com.michaelszymczak.sample.sockets;
 
 import java.io.IOException;
 import java.net.ConnectException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import com.michaelszymczak.sample.sockets.commands.Listen;
 import com.michaelszymczak.sample.sockets.commands.StopListening;
 import com.michaelszymczak.sample.sockets.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.events.StartedListening;
 import com.michaelszymczak.sample.sockets.events.StoppedListening;
-import com.michaelszymczak.sample.sockets.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
 import com.michaelszymczak.sample.sockets.support.ReadingClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
-import com.michaelszymczak.sample.sockets.support.TransportEvents;
+import com.michaelszymczak.sample.sockets.support.SynchronizedTransportEvents;
 
-import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,14 +20,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
+import static com.michaelszymczak.sample.sockets.support.Assertions.assertSameSequence;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
 import static com.michaelszymczak.sample.sockets.support.ServerRun.startServer;
 
-class ServerTest
+class ListeningTransportTest
 {
 
-    private TransportEvents events = new TransportEvents();
+    private SynchronizedTransportEvents events = new SynchronizedTransportEvents();
 
     @Test
     void shouldAcceptConnections()
@@ -48,7 +44,7 @@ class ServerTest
                     final StartedListening event = events.last(StartedListening.class);
                     assertEquals(port, event.port());
                     assertEquals(7, event.commandId());
-                    assertEventsEquals(events.events(), new StartedListening(port, 7));
+                    assertSameSequence(events.events(), new StartedListening(port, 7));
                     client.connectedTo(port);
                 }
         );
@@ -164,12 +160,7 @@ class ServerTest
                 transport.handle(new Listen(6, port2));
                 final int port3 = freePortOtherThan(port1, port2);
                 transport.handle(new Listen(7, port3));
-                assertEventsEquals(
-                        events.events(),
-                        new StartedListening(port1, 5),
-                        new StartedListening(port2, 6),
-                        new StartedListening(port3, 7)
-                );
+                assertSameSequence(events.events(), new StartedListening(port1, 5), new StartedListening(port2, 6), new StartedListening(port3, 7));
 
                 // When
                 transport.handle(new StopListening(9, port2));
@@ -206,16 +197,6 @@ class ServerTest
         {
             throw new RuntimeException(e);
         }
-    }
-
-
-    private void assertEventsEquals(final List<TransportEvent> actualEvents, final TransportEvent... expectedEvents)
-    {
-        final RecursiveComparisonConfiguration recursiveComparisonConfiguration = new RecursiveComparisonConfiguration();
-        recursiveComparisonConfiguration.strictTypeChecking(true);
-        assertThat(new ArrayList<>(actualEvents))
-                .usingRecursiveComparison(recursiveComparisonConfiguration)
-                .isEqualTo(new ArrayList<>(Arrays.asList(expectedEvents)));
     }
 
 

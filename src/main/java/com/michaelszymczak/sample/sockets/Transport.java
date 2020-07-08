@@ -1,5 +1,7 @@
 package com.michaelszymczak.sample.sockets;
 
+import java.io.IOException;
+
 import com.michaelszymczak.sample.sockets.commands.Listen;
 import com.michaelszymczak.sample.sockets.commands.StopListening;
 import com.michaelszymczak.sample.sockets.commands.TransportCommand;
@@ -10,9 +12,9 @@ public class Transport implements AutoCloseable
     private final TransportEventsListener transportEventsListener;
     private SocketApi socketApi;
 
-    public Transport(final TransportEventsListener transportEventsListener)
+    public Transport(final TransportEventsListener transportEventsListener) throws IOException
     {
-        this.socketApi = new SocketApi();
+        this.socketApi = new SocketApi(transportEventsListener);
         this.transportEventsListener = transportEventsListener;
     }
 

@@ -6,6 +6,9 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 
+import com.michaelszymczak.sample.sockets.events.ConnectionEstablished;
+import com.michaelszymczak.sample.sockets.events.TransportEvent;
+
 public class ListeningSocket implements AutoCloseable
 {
     private final int port;
@@ -22,13 +25,22 @@ public class ListeningSocket implements AutoCloseable
         return port;
     }
 
-    void listen(final int serverPort) throws IOException
+    SelectionKey listen(final Selector selector, final int serverPort) throws IOException
     {
         serverSocketChannel = ServerSocketChannel.open();
-        selector = Selector.open();
+        // non-blocking mode, but in case something was missed, it should fail fast
+        serverSocketChannel.socket().setSoTimeout(1);
+        this.selector = selector;
         serverSocketChannel.configureBlocking(false);
-        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+        final SelectionKey selectionKey = serverSocketChannel.register(this.selector, SelectionKey.OP_ACCEPT);
         serverSocketChannel.bind(new InetSocketAddress(serverPort));
+        return selectionKey;
+    }
+
+    public TransportEvent acceptConnection() throws IOException
+    {
+        serverSocketChannel.accept();
+        return new ConnectionEstablished();
     }
 
     @Override

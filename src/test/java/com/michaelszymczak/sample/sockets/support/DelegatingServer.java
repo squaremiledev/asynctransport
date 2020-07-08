@@ -8,12 +8,12 @@ import com.michaelszymczak.sample.sockets.Transport;
 
 public class DelegatingServer implements FakeServer
 {
-    private final ServerReadiness onReady;
+    private final Progress onReady;
     private final Transport transport;
 
     public DelegatingServer(final Transport transport)
     {
-        this.onReady = new ServerReadiness();
+        this.onReady = new Progress();
         this.transport = transport;
     }
 
@@ -26,7 +26,7 @@ public class DelegatingServer implements FakeServer
     @Override
     public void waitUntilReady()
     {
-        onReady.waitUntilReady();
+        onReady.blockUntilReady();
     }
 
 

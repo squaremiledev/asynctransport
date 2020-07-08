@@ -2,16 +2,16 @@ package com.michaelszymczak.sample.sockets.support;
 
 import java.util.concurrent.CountDownLatch;
 
-class ServerReadiness
+public class Progress
 {
     private final CountDownLatch serverReadyLatch;
 
-    ServerReadiness()
+    public Progress()
     {
         this.serverReadyLatch = new CountDownLatch(1);
     }
 
-    void waitUntilReady()
+    public void blockUntilReady()
     {
         try
         {
@@ -23,7 +23,12 @@ class ServerReadiness
         }
     }
 
-    void onReady()
+    public boolean hasCompleted()
+    {
+        return serverReadyLatch.getCount() < 1;
+    }
+
+    public void onReady()
     {
         serverReadyLatch.countDown();
     }

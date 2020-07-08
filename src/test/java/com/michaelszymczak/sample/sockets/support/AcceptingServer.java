@@ -14,7 +14,7 @@ import java.util.concurrent.locks.LockSupport;
 public class AcceptingServer implements FakeServer
 {
     private final int serverPort;
-    private final ServerReadiness onReady;
+    private final Progress onReady;
     private byte[] contentReturnedUponConnection;
 
     public static AcceptingServer returningUponConnection(final int serverPort, final byte[] contentReturnedUponConnection)
@@ -25,7 +25,7 @@ public class AcceptingServer implements FakeServer
     private AcceptingServer(final int serverPort, final byte[] contentReturnedUponConnection)
     {
         this.serverPort = FreePort.freePort(serverPort);
-        this.onReady = new ServerReadiness();
+        this.onReady = new Progress();
         this.contentReturnedUponConnection = contentReturnedUponConnection;
     }
 
@@ -38,7 +38,7 @@ public class AcceptingServer implements FakeServer
     @Override
     public void waitUntilReady()
     {
-        onReady.waitUntilReady();
+        onReady.blockUntilReady();
     }
 
     @Override
