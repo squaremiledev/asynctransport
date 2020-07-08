@@ -1,9 +1,9 @@
-package com.michaelszymczak.sample.sockets.impl;
+package com.michaelszymczak.sample.sockets.nio;
 
 import java.io.IOException;
 
 import com.michaelszymczak.sample.sockets.api.Transport;
-import com.michaelszymczak.sample.sockets.api.TransportCommand;
+import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;

@@ -1,7 +1,5 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-import com.michaelszymczak.sample.sockets.api.TransportEvent;
-
 public class StoppedListening implements TransportEvent
 {
     private final int port;

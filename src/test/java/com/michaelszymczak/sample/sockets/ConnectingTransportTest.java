@@ -5,7 +5,7 @@ import java.io.IOException;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionEstablished;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
-import com.michaelszymczak.sample.sockets.impl.NIOBackedTransport;
+import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;

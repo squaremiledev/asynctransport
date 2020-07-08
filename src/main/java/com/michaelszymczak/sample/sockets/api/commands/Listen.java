@@ -1,7 +1,5 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
-import com.michaelszymczak.sample.sockets.api.TransportCommand;
-
 public class Listen implements TransportCommand
 {
     private final int port;

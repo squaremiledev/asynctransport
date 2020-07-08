@@ -1,7 +1,5 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
-import com.michaelszymczak.sample.sockets.api.TransportCommand;
-
 public class StopListening implements TransportCommand
 {
     private final int commandId;

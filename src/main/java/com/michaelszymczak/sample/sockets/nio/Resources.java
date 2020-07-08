@@ -1,4 +1,4 @@
-package com.michaelszymczak.sample.sockets.impl;
+package com.michaelszymczak.sample.sockets.nio;
 
 public class Resources
 {

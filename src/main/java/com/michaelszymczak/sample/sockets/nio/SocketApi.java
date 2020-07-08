@@ -1,4 +1,4 @@
-package com.michaelszymczak.sample.sockets.impl;
+package com.michaelszymczak.sample.sockets.nio;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.michaelszymczak.sample.sockets.api.TransportEvent;
+import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;

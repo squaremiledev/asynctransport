@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-import com.michaelszymczak.sample.sockets.api.TransportEvent;
+import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 
 public class TransportEvents implements TransportEventsListener

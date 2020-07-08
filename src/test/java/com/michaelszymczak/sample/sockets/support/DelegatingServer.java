@@ -3,8 +3,8 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-import com.michaelszymczak.sample.sockets.impl.NIOBackedTransport;
-import com.michaelszymczak.sample.sockets.impl.Resources;
+import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
+import com.michaelszymczak.sample.sockets.nio.Resources;
 
 public class DelegatingServer implements FakeServer
 {

@@ -1,4 +1,4 @@
-package com.michaelszymczak.sample.sockets.api;
+package com.michaelszymczak.sample.sockets.api.events;
 
 public interface TransportEvent
 {
