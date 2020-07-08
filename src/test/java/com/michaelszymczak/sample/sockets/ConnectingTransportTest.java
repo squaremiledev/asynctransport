@@ -6,8 +6,7 @@ import com.michaelszymczak.sample.sockets.commands.Listen;
 import com.michaelszymczak.sample.sockets.events.ConnectionEstablished;
 import com.michaelszymczak.sample.sockets.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
-import com.michaelszymczak.sample.sockets.support.Progress;
-import com.michaelszymczak.sample.sockets.support.ReadingClient;
+import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
 import org.junit.jupiter.api.Test;
@@ -19,27 +18,24 @@ import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 class ConnectingTransportTest
 {
     private final TransportEvents events = new TransportEvents();
-    private final BackgroundRunner background = new BackgroundRunner();
+    private final BackgroundRunner runner = new BackgroundRunner();
 
     @Test
     void shouldNotifyWhenConnected() throws IOException
     {
         final Transport transport = new Transport(events);
-        final ReadingClient client = new ReadingClient();
 
         // Given
         transport.handle(new Listen(1, freePort()));
         final int port = events.last(StartedListening.class).port();
 
         // When
-        final Progress connectedProgress = background.run(() -> client.connectedTo(port));
-        while (!connectedProgress.hasCompleted())
-        {
-            transport.doWork();
-        }
+        runner.keepRunning(transport::doWork)
+                .untilCompleted(() -> new SampleClient().connectedTo(port));
 
 
         // Then
         assertSameSequence(events.all(ConnectionEstablished.class), new ConnectionEstablished());
     }
+
 }

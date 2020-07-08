@@ -9,7 +9,7 @@ import com.michaelszymczak.sample.sockets.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.events.StartedListening;
 import com.michaelszymczak.sample.sockets.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
-import com.michaelszymczak.sample.sockets.support.ReadingClient;
+import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
 import com.michaelszymczak.sample.sockets.support.SynchronizedTransportEvents;
 
@@ -119,8 +119,8 @@ class ListeningTransportTest
             final Transport transport = new Transport(events);
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
-                    ReadingClient client1 = new ReadingClient();
-                    ReadingClient client2 = new ReadingClient()
+                    SampleClient client1 = new SampleClient();
+                    SampleClient client2 = new SampleClient()
             )
             {
                 // When
@@ -148,9 +148,9 @@ class ListeningTransportTest
             final Transport transport = new Transport(events);
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
-                    ReadingClient client1 = new ReadingClient();
-                    ReadingClient client2 = new ReadingClient();
-                    ReadingClient client3 = new ReadingClient()
+                    SampleClient client1 = new SampleClient();
+                    SampleClient client2 = new SampleClient();
+                    SampleClient client3 = new SampleClient()
             )
             {
                 // Given
@@ -187,7 +187,7 @@ class ListeningTransportTest
             final Transport transport = new Transport(events);
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
-                    ReadingClient client = new ReadingClient()
+                    SampleClient client = new SampleClient()
             )
             {
                 testScenario.test(transport, client);
@@ -202,7 +202,7 @@ class ListeningTransportTest
 
     interface TestScenario
     {
-        void test(Transport transport, ReadingClient client) throws IOException;
+        void test(Transport transport, SampleClient client) throws IOException;
     }
 
 }

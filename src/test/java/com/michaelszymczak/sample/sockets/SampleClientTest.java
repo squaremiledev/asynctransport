@@ -1,7 +1,7 @@
 package com.michaelszymczak.sample.sockets;
 
 import com.michaelszymczak.sample.sockets.support.AcceptingServer;
-import com.michaelszymczak.sample.sockets.support.ReadingClient;
+import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
 
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ import static com.michaelszymczak.sample.sockets.support.ServerRun.startServer;
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.byteArrayWith;
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.stringWith;
 
-class ReadingClientTest
+class SampleClientTest
 {
 
     /*
@@ -37,7 +37,7 @@ Wireshark's capturing filter: tcp.port == 4847
         // Given
         try (
                 ServerRun serverRun = startServer(AcceptingServer.returningUponConnection(0, byteArrayWith("hello!\n")));
-                ReadingClient client = new ReadingClient()
+                SampleClient client = new SampleClient()
         )
         {
             // When

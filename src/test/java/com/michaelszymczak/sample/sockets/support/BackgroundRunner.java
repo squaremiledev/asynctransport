@@ -7,26 +7,56 @@ public class BackgroundRunner
 {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    public Progress run(final TaskToRun taskToRun)
+    public RunBuilder keepRunning(TaskToRun taskToKeepRunningInTheSameThread)
     {
-        final Progress progress = new Progress();
-        executorService.submit(() ->
-                               {
-                                   try
-                                   {
-                                       taskToRun.run();
-                                       progress.onReady();
-                                   }
-                                   catch (Exception e)
-                                   {
-                                       throw new RuntimeException(e);
-                                   }
-                               });
-        return progress;
+        return new RunBuilder(BackgroundRunner.this.executorService, taskToKeepRunningInTheSameThread, null);
     }
 
     public interface TaskToRun
     {
         void run() throws Exception;
+    }
+
+    public static class RunBuilder
+    {
+        final TaskToRun taskToKeepRunningInTheSameThread;
+        final TaskToRun taskToRunOnceInBackground;
+        private ExecutorService executorService;
+
+        public RunBuilder(final ExecutorService executorService, final TaskToRun taskToKeepRunningInTheSameThread, final TaskToRun taskToRunOnceInBackground)
+        {
+            this.executorService = executorService;
+            this.taskToKeepRunningInTheSameThread = taskToKeepRunningInTheSameThread;
+            this.taskToRunOnceInBackground = taskToRunOnceInBackground;
+        }
+
+        public void untilCompleted(final TaskToRun taskToRunOnceInBackground)
+        {
+            final RunBuilder runBuilder = new RunBuilder(executorService, taskToKeepRunningInTheSameThread, taskToRunOnceInBackground);
+            final Progress progress = new Progress();
+            executorService.submit(() ->
+                                   {
+                                       try
+                                       {
+                                           runBuilder.taskToRunOnceInBackground.run();
+                                           progress.onReady();
+                                       }
+                                       catch (Exception e)
+                                       {
+                                           throw new RuntimeException(e);
+                                       }
+                                   });
+            while (!progress.hasCompleted())
+            {
+                try
+                {
+                    runBuilder.taskToKeepRunningInTheSameThread.run();
+                }
+                catch (Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 }

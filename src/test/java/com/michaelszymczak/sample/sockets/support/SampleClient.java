@@ -4,19 +4,19 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-public class ReadingClient implements AutoCloseable
+public class SampleClient implements AutoCloseable
 {
 
     private final Socket socket;
     private final int timeoutMs;
 
-    public ReadingClient()
+    public SampleClient()
     {
         this.timeoutMs = 100;
         this.socket = new Socket();
     }
 
-    public ReadingClient connectedTo(final int port) throws IOException
+    public SampleClient connectedTo(final int port) throws IOException
     {
         socket.connect(new InetSocketAddress("127.0.0.1", port), timeoutMs);
         socket.setSoTimeout(timeoutMs);
