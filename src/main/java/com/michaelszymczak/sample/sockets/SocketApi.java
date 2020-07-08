@@ -12,11 +12,9 @@ import com.michaelszymczak.sample.sockets.events.TransportEvent;
 public class SocketApi implements AutoCloseable
 {
     private final List<Acceptor> acceptors = new ArrayList<>(10);
-    private final SessionIdSource sessionIdSource = new SessionIdSource();
 
     TransportEvent listen(final long commandId, final int serverPort)
     {
-        final long sessionId = sessionIdSource.newId();
         final Acceptor acceptor = new Acceptor(serverPort);
         try
         {
