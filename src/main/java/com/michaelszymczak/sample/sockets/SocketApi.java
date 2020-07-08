@@ -28,11 +28,12 @@ public class SocketApi implements AutoCloseable
 
     TransportEvent listen(final int port, final long commandId)
     {
-        final ListeningSocket listeningSocket = new ListeningSocket(port);
+        final ListeningSocket listeningSocket = new ListeningSocket(port, commandId, listeningSelector);
         try
         {
             // from now on you can retrieve listening socket from the selection key key
-            listeningSocket.listen(listeningSelector, port).attach(listeningSocket);
+            final SelectionKey selectionKey = listeningSocket.listen();
+            selectionKey.attach(listeningSocket);
         }
         catch (IOException e)
         {

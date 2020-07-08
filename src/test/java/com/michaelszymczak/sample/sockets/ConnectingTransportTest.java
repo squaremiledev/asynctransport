@@ -33,9 +33,8 @@ class ConnectingTransportTest
         runner.keepRunning(transport::doWork)
                 .untilCompleted(() -> new SampleClient().connectedTo(port));
 
-
         // Then
-        assertSameSequence(events.all(ConnectionEstablished.class), new ConnectionEstablished());
+        assertSameSequence(events.all(ConnectionEstablished.class), new ConnectionEstablished(port, 1));
     }
 
 }

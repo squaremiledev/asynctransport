@@ -2,15 +2,33 @@ package com.michaelszymczak.sample.sockets.events;
 
 public class ConnectionEstablished implements TransportEvent
 {
+    private final int port;
+    private final long commandId;
+
+    public ConnectionEstablished(final int port, final long commandId)
+    {
+        this.port = port;
+        this.commandId = commandId;
+    }
+
     @Override
     public int port()
     {
-        return 0;
+        return port;
     }
 
     @Override
     public long commandId()
     {
-        return 0;
+        return commandId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "ConnectionEstablished{" +
+               "port=" + port +
+               ", commandId=" + commandId +
+               '}';
     }
 }

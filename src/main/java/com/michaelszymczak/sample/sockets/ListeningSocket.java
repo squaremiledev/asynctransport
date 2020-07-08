@@ -13,11 +13,14 @@ public class ListeningSocket implements AutoCloseable
 {
     private final int port;
     private ServerSocketChannel serverSocketChannel;
+    private final long commandIdThatTriggeredListening;
     private Selector selector;
 
-    ListeningSocket(final int port)
+    ListeningSocket(final int port, final long commandIdThatTriggeredListening, final Selector selector)
     {
         this.port = port;
+        this.commandIdThatTriggeredListening = commandIdThatTriggeredListening;
+        this.selector = selector;
     }
 
     int port()
@@ -25,22 +28,21 @@ public class ListeningSocket implements AutoCloseable
         return port;
     }
 
-    SelectionKey listen(final Selector selector, final int serverPort) throws IOException
+    SelectionKey listen() throws IOException
     {
         serverSocketChannel = ServerSocketChannel.open();
         // non-blocking mode, but in case something was missed, it should fail fast
         serverSocketChannel.socket().setSoTimeout(1);
-        this.selector = selector;
         serverSocketChannel.configureBlocking(false);
         final SelectionKey selectionKey = serverSocketChannel.register(this.selector, SelectionKey.OP_ACCEPT);
-        serverSocketChannel.bind(new InetSocketAddress(serverPort));
+        serverSocketChannel.bind(new InetSocketAddress(port));
         return selectionKey;
     }
 
     public TransportEvent acceptConnection() throws IOException
     {
         serverSocketChannel.accept();
-        return new ConnectionEstablished();
+        return new ConnectionEstablished(port, commandIdThatTriggeredListening);
     }
 
     @Override
