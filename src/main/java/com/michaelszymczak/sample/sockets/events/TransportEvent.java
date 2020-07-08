@@ -1,8 +1,8 @@
 package com.michaelszymczak.sample.sockets.events;
 
-public interface Event
+public interface TransportEvent
 {
     long commandId();
 
-    long sessionId();
+    int port();
 }

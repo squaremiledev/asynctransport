@@ -3,20 +3,20 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.michaelszymczak.sample.sockets.events.Event;
-import com.michaelszymczak.sample.sockets.events.EventsListener;
+import com.michaelszymczak.sample.sockets.events.TransportEvent;
+import com.michaelszymczak.sample.sockets.events.TransportEventsListener;
 
-public class Events implements EventsListener
+public class TransportEvents implements TransportEventsListener
 {
-    private final List<Event> events = new ArrayList<>();
+    private final List<TransportEvent> events = new ArrayList<>();
 
     @Override
-    public void onEvent(final Event event)
+    public void onEvent(final TransportEvent event)
     {
         events.add(event);
     }
 
-    public List<Event> events()
+    public List<TransportEvent> events()
     {
         return new ArrayList<>(events);
     }

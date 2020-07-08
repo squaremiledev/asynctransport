@@ -5,19 +5,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.michaelszymczak.sample.sockets.events.CommandFailed;
-import com.michaelszymczak.sample.sockets.events.Event;
 import com.michaelszymczak.sample.sockets.events.StartedListening;
 import com.michaelszymczak.sample.sockets.events.StoppedListening;
+import com.michaelszymczak.sample.sockets.events.TransportEvent;
 
 public class SocketApi implements AutoCloseable
 {
     private final List<Acceptor> acceptors = new ArrayList<>(10);
     private final SessionIdSource sessionIdSource = new SessionIdSource();
 
-    Event listen(final long currentRequestId, final int serverPort)
+    TransportEvent listen(final long commandId, final int serverPort)
     {
         final long sessionId = sessionIdSource.newId();
-        final Acceptor acceptor = new Acceptor(sessionId);
+        final Acceptor acceptor = new Acceptor(serverPort);
         try
         {
             acceptor.listen(serverPort);
@@ -25,25 +25,25 @@ public class SocketApi implements AutoCloseable
         catch (IOException e)
         {
             Resources.close(acceptor);
-            return new CommandFailed(currentRequestId, sessionId, e.getMessage());
+            return new CommandFailed(commandId, serverPort, e.getMessage());
 
 
         }
         acceptors.add(acceptor);
-        return new StartedListening(currentRequestId, sessionId);
+        return new StartedListening(commandId, serverPort);
     }
 
-    Event stopListening(final long commandId, final long listeningSessionId)
+    TransportEvent stopListening(final long commandId, final int port)
     {
         for (int k = 0; k < acceptors.size(); k++)
         {
-            if (acceptors.get(k).id() == listeningSessionId)
+            if (acceptors.get(k).id() == port)
             {
                 Resources.close(acceptors.get(k));
-                return new StoppedListening(commandId, listeningSessionId);
+                return new StoppedListening(commandId, port);
             }
         }
-        return new CommandFailed(commandId, listeningSessionId, "");
+        return new CommandFailed(commandId, port, "");
     }
 
     public void doWork()

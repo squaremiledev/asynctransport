@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets.commands;
 
-public interface Command
+public interface TransportCommand
 {
     long commandId();
 }

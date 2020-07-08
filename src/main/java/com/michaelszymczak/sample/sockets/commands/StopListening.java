@@ -1,14 +1,14 @@
 package com.michaelszymczak.sample.sockets.commands;
 
-public class StopListening implements Command
+public class StopListening implements TransportCommand
 {
     private final int commandId;
-    private final long sessionId;
+    private final int port;
 
-    public StopListening(final int commandId, final long sessionId)
+    public StopListening(final int commandId, final int port)
     {
         this.commandId = commandId;
-        this.sessionId = sessionId;
+        this.port = port;
     }
 
     @Override
@@ -17,8 +17,8 @@ public class StopListening implements Command
         return commandId;
     }
 
-    public long sessionId()
+    public int port()
     {
-        return sessionId;
+        return port;
     }
 }

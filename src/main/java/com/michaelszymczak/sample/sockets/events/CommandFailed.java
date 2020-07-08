@@ -1,15 +1,15 @@
 package com.michaelszymczak.sample.sockets.events;
 
-public class CommandFailed implements Event
+public class CommandFailed implements TransportEvent
 {
     private final long commandId;
-    private final long sessionId;
+    private final int port;
     private final String details;
 
-    public CommandFailed(final long commandId, final long sessionId, final String details)
+    public CommandFailed(final long commandId, final int port, final String details)
     {
         this.commandId = commandId;
-        this.sessionId = sessionId;
+        this.port = port;
         this.details = details;
     }
 
@@ -20,8 +20,8 @@ public class CommandFailed implements Event
     }
 
     @Override
-    public long sessionId()
+    public int port()
     {
-        return sessionId;
+        return port;
     }
 }

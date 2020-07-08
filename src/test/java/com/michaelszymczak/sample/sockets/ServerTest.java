@@ -9,13 +9,13 @@ import java.util.List;
 import com.michaelszymczak.sample.sockets.commands.Listen;
 import com.michaelszymczak.sample.sockets.commands.StopListening;
 import com.michaelszymczak.sample.sockets.events.CommandFailed;
-import com.michaelszymczak.sample.sockets.events.Event;
 import com.michaelszymczak.sample.sockets.events.StartedListening;
 import com.michaelszymczak.sample.sockets.events.StoppedListening;
+import com.michaelszymczak.sample.sockets.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
-import com.michaelszymczak.sample.sockets.support.Events;
 import com.michaelszymczak.sample.sockets.support.ReadingClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
+import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
 import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.Test;
@@ -32,23 +32,23 @@ import static com.michaelszymczak.sample.sockets.support.ServerRun.startServer;
 class ServerTest
 {
 
-    private Events events = new Events();
+    private TransportEvents events = new TransportEvents();
 
     @Test
     void shouldAcceptConnections()
     {
         // Given
-        runTest((reactiveConnections, client) ->
+        runTest((transport, client) ->
                 {
                     // When
                     final int port = freePort();
-                    reactiveConnections.handle(new Listen(7, port));
+                    transport.handle(new Listen(7, port));
 
                     // Then
                     final StartedListening event = events.last(StartedListening.class);
-                    assertEquals(0, event.sessionId());
+                    assertEquals(port, event.port());
                     assertEquals(7, event.commandId());
-                    assertEventsEquals(events.events(), new StartedListening(7, 0));
+                    assertEventsEquals(events.events(), new StartedListening(7, port));
                     client.connectedTo(port);
                 }
         );
@@ -57,18 +57,18 @@ class ServerTest
     @Test
     void shouldNotAcceptIfNotAsked()
     {
-        runTest((reactiveConnections, client) -> assertThrows(ConnectException.class, () -> client.connectedTo(freePort())));
+        runTest((transport, client) -> assertThrows(ConnectException.class, () -> client.connectedTo(freePort())));
     }
 
     // timeout required
     @Test
     void shouldNotAcceptIfListeningOnAnotherPort()
     {
-        runTest((reactiveConnections, client) ->
+        runTest((transport, client) ->
                 {
                     // When
                     final int port = freePort();
-                    reactiveConnections.handle(new Listen(0, port));
+                    transport.handle(new Listen(0, port));
 
                     // Then
                     assertThrows(ConnectException.class, () -> client.connectedTo(freePortOtherThan(port)));
@@ -79,14 +79,14 @@ class ServerTest
     @Test
     void shouldStopListeningWhenAsked()
     {
-        runTest((reactiveConnections, client) ->
+        runTest((transport, client) ->
                 {
                     // Given
                     final int port = freePort();
-                    reactiveConnections.handle(new Listen(0, port));
+                    transport.handle(new Listen(0, port));
 
                     // When
-                    reactiveConnections.handle(new StopListening(9, events.last(StartedListening.class).sessionId()));
+                    transport.handle(new StopListening(9, port));
 
                     // Then
                     assertThrows(ConnectException.class, () -> client.connectedTo(port));
@@ -97,19 +97,19 @@ class ServerTest
     @Test
     void shouldIgnoreStopListeningCommandForNonExistingRequest()
     {
-        runTest((reactiveConnections, client) ->
+        runTest((transport, client) ->
                 {
                     // Given
                     final int port = freePort();
-                    reactiveConnections.handle(new Listen(2, port));
-                    final long lastSessionId = events.last(StartedListening.class).sessionId();
+                    final int anotherPort = freePortOtherThan(port);
+                    transport.handle(new Listen(2, port));
 
                     // When
-                    reactiveConnections.handle(new StopListening(4, lastSessionId + 1));
+                    transport.handle(new StopListening(4, anotherPort));
 
                     // Then
                     assertThat(events.last(CommandFailed.class).commandId()).isEqualTo(4);
-                    assertThat(events.last(CommandFailed.class).sessionId()).isEqualTo(lastSessionId + 1);
+                    assertThat(events.last(CommandFailed.class).port()).isEqualTo(anotherPort);
                     client.connectedTo(port);
                 }
         );
@@ -120,18 +120,18 @@ class ServerTest
     {
         try
         {
-            final ReactiveConnections reactiveConnections = new ReactiveConnections(events);
+            final Transport transport = new Transport(events);
             try (
-                    ServerRun ignored = startServer(new DelegatingServer(reactiveConnections));
+                    ServerRun ignored = startServer(new DelegatingServer(transport));
                     ReadingClient client1 = new ReadingClient();
                     ReadingClient client2 = new ReadingClient()
             )
             {
                 // When
                 final int port1 = freePort();
-                reactiveConnections.handle(new Listen(0, port1));
+                transport.handle(new Listen(0, port1));
                 final int port2 = freePortOtherThan(port1);
-                reactiveConnections.handle(new Listen(1, port2));
+                transport.handle(new Listen(1, port2));
 
                 // Then
                 client1.connectedTo(port1);
@@ -149,9 +149,9 @@ class ServerTest
     {
         try
         {
-            final ReactiveConnections reactiveConnections = new ReactiveConnections(events);
+            final Transport transport = new Transport(events);
             try (
-                    ServerRun ignored = startServer(new DelegatingServer(reactiveConnections));
+                    ServerRun ignored = startServer(new DelegatingServer(transport));
                     ReadingClient client1 = new ReadingClient();
                     ReadingClient client2 = new ReadingClient();
                     ReadingClient client3 = new ReadingClient()
@@ -159,24 +159,24 @@ class ServerTest
             {
                 // Given
                 final int port1 = freePort();
-                reactiveConnections.handle(new Listen(5, port1));
+                transport.handle(new Listen(5, port1));
                 final int port2 = freePortOtherThan(port1);
-                reactiveConnections.handle(new Listen(6, port2));
+                transport.handle(new Listen(6, port2));
                 final int port3 = freePortOtherThan(port1, port2);
-                reactiveConnections.handle(new Listen(7, port3));
+                transport.handle(new Listen(7, port3));
                 assertEventsEquals(
                         events.events(),
-                        new StartedListening(5, 0),
-                        new StartedListening(6, 1),
-                        new StartedListening(7, 2)
+                        new StartedListening(5, port1),
+                        new StartedListening(6, port2),
+                        new StartedListening(7, port3)
                 );
 
                 // When
-                reactiveConnections.handle(new StopListening(9, 1));
+                transport.handle(new StopListening(9, port2));
 
                 // Then
                 assertThat(events.last(StoppedListening.class).commandId()).isEqualTo(9);
-                assertThat(events.last(StoppedListening.class).sessionId()).isEqualTo(1);
+                assertThat(events.last(StoppedListening.class).port()).isEqualTo(port2);
                 client1.connectedTo(port1);
                 assertThrows(ConnectException.class, () -> client2.connectedTo(port2));
                 client3.connectedTo(port3);
@@ -193,13 +193,13 @@ class ServerTest
     {
         try
         {
-            final ReactiveConnections reactiveConnections = new ReactiveConnections(events);
+            final Transport transport = new Transport(events);
             try (
-                    ServerRun ignored = startServer(new DelegatingServer(reactiveConnections));
+                    ServerRun ignored = startServer(new DelegatingServer(transport));
                     ReadingClient client = new ReadingClient()
             )
             {
-                testScenario.test(reactiveConnections, client);
+                testScenario.test(transport, client);
             }
         }
         catch (Exception e)
@@ -209,7 +209,7 @@ class ServerTest
     }
 
 
-    private void assertEventsEquals(final List<Event> actualEvents, final Event... expectedEvents)
+    private void assertEventsEquals(final List<TransportEvent> actualEvents, final TransportEvent... expectedEvents)
     {
         final RecursiveComparisonConfiguration recursiveComparisonConfiguration = new RecursiveComparisonConfiguration();
         recursiveComparisonConfiguration.strictTypeChecking(true);
@@ -221,7 +221,7 @@ class ServerTest
 
     interface TestScenario
     {
-        void test(ReactiveConnections reactiveConnections, ReadingClient client) throws IOException;
+        void test(Transport transport, ReadingClient client) throws IOException;
     }
 
 }

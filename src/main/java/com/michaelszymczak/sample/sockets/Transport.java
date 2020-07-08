@@ -1,32 +1,32 @@
 package com.michaelszymczak.sample.sockets;
 
-import com.michaelszymczak.sample.sockets.commands.Command;
 import com.michaelszymczak.sample.sockets.commands.Listen;
 import com.michaelszymczak.sample.sockets.commands.StopListening;
-import com.michaelszymczak.sample.sockets.events.EventsListener;
+import com.michaelszymczak.sample.sockets.commands.TransportCommand;
+import com.michaelszymczak.sample.sockets.events.TransportEventsListener;
 
-public class ReactiveConnections implements AutoCloseable
+public class Transport implements AutoCloseable
 {
-    private final EventsListener eventsListener;
+    private final TransportEventsListener transportEventsListener;
     private SocketApi socketApi;
 
-    public ReactiveConnections(final EventsListener eventsListener)
+    public Transport(final TransportEventsListener transportEventsListener)
     {
         this.socketApi = new SocketApi();
-        this.eventsListener = eventsListener;
+        this.transportEventsListener = transportEventsListener;
     }
 
-    public void handle(final Command command)
+    public void handle(final TransportCommand command)
     {
         if (command instanceof Listen)
         {
             final Listen cmd = (Listen)command;
-            eventsListener.onEvent(socketApi.listen(cmd.commandId(), cmd.port()));
+            transportEventsListener.onEvent(socketApi.listen(cmd.commandId(), cmd.port()));
         }
         if (command instanceof StopListening)
         {
             final StopListening cmd = (StopListening)command;
-            eventsListener.onEvent(socketApi.stopListening(cmd.commandId(), cmd.sessionId()));
+            transportEventsListener.onEvent(socketApi.stopListening(cmd.commandId(), cmd.port()));
         }
     }
 

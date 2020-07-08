@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets.commands;
 
-public class Listen implements Command
+public class Listen implements TransportCommand
 {
     private final int port;
     private final int commandId;
