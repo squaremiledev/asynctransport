@@ -1,11 +1,11 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-public class ConnectionEstablished implements TransportEvent
+public class ConnectionAccepted implements TransportEvent
 {
     private final int port;
     private final long commandId;
 
-    public ConnectionEstablished(final int port, final long commandId)
+    public ConnectionAccepted(final int port, final long commandId)
     {
         this.port = port;
         this.commandId = commandId;
@@ -26,7 +26,7 @@ public class ConnectionEstablished implements TransportEvent
     @Override
     public String toString()
     {
-        return "ConnectionEstablished{" +
+        return "ConnectionAccepted{" +
                "port=" + port +
                ", commandId=" + commandId +
                '}';

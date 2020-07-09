@@ -3,7 +3,7 @@ package com.michaelszymczak.sample.sockets;
 import java.io.IOException;
 
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
-import com.michaelszymczak.sample.sockets.api.events.ConnectionEstablished;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
@@ -35,7 +35,7 @@ class ConnectingTransportTest
                 .untilCompleted(() -> new SampleClient().connectedTo(port));
 
         // Then
-        assertSameSequence(events.all(ConnectionEstablished.class), new ConnectionEstablished(port, 1));
+        assertSameSequence(events.all(ConnectionAccepted.class), new ConnectionAccepted(port, 1));
     }
 
 }

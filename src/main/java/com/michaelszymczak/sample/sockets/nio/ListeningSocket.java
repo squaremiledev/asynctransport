@@ -7,7 +7,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 
 import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
-import com.michaelszymczak.sample.sockets.api.events.ConnectionEstablished;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 
 public class ListeningSocket implements AutoCloseable
 {
@@ -42,7 +42,7 @@ public class ListeningSocket implements AutoCloseable
     public TransportEvent acceptConnection() throws IOException
     {
         serverSocketChannel.accept();
-        return new ConnectionEstablished(port, commandIdThatTriggeredListening);
+        return new ConnectionAccepted(port, commandIdThatTriggeredListening);
     }
 
     @Override
