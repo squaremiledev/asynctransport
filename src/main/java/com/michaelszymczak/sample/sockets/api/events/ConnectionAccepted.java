@@ -5,12 +5,14 @@ public class ConnectionAccepted implements TransportEvent
     private final int port;
     private final long commandId;
     private final int remotePort;
+    private final long connectionId;
 
-    public ConnectionAccepted(final int port, final long commandId, final int remotePort)
+    public ConnectionAccepted(final int port, final long commandId, final int remotePort, final long connectionId)
     {
         this.port = port;
         this.commandId = commandId;
         this.remotePort = remotePort;
+        this.connectionId = connectionId;
     }
 
     @Override
@@ -30,6 +32,11 @@ public class ConnectionAccepted implements TransportEvent
         return remotePort;
     }
 
+    public long connectionId()
+    {
+        return connectionId;
+    }
+
     @Override
     public String toString()
     {
@@ -37,6 +44,7 @@ public class ConnectionAccepted implements TransportEvent
                "port=" + port +
                ", commandId=" + commandId +
                ", remotePort=" + remotePort +
+               ", connectionId=" + connectionId +
                '}';
     }
 }

@@ -14,14 +14,16 @@ public class ListeningSocket implements AutoCloseable
 {
     private final int port;
     private final long commandIdThatTriggeredListening;
+    private final ConnectionIdSource connectionIdSource;
     private ServerSocketChannel serverSocketChannel;
     private Selector selector;
 
-    ListeningSocket(final int port, final long commandIdThatTriggeredListening, final Selector selector)
+    ListeningSocket(final int port, final long commandIdThatTriggeredListening, final Selector selector, final ConnectionIdSource connectionIdSource)
     {
         this.port = port;
         this.commandIdThatTriggeredListening = commandIdThatTriggeredListening;
         this.selector = selector;
+        this.connectionIdSource = connectionIdSource;
     }
 
     int port()
@@ -43,7 +45,12 @@ public class ListeningSocket implements AutoCloseable
     public TransportEvent acceptConnection() throws IOException
     {
         final Socket socket = serverSocketChannel.accept().socket();
-        return new ConnectionAccepted(socket.getLocalPort(), commandIdThatTriggeredListening, socket.getPort());
+        return new ConnectionAccepted(
+                socket.getLocalPort(),
+                commandIdThatTriggeredListening,
+                socket.getPort(),
+                connectionIdSource.newId()
+        );
     }
 
     @Override

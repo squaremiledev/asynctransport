@@ -3,10 +3,10 @@ package com.michaelszymczak.sample.sockets.nio;
 import java.io.IOException;
 
 import com.michaelszymczak.sample.sockets.api.Transport;
-import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
+import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 
 public class NIOBackedTransport implements AutoCloseable, Transport
 {
@@ -15,7 +15,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport
 
     public NIOBackedTransport(final TransportEventsListener transportEventsListener) throws IOException
     {
-        this.socketApi = new SocketApi(transportEventsListener);
+        this.socketApi = new SocketApi(transportEventsListener, new ConnectionIdSource());
         this.transportEventsListener = transportEventsListener;
     }
 

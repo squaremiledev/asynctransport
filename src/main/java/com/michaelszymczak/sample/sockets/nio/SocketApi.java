@@ -7,28 +7,31 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
+import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 
 public class SocketApi implements AutoCloseable
 {
     private final List<ListeningSocket> listeningSockets;
     private final Selector listeningSelector;
     private final TransportEventsListener transportEventsListener;
+    private ConnectionIdSource connectionIdSource;
 
-    public SocketApi(final TransportEventsListener transportEventsListener) throws IOException
+    public SocketApi(final TransportEventsListener transportEventsListener, final ConnectionIdSource connectionIdSource) throws IOException
     {
         this.transportEventsListener = transportEventsListener;
         this.listeningSelector = Selector.open();
         this.listeningSockets = new ArrayList<>(10);
+        this.connectionIdSource = connectionIdSource;
     }
 
     TransportEvent listen(final int port, final long commandId)
     {
-        final ListeningSocket listeningSocket = new ListeningSocket(port, commandId, listeningSelector);
+
+        final ListeningSocket listeningSocket = new ListeningSocket(port, commandId, listeningSelector, connectionIdSource);
         try
         {
             // from now on you can retrieve listening socket from the selection key key
