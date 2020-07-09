@@ -28,14 +28,15 @@ class ConnectingTransportTest
 
         // Given
         transport.handle(new Listen(1, freePort()));
-        final int port = events.last(StartedListening.class).port();
+        final int serverPort = events.last(StartedListening.class).port();
 
         // When
+        final int clientPort = freePort();
         runner.keepRunning(transport::doWork)
-                .untilCompleted(() -> new SampleClient().connectedTo(port));
+                .untilCompleted(() -> new SampleClient().connectedTo(serverPort, clientPort));
 
         // Then
-        assertSameSequence(events.all(ConnectionAccepted.class), new ConnectionAccepted(port, 1));
+        assertSameSequence(events.all(ConnectionAccepted.class), new ConnectionAccepted(serverPort, 1, clientPort));
     }
 
 }

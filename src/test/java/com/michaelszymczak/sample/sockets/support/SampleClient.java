@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import com.michaelszymczak.sample.sockets.nio.Resources;
+
 public class SampleClient implements AutoCloseable
 {
 
@@ -18,6 +20,15 @@ public class SampleClient implements AutoCloseable
 
     public SampleClient connectedTo(final int port) throws IOException
     {
+        return connectedTo(port, -1);
+    }
+
+    public SampleClient connectedTo(final int port, final int localPort) throws IOException
+    {
+        if (localPort != -1)
+        {
+            socket.bind(new InetSocketAddress("127.0.0.1", localPort));
+        }
         socket.connect(new InetSocketAddress("127.0.0.1", port), timeoutMs);
         socket.setSoTimeout(timeoutMs);
         return this;
@@ -25,6 +36,10 @@ public class SampleClient implements AutoCloseable
 
     public byte[] read(final int contentSize, final int allocatedSize) throws IOException
     {
+        if (!socket.isConnected())
+        {
+            throw new IllegalStateException("Client socket not connected");
+        }
         int bytesRead = 0;
         final byte[] receivedContent = new byte[allocatedSize];
         do
@@ -37,8 +52,8 @@ public class SampleClient implements AutoCloseable
     }
 
     @Override
-    public void close() throws IOException
+    public void close()
     {
-        socket.close();
+        Resources.close(socket);
     }
 }

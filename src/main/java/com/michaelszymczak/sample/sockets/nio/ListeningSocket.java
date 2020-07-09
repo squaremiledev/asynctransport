@@ -2,18 +2,19 @@ package com.michaelszymczak.sample.sockets.nio;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 
-import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
+import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 
 public class ListeningSocket implements AutoCloseable
 {
     private final int port;
-    private ServerSocketChannel serverSocketChannel;
     private final long commandIdThatTriggeredListening;
+    private ServerSocketChannel serverSocketChannel;
     private Selector selector;
 
     ListeningSocket(final int port, final long commandIdThatTriggeredListening, final Selector selector)
@@ -41,8 +42,8 @@ public class ListeningSocket implements AutoCloseable
 
     public TransportEvent acceptConnection() throws IOException
     {
-        serverSocketChannel.accept();
-        return new ConnectionAccepted(port, commandIdThatTriggeredListening);
+        final Socket socket = serverSocketChannel.accept().socket();
+        return new ConnectionAccepted(socket.getLocalPort(), commandIdThatTriggeredListening, socket.getPort());
     }
 
     @Override
@@ -58,6 +59,7 @@ public class ListeningSocket implements AutoCloseable
         return "ListeningSocket{" +
                "port=" + port +
                ", serverSocketChannel=" + serverSocketChannel +
+               ", commandIdThatTriggeredListening=" + commandIdThatTriggeredListening +
                ", selector=" + selector +
                '}';
     }
