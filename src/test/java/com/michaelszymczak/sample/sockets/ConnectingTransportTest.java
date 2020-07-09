@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
@@ -11,7 +12,6 @@ import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,21 +67,21 @@ class ConnectingTransportTest
     }
 
     @Test
-    @Disabled
-    void shouldSendSomeData() throws IOException
+    void shouldSendSomeDataTODO() throws IOException
     {
         final NIOBackedTransport transport = new NIOBackedTransport(events);
 
         // Given
         transport.handle(new Listen(1, freePort()));
         final int serverPort = events.last(StartedListening.class).port();
-        runner.keepRunning(transport::doWork).untilCompleted(() -> new SampleClient().connectedTo(serverPort));
+        final SampleClient client = new SampleClient();
+        runner.keepRunning(transport::doWork).untilCompleted(() -> client.connectedTo(serverPort));
         final ConnectionAccepted connectionAccepted = events.last(ConnectionAccepted.class);
 
-        // When
-//        transport.handle(new SendData(connectionAccepted.port(), connectionAccepted.connectionId()));
-//
-//        // Then
-//        assertSameSequence(events.all(ConnectionAccepted.class), new ConnectionAccepted(serverPort, 1, clientPort));
+        //When
+        transport.handle(new SendData(connectionAccepted.port(), connectionAccepted.connectionId()));
+
+        // Then
+        // TODO: finish the test
     }
 }
