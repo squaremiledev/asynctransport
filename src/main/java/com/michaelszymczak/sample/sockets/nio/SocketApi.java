@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets.nio;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class SocketApi implements AutoCloseable
     private final Selector listeningSelector;
     private final TransportEventsListener transportEventsListener;
     private ConnectionIdSource connectionIdSource;
+    private Socket connectedSocket;
 
     public SocketApi(final TransportEventsListener transportEventsListener, final ConnectionIdSource connectionIdSource) throws IOException
     {
@@ -31,7 +33,7 @@ public class SocketApi implements AutoCloseable
     TransportEvent listen(final int port, final long commandId)
     {
 
-        final ListeningSocket listeningSocket = new ListeningSocket(port, commandId, listeningSelector, connectionIdSource);
+        final ListeningSocket listeningSocket = new ListeningSocket(port, commandId, listeningSelector, connectionIdSource, transportEventsListener);
         try
         {
             // from now on you can retrieve listening socket from the selection key key
@@ -82,7 +84,8 @@ public class SocketApi implements AutoCloseable
                     }
                     if (key.isAcceptable())
                     {
-                        transportEventsListener.onEvent(((ListeningSocket)key.attachment()).acceptConnection());
+                        // TODO: there will be more than one
+                        this.connectedSocket = ((ListeningSocket)key.attachment()).acceptConnection();
                     }
                 }
             }
@@ -107,5 +110,6 @@ public class SocketApi implements AutoCloseable
             Resources.close(listeningSocket);
         }
         Resources.close(listeningSelector);
+        Resources.close(connectedSocket);
     }
 }

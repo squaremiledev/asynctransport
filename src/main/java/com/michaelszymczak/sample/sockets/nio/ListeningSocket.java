@@ -7,23 +7,31 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 
+import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
-import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 
 public class ListeningSocket implements AutoCloseable
 {
     private final int port;
     private final long commandIdThatTriggeredListening;
     private final ConnectionIdSource connectionIdSource;
+    private final TransportEventsListener transportEventsListener;
     private ServerSocketChannel serverSocketChannel;
     private Selector selector;
 
-    ListeningSocket(final int port, final long commandIdThatTriggeredListening, final Selector selector, final ConnectionIdSource connectionIdSource)
+    ListeningSocket(
+            final int port,
+            final long commandIdThatTriggeredListening,
+            final Selector selector,
+            final ConnectionIdSource connectionIdSource,
+            final TransportEventsListener transportEventsListener
+    )
     {
         this.port = port;
         this.commandIdThatTriggeredListening = commandIdThatTriggeredListening;
         this.selector = selector;
         this.connectionIdSource = connectionIdSource;
+        this.transportEventsListener = transportEventsListener;
     }
 
     int port()
@@ -42,15 +50,16 @@ public class ListeningSocket implements AutoCloseable
         return selectionKey;
     }
 
-    public TransportEvent acceptConnection() throws IOException
+    public Socket acceptConnection() throws IOException
     {
         final Socket socket = serverSocketChannel.accept().socket();
-        return new ConnectionAccepted(
+        transportEventsListener.onEvent(new ConnectionAccepted(
                 socket.getLocalPort(),
                 commandIdThatTriggeredListening,
                 socket.getPort(),
                 connectionIdSource.newId()
-        );
+        ));
+        return socket;
     }
 
     @Override

@@ -46,7 +46,8 @@ public class BackgroundRunner
                                            throw new RuntimeException(e);
                                        }
                                    });
-            while (!progress.hasCompleted())
+            final long startTimeMs = System.currentTimeMillis();
+            while (!progress.hasCompleted() && startTimeMs + 10 > System.currentTimeMillis())
             {
                 try
                 {

@@ -38,8 +38,13 @@ class ConnectingTransportTest
 
         // When
         final int clientPort = freePort();
-        runner.keepRunning(transport::doWork)
-                .untilCompleted(() -> new SampleClient().connectedTo(serverPort, clientPort));
+        runner.keepRunning(transport::doWork).untilCompleted(() -> new SampleClient().connectedTo(serverPort, clientPort));
+        // TODO: hide this logic
+        final long startTime = System.currentTimeMillis();
+        while (events.all(ConnectionAccepted.class).size() < 1 && startTime + 100 > System.currentTimeMillis())
+        {
+            transport.doWork();
+        }
 
         // Then
         assertSameSequence(events.all(ConnectionAccepted.class), new ConnectionAccepted(serverPort, 1, clientPort, 0));
@@ -58,6 +63,12 @@ class ConnectingTransportTest
         final BackgroundRunner.TaskToRun clientConnectsTask = () -> new SampleClient().connectedTo(serverPort);
         runner.keepRunning(transport::doWork).untilCompleted(clientConnectsTask);
         runner.keepRunning(transport::doWork).untilCompleted(clientConnectsTask);
+        // TODO: hide this logic
+        final long startTime = System.currentTimeMillis();
+        while (events.all(ConnectionAccepted.class).size() < 2 && startTime + 100 > System.currentTimeMillis())
+        {
+            transport.doWork();
+        }
 
         // Then
         final List<ConnectionAccepted> events = this.events.all(ConnectionAccepted.class);
