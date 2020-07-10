@@ -14,6 +14,9 @@ import com.michaelszymczak.sample.sockets.support.TransportEvents;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+
+import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
+
 class DataTransferTest
 {
     private final TransportEvents events = new TransportEvents();
@@ -26,7 +29,7 @@ class DataTransferTest
         final NIOBackedTransport transport = new NIOBackedTransport(events);
 
         // Given
-        transport.handle(new Listen(1, 5544));
+        transport.handle(new Listen(1, freePort()));
         final int serverPort = events.last(StartedListening.class).port();
         final SampleClient client = new SampleClient();
         runner.keepRunning(transport::doWork).untilCompleted(() -> client.connectedTo(serverPort));

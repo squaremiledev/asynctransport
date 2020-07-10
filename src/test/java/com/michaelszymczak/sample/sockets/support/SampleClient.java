@@ -37,10 +37,6 @@ public class SampleClient implements AutoCloseable
 
     public byte[] read(final int contentSize, final int allocatedSize) throws IOException
     {
-        if (!socket.isConnected())
-        {
-            throw new IllegalStateException("Client socket not connected");
-        }
         int bytesRead = 0;
         final byte[] receivedContent = new byte[allocatedSize];
         do
@@ -54,11 +50,12 @@ public class SampleClient implements AutoCloseable
 
     public void write() throws IOException
     {
-        if (!socket.isConnected())
-        {
-            throw new IllegalStateException("Client socket not connected");
-        }
         socket.getOutputStream().write(new byte[10]);
+    }
+
+    public boolean hasServerClosedConnection() throws IOException
+    {
+        return socket.getInputStream().read() == -1;
     }
 
     @Override

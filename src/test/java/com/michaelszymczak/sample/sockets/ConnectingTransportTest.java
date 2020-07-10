@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.List;
 
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
@@ -12,7 +13,6 @@ import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,23 +80,34 @@ class ConnectingTransportTest
     }
 
     @Test
-    @Disabled
     void shouldCloseConnection() throws IOException
     {
         final NIOBackedTransport transport = new NIOBackedTransport(events);
 
         // Given
-        transport.handle(new Listen(9, freePort()));
+        transport.handle(new Listen(9, 5544));
+        long startTime1 = System.currentTimeMillis();
+        // TODO: hide this logic
+        while (events.all(StartedListening.class).size() < 1 && startTime1 + 100 > System.currentTimeMillis())
+        {
+            transport.doWork();
+        }
         final int serverPort = events.last(StartedListening.class).port();
         final SampleClient client = new SampleClient();
+        assertThrows(SocketException.class, client::write); // throws if not connected when writing
         runner.keepRunning(transport::doWork).untilCompleted(() -> client.connectedTo(serverPort));
+        // TODO: hide this logic
+        long startTime2 = System.currentTimeMillis();
+        while (events.all(ConnectionAccepted.class).size() < 1 && startTime2 + 100 > System.currentTimeMillis())
+        {
+            transport.doWork();
+        }
         final ConnectionAccepted connectionAccepted = events.last(ConnectionAccepted.class);
 
         // When
         transport.handle(new CloseConnection(connectionAccepted.port(), connectionAccepted.connectionId()));
 
         // Then
-        assertThrows(Exception.class, client::write);
-//        runner.keepRunning(transport::doWork).untilCompleted(client::write);
+        assertThat(client.hasServerClosedConnection()).isTrue();
     }
 }

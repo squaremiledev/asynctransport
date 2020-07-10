@@ -36,7 +36,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport
         else if (command instanceof CloseConnection)
         {
             final CloseConnection cmd = (CloseConnection)command;
-            transportEventsListener.onEvent(socketApi.closeConnection(cmd.port(), cmd.connectionId()));
+            socketApi.closeConnection(cmd.port(), cmd.connectionId());
         }
         else
         {

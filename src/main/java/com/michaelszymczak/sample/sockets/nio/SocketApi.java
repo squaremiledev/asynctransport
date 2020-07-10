@@ -96,9 +96,19 @@ public class SocketApi implements AutoCloseable
         }
     }
 
-    public TransportEvent closeConnection(final int port, final long connectionId)
+    public void closeConnection(final int port, final long connectionId)
     {
-        return null;
+        if (connectedSocket != null)
+        {
+            try
+            {
+                connectedSocket.close();
+            }
+            catch (Exception e)
+            {
+                transportEventsListener.onEvent(new CommandFailed(port, -1, e.getMessage()));
+            }
+        }
     }
 
     @Override
