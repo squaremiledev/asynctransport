@@ -3,6 +3,7 @@ package com.michaelszymczak.sample.sockets.support;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 import com.michaelszymczak.sample.sockets.nio.Resources;
 
@@ -12,10 +13,11 @@ public class SampleClient implements AutoCloseable
     private final Socket socket;
     private final int timeoutMs;
 
-    public SampleClient()
+    public SampleClient() throws SocketException
     {
         this.timeoutMs = 100;
         this.socket = new Socket();
+        this.socket.setSoTimeout(timeoutMs);
     }
 
     public SampleClient connectedTo(final int port) throws IOException
@@ -30,7 +32,6 @@ public class SampleClient implements AutoCloseable
             socket.bind(new InetSocketAddress("127.0.0.1", localPort));
         }
         socket.connect(new InetSocketAddress("127.0.0.1", port), timeoutMs);
-        socket.setSoTimeout(timeoutMs);
         return this;
     }
 
@@ -49,6 +50,15 @@ public class SampleClient implements AutoCloseable
         while (bytesRead < contentSize);
 
         return receivedContent;
+    }
+
+    public void write() throws IOException
+    {
+        if (!socket.isConnected())
+        {
+            throw new IllegalStateException("Client socket not connected");
+        }
+        socket.getOutputStream().write(new byte[10]);
     }
 
     @Override

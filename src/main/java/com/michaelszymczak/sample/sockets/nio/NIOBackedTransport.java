@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
@@ -27,10 +28,19 @@ public class NIOBackedTransport implements AutoCloseable, Transport
             final Listen cmd = (Listen)command;
             transportEventsListener.onEvent(socketApi.listen(cmd.port(), cmd.commandId()));
         }
-        if (command instanceof StopListening)
+        else if (command instanceof StopListening)
         {
             final StopListening cmd = (StopListening)command;
             transportEventsListener.onEvent(socketApi.stopListening(cmd.port(), cmd.commandId()));
+        }
+        else if (command instanceof CloseConnection)
+        {
+            final CloseConnection cmd = (CloseConnection)command;
+            transportEventsListener.onEvent(socketApi.closeConnection(cmd.port(), cmd.connectionId()));
+        }
+        else
+        {
+            throw new IllegalArgumentException();
         }
     }
 

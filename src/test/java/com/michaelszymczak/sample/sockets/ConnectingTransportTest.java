@@ -3,8 +3,8 @@ package com.michaelszymczak.sample.sockets;
 import java.io.IOException;
 import java.util.List;
 
+import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
-import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
@@ -12,9 +12,11 @@ import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 import static com.michaelszymczak.sample.sockets.support.Assertions.assertSameSequence;
@@ -67,21 +69,23 @@ class ConnectingTransportTest
     }
 
     @Test
-    void shouldSendSomeDataTODO() throws IOException
+    @Disabled
+    void shouldCloseConnection() throws IOException
     {
         final NIOBackedTransport transport = new NIOBackedTransport(events);
 
         // Given
-        transport.handle(new Listen(1, freePort()));
+        transport.handle(new Listen(9, freePort()));
         final int serverPort = events.last(StartedListening.class).port();
         final SampleClient client = new SampleClient();
         runner.keepRunning(transport::doWork).untilCompleted(() -> client.connectedTo(serverPort));
         final ConnectionAccepted connectionAccepted = events.last(ConnectionAccepted.class);
 
-        //When
-        transport.handle(new SendData(connectionAccepted.port(), connectionAccepted.connectionId()));
+        // When
+        transport.handle(new CloseConnection(connectionAccepted.port(), connectionAccepted.connectionId()));
 
         // Then
-        // TODO: finish the test
+        assertThrows(Exception.class, client::write);
+//        runner.keepRunning(transport::doWork).untilCompleted(client::write);
     }
 }

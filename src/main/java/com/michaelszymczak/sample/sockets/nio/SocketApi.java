@@ -93,6 +93,11 @@ public class SocketApi implements AutoCloseable
         }
     }
 
+    public TransportEvent closeConnection(final int port, final long connectionId)
+    {
+        return null;
+    }
+
     @Override
     public void close()
     {
