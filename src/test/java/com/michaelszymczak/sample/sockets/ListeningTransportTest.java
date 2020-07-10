@@ -75,6 +75,7 @@ class ListeningTransportTest
     }
 
     @Test
+        // TODO: this test fails after multiple runs - not releasing the port?
     void shouldStopListeningWhenAsked()
     {
         runTest((transport, client) ->

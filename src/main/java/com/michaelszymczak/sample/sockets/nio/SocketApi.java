@@ -32,7 +32,6 @@ public class SocketApi implements AutoCloseable
 
     TransportEvent listen(final int port, final long commandId)
     {
-
         final ListeningSocket listeningSocket = new ListeningSocket(port, commandId, listeningSelector, connectionIdSource, transportEventsListener);
         try
         {

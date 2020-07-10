@@ -66,7 +66,6 @@ public class ListeningSocket implements AutoCloseable
     public void close()
     {
         Resources.close(serverSocketChannel);
-        Resources.close(selector);
     }
 
     @Override

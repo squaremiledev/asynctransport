@@ -80,12 +80,13 @@ class ConnectingTransportTest
     }
 
     @Test
+        // TODO: this test fails eventually after multiple runs - maybe it's because of not releasing the port?
     void shouldCloseConnection() throws IOException
     {
         final NIOBackedTransport transport = new NIOBackedTransport(events);
 
         // Given
-        transport.handle(new Listen(9, 5544));
+        transport.handle(new Listen(9, freePort()));
         long startTime1 = System.currentTimeMillis();
         // TODO: hide this logic
         while (events.all(StartedListening.class).size() < 1 && startTime1 + 100 > System.currentTimeMillis())
