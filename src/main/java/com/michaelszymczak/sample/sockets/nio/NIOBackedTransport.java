@@ -6,6 +6,7 @@ import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 
@@ -37,6 +38,10 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         {
             final CloseConnection cmd = (CloseConnection)command;
             socketApi.closeConnection(cmd.port(), cmd.connectionId());
+        }
+        else if (command instanceof SendData)
+        {
+            // TODO: implement me
         }
         else
         {

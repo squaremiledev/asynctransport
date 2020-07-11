@@ -11,10 +11,10 @@ import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
+import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 
 class DataTransferTest
@@ -23,7 +23,6 @@ class DataTransferTest
     private final BackgroundRunner runner = new BackgroundRunner();
 
     @Test
-    @Disabled
     void shouldSendSomeData() throws IOException
     {
         final NIOBackedTransport transport = new NIOBackedTransport(events);
@@ -32,13 +31,14 @@ class DataTransferTest
         transport.handle(new Listen(1, freePort()));
         final int serverPort = events.last(StartedListening.class).port();
         final SampleClient client = new SampleClient();
-        runner.keepRunning(transport::work).untilCompletedWithin(() -> client.connectedTo(serverPort), 10);
+        runner.keepRunning(transport::work).untilCompleted(() -> client.connectedTo(serverPort));
+        workUntil(() -> !events.all(ConnectionAccepted.class).isEmpty(), transport);
         final ConnectionAccepted connectionAccepted = events.last(ConnectionAccepted.class);
 
         //When
         transport.handle(new SendData(connectionAccepted.port(), connectionAccepted.connectionId()));
 
-        runner.keepRunning(transport::work).untilCompletedWithin(client::write, 10);
+//        runner.keepRunning(transport::work).untilCompleted(() -> client.read(10, 11), 1000);
 
 //        transport.handle();
         // Then

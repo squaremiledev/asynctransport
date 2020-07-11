@@ -40,8 +40,8 @@ class ConnectingTransportTest
 
         // When
         final int clientPort = freePort();
-        runner.keepRunning(transport::work).untilCompletedWithin(() -> new SampleClient().connectedTo(serverPort, clientPort), 10);
-        workUntil(transport, events.all(ConnectionAccepted.class).size() < 1, 100);
+        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(serverPort, clientPort));
+        workUntil(() -> !events.all(ConnectionAccepted.class).isEmpty(), transport);
 
         // Then
         assertSameSequence(events.all(ConnectionAccepted.class), new ConnectionAccepted(serverPort, 1, clientPort, 0));
@@ -58,9 +58,9 @@ class ConnectingTransportTest
 
         // When
         final Workmen.ThrowingBlockingWorkman clientConnectsTask = () -> new SampleClient().connectedTo(serverPort);
-        runner.keepRunning(transport::work).untilCompletedWithin(clientConnectsTask, 10);
-        runner.keepRunning(transport::work).untilCompletedWithin(clientConnectsTask, 10);
-        workUntil(transport, events.all(ConnectionAccepted.class).size() < 2, 100);
+        runner.keepRunning(transport::work).untilCompleted(clientConnectsTask);
+        runner.keepRunning(transport::work).untilCompleted(clientConnectsTask);
+        workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);
 
         // Then
         final List<ConnectionAccepted> events = this.events.all(ConnectionAccepted.class);
@@ -78,12 +78,12 @@ class ConnectingTransportTest
 
         // Given
         transport.handle(new Listen(9, freePort()));
-        workUntil(transport, events.all(StartedListening.class).size() < 1, 100);
+        workUntil(() -> !events.all(StartedListening.class).isEmpty(), transport);
         final int serverPort = events.last(StartedListening.class).port();
         final SampleClient client = new SampleClient();
         assertThrows(SocketException.class, client::write); // throws if not connected when writing
-        runner.keepRunning(transport::work).untilCompletedWithin(() -> client.connectedTo(serverPort), 10);
-        workUntil(transport, events.all(ConnectionAccepted.class).size() < 1, 100);
+        runner.keepRunning(transport::work).untilCompleted(() -> client.connectedTo(serverPort));
+        workUntil(() -> !events.all(ConnectionAccepted.class).isEmpty(), transport);
         final ConnectionAccepted connectionAccepted = events.last(ConnectionAccepted.class);
 
         // When

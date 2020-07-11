@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import com.michaelszymczak.sample.sockets.nio.Workmen;
 
 
+import static com.michaelszymczak.sample.sockets.nio.Workmen.rethrowing;
 import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
 
 public class BackgroundRunner
@@ -26,16 +27,17 @@ public class BackgroundRunner
             this.taskToKeepRunningInTheSameThread = taskToKeepRunningInTheSameThread;
         }
 
-        public void untilCompletedWithin(final Workmen.ThrowingBlockingWorkman taskToRunOnceInBackground, final int timeoutMs)
+        public void untilCompleted(final Workmen.ThrowingBlockingWorkman taskToRunOnceInBackground)
         {
             final Progress progress = new Progress();
-            final Workmen.BlockingWorkman backgroundTask = Workmen.rethrowing((Workmen.ThrowingBlockingWorkman)() ->
-            {
-                taskToRunOnceInBackground.work();
-                progress.onReady();
-            });
+            final Workmen.BlockingWorkman backgroundTask = rethrowing(
+                    () ->
+                    {
+                        taskToRunOnceInBackground.work();
+                        progress.onReady();
+                    });
             executorService.submit(backgroundTask::work);
-            workUntil(taskToKeepRunningInTheSameThread, !progress.hasCompleted(), timeoutMs);
+            workUntil(progress::hasCompleted, taskToKeepRunningInTheSameThread);
         }
     }
 }

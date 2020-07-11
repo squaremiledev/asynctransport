@@ -161,6 +161,8 @@ class ListeningTransportTest
                 final int port1 = freePort();
                 final int port2 = freePortOtherThan(port1);
                 final int port3 = freePortOtherThan(port1, port2);
+                // sometimes one of the following assertions fail
+                // is it because there is still an open port from the previous test?
                 assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port1));
                 assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port2));
                 assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port3));
