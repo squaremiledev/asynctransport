@@ -18,6 +18,7 @@ import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
+import com.michaelszymczak.sample.sockets.connection.ConnectionRepository;
 
 public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.NonBlockingWorkman
 {
@@ -25,7 +26,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
     private final List<ListeningSocket> listeningSockets;
     private final Selector listeningSelector;
-    private Connection connection;
+    private final ConnectionRepository connectionRepository = new ConnectionRepository();
 
     public NIOBackedTransport(final TransportEventsListener transportEventsListener) throws IOException
     {
@@ -67,13 +68,13 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
 
     private void handleCommand(final ConnectionCommand command)
     {
-        if (connection.connectionId() != command.connectionId())
+        if (!connectionRepository.contains(command.connectionId()))
         {
             transportEventsListener.onEvent(new CommandFailed(command.port(), -1, "Connection id not found"));
             return;
         }
+        connectionRepository.findByConnectionId(command.connectionId()).handle(command);
 
-        connection.handle(command);
         if (command instanceof CloseConnection)
         {
             final CloseConnection cmd = (CloseConnection)command;
@@ -103,8 +104,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
                     }
                     if (key.isAcceptable())
                     {
-                        // TODO: there will be more than one
-                        this.connection = ((ListeningSocket)key.attachment()).acceptConnection();
+                        connectionRepository.add(((ListeningSocket)key.attachment()).acceptConnection());
                     }
                 }
             }
@@ -124,7 +124,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
             Resources.close(listeningSocket);
         }
         Resources.close(listeningSelector);
-        Resources.close(connection);
+        Resources.close(connectionRepository);
     }
 
     TransportEvent listen(final int port, final long commandId)
@@ -149,12 +149,11 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
 
     private void closeConnection(final int port, final long connectionId)
     {
-        // TODO: make use of commandId and connectionId or consider deleting arguments
-        if (connection != null)
+        if (connectionRepository.contains(connectionId))
         {
             try
             {
-                connection.close();
+                connectionRepository.findByConnectionId(connectionId).close();
             }
             catch (Exception e)
             {

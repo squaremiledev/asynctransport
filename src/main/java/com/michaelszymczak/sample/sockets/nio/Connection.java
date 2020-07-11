@@ -7,8 +7,9 @@ import java.nio.channels.SocketChannel;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
 
-public class Connection implements AutoCloseable
+public class Connection implements AutoCloseable, ConnectionAggregate
 {
     private final SocketChannel channel;
     private final int port;
@@ -23,11 +24,13 @@ public class Connection implements AutoCloseable
         this.channel = channel;
     }
 
+    @Override
     public int port()
     {
         return port;
     }
 
+    @Override
     public long connectionId()
     {
         return connectionId;
@@ -54,6 +57,7 @@ public class Connection implements AutoCloseable
         Resources.close(channel);
     }
 
+    @Override
     public void handle(final ConnectionCommand command)
     {
         // TODO: handle non existing port or connectionId
