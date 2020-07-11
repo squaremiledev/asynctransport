@@ -60,7 +60,7 @@ public class SocketApi implements AutoCloseable
                 return new StoppedListening(port, commandId);
             }
         }
-        return new CommandFailed(port, commandId, "");
+        return new CommandFailed(port, commandId, "No listening socket found on this port");
     }
 
     public void doWork()

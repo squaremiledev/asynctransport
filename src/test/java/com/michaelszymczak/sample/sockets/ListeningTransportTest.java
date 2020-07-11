@@ -75,19 +75,20 @@ class ListeningTransportTest
     }
 
     @Test
-        // TODO: this test fails after multiple runs - not releasing the port?
     void shouldStopListeningWhenAsked()
     {
         runTest((transport, client) ->
                 {
                     // Given
-                    final int port = freePort();
-                    transport.handle(new Listen(0, port));
+                    transport.handle(new Listen(0, freePort()));
+                    final int port = events.last(StartedListening.class).port();
 
                     // When
                     transport.handle(new StopListening(9, port));
 
                     // Then
+                    assertEquals(port, events.last(StoppedListening.class).port());
+                    assertEquals(9, events.last(StoppedListening.class).commandId());
                     assertThrows(ConnectException.class, () -> client.connectedTo(port));
                 }
         );
@@ -158,10 +159,14 @@ class ListeningTransportTest
             {
                 // Given
                 final int port1 = freePort();
-                transport.handle(new Listen(5, port1));
                 final int port2 = freePortOtherThan(port1);
-                transport.handle(new Listen(6, port2));
                 final int port3 = freePortOtherThan(port1, port2);
+                assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port1));
+                assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port2));
+                assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port3));
+
+                transport.handle(new Listen(5, port1));
+                transport.handle(new Listen(6, port2));
                 transport.handle(new Listen(7, port3));
                 assertSameSequence(events.events(), new StartedListening(port1, 5), new StartedListening(port2, 6), new StartedListening(port3, 7));
 

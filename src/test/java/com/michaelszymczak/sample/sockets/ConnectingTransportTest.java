@@ -80,7 +80,6 @@ class ConnectingTransportTest
     }
 
     @Test
-        // TODO: this test fails eventually after multiple runs - maybe it's because of not releasing the port?
     void shouldCloseConnection() throws IOException
     {
         final NIOBackedTransport transport = new NIOBackedTransport(events);
