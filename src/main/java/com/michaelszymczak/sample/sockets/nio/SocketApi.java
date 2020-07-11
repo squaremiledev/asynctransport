@@ -49,12 +49,12 @@ public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
         return new StartedListening(port, commandId);
     }
 
-    public void sendData(final int port, final long connectionId)
+    public void sendData(final int port, final long connectionId, final byte[] content)
     {
         // TODO: handle non existing port or connectionId or not connected socket
         try
         {
-            connectedSocket.write();
+            connectedSocket.write(content);
         }
         catch (IOException e)
         {

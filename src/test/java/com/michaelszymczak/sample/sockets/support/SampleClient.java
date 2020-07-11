@@ -10,12 +10,17 @@ import com.michaelszymczak.sample.sockets.nio.Resources;
 public class SampleClient implements AutoCloseable
 {
 
+    private static final ReadDataConsumer DEV_NULL = (data, length) ->
+    {
+
+    };
+
     private final Socket socket;
     private final int timeoutMs;
 
     public SampleClient() throws SocketException
     {
-        this.timeoutMs = 100;
+        this.timeoutMs = 1000;
         this.socket = new Socket();
         this.socket.setSoTimeout(timeoutMs);
     }
@@ -35,7 +40,17 @@ public class SampleClient implements AutoCloseable
         return this;
     }
 
+    public interface ReadDataConsumer
+    {
+        void consume(byte[] data, int length);
+    }
+
     public byte[] read(final int contentSize, final int allocatedSize) throws IOException
+    {
+        return read(contentSize, allocatedSize, DEV_NULL);
+    }
+
+    public byte[] read(final int contentSize, final int allocatedSize, final ReadDataConsumer dataConsumer) throws IOException
     {
         int bytesRead = 0;
         final byte[] receivedContent = new byte[allocatedSize];
@@ -44,6 +59,7 @@ public class SampleClient implements AutoCloseable
             bytesRead += socket.getInputStream().read(receivedContent);
         }
         while (bytesRead < contentSize);
+        dataConsumer.consume(receivedContent, bytesRead);
 
         return receivedContent;
     }

@@ -9,7 +9,7 @@ import static com.michaelszymczak.sample.sockets.support.RethrowingWorkman.rethr
 
 public class Foreman
 {
-    private static final int DEFAULT_TIMEOUT_MS = 100;
+    private static final int DEFAULT_TIMEOUT_MS = 1000;
 
     public static void workUntil(final BooleanSupplier condition, final Workmen.ThrowingNonBlockingWorkman workman)
     {

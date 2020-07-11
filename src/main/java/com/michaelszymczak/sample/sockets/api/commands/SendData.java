@@ -4,11 +4,13 @@ public class SendData implements TransportCommand
 {
     private final int port;
     private final long connectionId;
+    private final byte[] content;
 
-    public SendData(final int port, final long connectionId)
+    public SendData(final int port, final long connectionId, final byte[] content)
     {
         this.port = port;
         this.connectionId = connectionId;
+        this.content = content;
     }
 
     @Override
@@ -20,5 +22,10 @@ public class SendData implements TransportCommand
     public long connectionId()
     {
         return connectionId;
+    }
+
+    public byte[] content()
+    {
+        return content;
     }
 }

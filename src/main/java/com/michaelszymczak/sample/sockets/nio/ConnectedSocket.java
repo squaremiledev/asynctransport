@@ -10,7 +10,6 @@ public class ConnectedSocket implements AutoCloseable
     private final int port;
     private final long connectionId;
     private final int remotePort;
-    private final ByteBuffer sendBuffer;
 
     public ConnectedSocket(final int port, final long connectionId, final int remotePort, final SocketChannel channel)
     {
@@ -18,7 +17,6 @@ public class ConnectedSocket implements AutoCloseable
         this.connectionId = connectionId;
         this.remotePort = remotePort;
         this.channel = channel;
-        sendBuffer = ByteBuffer.allocate(1);
     }
 
     public int port()
@@ -41,9 +39,9 @@ public class ConnectedSocket implements AutoCloseable
         return channel;
     }
 
-    public void write() throws IOException
+    public void write(final byte[] content) throws IOException
     {
-        channel.write(sendBuffer);
+        channel.write(ByteBuffer.wrap(content));
     }
 
     @Override
