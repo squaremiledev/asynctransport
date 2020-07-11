@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
+import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
+import com.michaelszymczak.sample.sockets.api.commands.SendData;
+
 public class Connection implements AutoCloseable
 {
     private final SocketChannel channel;
@@ -48,5 +52,36 @@ public class Connection implements AutoCloseable
     public void close()
     {
         Resources.close(channel);
+    }
+
+    public void handle(final ConnectionCommand command)
+    {
+        // TODO: handle non existing port or connectionId
+        if (command instanceof CloseConnection)
+        {
+            // no op here at the moment
+        }
+        else if (command instanceof SendData)
+        {
+            final SendData cmd = (SendData)command;
+            sendData(cmd.port(), cmd.connectionId(), cmd.content());
+        }
+        else
+        {
+            throw new IllegalArgumentException(command.getClass().getSimpleName());
+        }
+    }
+
+    private void sendData(final int port, final long connectionId, final byte[] content)
+    {
+        try
+        {
+            write(content);
+        }
+        catch (IOException e)
+        {
+            // TODO: return failure
+            throw new RuntimeException(e);
+        }
     }
 }

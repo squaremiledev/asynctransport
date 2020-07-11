@@ -12,7 +12,6 @@ import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
-import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
@@ -68,19 +67,11 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
 
     private void handleCommand(final ConnectionCommand command)
     {
+        connection.handle(command);
         if (command instanceof CloseConnection)
         {
             final CloseConnection cmd = (CloseConnection)command;
             closeConnection(cmd.port(), cmd.connectionId());
-        }
-        else if (command instanceof SendData)
-        {
-            final SendData cmd = (SendData)command;
-            sendData(cmd.port(), cmd.connectionId(), cmd.content());
-        }
-        else
-        {
-            throw new IllegalArgumentException();
         }
     }
 
@@ -148,19 +139,6 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         }
         listeningSockets.add(listeningSocket);
         return new StartedListening(port, commandId);
-    }
-
-    private void sendData(final int port, final long connectionId, final byte[] content)
-    {
-        // TODO: handle non existing port or connectionId or not connected socket
-        try
-        {
-            connection.write(content);
-        }
-        catch (IOException e)
-        {
-            // TODO: return failure
-        }
     }
 
     private void closeConnection(final int port, final long connectionId)
