@@ -4,24 +4,34 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
 
 public class Connection implements AutoCloseable, ConnectionAggregate
 {
     private final SocketChannel channel;
+    private final TransportEventsListener transportEventsListener;
     private final int port;
     private final long connectionId;
     private final int remotePort;
 
-    public Connection(final int port, final long connectionId, final int remotePort, final SocketChannel channel)
+    public Connection(
+            final int port,
+            final long connectionId,
+            final int remotePort,
+            final SocketChannel channel,
+            final TransportEventsListener transportEventsListener
+    )
     {
         this.port = port;
         this.connectionId = connectionId;
         this.remotePort = remotePort;
         this.channel = channel;
+        this.transportEventsListener = transportEventsListener;
     }
 
     @Override
@@ -63,6 +73,11 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         if (command.connectionId() != connectionId)
         {
             throw new IllegalArgumentException();
+        }
+        if (command.port() != port)
+        {
+            transportEventsListener.onEvent(new CommandFailed(command.port(), command.connectionId(), "Incorrect port"));
+            return;
         }
 
         if (command instanceof CloseConnection)

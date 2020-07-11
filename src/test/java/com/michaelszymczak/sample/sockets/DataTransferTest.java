@@ -67,4 +67,27 @@ class DataTransferTest
         assertThat(events.last(CommandFailed.class).port()).isEqualTo(conn.port());
         assertThat(events.last(CommandFailed.class).details()).containsIgnoringCase("connection id");
     }
+
+    @Test
+    void shouldFailToSendDataUsingWrongPort() throws IOException
+    {
+        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final SampleClient client = new SampleClient();
+        final TransportDriver driver = new TransportDriver(transport, events);
+
+        // Given
+        final ConnectionAccepted conn = driver.connect(client);
+
+        //When
+        transport.handle(new SendData(conn.port() + 1, conn.connectionId(), "foo".getBytes(US_ASCII)));
+        transport.handle(new SendData(conn.port(), conn.connectionId(), "bar".getBytes(US_ASCII)));
+
+        // Then
+        runner.keepRunning(transport::work).untilCompleted(() -> client.read(3, 3, dataConsumer));
+        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("bar");
+
+        workUntil(() -> !events.all(CommandFailed.class).isEmpty(), transport);
+        assertThat(events.last(CommandFailed.class).port()).isEqualTo(conn.port() + 1);
+        assertThat(events.last(CommandFailed.class).details()).containsIgnoringCase("port");
+    }
 }
