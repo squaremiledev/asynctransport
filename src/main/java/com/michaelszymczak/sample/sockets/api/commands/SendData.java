@@ -14,7 +14,7 @@ public class SendData implements TransportCommand
     @Override
     public int port()
     {
-        return port();
+        return port;
     }
 
     public long connectionId()

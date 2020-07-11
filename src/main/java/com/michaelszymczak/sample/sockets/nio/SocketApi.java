@@ -1,7 +1,6 @@
 package com.michaelszymczak.sample.sockets.nio;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
     private final Selector listeningSelector;
     private final TransportEventsListener transportEventsListener;
     private ConnectionIdSource connectionIdSource;
-    private Socket connectedSocket;
+    private ConnectedSocket connectedSocket;
 
     public SocketApi(final TransportEventsListener transportEventsListener, final ConnectionIdSource connectionIdSource) throws IOException
     {
@@ -48,6 +47,35 @@ public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
         }
         listeningSockets.add(listeningSocket);
         return new StartedListening(port, commandId);
+    }
+
+    public void sendData(final int port, final long connectionId)
+    {
+        // TODO: handle non existing port or connectionId or not connected socket
+        try
+        {
+            connectedSocket.write();
+        }
+        catch (IOException e)
+        {
+            // TODO: return failure
+        }
+    }
+
+    public void closeConnection(final int port, final long connectionId)
+    {
+        // TODO: make use of commandId and connectionId or consider deleting arguments
+        if (connectedSocket != null)
+        {
+            try
+            {
+                connectedSocket.close();
+            }
+            catch (Exception e)
+            {
+                transportEventsListener.onEvent(new CommandFailed(port, -1, e.getMessage()));
+            }
+        }
     }
 
     TransportEvent stopListening(final int port, final long commandId)
@@ -96,21 +124,6 @@ public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
         }
     }
 
-    public void closeConnection(final int port, final long connectionId)
-    {
-        if (connectedSocket != null)
-        {
-            try
-            {
-                connectedSocket.close();
-            }
-            catch (Exception e)
-            {
-                transportEventsListener.onEvent(new CommandFailed(port, -1, e.getMessage()));
-            }
-        }
-    }
-
     @Override
     public void close()
     {
@@ -122,5 +135,4 @@ public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
         Resources.close(listeningSelector);
         Resources.close(connectedSocket);
     }
-
 }

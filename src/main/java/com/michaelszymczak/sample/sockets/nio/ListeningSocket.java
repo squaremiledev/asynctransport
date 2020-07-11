@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
@@ -50,16 +51,19 @@ public class ListeningSocket implements AutoCloseable
         return selectionKey;
     }
 
-    public Socket acceptConnection() throws IOException
+    public ConnectedSocket acceptConnection() throws IOException
     {
-        final Socket socket = serverSocketChannel.accept().socket();
+        final SocketChannel acceptedSocketChannel = serverSocketChannel.accept();
+        final Socket acceptedSocket = acceptedSocketChannel.socket();
+        final long connectionId = connectionIdSource.newId();
+        final ConnectedSocket connectedSocket = new ConnectedSocket(acceptedSocket.getLocalPort(), connectionId, acceptedSocket.getPort(), acceptedSocketChannel);
         transportEventsListener.onEvent(new ConnectionAccepted(
-                socket.getLocalPort(),
+                connectedSocket.port(),
                 commandIdThatTriggeredListening,
-                socket.getPort(),
-                connectionIdSource.newId()
+                connectedSocket.remotePort(),
+                connectedSocket.connectionId()
         ));
-        return socket;
+        return connectedSocket;
     }
 
     @Override

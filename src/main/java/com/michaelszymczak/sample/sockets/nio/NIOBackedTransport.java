@@ -41,6 +41,8 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         }
         else if (command instanceof SendData)
         {
+            final SendData cmd = (SendData)command;
+            socketApi.sendData(cmd.port(), cmd.connectionId());
             // TODO: implement me
         }
         else

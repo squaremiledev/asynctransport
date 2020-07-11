@@ -38,10 +38,8 @@ class DataTransferTest
         //When
         transport.handle(new SendData(connectionAccepted.port(), connectionAccepted.connectionId()));
 
-//        runner.keepRunning(transport::work).untilCompleted(() -> client.read(10, 11), 1000);
-
-//        transport.handle();
         // Then
-        // TODO: finish the test
+        // TODO: pass a synchronized data consumer to the client's read method
+        runner.keepRunning(transport::work).untilCompleted(() -> client.read(1, 1));
     }
 }
