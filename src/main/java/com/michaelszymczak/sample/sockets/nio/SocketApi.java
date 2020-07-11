@@ -14,7 +14,7 @@ import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 
-public class SocketApi implements AutoCloseable
+public class SocketApi implements AutoCloseable, Workman
 {
     private final List<ListeningSocket> listeningSockets;
     private final Selector listeningSelector;
@@ -63,7 +63,8 @@ public class SocketApi implements AutoCloseable
         return new CommandFailed(port, commandId, "No listening socket found on this port");
     }
 
-    public void doWork()
+    @Override
+    public void work()
     {
         final int availableCount;
         try
@@ -121,4 +122,5 @@ public class SocketApi implements AutoCloseable
         Resources.close(listeningSelector);
         Resources.close(connectedSocket);
     }
+
 }

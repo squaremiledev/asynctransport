@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 import static com.michaelszymczak.sample.sockets.support.Assertions.assertSameSequence;
+import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 
 class ConnectingTransportTest
@@ -38,13 +39,8 @@ class ConnectingTransportTest
 
         // When
         final int clientPort = freePort();
-        runner.keepRunning(transport::doWork).untilCompleted(() -> new SampleClient().connectedTo(serverPort, clientPort));
-        // TODO: hide this logic
-        final long startTime = System.currentTimeMillis();
-        while (events.all(ConnectionAccepted.class).size() < 1 && startTime + 100 > System.currentTimeMillis())
-        {
-            transport.doWork();
-        }
+        runner.keepRunning(transport::work).untilCompletedWithin(() -> new SampleClient().connectedTo(serverPort, clientPort), 10);
+        workUntil(transport, events.all(ConnectionAccepted.class).size() < 1, 100);
 
         // Then
         assertSameSequence(events.all(ConnectionAccepted.class), new ConnectionAccepted(serverPort, 1, clientPort, 0));
@@ -61,14 +57,9 @@ class ConnectingTransportTest
 
         // When
         final BackgroundRunner.TaskToRun clientConnectsTask = () -> new SampleClient().connectedTo(serverPort);
-        runner.keepRunning(transport::doWork).untilCompleted(clientConnectsTask);
-        runner.keepRunning(transport::doWork).untilCompleted(clientConnectsTask);
-        // TODO: hide this logic
-        final long startTime = System.currentTimeMillis();
-        while (events.all(ConnectionAccepted.class).size() < 2 && startTime + 100 > System.currentTimeMillis())
-        {
-            transport.doWork();
-        }
+        runner.keepRunning(transport::work).untilCompletedWithin(clientConnectsTask, 10);
+        runner.keepRunning(transport::work).untilCompletedWithin(clientConnectsTask, 10);
+        workUntil(transport, events.all(ConnectionAccepted.class).size() < 2, 100);
 
         // Then
         final List<ConnectionAccepted> events = this.events.all(ConnectionAccepted.class);
@@ -86,22 +77,12 @@ class ConnectingTransportTest
 
         // Given
         transport.handle(new Listen(9, freePort()));
-        long startTime1 = System.currentTimeMillis();
-        // TODO: hide this logic
-        while (events.all(StartedListening.class).size() < 1 && startTime1 + 100 > System.currentTimeMillis())
-        {
-            transport.doWork();
-        }
+        workUntil(transport, events.all(StartedListening.class).size() < 1, 100);
         final int serverPort = events.last(StartedListening.class).port();
         final SampleClient client = new SampleClient();
         assertThrows(SocketException.class, client::write); // throws if not connected when writing
-        runner.keepRunning(transport::doWork).untilCompleted(() -> client.connectedTo(serverPort));
-        // TODO: hide this logic
-        long startTime2 = System.currentTimeMillis();
-        while (events.all(ConnectionAccepted.class).size() < 1 && startTime2 + 100 > System.currentTimeMillis())
-        {
-            transport.doWork();
-        }
+        runner.keepRunning(transport::work).untilCompletedWithin(() -> client.connectedTo(serverPort), 10);
+        workUntil(transport, events.all(ConnectionAccepted.class).size() < 1, 100);
         final ConnectionAccepted connectionAccepted = events.last(ConnectionAccepted.class);
 
         // When

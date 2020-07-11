@@ -9,7 +9,7 @@ import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 
-public class NIOBackedTransport implements AutoCloseable, Transport
+public class NIOBackedTransport implements AutoCloseable, Transport, Workman
 {
     private final TransportEventsListener transportEventsListener;
     private SocketApi socketApi;
@@ -44,9 +44,10 @@ public class NIOBackedTransport implements AutoCloseable, Transport
         }
     }
 
-    public void doWork()
+    @Override
+    public void work()
     {
-        socketApi.doWork();
+        socketApi.work();
     }
 
     @Override

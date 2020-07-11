@@ -3,6 +3,10 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
+import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
+import static com.michaelszymczak.sample.sockets.support.RethrowingWorkman.rethrowing;
+
 public class BackgroundRunner
 {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -30,7 +34,7 @@ public class BackgroundRunner
             this.taskToRunOnceInBackground = taskToRunOnceInBackground;
         }
 
-        public void untilCompleted(final TaskToRun taskToRunOnceInBackground)
+        public void untilCompletedWithin(final TaskToRun taskToRunOnceInBackground, final int timeoutMs)
         {
             final RunBuilder runBuilder = new RunBuilder(executorService, taskToKeepRunningInTheSameThread, taskToRunOnceInBackground);
             final Progress progress = new Progress();
@@ -46,18 +50,7 @@ public class BackgroundRunner
                                            throw new RuntimeException(e);
                                        }
                                    });
-            final long startTimeMs = System.currentTimeMillis();
-            while (!progress.hasCompleted() && startTimeMs + 10 > System.currentTimeMillis())
-            {
-                try
-                {
-                    runBuilder.taskToKeepRunningInTheSameThread.run();
-                }
-                catch (Exception e)
-                {
-                    throw new RuntimeException(e);
-                }
-            }
+            workUntil(rethrowing(runBuilder.taskToKeepRunningInTheSameThread::run), !progress.hasCompleted(), timeoutMs);
         }
     }
 }

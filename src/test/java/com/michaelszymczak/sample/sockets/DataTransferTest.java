@@ -32,13 +32,13 @@ class DataTransferTest
         transport.handle(new Listen(1, freePort()));
         final int serverPort = events.last(StartedListening.class).port();
         final SampleClient client = new SampleClient();
-        runner.keepRunning(transport::doWork).untilCompleted(() -> client.connectedTo(serverPort));
+        runner.keepRunning(transport::work).untilCompletedWithin(() -> client.connectedTo(serverPort), 10);
         final ConnectionAccepted connectionAccepted = events.last(ConnectionAccepted.class);
 
         //When
         transport.handle(new SendData(connectionAccepted.port(), connectionAccepted.connectionId()));
 
-        runner.keepRunning(transport::doWork).untilCompleted(client::write);
+        runner.keepRunning(transport::work).untilCompletedWithin(client::write, 10);
 
 //        transport.handle();
         // Then

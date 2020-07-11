@@ -36,7 +36,7 @@ public class DelegatingServer implements FakeServer
         onReady.onReady();
         while (!Thread.currentThread().isInterrupted())
         {
-            transport.doWork();
+            transport.work();
             LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
         }
         System.out.println("Server shutting down...");
