@@ -60,7 +60,11 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     @Override
     public void handle(final ConnectionCommand command)
     {
-        // TODO: handle non existing port or connectionId
+        if (command.connectionId() != connectionId)
+        {
+            throw new IllegalArgumentException();
+        }
+
         if (command instanceof CloseConnection)
         {
             // no op here at the moment
