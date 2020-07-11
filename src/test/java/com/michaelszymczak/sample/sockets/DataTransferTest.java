@@ -25,6 +25,7 @@ class DataTransferTest
 {
     private final TransportEvents events = new TransportEvents();
     private final BackgroundRunner runner = new BackgroundRunner();
+    private final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
 
     @Test
     void shouldSendSomeData() throws IOException
@@ -45,10 +46,14 @@ class DataTransferTest
                 connectionAccepted.connectionId(),
                 "foo".getBytes(US_ASCII)
         ));
+        transport.handle(new SendData(
+                connectionAccepted.port(),
+                connectionAccepted.connectionId(),
+                "BAR".getBytes(US_ASCII)
+        ));
 
         // Then
-        final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
-        runner.keepRunning(transport::work).untilCompleted(() -> client.read(3, 3, dataConsumer));
-        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("foo");
+        runner.keepRunning(transport::work).untilCompleted(() -> client.read(6, 6, dataConsumer));
+        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("fooBAR");
     }
 }

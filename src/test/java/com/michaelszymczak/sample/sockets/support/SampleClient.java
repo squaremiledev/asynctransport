@@ -40,11 +40,6 @@ public class SampleClient implements AutoCloseable
         return this;
     }
 
-    public interface ReadDataConsumer
-    {
-        void consume(byte[] data, int length);
-    }
-
     public byte[] read(final int contentSize, final int allocatedSize) throws IOException
     {
         return read(contentSize, allocatedSize, DEV_NULL);
@@ -78,5 +73,10 @@ public class SampleClient implements AutoCloseable
     public void close()
     {
         Resources.close(socket);
+    }
+
+    public interface ReadDataConsumer
+    {
+        void consume(byte[] data, int length);
     }
 }
