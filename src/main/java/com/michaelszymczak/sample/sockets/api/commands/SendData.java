@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
-public class SendData implements TransportCommand
+public class SendData implements ConnectionCommand
 {
     private final int port;
     private final long connectionId;
@@ -19,6 +19,7 @@ public class SendData implements TransportCommand
         return port;
     }
 
+    @Override
     public long connectionId()
     {
         return connectionId;

@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-public class ConnectionAccepted implements TransportEvent
+public class ConnectionAccepted implements ConnectionEvent
 {
     private final int port;
     private final long commandId;
@@ -32,6 +32,7 @@ public class ConnectionAccepted implements TransportEvent
         return remotePort;
     }
 
+    @Override
     public long connectionId()
     {
         return connectionId;

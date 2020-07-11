@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
-public class CloseConnection implements TransportCommand
+public class CloseConnection implements ConnectionCommand
 {
     private final int port;
     private final long connectionId;
@@ -17,6 +17,7 @@ public class CloseConnection implements TransportCommand
         return port;
     }
 
+    @Override
     public long connectionId()
     {
         return connectionId;

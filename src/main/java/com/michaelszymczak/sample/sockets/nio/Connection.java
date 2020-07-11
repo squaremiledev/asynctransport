@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-public class ConnectedSocket implements AutoCloseable
+public class Connection implements AutoCloseable
 {
-    public final SocketChannel channel;
+    private final SocketChannel channel;
     private final int port;
     private final long connectionId;
     private final int remotePort;
 
-    public ConnectedSocket(final int port, final long connectionId, final int remotePort, final SocketChannel channel)
+    public Connection(final int port, final long connectionId, final int remotePort, final SocketChannel channel)
     {
         this.port = port;
         this.connectionId = connectionId;

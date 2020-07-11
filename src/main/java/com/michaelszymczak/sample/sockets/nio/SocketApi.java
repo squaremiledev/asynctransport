@@ -19,7 +19,7 @@ public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
     private final Selector listeningSelector;
     private final TransportEventsListener transportEventsListener;
     private ConnectionIdSource connectionIdSource;
-    private ConnectedSocket connectedSocket;
+    private Connection connection;
 
     public SocketApi(final TransportEventsListener transportEventsListener, final ConnectionIdSource connectionIdSource) throws IOException
     {
@@ -54,7 +54,7 @@ public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
         // TODO: handle non existing port or connectionId or not connected socket
         try
         {
-            connectedSocket.write(content);
+            connection.write(content);
         }
         catch (IOException e)
         {
@@ -65,11 +65,11 @@ public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
     public void closeConnection(final int port, final long connectionId)
     {
         // TODO: make use of commandId and connectionId or consider deleting arguments
-        if (connectedSocket != null)
+        if (connection != null)
         {
             try
             {
-                connectedSocket.close();
+                connection.close();
             }
             catch (Exception e)
             {
@@ -113,7 +113,7 @@ public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
                     if (key.isAcceptable())
                     {
                         // TODO: there will be more than one
-                        this.connectedSocket = ((ListeningSocket)key.attachment()).acceptConnection();
+                        this.connection = ((ListeningSocket)key.attachment()).acceptConnection();
                     }
                 }
             }
@@ -133,6 +133,6 @@ public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
             Resources.close(listeningSocket);
         }
         Resources.close(listeningSelector);
-        Resources.close(connectedSocket);
+        Resources.close(connection);
     }
 }

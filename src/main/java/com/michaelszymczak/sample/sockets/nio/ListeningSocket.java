@@ -51,19 +51,19 @@ public class ListeningSocket implements AutoCloseable
         return selectionKey;
     }
 
-    public ConnectedSocket acceptConnection() throws IOException
+    public Connection acceptConnection() throws IOException
     {
         final SocketChannel acceptedSocketChannel = serverSocketChannel.accept();
         final Socket acceptedSocket = acceptedSocketChannel.socket();
         final long connectionId = connectionIdSource.newId();
-        final ConnectedSocket connectedSocket = new ConnectedSocket(acceptedSocket.getLocalPort(), connectionId, acceptedSocket.getPort(), acceptedSocketChannel);
+        final Connection connection = new Connection(acceptedSocket.getLocalPort(), connectionId, acceptedSocket.getPort(), acceptedSocketChannel);
         transportEventsListener.onEvent(new ConnectionAccepted(
-                connectedSocket.port(),
+                connection.port(),
                 commandIdThatTriggeredListening,
-                connectedSocket.remotePort(),
-                connectedSocket.connectionId()
+                connection.remotePort(),
+                connection.connectionId()
         ));
-        return connectedSocket;
+        return connection;
     }
 
     @Override
