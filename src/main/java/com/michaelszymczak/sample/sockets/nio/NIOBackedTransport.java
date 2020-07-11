@@ -10,6 +10,7 @@ import java.util.List;
 import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
+import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
@@ -37,6 +38,18 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     @Override
     public void handle(final TransportCommand command)
     {
+        if (command instanceof ConnectionCommand)
+        {
+            handleCommand((ConnectionCommand)command);
+        }
+        else
+        {
+            handleCommand(command);
+        }
+    }
+
+    private void handleCommand(final TransportCommand command)
+    {
         if (command instanceof Listen)
         {
             final Listen cmd = (Listen)command;
@@ -47,7 +60,15 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
             final StopListening cmd = (StopListening)command;
             transportEventsListener.onEvent(stopListening(cmd.port(), cmd.commandId()));
         }
-        else if (command instanceof CloseConnection)
+        else
+        {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    private void handleCommand(final ConnectionCommand command)
+    {
+        if (command instanceof CloseConnection)
         {
             final CloseConnection cmd = (CloseConnection)command;
             closeConnection(cmd.port(), cmd.connectionId());
