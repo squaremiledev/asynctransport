@@ -9,6 +9,7 @@ import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
+import com.michaelszymczak.sample.sockets.nio.Workmen;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
@@ -56,7 +57,7 @@ class ConnectingTransportTest
         final int serverPort = events.last(StartedListening.class).port();
 
         // When
-        final BackgroundRunner.TaskToRun clientConnectsTask = () -> new SampleClient().connectedTo(serverPort);
+        final Workmen.ThrowingBlockingWorkman clientConnectsTask = () -> new SampleClient().connectedTo(serverPort);
         runner.keepRunning(transport::work).untilCompletedWithin(clientConnectsTask, 10);
         runner.keepRunning(transport::work).untilCompletedWithin(clientConnectsTask, 10);
         workUntil(transport, events.all(ConnectionAccepted.class).size() < 2, 100);

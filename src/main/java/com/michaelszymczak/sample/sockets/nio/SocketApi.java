@@ -14,7 +14,7 @@ import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 
-public class SocketApi implements AutoCloseable, Workman
+public class SocketApi implements AutoCloseable, Workmen.NonBlockingWorkman
 {
     private final List<ListeningSocket> listeningSockets;
     private final Selector listeningSelector;

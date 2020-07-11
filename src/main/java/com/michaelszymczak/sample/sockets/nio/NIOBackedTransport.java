@@ -9,7 +9,7 @@ import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 
-public class NIOBackedTransport implements AutoCloseable, Transport, Workman
+public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.NonBlockingWorkman
 {
     private final TransportEventsListener transportEventsListener;
     private SocketApi socketApi;

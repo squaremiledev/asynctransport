@@ -1,22 +1,17 @@
 package com.michaelszymczak.sample.sockets.support;
 
-import com.michaelszymczak.sample.sockets.nio.Workman;
+import com.michaelszymczak.sample.sockets.nio.Workmen;
 
-public class RethrowingWorkman implements Workman
+public class RethrowingWorkman implements Workmen.NonBlockingWorkman
 {
-    private final ThrowingWorkman delegate;
+    private final Workmen.ThrowingNonBlockingWorkman delegate;
 
-    interface ThrowingWorkman
-    {
-        void work() throws Exception;
-    }
-
-    public static Workman rethrowing(final ThrowingWorkman delegate)
+    public static Workmen.NonBlockingWorkman rethrowing(final Workmen.ThrowingNonBlockingWorkman delegate)
     {
         return new RethrowingWorkman(delegate);
     }
 
-    private RethrowingWorkman(final ThrowingWorkman delegate)
+    private RethrowingWorkman(final Workmen.ThrowingNonBlockingWorkman delegate)
     {
         this.delegate = delegate;
     }
