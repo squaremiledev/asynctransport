@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.Predicate;
 
-import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 
 public class TransportEvents implements TransportEventsListener
 {
@@ -36,16 +37,25 @@ public class TransportEvents implements TransportEventsListener
         }
     }
 
-    public synchronized <T> List<T> all(final Class<T> clazz)
+    public synchronized <T> List<T> all(final Class<T> itemType)
+    {
+        return all(itemType, foundItem -> true);
+    }
+
+    public synchronized <T> List<T> all(final Class<T> itemType, final Predicate<T> predicate)
     {
         final ArrayList<T> result = new ArrayList<>();
         for (int j = 0; j < 10; j++)
         {
             for (int k = events.size() - 1; k >= 0; k--)
             {
-                if (clazz.isInstance(events.get(k)))
+                if (itemType.isInstance(events.get(k)))
                 {
-                    result.add(clazz.cast(events.get(k)));
+                    final T casted = itemType.cast(events.get(k));
+                    if (predicate.test(casted))
+                    {
+                        result.add(casted);
+                    }
                 }
             }
             if (!result.isEmpty())
