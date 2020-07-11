@@ -15,6 +15,7 @@ public class TransportDriver
     private final Transport transport;
     private final TransportEvents events;
     private final BackgroundRunner runner = new BackgroundRunner();
+    private int nextCommandId = 0;
 
     public TransportDriver(final Transport transport, final TransportEvents events)
     {
@@ -22,12 +23,17 @@ public class TransportDriver
         this.events = events;
     }
 
-    public ConnectionAccepted connect(final SampleClient client)
+    public ConnectionAccepted listenAndConnect(final SampleClient client)
     {
-        transport.handle(new Listen(1, freePort()));
+        return listenAndConnect(client, nextCommandId++, freePort());
+    }
+
+    public ConnectionAccepted listenAndConnect(final SampleClient client, final int commandId, final int port)
+    {
+        transport.handle(new Listen(commandId, port));
         final int serverPort = events.last(StartedListening.class).port();
         runner.keepRunning(transport::work).untilCompleted(() -> client.connectedTo(serverPort));
-        workUntil(() -> !events.all(ConnectionAccepted.class).isEmpty(), transport);
+        workUntil(() -> !events.all(ConnectionAccepted.class, event -> event.commandId() == commandId).isEmpty(), transport);
         return events.last(ConnectionAccepted.class);
     }
 }

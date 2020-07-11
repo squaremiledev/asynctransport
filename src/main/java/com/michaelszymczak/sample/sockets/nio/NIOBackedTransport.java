@@ -3,6 +3,7 @@ package com.michaelszymczak.sample.sockets.nio;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -104,7 +105,8 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
                     }
                     if (key.isAcceptable())
                     {
-                        connectionRepository.add(((ListeningSocket)key.attachment()).acceptConnection());
+                        final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
+                        connectionRepository.add(listeningSocket.acceptConnection());
                     }
                 }
             }
@@ -127,24 +129,33 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         Resources.close(connectionRepository);
     }
 
-    TransportEvent listen(final int port, final long commandId)
+    private TransportEvent listen(final int port, final long commandId)
     {
-        final ListeningSocket listeningSocket = new ListeningSocket(port, commandId, listeningSelector, connectionIdSource, transportEventsListener);
         try
         {
-            // from now on you can retrieve listening socket from the selection key key
-            final SelectionKey selectionKey = listeningSocket.listen();
-            selectionKey.attach(listeningSocket);
+            final ListeningSocket listeningSocket = new ListeningSocket(port, commandId, connectionIdSource, transportEventsListener);
+            try
+            {
+                listeningSocket.listen();
+                final ServerSocketChannel serverSocketChannel = listeningSocket.serverSocketChannel();
+                final SelectionKey selectionKey = serverSocketChannel.register(listeningSelector, SelectionKey.OP_ACCEPT);
+                // TODO: it should be possible to retrieve listening socket from the selection key
+                // TODO: see shouldSendDataViaMultipleConnections
+                selectionKey.attach(listeningSocket);
+            }
+            catch (IOException e)
+            {
+                Resources.close(listeningSocket);
+                return new CommandFailed(port, commandId, e.getMessage());
+            }
+            listeningSockets.add(listeningSocket);
+            return new StartedListening(port, commandId);
         }
         catch (IOException e)
         {
-            Resources.close(listeningSocket);
-            return new CommandFailed(port, commandId, e.getMessage());
-
-
+            // TODO: return failure
+            throw new RuntimeException();
         }
-        listeningSockets.add(listeningSocket);
-        return new StartedListening(port, commandId);
     }
 
     private void closeConnection(final int port, final long connectionId)

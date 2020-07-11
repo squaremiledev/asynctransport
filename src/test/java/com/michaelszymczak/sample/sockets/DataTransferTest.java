@@ -12,6 +12,7 @@ import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +35,7 @@ class DataTransferTest
         final TransportDriver driver = new TransportDriver(transport, events);
 
         // Given
-        final ConnectionAccepted conn = driver.connect(client);
+        final ConnectionAccepted conn = driver.listenAndConnect(client);
 
         //When
         transport.handle(new SendData(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII)));
@@ -53,7 +54,7 @@ class DataTransferTest
         final TransportDriver driver = new TransportDriver(transport, events);
 
         // Given
-        final ConnectionAccepted conn = driver.connect(client);
+        final ConnectionAccepted conn = driver.listenAndConnect(client);
 
         //When
         transport.handle(new SendData(conn.port(), conn.connectionId() + 1, "foo".getBytes(US_ASCII)));
@@ -76,7 +77,7 @@ class DataTransferTest
         final TransportDriver driver = new TransportDriver(transport, events);
 
         // Given
-        final ConnectionAccepted conn = driver.connect(client);
+        final ConnectionAccepted conn = driver.listenAndConnect(client);
 
         //When
         transport.handle(new SendData(conn.port() + 1, conn.connectionId(), "foo".getBytes(US_ASCII)));
@@ -89,5 +90,29 @@ class DataTransferTest
         workUntil(() -> !events.all(CommandFailed.class).isEmpty(), transport);
         assertThat(events.last(CommandFailed.class).port()).isEqualTo(conn.port() + 1);
         assertThat(events.last(CommandFailed.class).details()).containsIgnoringCase("port");
+    }
+
+    @Test
+    @Disabled
+    void shouldSendDataViaMultipleConnections() throws IOException
+    {
+        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final SampleClient client1 = new SampleClient();
+        final SampleClient client2 = new SampleClient();
+        final TransportDriver driver = new TransportDriver(transport, events);
+
+        // Given
+        final ConnectionAccepted conn1 = driver.listenAndConnect(client1, 101, 5501);
+        final ConnectionAccepted conn2 = driver.listenAndConnect(client2, 102, 5502);
+
+        //When
+        transport.handle(new SendData(conn1.port(), conn1.connectionId(), "foo".getBytes(US_ASCII)));
+        transport.handle(new SendData(conn2.port(), conn2.connectionId(), "FOOBAR".getBytes(US_ASCII)));
+
+        // Then
+        runner.keepRunning(transport::work).untilCompleted(() -> client1.read(3, 10, dataConsumer));
+        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("foo");
+        runner.keepRunning(transport::work).untilCompleted(() -> client2.read(6, 10, dataConsumer));
+        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("FOOBAR");
     }
 }

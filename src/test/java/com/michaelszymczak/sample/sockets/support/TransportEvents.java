@@ -16,6 +16,7 @@ public class TransportEvents implements TransportEventsListener
     @Override
     public synchronized void onEvent(final TransportEvent event)
     {
+        System.out.println(event);
         events.add(event);
     }
 
@@ -26,7 +27,12 @@ public class TransportEvents implements TransportEventsListener
 
     public synchronized <T> T last(final Class<T> clazz)
     {
-        final List<T> result = all(clazz);
+        return last(clazz, event -> true);
+    }
+
+    public synchronized <T> T last(final Class<T> clazz, final Predicate<T> predicate)
+    {
+        final List<T> result = all(clazz, predicate);
         if (!result.isEmpty())
         {
             return result.get(result.size() - 1);

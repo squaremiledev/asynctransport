@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
 import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
+import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
 
 class ConnectingTransportTest
 {
@@ -91,5 +92,65 @@ class ConnectingTransportTest
 
         // Then
         assertThat(client.hasServerClosedConnection()).isTrue();
+    }
+
+    @Test
+    void shouldNotifyWhenConnectedWhileListeningOnMultiplePorts() throws IOException
+    {
+        final NIOBackedTransport transport = new NIOBackedTransport(events);
+
+        // Given
+        final int listeningPort1 = freePort();
+        final int listeningPort2 = freePortOtherThan(listeningPort1);
+        transport.handle(new Listen(5, listeningPort1));
+        transport.handle(new Listen(6, listeningPort2));
+        assertThat(events.last(StartedListening.class, event -> event.commandId() == 5).port()).isEqualTo(listeningPort1);
+        assertThat(events.last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
+
+//        // When
+        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort1));
+        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort2));
+
+        // Then
+        workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);
+        final ConnectionAccepted connectionAccepted1 = events.last(ConnectionAccepted.class, event -> event.port() == listeningPort1);
+        final ConnectionAccepted connectionAccepted2 = events.last(ConnectionAccepted.class, event -> event.port() == listeningPort2);
+
+        assertThat(connectionAccepted1.connectionId()).isNotEqualTo(connectionAccepted2.connectionId());
+        assertThat(connectionAccepted1.commandId()).isEqualTo(5);
+        assertThat(connectionAccepted2.commandId()).isEqualTo(6);
+        assertThat(connectionAccepted1.port()).isEqualTo(listeningPort1);
+        assertThat(connectionAccepted2.port()).isEqualTo(listeningPort2);
+        assertThat(connectionAccepted1.remotePort()).isNotEqualTo(connectionAccepted2.remotePort());
+    }
+
+    @Test
+    void shouldNotifyWhenStartedListeningAndConnectedTwice() throws IOException
+    {
+        final NIOBackedTransport transport = new NIOBackedTransport(events);
+
+        // Given
+        final int listeningPort1 = freePort();
+        final int listeningPort2 = freePortOtherThan(listeningPort1);
+
+        // When
+        transport.handle(new Listen(5, listeningPort1));
+        assertThat(events.last(StartedListening.class, event -> event.commandId() == 5).port()).isEqualTo(listeningPort1);
+        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort1));
+        transport.handle(new Listen(6, listeningPort2));
+        assertThat(events.last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
+        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort2));
+
+        // Then
+        workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);
+        final ConnectionAccepted connectionAccepted1 = events.last(ConnectionAccepted.class, event -> event.port() == listeningPort1);
+        final ConnectionAccepted connectionAccepted2 = events.last(ConnectionAccepted.class, event -> event.port() == listeningPort2);
+
+        assertThat(connectionAccepted1.connectionId()).isNotEqualTo(connectionAccepted2.connectionId());
+        assertThat(connectionAccepted1.commandId()).isEqualTo(5);
+        assertThat(connectionAccepted2.commandId()).isEqualTo(6);
+        assertThat(connectionAccepted1.port()).isEqualTo(listeningPort1);
+        assertThat(connectionAccepted2.port()).isEqualTo(listeningPort2);
+        assertThat(connectionAccepted1.remotePort()).isNotEqualTo(connectionAccepted2.remotePort());
     }
 }

@@ -3,8 +3,6 @@ package com.michaelszymczak.sample.sockets.nio;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
@@ -17,38 +15,33 @@ public class ListeningSocket implements AutoCloseable
     private final long commandIdThatTriggeredListening;
     private final ConnectionIdSource connectionIdSource;
     private final TransportEventsListener transportEventsListener;
-    private ServerSocketChannel serverSocketChannel;
-    private Selector selector;
+    private final ServerSocketChannel serverSocketChannel;
 
     ListeningSocket(
             final int port,
             final long commandIdThatTriggeredListening,
-            final Selector selector,
             final ConnectionIdSource connectionIdSource,
             final TransportEventsListener transportEventsListener
-    )
+    ) throws IOException
     {
         this.port = port;
         this.commandIdThatTriggeredListening = commandIdThatTriggeredListening;
-        this.selector = selector;
         this.connectionIdSource = connectionIdSource;
         this.transportEventsListener = transportEventsListener;
-    }
-
-    int port()
-    {
-        return port;
-    }
-
-    SelectionKey listen() throws IOException
-    {
-        serverSocketChannel = ServerSocketChannel.open();
+        this.serverSocketChannel = ServerSocketChannel.open();
         // non-blocking mode, but in case something was missed, it should fail fast
         serverSocketChannel.socket().setSoTimeout(1);
         serverSocketChannel.configureBlocking(false);
-        final SelectionKey selectionKey = serverSocketChannel.register(this.selector, SelectionKey.OP_ACCEPT);
+    }
+
+    void listen() throws IOException
+    {
         serverSocketChannel.bind(new InetSocketAddress(port));
-        return selectionKey;
+    }
+
+    public ServerSocketChannel serverSocketChannel()
+    {
+        return serverSocketChannel;
     }
 
     public Connection acceptConnection() throws IOException
@@ -66,6 +59,11 @@ public class ListeningSocket implements AutoCloseable
         return connection;
     }
 
+    int port()
+    {
+        return port;
+    }
+
     @Override
     public void close()
     {
@@ -79,7 +77,6 @@ public class ListeningSocket implements AutoCloseable
                "port=" + port +
                ", serverSocketChannel=" + serverSocketChannel +
                ", commandIdThatTriggeredListening=" + commandIdThatTriggeredListening +
-               ", selector=" + selector +
                '}';
     }
 }
