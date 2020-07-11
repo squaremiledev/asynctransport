@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import static com.michaelszymczak.sample.sockets.support.Assertions.assertSameSequence;
+import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
 import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 
@@ -44,7 +44,7 @@ class ConnectingTransportTest
         workUntil(() -> !events.all(ConnectionAccepted.class).isEmpty(), transport);
 
         // Then
-        assertSameSequence(events.all(ConnectionAccepted.class), new ConnectionAccepted(serverPort, 1, clientPort, 0));
+        assertEqual(events.all(ConnectionAccepted.class), new ConnectionAccepted(serverPort, 1, clientPort, 0));
     }
 
     @Test

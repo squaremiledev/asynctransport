@@ -13,12 +13,12 @@ import static java.util.Arrays.asList;
 public class Assertions
 {
     @SafeVarargs
-    public static <T> void assertSameSequence(final List<T> actual, final T... expected)
+    public static <T> void assertEqual(final List<T> actual, final T... expected)
     {
-        assertSameSequence(actual, asList(expected));
+        assertEqual(actual, asList(expected));
     }
 
-    public static <T> void assertSameSequence(final List<T> actual, final List<T> expected)
+    public static <T> void assertEqual(final List<T> actual, final List<T> expected)
     {
         final RecursiveComparisonConfiguration recursiveComparisonConfiguration = new RecursiveComparisonConfiguration();
         recursiveComparisonConfiguration.strictTypeChecking(true);

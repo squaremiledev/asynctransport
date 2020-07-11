@@ -67,6 +67,12 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
 
     private void handleCommand(final ConnectionCommand command)
     {
+        if (connection.connectionId() != command.connectionId())
+        {
+            transportEventsListener.onEvent(new CommandFailed(command.port(), -1, "Connection id not found"));
+            return;
+        }
+
         connection.handle(command);
         if (command instanceof CloseConnection)
         {

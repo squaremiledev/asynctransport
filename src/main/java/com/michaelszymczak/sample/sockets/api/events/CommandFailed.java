@@ -25,6 +25,11 @@ public class CommandFailed implements TransportEvent
         return commandId;
     }
 
+    public String details()
+    {
+        return details;
+    }
+
     @Override
     public String toString()
     {

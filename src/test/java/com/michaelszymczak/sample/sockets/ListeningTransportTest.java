@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import static com.michaelszymczak.sample.sockets.support.Assertions.assertSameSequence;
+import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
 import static com.michaelszymczak.sample.sockets.support.ServerRun.startServer;
@@ -46,7 +46,7 @@ class ListeningTransportTest
                     final StartedListening event = events.last(StartedListening.class);
                     assertEquals(port, event.port());
                     assertEquals(7, event.commandId());
-                    assertSameSequence(events.events(), new StartedListening(port, 7));
+                    assertEqual(events.events(), new StartedListening(port, 7));
                     client.connectedTo(port);
                 }
         );
@@ -170,7 +170,7 @@ class ListeningTransportTest
                 transport.handle(new Listen(5, port1));
                 transport.handle(new Listen(6, port2));
                 transport.handle(new Listen(7, port3));
-                assertSameSequence(events.events(), new StartedListening(port1, 5), new StartedListening(port2, 6), new StartedListening(port3, 7));
+                assertEqual(events.events(), new StartedListening(port1, 5), new StartedListening(port2, 6), new StartedListening(port3, 7));
 
                 // When
                 transport.handle(new StopListening(9, port2));
