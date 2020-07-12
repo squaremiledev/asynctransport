@@ -103,7 +103,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             {
                 totalBytesSent += bytesSent;
             }
-            transportEventsListener.onEvent(new DataSent(port, connectionId, totalBytesSent));
+            transportEventsListener.onEvent(new DataSent(port, connectionId, bytesSent, totalBytesSent));
         }
         catch (IOException e)
         {

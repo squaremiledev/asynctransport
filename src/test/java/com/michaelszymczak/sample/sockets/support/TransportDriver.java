@@ -10,6 +10,7 @@ import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 
 import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
+import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
 
 public class TransportDriver
 {
@@ -27,13 +28,23 @@ public class TransportDriver
 
     public ConnectionAccepted listenAndConnect(final SampleClient client)
     {
-        final StartedListening startedListeningEvent = startListening();
-        return connectClient(startedListeningEvent, client);
+        final int serverPort = freePort();
+        return listenAndConnect(client, serverPort, freePortOtherThan(serverPort));
+    }
+
+    public ConnectionAccepted listenAndConnect(final SampleClient client, final int serverPort, final int clientPort)
+    {
+        final StartedListening startedListeningEvent = startListening(serverPort);
+        return connectClient(startedListeningEvent, client, clientPort);
     }
 
     public ConnectionAccepted connectClient(StartedListening startedListeningEvent, final SampleClient client)
     {
-        final int clientPort = freePort();
+        return connectClient(startedListeningEvent, client, freePort());
+    }
+
+    public ConnectionAccepted connectClient(StartedListening startedListeningEvent, final SampleClient client, final int clientPort)
+    {
         runner.keepRunning(transport::work).untilCompleted(() -> client.connectedTo(startedListeningEvent.port(), clientPort));
         final Predicate<ConnectionAccepted> connectionAcceptedPredicate = event -> event.commandId() == startedListeningEvent.commandId() && event.remotePort() == clientPort;
         workUntil(() -> !events.all(ConnectionAccepted.class, connectionAcceptedPredicate).isEmpty(), transport);
@@ -42,8 +53,13 @@ public class TransportDriver
 
     public StartedListening startListening()
     {
+        return startListening(freePort());
+    }
+
+    public StartedListening startListening(final int port)
+    {
         final int commandId = nextCommandId++;
-        transport.handle(new Listen(commandId, freePort()));
+        transport.handle(new Listen(commandId, port));
         return events.last(StartedListening.class, event -> event.commandId() == commandId);
     }
 
