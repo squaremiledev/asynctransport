@@ -14,6 +14,7 @@ import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
+import com.michaelszymczak.sample.sockets.support.FreePort;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
@@ -66,7 +67,7 @@ class DataSendingTest
     }
 
     @Test
-    void shouldFailToSendDataUsingNonExistingConnection() throws IOException
+    void shouldFailToSendDataUsingNonExistingConnectionOrPort() throws IOException
     {
         final NIOBackedTransport transport = new NIOBackedTransport(events);
         final SampleClient client = new SampleClient();
@@ -74,18 +75,22 @@ class DataSendingTest
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
+        final int unusedPort = FreePort.freePortOtherThan(conn.port());
 
         //When
-        transport.handle(new SendData(conn.port(), conn.connectionId() + 1, "foo".getBytes(US_ASCII)));
+        transport.handle(new SendData(conn.port(), conn.connectionId() + 1, "foo".getBytes(US_ASCII), 108));
+        transport.handle(new SendData(unusedPort, conn.connectionId(), "foo".getBytes(US_ASCII), 109));
         transport.handle(new SendData(conn.port(), conn.connectionId(), "bar".getBytes(US_ASCII)));
 
         // Then
         runner.keepRunning(transport::work).untilCompleted(() -> client.read(3, 3, dataConsumer));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("bar");
 
-        workUntil(() -> !events.all(CommandFailed.class).isEmpty(), transport);
-        assertThat(events.last(CommandFailed.class).port()).isEqualTo(conn.port());
-        assertThat(events.last(CommandFailed.class).details()).containsIgnoringCase("connection id");
+        workUntil(() -> events.all(CommandFailed.class).size() > 1, transport);
+        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 108).port()).isEqualTo(conn.port());
+        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 108).details()).containsIgnoringCase("connection id");
+        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 109).port()).isEqualTo(unusedPort);
+        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 109).details()).containsIgnoringCase("port");
     }
 
     @Test

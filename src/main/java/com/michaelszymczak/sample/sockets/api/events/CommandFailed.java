@@ -1,15 +1,17 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
+import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
+
 public class CommandFailed implements TransportEvent, CorrelatedEvent
 {
     private final int port;
     private final long commandId;
     private final String details;
 
-    public CommandFailed(final int port, final long commandId, final String details)
+    public CommandFailed(final TransportCommand command, final String details)
     {
-        this.port = port;
-        this.commandId = commandId;
+        this.port = command.port();
+        this.commandId = command.commandId();
         this.details = details;
     }
 

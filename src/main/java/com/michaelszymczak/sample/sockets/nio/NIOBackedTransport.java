@@ -56,13 +56,11 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     {
         if (command instanceof Listen)
         {
-            final Listen cmd = (Listen)command;
-            transportEventsListener.onEvent(listen(cmd.port(), cmd.commandId()));
+            transportEventsListener.onEvent(listen((Listen)command));
         }
         else if (command instanceof StopListening)
         {
-            final StopListening cmd = (StopListening)command;
-            transportEventsListener.onEvent(stopListening(cmd.port(), cmd.commandId()));
+            transportEventsListener.onEvent(stopListening((StopListening)command));
         }
         else
         {
@@ -74,16 +72,14 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     {
         if (!connectionRepository.contains(command.connectionId()))
         {
-            // TODO: test correct command id
-            transportEventsListener.onEvent(new CommandFailed(command.port(), -999, "Connection id not found"));
+            transportEventsListener.onEvent(new CommandFailed(command, "Connection id not found"));
             return;
         }
         connectionRepository.findByConnectionId(command.connectionId()).handle(command);
 
         if (command instanceof CloseConnection)
         {
-            final CloseConnection cmd = (CloseConnection)command;
-            closeConnection(cmd.port(), cmd.connectionId());
+            closeConnection((CloseConnection)command);
         }
     }
 
@@ -176,11 +172,11 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         Resources.close(connectionRepository);
     }
 
-    private TransportEvent listen(final int port, final long commandId)
+    private TransportEvent listen(final Listen command)
     {
         try
         {
-            final ListeningSocket listeningSocket = new ListeningSocket(port, commandId, connectionIdSource, transportEventsListener);
+            final ListeningSocket listeningSocket = new ListeningSocket(command.port(), command.commandId(), connectionIdSource, transportEventsListener);
             try
             {
                 listeningSocket.listen();
@@ -191,10 +187,10 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
             catch (IOException e)
             {
                 Resources.close(listeningSocket);
-                return new CommandFailed(port, commandId, e.getMessage());
+                return new CommandFailed(command, e.getMessage());
             }
             listeningSockets.add(listeningSocket);
-            return new StartedListening(port, commandId);
+            return new StartedListening(command.port(), command.commandId());
         }
         catch (IOException e)
         {
@@ -203,32 +199,32 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         }
     }
 
-    private void closeConnection(final int port, final long connectionId)
+    private void closeConnection(final CloseConnection command)
     {
         // TODO: return failure if not found
-        if (connectionRepository.contains(connectionId))
+        if (connectionRepository.contains(command.connectionId()))
         {
             try
             {
-                connectionRepository.findByConnectionId(connectionId).close();
+                connectionRepository.findByConnectionId(command.connectionId()).close();
             }
             catch (Exception e)
             {
-                transportEventsListener.onEvent(new CommandFailed(port, connectionId, e.getMessage()));
+                transportEventsListener.onEvent(new CommandFailed(command, e.getMessage()));
             }
         }
     }
 
-    private TransportEvent stopListening(final int port, final long commandId)
+    private TransportEvent stopListening(final StopListening command)
     {
         for (int k = 0; k < listeningSockets.size(); k++)
         {
-            if (listeningSockets.get(k).port() == port)
+            if (listeningSockets.get(k).port() == command.port())
             {
                 Resources.close(listeningSockets.get(k));
-                return new StoppedListening(port, commandId);
+                return new StoppedListening(command.port(), command.commandId());
             }
         }
-        return new CommandFailed(port, commandId, "No listening socket found on this port");
+        return new CommandFailed(command, "No listening socket found on this port");
     }
 }
