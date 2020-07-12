@@ -28,7 +28,7 @@ import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
 import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
-class DataTransferTest
+class DataSendingTest
 {
     private final TransportEvents events = new TransportEvents();
     private final BackgroundRunner runner = new BackgroundRunner();
