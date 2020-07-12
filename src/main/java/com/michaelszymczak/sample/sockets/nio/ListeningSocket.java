@@ -55,7 +55,8 @@ public class ListeningSocket implements AutoCloseable
                 connection.port(),
                 commandIdThatTriggeredListening,
                 connection.remotePort(),
-                connection.connectionId()
+                connection.connectionId(),
+                connection.initialSenderBufferSize()
         ));
         return connection;
     }

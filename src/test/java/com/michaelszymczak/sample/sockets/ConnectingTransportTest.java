@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
 import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
@@ -46,7 +45,10 @@ class ConnectingTransportTest
         workUntil(() -> !events.all(ConnectionAccepted.class).isEmpty(), transport);
 
         // Then
-        assertEqual(events.all(ConnectionAccepted.class), new ConnectionAccepted(serverPort, 1, clientPort, 0));
+        assertThat(events.all(ConnectionAccepted.class)).hasSize(1);
+        final ConnectionAccepted connectionAcceptedEvent = events.last(ConnectionAccepted.class);
+        assertThat(connectionAcceptedEvent).usingRecursiveComparison()
+                .isEqualTo(new ConnectionAccepted(serverPort, 1, clientPort, 0, connectionAcceptedEvent.sendBufferSize()));
     }
 
     @Test

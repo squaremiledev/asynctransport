@@ -6,13 +6,15 @@ public class ConnectionAccepted implements ConnectionEvent, CorrelatedEvent
     private final long commandId;
     private final int remotePort;
     private final long connectionId;
+    private final int sendBufferSize;
 
-    public ConnectionAccepted(final int port, final long commandId, final int remotePort, final long connectionId)
+    public ConnectionAccepted(final int port, final long commandId, final int remotePort, final long connectionId, final int sendBufferSize)
     {
         this.port = port;
         this.commandId = commandId;
         this.remotePort = remotePort;
         this.connectionId = connectionId;
+        this.sendBufferSize = sendBufferSize;
     }
 
     @Override
@@ -38,6 +40,11 @@ public class ConnectionAccepted implements ConnectionEvent, CorrelatedEvent
         return connectionId;
     }
 
+    public int sendBufferSize()
+    {
+        return sendBufferSize;
+    }
+
     @Override
     public String toString()
     {
@@ -46,6 +53,7 @@ public class ConnectionAccepted implements ConnectionEvent, CorrelatedEvent
                ", commandId=" + commandId +
                ", remotePort=" + remotePort +
                ", connectionId=" + connectionId +
+               ", sendBufferSize=" + sendBufferSize +
                '}';
     }
 }

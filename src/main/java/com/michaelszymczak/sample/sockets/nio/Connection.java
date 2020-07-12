@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets.nio;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -20,6 +21,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     private final int port;
     private final long connectionId;
     private final int remotePort;
+    private final int initialSenderBufferSize;
     private long totalBytesSent;
     private long totalBytesReceived;
 
@@ -29,12 +31,13 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             final int remotePort,
             final SocketChannel channel,
             final TransportEventsListener transportEventsListener
-    )
+    ) throws SocketException
     {
         this.port = port;
         this.connectionId = connectionId;
         this.remotePort = remotePort;
         this.channel = channel;
+        this.initialSenderBufferSize = channel.socket().getSendBufferSize();
         this.transportEventsListener = transportEventsListener;
     }
 
@@ -86,6 +89,11 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     public SocketChannel channel()
     {
         return channel;
+    }
+
+    public int initialSenderBufferSize()
+    {
+        return initialSenderBufferSize;
     }
 
     @Override
