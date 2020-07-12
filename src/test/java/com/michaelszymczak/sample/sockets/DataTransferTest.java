@@ -12,13 +12,14 @@ import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
+import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
+import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 class DataTransferTest
@@ -93,7 +94,6 @@ class DataTransferTest
     }
 
     @Test
-    @Disabled
     void shouldSendDataViaMultipleConnections() throws IOException
     {
         final NIOBackedTransport transport = new NIOBackedTransport(events);
@@ -102,8 +102,8 @@ class DataTransferTest
         final TransportDriver driver = new TransportDriver(transport, events);
 
         // Given
-        final ConnectionAccepted conn1 = driver.listenAndConnect(client1, 101, 5501);
-        final ConnectionAccepted conn2 = driver.listenAndConnect(client2, 102, 5502);
+        final ConnectionAccepted conn1 = driver.listenAndConnect(client1, 101, freePort());
+        final ConnectionAccepted conn2 = driver.listenAndConnect(client2, 102, freePortOtherThan(conn1.port()));
 
         //When
         transport.handle(new SendData(conn1.port(), conn1.connectionId(), "foo".getBytes(US_ASCII)));

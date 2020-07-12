@@ -31,9 +31,9 @@ public class TransportDriver
     public ConnectionAccepted listenAndConnect(final SampleClient client, final int commandId, final int port)
     {
         transport.handle(new Listen(commandId, port));
-        final int serverPort = events.last(StartedListening.class).port();
+        final int serverPort = events.last(StartedListening.class, event -> event.commandId() == commandId).port();
         runner.keepRunning(transport::work).untilCompleted(() -> client.connectedTo(serverPort));
         workUntil(() -> !events.all(ConnectionAccepted.class, event -> event.commandId() == commandId).isEmpty(), transport);
-        return events.last(ConnectionAccepted.class);
+        return events.last(ConnectionAccepted.class, event -> event.commandId() == commandId);
     }
 }
