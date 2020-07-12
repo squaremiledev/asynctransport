@@ -52,7 +52,7 @@ public class TransportEvents implements TransportEventsListener
         final ArrayList<T> result = new ArrayList<>();
         for (int j = 0; j < 10; j++)
         {
-            for (int k = events.size() - 1; k >= 0; k--)
+            for (int k = 0; k < events.size(); k++)
             {
                 if (itemType.isInstance(events.get(k)))
                 {

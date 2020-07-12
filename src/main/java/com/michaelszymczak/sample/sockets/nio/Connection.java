@@ -19,6 +19,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     private final int port;
     private final long connectionId;
     private final int remotePort;
+    private long totalBytesSent;
 
     public Connection(
             final int port,
@@ -80,9 +81,9 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         return remotePort;
     }
 
-    public void write(final byte[] content) throws IOException
+    public int write(final byte[] content) throws IOException
     {
-        channel.write(ByteBuffer.wrap(content));
+        return channel.write(ByteBuffer.wrap(content));
     }
 
     @Override
@@ -95,8 +96,12 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     {
         try
         {
-            write(content);
-            transportEventsListener.onEvent(new DataSent(port, connectionId));
+            final int bytesSent = write(content);
+            if (bytesSent > 0)
+            {
+                totalBytesSent += bytesSent;
+            }
+            transportEventsListener.onEvent(new DataSent(port, connectionId, totalBytesSent));
         }
         catch (IOException e)
         {
