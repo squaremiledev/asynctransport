@@ -21,6 +21,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     private final long connectionId;
     private final int remotePort;
     private long totalBytesSent;
+    private long totalBytesReceived;
 
     public Connection(
             final int port,
@@ -118,7 +119,11 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         try
         {
             final int read = channel.read(readBuffer);
-            transportEventsListener.onEvent(new DataReceived(port, connectionId, read));
+            if (read > 0)
+            {
+                totalBytesReceived += read;
+            }
+            transportEventsListener.onEvent(new DataReceived(port, connectionId, totalBytesReceived, content, read));
         }
         catch (Exception e)
         {
