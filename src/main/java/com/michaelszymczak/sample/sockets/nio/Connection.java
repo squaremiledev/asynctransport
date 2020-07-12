@@ -82,11 +82,6 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         return remotePort;
     }
 
-    public int write(final byte[] content) throws IOException
-    {
-        return channel.write(ByteBuffer.wrap(content));
-    }
-
     public SocketChannel channel()
     {
         return channel;
@@ -102,7 +97,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     {
         try
         {
-            final int bytesSent = write(content);
+            final int bytesSent = channel.write(ByteBuffer.wrap(content));
             if (bytesSent > 0)
             {
                 totalBytesSent += bytesSent;
@@ -118,6 +113,17 @@ public class Connection implements AutoCloseable, ConnectionAggregate
 
     public void read()
     {
-        transportEventsListener.onEvent(new DataReceived(port, connectionId, 3));
+        final byte[] content = new byte[10];
+        final ByteBuffer readBuffer = ByteBuffer.wrap(content);
+        try
+        {
+            final int read = channel.read(readBuffer);
+            transportEventsListener.onEvent(new DataReceived(port, connectionId, read));
+        }
+        catch (Exception e)
+        {
+            // TODO: return failure
+            throw new RuntimeException(e);
+        }
     }
 }
