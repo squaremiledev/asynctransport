@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-public interface TransportEvent
+public interface CorrelatedEvent
 {
-    int port();
+    long commandId();
 }

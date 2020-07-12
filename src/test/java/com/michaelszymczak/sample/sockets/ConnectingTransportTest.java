@@ -88,7 +88,7 @@ class ConnectingTransportTest
         final ConnectionAccepted connectionAccepted = events.last(ConnectionAccepted.class);
 
         // When
-        transport.handle(new CloseConnection(connectionAccepted.port(), connectionAccepted.connectionId()));
+        transport.handle(new CloseConnection(connectionAccepted.port(), connectionAccepted.connectionId(), 10));
 
         // Then
         assertThat(client.hasServerClosedConnection()).isTrue();

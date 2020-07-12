@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-public class StoppedListening implements TransportEvent
+public class StoppedListening implements TransportEvent, CorrelatedEvent
 {
     private final int port;
     private final long commandId;

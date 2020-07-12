@@ -20,12 +20,6 @@ public class DataSent implements ConnectionEvent
     }
 
     @Override
-    public long commandId()
-    {
-        return -1;
-    }
-
-    @Override
     public long connectionId()
     {
         return connectionId;

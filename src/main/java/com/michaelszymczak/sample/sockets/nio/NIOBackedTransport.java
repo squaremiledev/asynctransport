@@ -74,7 +74,8 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     {
         if (!connectionRepository.contains(command.connectionId()))
         {
-            transportEventsListener.onEvent(new CommandFailed(command.port(), -1, "Connection id not found"));
+            // TODO: test correct command id
+            transportEventsListener.onEvent(new CommandFailed(command.port(), -999, "Connection id not found"));
             return;
         }
         connectionRepository.findByConnectionId(command.connectionId()).handle(command);
@@ -204,6 +205,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
 
     private void closeConnection(final int port, final long connectionId)
     {
+        // TODO: return failure if not found
         if (connectionRepository.contains(connectionId))
         {
             try
@@ -212,7 +214,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
             }
             catch (Exception e)
             {
-                transportEventsListener.onEvent(new CommandFailed(port, -1, e.getMessage()));
+                transportEventsListener.onEvent(new CommandFailed(port, connectionId, e.getMessage()));
             }
         }
     }

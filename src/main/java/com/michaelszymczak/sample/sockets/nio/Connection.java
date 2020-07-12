@@ -59,7 +59,8 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         }
         if (command.port() != port)
         {
-            transportEventsListener.onEvent(new CommandFailed(command.port(), command.connectionId(), "Incorrect port"));
+            // TODO: test correct command id
+            transportEventsListener.onEvent(new CommandFailed(command.port(), -999, "Incorrect port"));
             return;
         }
 
