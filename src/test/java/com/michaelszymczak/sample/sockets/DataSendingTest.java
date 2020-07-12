@@ -27,6 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
 import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
+import static com.michaelszymczak.sample.sockets.support.StringFixtures.byteArrayWith;
+import static com.michaelszymczak.sample.sockets.support.StringFixtures.stringWith;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 class DataSendingTest
@@ -165,6 +167,27 @@ class DataSendingTest
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
         assertThat(events.last(DataSent.class, event -> event.connectionId() == connS2C4.connectionId())).usingRecursiveComparison()
                 .isEqualTo(new DataSent(connS2C4.port(), connS2C4.connectionId(), 40));
+    }
+
+    @Test
+    void shouldBeAbleToSendDataInMultipleChunks() throws IOException
+    {
+        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final SampleClient client = new SampleClient();
+        final TransportDriver driver = new TransportDriver(transport, events);
+        final ConnectionAccepted conn = driver.listenAndConnect(client);
+
+        //When
+        final byte[] data = byteArrayWith(pos -> String.format("%9d%n", pos), 1_000);
+        assertThat(data.length).isEqualTo(10_000);
+        transport.handle(new SendData(conn.port(), conn.connectionId(), data));
+
+        // Then
+        runner.keepRunning(transport::work).untilCompleted(() -> client.read(data.length, data.length, dataConsumer));
+        assertThat(dataConsumer.dataRead().length).isEqualTo(data.length);
+        assertThat(stringWith(dataConsumer.dataRead())).isEqualTo(stringWith(data));
+        assertThat(events.last(DataSent.class, event -> event.connectionId() == conn.connectionId())).usingRecursiveComparison()
+                .isEqualTo(new DataSent(conn.port(), conn.connectionId(), data.length));
     }
 
     private String fixedLengthStringStartingWith(final String content, final int minLength)

@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets.support;
 
 import java.util.Arrays;
+import java.util.function.IntFunction;
 
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -25,6 +26,17 @@ public class StringFixtures
     public static byte[] byteArrayWith(final String content, final int arrayLength)
     {
         return Arrays.copyOf(byteArrayWith(content), arrayLength);
+    }
+
+    public static byte[] byteArrayWith(final IntFunction<String> content, final int itemsGenerated)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < itemsGenerated; i++)
+        {
+            sb.append(content.apply(i));
+        }
+
+        return byteArrayWith(sb.toString());
     }
 
     public static byte[] byteArrayWith(final String content)

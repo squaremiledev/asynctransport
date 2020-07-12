@@ -10,6 +10,9 @@ public class ThreadSafeReadDataSpy implements SampleClient.ReadDataConsumer
     @Override
     public void consume(final byte[] data, final int length)
     {
+//        System.out.println(data[0]);
+//        System.out.println(data.length);
+//        System.out.println(length);
         dataHolder.set(Arrays.copyOf(data, length));
     }
 
