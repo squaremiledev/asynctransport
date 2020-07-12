@@ -19,7 +19,6 @@ import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
-import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.connection.ConnectionRepository;
 
 public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.NonBlockingWorkman
@@ -44,31 +43,15 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     {
         if (command instanceof ConnectionCommand)
         {
-            handleCommand((ConnectionCommand)command);
+            handleConnectionCommand((ConnectionCommand)command);
         }
         else
         {
-            handleCommand(command);
+            handleTransportCommand(command);
         }
     }
 
-    private void handleCommand(final TransportCommand command)
-    {
-        if (command instanceof Listen)
-        {
-            transportEventsListener.onEvent(listen((Listen)command));
-        }
-        else if (command instanceof StopListening)
-        {
-            transportEventsListener.onEvent(stopListening((StopListening)command));
-        }
-        else
-        {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    private void handleCommand(final ConnectionCommand command)
+    private void handleConnectionCommand(final ConnectionCommand command)
     {
         if (!connectionRepository.contains(command.connectionId()))
         {
@@ -80,6 +63,22 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         if (command instanceof CloseConnection)
         {
             closeConnection((CloseConnection)command);
+        }
+    }
+
+    private void handleTransportCommand(final TransportCommand command)
+    {
+        if (command instanceof Listen)
+        {
+            handle((Listen)command);
+        }
+        else if (command instanceof StopListening)
+        {
+            handle((StopListening)command);
+        }
+        else
+        {
+            throw new IllegalArgumentException();
         }
     }
 
@@ -172,7 +171,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         Resources.close(connectionRepository);
     }
 
-    private TransportEvent listen(final Listen command)
+    private void handle(final Listen command)
     {
         try
         {
@@ -187,10 +186,11 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
             catch (IOException e)
             {
                 Resources.close(listeningSocket);
-                return new CommandFailed(command, e.getMessage());
+                transportEventsListener.onEvent(new CommandFailed(command, e.getMessage()));
+                return;
             }
             listeningSockets.add(listeningSocket);
-            return new StartedListening(command.port(), command.commandId());
+            transportEventsListener.onEvent(new StartedListening(command.port(), command.commandId()));
         }
         catch (IOException e)
         {
@@ -215,16 +215,17 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         }
     }
 
-    private TransportEvent stopListening(final StopListening command)
+    private void handle(final StopListening command)
     {
         for (int k = 0; k < listeningSockets.size(); k++)
         {
             if (listeningSockets.get(k).port() == command.port())
             {
                 Resources.close(listeningSockets.get(k));
-                return new StoppedListening(command.port(), command.commandId());
+                transportEventsListener.onEvent(new StoppedListening(command.port(), command.commandId()));
+                return;
             }
         }
-        return new CommandFailed(command, "No listening socket found on this port");
+        transportEventsListener.onEvent(new CommandFailed(command, "No listening socket found on this port"));
     }
 }
