@@ -1,8 +1,11 @@
 package com.michaelszymczak.sample.sockets;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
@@ -111,12 +114,8 @@ class DataTransferTest
         final ConnectionAccepted connS2C2 = driver.connectClient(startedListeningEvent2, client2);
         final ConnectionAccepted connS1C3 = driver.connectClient(startedListeningEvent1, client3);
         final ConnectionAccepted connS2C4 = driver.connectClient(startedListeningEvent2, client4);
-        assertThat(
-                Stream.of(connS1C1, connS2C2, connS1C3, connS2C4).map(ConnectionAccepted::commandId).collect(Collectors.toSet())
-        ).hasSize(2);
-        assertThat(
-                Stream.of(connS1C1, connS2C2, connS1C3, connS2C4).map(ConnectionAccepted::connectionId).collect(Collectors.toSet())
-        ).hasSize(4);
+        assertThat(distinct(ConnectionAccepted::commandId, connS1C1, connS2C2, connS1C3, connS2C4)).hasSize(2);
+        assertThat(distinct(ConnectionAccepted::connectionId, connS1C1, connS2C2, connS1C3, connS2C4)).hasSize(4);
 
 
         //When
@@ -134,5 +133,12 @@ class DataTransferTest
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("S1 -> C3");
         runner.keepRunning(transport::work).untilCompleted(() -> client4.read("S2 -> C4".length(), 20, dataConsumer));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("S2 -> C4");
+    }
+
+    @SafeVarargs
+    private static <T> Set<?> distinct(final Function<T, Object> property, final T... items)
+    {
+        final List<T> allItems = Arrays.asList(items);
+        return allItems.stream().map(property).collect(Collectors.toSet());
     }
 }
