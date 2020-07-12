@@ -1,10 +1,13 @@
 package com.michaelszymczak.sample.sockets;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
+import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
@@ -18,8 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
-import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
-import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 class DataTransferTest
@@ -99,20 +100,39 @@ class DataTransferTest
         final NIOBackedTransport transport = new NIOBackedTransport(events);
         final SampleClient client1 = new SampleClient();
         final SampleClient client2 = new SampleClient();
+        final SampleClient client3 = new SampleClient();
+        final SampleClient client4 = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport, events);
 
         // Given
-        final ConnectionAccepted conn1 = driver.listenAndConnect(client1, 101, freePort());
-        final ConnectionAccepted conn2 = driver.listenAndConnect(client2, 102, freePortOtherThan(conn1.port()));
+        final StartedListening startedListeningEvent1 = driver.startListening();
+        final ConnectionAccepted connS1C1 = driver.connectClient(startedListeningEvent1, client1);
+        final StartedListening startedListeningEvent2 = driver.startListening();
+        final ConnectionAccepted connS2C2 = driver.connectClient(startedListeningEvent2, client2);
+        final ConnectionAccepted connS1C3 = driver.connectClient(startedListeningEvent1, client3);
+        final ConnectionAccepted connS2C4 = driver.connectClient(startedListeningEvent2, client4);
+        assertThat(
+                Stream.of(connS1C1, connS2C2, connS1C3, connS2C4).map(ConnectionAccepted::commandId).collect(Collectors.toSet())
+        ).hasSize(2);
+        assertThat(
+                Stream.of(connS1C1, connS2C2, connS1C3, connS2C4).map(ConnectionAccepted::connectionId).collect(Collectors.toSet())
+        ).hasSize(4);
+
 
         //When
-        transport.handle(new SendData(conn1.port(), conn1.connectionId(), "foo".getBytes(US_ASCII)));
-        transport.handle(new SendData(conn2.port(), conn2.connectionId(), "FOOBAR".getBytes(US_ASCII)));
+        transport.handle(new SendData(connS1C1.port(), connS1C1.connectionId(), "S1 -> C1".getBytes(US_ASCII)));
+        transport.handle(new SendData(connS2C2.port(), connS2C2.connectionId(), "S2 -> C2".getBytes(US_ASCII)));
+        transport.handle(new SendData(connS1C3.port(), connS1C3.connectionId(), "S1 -> C3".getBytes(US_ASCII)));
+        transport.handle(new SendData(connS2C4.port(), connS2C4.connectionId(), "S2 -> C4".getBytes(US_ASCII)));
 
         // Then
-        runner.keepRunning(transport::work).untilCompleted(() -> client1.read(3, 10, dataConsumer));
-        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("foo");
-        runner.keepRunning(transport::work).untilCompleted(() -> client2.read(6, 10, dataConsumer));
-        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("FOOBAR");
+        runner.keepRunning(transport::work).untilCompleted(() -> client1.read("S1 -> C1".length(), 20, dataConsumer));
+        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("S1 -> C1");
+        runner.keepRunning(transport::work).untilCompleted(() -> client2.read("S2 -> C2".length(), 20, dataConsumer));
+        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("S2 -> C2");
+        runner.keepRunning(transport::work).untilCompleted(() -> client3.read("S1 -> C3".length(), 20, dataConsumer));
+        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("S1 -> C3");
+        runner.keepRunning(transport::work).untilCompleted(() -> client4.read("S2 -> C4".length(), 20, dataConsumer));
+        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("S2 -> C4");
     }
 }

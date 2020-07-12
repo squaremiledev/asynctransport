@@ -58,22 +58,6 @@ class ListeningTransportTest
         runTest((transport, client) -> assertThrows(ConnectException.class, () -> client.connectedTo(freePort())));
     }
 
-    // timeout required
-    @Test
-    void shouldNotAcceptIfListeningOnAnotherPort()
-    {
-        runTest((transport, client) ->
-                {
-                    // When
-                    final int port = freePort();
-                    transport.handle(new Listen(0, port));
-
-                    // Then
-                    assertThrows(ConnectException.class, () -> client.connectedTo(freePortOtherThan(port)));
-                }
-        );
-    }
-
     @Test
     void shouldStopListeningWhenAsked()
     {

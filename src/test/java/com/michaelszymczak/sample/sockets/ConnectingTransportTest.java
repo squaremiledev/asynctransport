@@ -108,8 +108,10 @@ class ConnectingTransportTest
         assertThat(events.last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
 
 //        // When
-        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort1));
-        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort2));
+        final int clientPort1 = freePortOtherThan(listeningPort1, listeningPort2);
+        final int clientPort2 = freePortOtherThan(listeningPort1, listeningPort2, clientPort1);
+        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort1, clientPort1));
+        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort2, clientPort2));
 
         // Then
         workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);
@@ -132,14 +134,16 @@ class ConnectingTransportTest
         // Given
         final int listeningPort1 = freePort();
         final int listeningPort2 = freePortOtherThan(listeningPort1);
+        final int clientPort1 = freePortOtherThan(listeningPort1, listeningPort2);
+        final int clientPort2 = freePortOtherThan(listeningPort1, listeningPort2, clientPort1);
 
         // When
         transport.handle(new Listen(5, listeningPort1));
         assertThat(events.last(StartedListening.class, event -> event.commandId() == 5).port()).isEqualTo(listeningPort1);
-        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort1));
+        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort1, clientPort1));
         transport.handle(new Listen(6, listeningPort2));
         assertThat(events.last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
-        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort2));
+        runner.keepRunning(transport::work).untilCompleted(() -> new SampleClient().connectedTo(listeningPort2, clientPort2));
 
         // Then
         workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);

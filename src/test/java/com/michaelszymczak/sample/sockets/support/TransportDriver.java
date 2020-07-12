@@ -1,5 +1,7 @@
 package com.michaelszymczak.sample.sockets.support;
 
+import java.util.function.Predicate;
+
 import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
@@ -25,15 +27,24 @@ public class TransportDriver
 
     public ConnectionAccepted listenAndConnect(final SampleClient client)
     {
-        return listenAndConnect(client, nextCommandId++, freePort());
+        final StartedListening startedListeningEvent = startListening();
+        return connectClient(startedListeningEvent, client);
     }
 
-    public ConnectionAccepted listenAndConnect(final SampleClient client, final int commandId, final int port)
+    public ConnectionAccepted connectClient(StartedListening startedListeningEvent, final SampleClient client)
     {
-        transport.handle(new Listen(commandId, port));
-        final int serverPort = events.last(StartedListening.class, event -> event.commandId() == commandId).port();
-        runner.keepRunning(transport::work).untilCompleted(() -> client.connectedTo(serverPort));
-        workUntil(() -> !events.all(ConnectionAccepted.class, event -> event.commandId() == commandId).isEmpty(), transport);
-        return events.last(ConnectionAccepted.class, event -> event.commandId() == commandId);
+        final int clientPort = freePort();
+        runner.keepRunning(transport::work).untilCompleted(() -> client.connectedTo(startedListeningEvent.port(), clientPort));
+        final Predicate<ConnectionAccepted> connectionAcceptedPredicate = event -> event.commandId() == startedListeningEvent.commandId() && event.remotePort() == clientPort;
+        workUntil(() -> !events.all(ConnectionAccepted.class, connectionAcceptedPredicate).isEmpty(), transport);
+        return events.last(ConnectionAccepted.class, connectionAcceptedPredicate);
     }
+
+    public StartedListening startListening()
+    {
+        final int commandId = nextCommandId++;
+        transport.handle(new Listen(commandId, freePort()));
+        return events.last(StartedListening.class, event -> event.commandId() == commandId);
+    }
+
 }
