@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
+import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
@@ -33,7 +34,7 @@ class DataTransferTest
     private final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
 
     @Test
-    void shouldSendSomeData() throws IOException
+    void shouldSendData() throws IOException
     {
         final NIOBackedTransport transport = new NIOBackedTransport(events);
         final SampleClient client = new SampleClient();
@@ -49,6 +50,12 @@ class DataTransferTest
         // Then
         runner.keepRunning(transport::work).untilCompleted(() -> client.read(6, 6, dataConsumer));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("fooBAR");
+        final List<DataSent> dataSentEvents = events.all(DataSent.class);
+        assertThat(dataSentEvents).hasSize(2);
+        assertThat(dataSentEvents.get(0).connectionId()).isEqualTo(conn.connectionId());
+        assertThat(dataSentEvents.get(1).connectionId()).isEqualTo(conn.connectionId());
+        assertThat(dataSentEvents.get(0).port()).isEqualTo(conn.port());
+        assertThat(dataSentEvents.get(1).port()).isEqualTo(conn.port());
     }
 
     @Test

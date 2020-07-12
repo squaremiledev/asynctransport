@@ -9,6 +9,7 @@ import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
+import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
 
 public class Connection implements AutoCloseable, ConnectionAggregate
@@ -46,27 +47,6 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         return connectionId;
     }
 
-    public int remotePort()
-    {
-        return remotePort;
-    }
-
-    public SocketChannel channel()
-    {
-        return channel;
-    }
-
-    public void write(final byte[] content) throws IOException
-    {
-        channel.write(ByteBuffer.wrap(content));
-    }
-
-    @Override
-    public void close()
-    {
-        Resources.close(channel);
-    }
-
     @Override
     public void handle(final ConnectionCommand command)
     {
@@ -87,7 +67,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         else if (command instanceof SendData)
         {
             final SendData cmd = (SendData)command;
-            sendData(cmd.port(), cmd.connectionId(), cmd.content());
+            sendData(cmd.content());
         }
         else
         {
@@ -95,11 +75,28 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         }
     }
 
-    private void sendData(final int port, final long connectionId, final byte[] content)
+    public int remotePort()
+    {
+        return remotePort;
+    }
+
+    public void write(final byte[] content) throws IOException
+    {
+        channel.write(ByteBuffer.wrap(content));
+    }
+
+    @Override
+    public void close()
+    {
+        Resources.close(channel);
+    }
+
+    private void sendData(final byte[] content)
     {
         try
         {
             write(content);
+            transportEventsListener.onEvent(new DataSent(port, connectionId));
         }
         catch (IOException e)
         {
