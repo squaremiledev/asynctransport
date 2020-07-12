@@ -26,14 +26,14 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     private final TransportEventsListener transportEventsListener;
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
     private final List<ListeningSocket> listeningSockets;
-    private final Selector listeningSelector;
+    private final Selector acceptingSelector;
     private final Selector connectionsSelector;
     private final ConnectionRepository connectionRepository = new ConnectionRepository();
 
     public NIOBackedTransport(final TransportEventsListener transportEventsListener) throws IOException
     {
         this.transportEventsListener = transportEventsListener;
-        this.listeningSelector = Selector.open();
+        this.acceptingSelector = Selector.open();
         this.connectionsSelector = Selector.open();
         this.listeningSockets = new ArrayList<>(10);
     }
@@ -87,7 +87,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         }
         else
         {
-            throw new IllegalArgumentException();
+            throw new UnsupportedOperationException(command.getClass().getCanonicalName());
         }
     }
 
@@ -95,35 +95,10 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     @Override
     public void work()
     {
-        listeningWork();
-        connectionsWork();
-    }
-
-    private void connectionsWork()
-    {
-        final int availableCount;
         try
         {
-            availableCount = connectionsSelector.selectNow();
-
-            if (availableCount > 0)
-            {
-                final Iterator<SelectionKey> keyIterator = connectionsSelector.selectedKeys().iterator();
-                while (keyIterator.hasNext())
-                {
-                    final SelectionKey key = keyIterator.next();
-                    keyIterator.remove();
-                    if (!key.isValid())
-                    {
-                        continue;
-                    }
-                    if (key.isReadable())
-                    {
-                        final Connection connection = (Connection)key.attachment();
-                        connection.read();
-                    }
-                }
-            }
+            acceptingWork();
+            connectionsWork();
         }
         catch (IOException e)
         {
@@ -131,39 +106,59 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         }
     }
 
-    private void listeningWork()
+    private void connectionsWork() throws IOException
     {
         final int availableCount;
-        try
-        {
-            availableCount = listeningSelector.selectNow();
 
-            if (availableCount > 0)
+        availableCount = connectionsSelector.selectNow();
+
+        if (availableCount > 0)
+        {
+            final Iterator<SelectionKey> keyIterator = connectionsSelector.selectedKeys().iterator();
+            while (keyIterator.hasNext())
             {
-                final Iterator<SelectionKey> keyIterator = listeningSelector.selectedKeys().iterator();
-                while (keyIterator.hasNext())
+                final SelectionKey key = keyIterator.next();
+                keyIterator.remove();
+                if (!key.isValid())
                 {
-                    final SelectionKey key = keyIterator.next();
-                    keyIterator.remove();
-                    if (!key.isValid())
-                    {
-                        continue;
-                    }
-                    if (key.isAcceptable())
-                    {
-                        final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
-                        final Connection connection = listeningSocket.acceptConnection();
-                        final SocketChannel socketChannel = connection.channel();
-                        final SelectionKey selectionKey = socketChannel.register(connectionsSelector, SelectionKey.OP_READ);
-                        selectionKey.attach(connection);
-                        connectionRepository.add(connection);
-                    }
+                    continue;
+                }
+                if (key.isReadable())
+                {
+                    final Connection connection = (Connection)key.attachment();
+                    connection.read();
                 }
             }
         }
-        catch (IOException e)
+    }
+
+    private void acceptingWork() throws IOException
+    {
+        final int availableCount;
+
+        availableCount = acceptingSelector.selectNow();
+
+        if (availableCount > 0)
         {
-            throw new RuntimeException(e);
+            final Iterator<SelectionKey> keyIterator = acceptingSelector.selectedKeys().iterator();
+            while (keyIterator.hasNext())
+            {
+                final SelectionKey key = keyIterator.next();
+                keyIterator.remove();
+                if (!key.isValid())
+                {
+                    continue;
+                }
+                if (key.isAcceptable())
+                {
+                    final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
+                    final Connection connection = listeningSocket.acceptConnection();
+                    final SocketChannel socketChannel = connection.channel();
+                    final SelectionKey selectionKey = socketChannel.register(connectionsSelector, SelectionKey.OP_READ);
+                    selectionKey.attach(connection);
+                    connectionRepository.add(connection);
+                }
+            }
         }
     }
 
@@ -175,7 +170,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
             final ListeningSocket listeningSocket = listeningSockets.get(k);
             Resources.close(listeningSocket);
         }
-        Resources.close(listeningSelector);
+        Resources.close(acceptingSelector);
         Resources.close(connectionsSelector);
         Resources.close(connectionRepository);
     }
@@ -187,7 +182,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         {
             listeningSocket.listen();
             final ServerSocketChannel serverSocketChannel = listeningSocket.serverSocketChannel();
-            final SelectionKey selectionKey = serverSocketChannel.register(listeningSelector, SelectionKey.OP_ACCEPT);
+            final SelectionKey selectionKey = serverSocketChannel.register(acceptingSelector, SelectionKey.OP_ACCEPT);
             selectionKey.attach(listeningSocket);
         }
         catch (IOException e)
@@ -198,7 +193,6 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         }
         listeningSockets.add(listeningSocket);
         transportEventsListener.onEvent(new StartedListening(command.port(), command.commandId()));
-
     }
 
     private void handle(final StopListening command)
