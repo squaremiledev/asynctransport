@@ -9,6 +9,7 @@ import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
+import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
 
@@ -86,6 +87,11 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         return channel.write(ByteBuffer.wrap(content));
     }
 
+    public SocketChannel channel()
+    {
+        return channel;
+    }
+
     @Override
     public void close()
     {
@@ -108,5 +114,10 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             // TODO: return failure
             throw new RuntimeException(e);
         }
+    }
+
+    public void read()
+    {
+        transportEventsListener.onEvent(new DataReceived(port, connectionId, 3));
     }
 }

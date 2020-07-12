@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 
 import com.michaelszymczak.sample.sockets.nio.Resources;
 
@@ -61,7 +62,12 @@ public class SampleClient implements AutoCloseable
 
     public void write() throws IOException
     {
-        socket.getOutputStream().write(new byte[10]);
+        write("foo".getBytes(StandardCharsets.US_ASCII));
+    }
+
+    public void write(final byte[] content) throws IOException
+    {
+        socket.getOutputStream().write(content);
     }
 
     public boolean hasServerClosedConnection() throws IOException

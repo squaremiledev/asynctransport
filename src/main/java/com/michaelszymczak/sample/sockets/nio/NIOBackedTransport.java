@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -27,12 +28,14 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
     private final List<ListeningSocket> listeningSockets;
     private final Selector listeningSelector;
+    private final Selector connectionsSelector;
     private final ConnectionRepository connectionRepository = new ConnectionRepository();
 
     public NIOBackedTransport(final TransportEventsListener transportEventsListener) throws IOException
     {
         this.transportEventsListener = transportEventsListener;
         this.listeningSelector = Selector.open();
+        this.connectionsSelector = Selector.open();
         this.listeningSockets = new ArrayList<>(10);
     }
 
@@ -87,6 +90,44 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     @Override
     public void work()
     {
+        listeningWork();
+        connectionsWork();
+    }
+
+    private void connectionsWork()
+    {
+        final int availableCount;
+        try
+        {
+            availableCount = connectionsSelector.selectNow();
+
+            if (availableCount > 0)
+            {
+                final Iterator<SelectionKey> keyIterator = connectionsSelector.selectedKeys().iterator();
+                while (keyIterator.hasNext())
+                {
+                    final SelectionKey key = keyIterator.next();
+                    keyIterator.remove();
+                    if (!key.isValid())
+                    {
+                        continue;
+                    }
+                    if (key.isReadable())
+                    {
+                        final Connection connection = (Connection)key.attachment();
+                        connection.read();
+                    }
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void listeningWork()
+    {
         final int availableCount;
         try
         {
@@ -106,7 +147,11 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
                     if (key.isAcceptable())
                     {
                         final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
-                        connectionRepository.add(listeningSocket.acceptConnection());
+                        final Connection connection = listeningSocket.acceptConnection();
+                        final SocketChannel socketChannel = connection.channel();
+                        final SelectionKey selectionKey = socketChannel.register(connectionsSelector, SelectionKey.OP_READ);
+                        selectionKey.attach(connection);
+                        connectionRepository.add(connection);
                     }
                 }
             }
@@ -126,6 +171,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
             Resources.close(listeningSocket);
         }
         Resources.close(listeningSelector);
+        Resources.close(connectionsSelector);
         Resources.close(connectionRepository);
     }
 
@@ -139,8 +185,6 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
                 listeningSocket.listen();
                 final ServerSocketChannel serverSocketChannel = listeningSocket.serverSocketChannel();
                 final SelectionKey selectionKey = serverSocketChannel.register(listeningSelector, SelectionKey.OP_ACCEPT);
-                // TODO: it should be possible to retrieve listening socket from the selection key
-                // TODO: see shouldSendDataViaMultipleConnections
                 selectionKey.attach(listeningSocket);
             }
             catch (IOException e)

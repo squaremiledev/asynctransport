@@ -47,6 +47,7 @@ public class ListeningSocket implements AutoCloseable
     public Connection acceptConnection() throws IOException
     {
         final SocketChannel acceptedSocketChannel = serverSocketChannel.accept();
+        acceptedSocketChannel.configureBlocking(false);
         final Socket acceptedSocket = acceptedSocketChannel.socket();
         final long connectionId = connectionIdSource.newId();
         final Connection connection = new Connection(acceptedSocket.getLocalPort(), connectionId, acceptedSocket.getPort(), acceptedSocketChannel, transportEventsListener);
