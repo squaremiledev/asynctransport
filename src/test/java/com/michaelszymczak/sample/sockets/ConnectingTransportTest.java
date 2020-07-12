@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
@@ -92,6 +93,19 @@ class ConnectingTransportTest
 
         // Then
         assertThat(client.hasServerClosedConnection()).isTrue();
+    }
+
+    @Test
+    void shouldRejectClosingNonExistingConnection() throws IOException
+    {
+        final NIOBackedTransport transport = new NIOBackedTransport(events);
+
+        // When
+        transport.handle(new CloseConnection(1234, 11111, 15));
+
+        // Then
+        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 15).details()).containsIgnoringCase("connection id");
+        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 15).port()).isEqualTo(1234);
     }
 
     @Test

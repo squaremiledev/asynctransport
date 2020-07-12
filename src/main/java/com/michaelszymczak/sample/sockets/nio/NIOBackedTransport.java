@@ -41,32 +41,41 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     @Override
     public void handle(final TransportCommand command)
     {
-        if (command instanceof ConnectionCommand)
+        try
         {
-            handleConnectionCommand((ConnectionCommand)command);
+            if (command instanceof ConnectionCommand)
+            {
+                handleConnectionCommand((ConnectionCommand)command);
+            }
+            else
+            {
+                handleTransportCommand(command);
+            }
         }
-        else
+        catch (Exception e)
         {
-            handleTransportCommand(command);
+            transportEventsListener.onEvent(new CommandFailed(command, e.getMessage()));
         }
     }
 
-    private void handleConnectionCommand(final ConnectionCommand command)
+    private void handleConnectionCommand(final ConnectionCommand command) throws Exception
     {
         if (!connectionRepository.contains(command.connectionId()))
         {
             transportEventsListener.onEvent(new CommandFailed(command, "Connection id not found"));
             return;
         }
+
         connectionRepository.findByConnectionId(command.connectionId()).handle(command);
 
         if (command instanceof CloseConnection)
         {
-            closeConnection((CloseConnection)command);
+            // TODO: handle a graceful FIN and abrupt RST sending appropriate events
+            connectionRepository.findByConnectionId(command.connectionId()).close();
         }
     }
 
-    private void handleTransportCommand(final TransportCommand command)
+    private void handleTransportCommand(final TransportCommand command) throws Exception
     {
         if (command instanceof Listen)
         {
@@ -171,48 +180,25 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         Resources.close(connectionRepository);
     }
 
-    private void handle(final Listen command)
+    private void handle(final Listen command) throws IOException
     {
+        final ListeningSocket listeningSocket = new ListeningSocket(command.port(), command.commandId(), connectionIdSource, transportEventsListener);
         try
         {
-            final ListeningSocket listeningSocket = new ListeningSocket(command.port(), command.commandId(), connectionIdSource, transportEventsListener);
-            try
-            {
-                listeningSocket.listen();
-                final ServerSocketChannel serverSocketChannel = listeningSocket.serverSocketChannel();
-                final SelectionKey selectionKey = serverSocketChannel.register(listeningSelector, SelectionKey.OP_ACCEPT);
-                selectionKey.attach(listeningSocket);
-            }
-            catch (IOException e)
-            {
-                Resources.close(listeningSocket);
-                transportEventsListener.onEvent(new CommandFailed(command, e.getMessage()));
-                return;
-            }
-            listeningSockets.add(listeningSocket);
-            transportEventsListener.onEvent(new StartedListening(command.port(), command.commandId()));
+            listeningSocket.listen();
+            final ServerSocketChannel serverSocketChannel = listeningSocket.serverSocketChannel();
+            final SelectionKey selectionKey = serverSocketChannel.register(listeningSelector, SelectionKey.OP_ACCEPT);
+            selectionKey.attach(listeningSocket);
         }
         catch (IOException e)
         {
-            // TODO: return failure
-            throw new RuntimeException();
+            Resources.close(listeningSocket);
+            transportEventsListener.onEvent(new CommandFailed(command, e.getMessage()));
+            return;
         }
-    }
+        listeningSockets.add(listeningSocket);
+        transportEventsListener.onEvent(new StartedListening(command.port(), command.commandId()));
 
-    private void closeConnection(final CloseConnection command)
-    {
-        // TODO: return failure if not found
-        if (connectionRepository.contains(command.connectionId()))
-        {
-            try
-            {
-                connectionRepository.findByConnectionId(command.connectionId()).close();
-            }
-            catch (Exception e)
-            {
-                transportEventsListener.onEvent(new CommandFailed(command, e.getMessage()));
-            }
-        }
     }
 
     private void handle(final StopListening command)
