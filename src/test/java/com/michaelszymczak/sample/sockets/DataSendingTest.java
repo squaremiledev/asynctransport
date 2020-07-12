@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -172,7 +174,7 @@ class DataSendingTest
     }
 
     @Test
-    void shouldBeAbleToSendDataInMultipleChunks() throws IOException
+    void shouldBeAbleToSendLargeChunkOfData() throws IOException
     {
         final int contentSizeInBytes = 1_000_000;
 
@@ -201,6 +203,68 @@ class DataSendingTest
         }
     }
 
+    @Test
+    void shouldBeAbleToSendDataInMultipleChunks() throws IOException
+    {
+        try (
+                final NIOBackedTransport transport = new NIOBackedTransport(events);
+                final SampleClient client = new SampleClient()
+        )
+        {
+            final TransportDriver driver = new TransportDriver(transport, events);
+            final int serverPort = freePort(4004);
+            final int clientPort = freePortOtherThan(serverPort);
+            final ConnectionAccepted conn = driver.listenAndConnect(client, serverPort, clientPort);
+            final byte[] dataThatFitsTheBuffer = generateData(conn.sendBufferSize(), 2);
+
+
+            //When
+            do
+            {
+                transport.handle(new SendData(conn.port(), conn.connectionId(), dataThatFitsTheBuffer));
+            }
+            // TODO: waiting when invoking the 'last' method is probably not fit for purpose here
+            while (events.last(DataSent.class, event -> event.connectionId() == conn.connectionId()).bytesSent() != 0);
+
+            // Then
+            final long totalBytesSentUntilFilledTheSendQueue = events.last(DataSent.class, event ->
+                    event.connectionId() == conn.connectionId() && event.bytesSent() == 0
+            ).totalBytesSent();
+            assertThat(totalBytesSentUntilFilledTheSendQueue).isEqualTo((int)totalBytesSentUntilFilledTheSendQueue);
+            assertThat(totalBytesSentUntilFilledTheSendQueue).isGreaterThanOrEqualTo(conn.sendBufferSize());
+            runner.keepRunning(transport::work).untilCompleted(
+                    () -> client.read((int)totalBytesSentUntilFilledTheSendQueue, (int)totalBytesSentUntilFilledTheSendQueue, dataConsumer));
+        }
+    }
+
+    @Test
+    @Disabled
+    void shouldBeAbleToSendPartOfTheData() throws IOException
+    {
+        try (
+                final NIOBackedTransport transport = new NIOBackedTransport(events);
+                final SampleClient client = new SampleClient()
+        )
+        {
+            final TransportDriver driver = new TransportDriver(transport, events);
+            final int serverPort = freePort();
+            final int clientPort = freePortOtherThan(serverPort);
+            final ConnectionAccepted conn = driver.listenAndConnect(client, serverPort, clientPort);
+            final int twiceThanSendBufferSize = Math.max(conn.sendBufferSize() * 2, 1_000_000);
+            final byte[] data = byteArrayWith(pos -> String.format("%9d%n", pos), twiceThanSendBufferSize / 10);
+            assertThat(data.length).isEqualTo(twiceThanSendBufferSize);
+
+
+            //When
+            do
+            {
+                transport.handle(new SendData(conn.port(), conn.connectionId(), data));
+            }
+            while (events.last(DataSent.class, event -> event.connectionId() == conn.connectionId()).bytesSent() != 0);
+            // TODO: write the test
+        }
+    }
+
     private String fixedLengthStringStartingWith(final String content, final int minLength)
     {
         final StringBuilder sb = new StringBuilder(10);
@@ -210,5 +274,24 @@ class DataSendingTest
             sb.append(i % 10);
         }
         return sb.toString();
+    }
+
+    private BooleanSupplier bytesSent(final TransportEvents events, final long connectionId, final int size)
+    {
+        return () -> !events.all(
+                DataSent.class,
+                event -> event.connectionId() == connectionId && event.totalBytesSent() >= size
+        ).isEmpty();
+    }
+
+    private byte[] generateData(final int size, final int fraction)
+    {
+        final int sizeThatFitsSendBuffer = (size / (fraction * 10)) * 10;
+        final byte[] data = byteArrayWith(pos -> String.format("%9d%n", pos), sizeThatFitsSendBuffer / 10);
+        if (data.length != sizeThatFitsSendBuffer)
+        {
+            throw new RuntimeException("wrong size");
+        }
+        return data;
     }
 }

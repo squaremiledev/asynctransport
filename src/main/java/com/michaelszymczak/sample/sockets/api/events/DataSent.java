@@ -1,18 +1,27 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
+import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
+
 public class DataSent implements ConnectionEvent
 {
     private final int port;
     private final long connectionId;
     private final int bytesSent;
     private final long totalBytesSent;
+    private final long commandId;
 
     public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent)
+    {
+        this(port, connectionId, bytesSent, totalBytesSent, TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID);
+    }
+
+    public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long commandId)
     {
         this.port = port;
         this.connectionId = connectionId;
         this.bytesSent = bytesSent;
         this.totalBytesSent = totalBytesSent;
+        this.commandId = commandId;
     }
 
     @Override
@@ -37,6 +46,11 @@ public class DataSent implements ConnectionEvent
         return bytesSent;
     }
 
+    public long commandId()
+    {
+        return commandId;
+    }
+
     @Override
     public String toString()
     {
@@ -45,6 +59,7 @@ public class DataSent implements ConnectionEvent
                ", connectionId=" + connectionId +
                ", bytesSent=" + bytesSent +
                ", totalBytesSent=" + totalBytesSent +
+               ", commandId=" + commandId +
                '}';
     }
 }

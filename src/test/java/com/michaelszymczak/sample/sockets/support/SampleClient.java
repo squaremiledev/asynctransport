@@ -53,6 +53,7 @@ public class SampleClient implements AutoCloseable
         do
         {
             bytesRead += socket.getInputStream().read(receivedContent, bytesRead, receivedContent.length - bytesRead);
+            System.out.println(bytesRead);
         }
         while (bytesRead < contentSize);
         dataConsumer.consume(receivedContent, bytesRead);

@@ -72,8 +72,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         }
         else if (command instanceof SendData)
         {
-            final SendData cmd = (SendData)command;
-            sendData(cmd.content());
+            sendData((SendData)command);
         }
         else
         {
@@ -102,16 +101,17 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         Resources.close(channel);
     }
 
-    private void sendData(final byte[] content)
+    private void sendData(final SendData command)
     {
         try
         {
-            final int bytesSent = channel.write(ByteBuffer.wrap(content));
+            final int bytesSent = channel.write(ByteBuffer.wrap(command.content(), 0, Math.min(command.content().length, initialSenderBufferSize)));
             if (bytesSent > 0)
             {
                 totalBytesSent += bytesSent;
             }
-            transportEventsListener.onEvent(new DataSent(port, connectionId, bytesSent, totalBytesSent));
+            // TODO: test a SendData command with no data
+            transportEventsListener.onEvent(new DataSent(port, connectionId, bytesSent, totalBytesSent, command.commandId()));
         }
         catch (IOException e)
         {

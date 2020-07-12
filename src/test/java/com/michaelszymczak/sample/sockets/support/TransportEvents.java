@@ -16,6 +16,7 @@ public class TransportEvents implements TransportEventsListener
     @Override
     public synchronized void onEvent(final TransportEvent event)
     {
+        System.out.println(event);
         events.add(event);
     }
 
