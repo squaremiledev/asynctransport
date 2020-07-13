@@ -2,12 +2,16 @@ package com.michaelszymczak.sample.sockets.support;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Predicate;
 
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
+
+
+import static java.util.stream.Collectors.joining;
 
 public class TransportEvents implements TransportEventsListener
 {
@@ -16,7 +20,6 @@ public class TransportEvents implements TransportEventsListener
     @Override
     public synchronized void onEvent(final TransportEvent event)
     {
-        System.out.println(event);
         events.add(event);
     }
 
@@ -74,5 +77,11 @@ public class TransportEvents implements TransportEventsListener
             }
         }
         return result;
+    }
+
+    @Override
+    public String toString()
+    {
+        return events.stream().map(Objects::toString).collect(joining("\n"));
     }
 }

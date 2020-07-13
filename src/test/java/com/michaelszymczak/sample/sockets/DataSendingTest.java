@@ -21,7 +21,6 @@ import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -212,7 +211,7 @@ class DataSendingTest
         )
         {
             final TransportDriver driver = new TransportDriver(transport, events);
-            final int serverPort = freePort(4004);
+            final int serverPort = freePort();
             final int clientPort = freePortOtherThan(serverPort);
             final ConnectionAccepted conn = driver.listenAndConnect(client, serverPort, clientPort);
             final byte[] dataThatFitsTheBuffer = generateData(conn.sendBufferSize(), 2);
@@ -238,7 +237,6 @@ class DataSendingTest
     }
 
     @Test
-    @Disabled
     void shouldBeAbleToSendPartOfTheData() throws IOException
     {
         try (
@@ -256,12 +254,14 @@ class DataSendingTest
 
 
             //When
-            do
-            {
-                transport.handle(new SendData(conn.port(), conn.connectionId(), data));
-            }
-            while (events.last(DataSent.class, event -> event.connectionId() == conn.connectionId()).bytesSent() != 0);
-            // TODO: write the test
+            transport.handle(new SendData(conn.port(), conn.connectionId(), data));
+            workUntil(() -> !events.all(DataSent.class, event -> event.connectionId() == conn.connectionId()).isEmpty(), transport);
+
+            // Then
+            final DataSent notAllDataSentEvent = events.last(DataSent.class, event -> event.connectionId() == conn.connectionId());
+            assertThat(notAllDataSentEvent.bytesSent()).isLessThan(data.length);
+            // TODO: this can be tested when there is an internal buffer installed in the connection
+            // assertThat(notAllDataSentEvent.totalBytesSent()).isEqualTo(data.length);
         }
     }
 
