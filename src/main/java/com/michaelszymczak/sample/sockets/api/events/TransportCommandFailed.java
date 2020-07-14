@@ -1,19 +1,17 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
+import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 
-public class ConnectionCommandFailed implements CommandFailed, ConnectionEvent
+public class TransportCommandFailed implements CommandFailed
 {
     private final int port;
     private final long commandId;
     private final String details;
-    private final long connectionId;
 
-    public ConnectionCommandFailed(final ConnectionCommand command, final String details)
+    public TransportCommandFailed(final TransportCommand command, final String details)
     {
         this.port = command.port();
         this.commandId = command.commandId();
-        this.connectionId = command.connectionId();
         this.details = details;
     }
 
@@ -38,17 +36,10 @@ public class ConnectionCommandFailed implements CommandFailed, ConnectionEvent
     @Override
     public String toString()
     {
-        return "ConnectionCommandFailed{" +
+        return "CommandFailed{" +
                "port=" + port +
                ", commandId=" + commandId +
                ", details='" + details + '\'' +
-               ", connectionId=" + connectionId +
                '}';
-    }
-
-    @Override
-    public long connectionId()
-    {
-        return connectionId;
     }
 }

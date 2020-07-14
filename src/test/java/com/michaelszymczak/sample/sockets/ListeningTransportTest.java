@@ -6,9 +6,9 @@ import java.net.ConnectException;
 import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
-import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
+import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
@@ -92,8 +92,8 @@ class ListeningTransportTest
                     transport.handle(new StopListening(4, anotherPort));
 
                     // Then
-                    assertThat(events.last(CommandFailed.class).commandId()).isEqualTo(4);
-                    assertThat(events.last(CommandFailed.class).port()).isEqualTo(anotherPort);
+                    assertThat(events.last(TransportCommandFailed.class).commandId()).isEqualTo(4);
+                    assertThat(events.last(TransportCommandFailed.class).port()).isEqualTo(anotherPort);
                     client.connectedTo(port);
                 }
         );

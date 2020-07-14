@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
-import com.michaelszymczak.sample.sockets.api.events.ConnectionCommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
@@ -92,12 +91,11 @@ class DataSendingTest
         runner.keepRunning(transport::work).untilCompleted(() -> client.read(3, 3, dataConsumer));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("bar");
 
-        workUntil(() -> !events.all(CommandFailed.class).isEmpty(), transport);
-        workUntil(() -> !events.all(ConnectionCommandFailed.class).isEmpty(), transport);
+        workUntil(() -> events.all(CommandFailed.class).size() > 1, transport);
         assertThat(events.last(CommandFailed.class, event -> event.commandId() == 108).port()).isEqualTo(conn.port());
         assertThat(events.last(CommandFailed.class, event -> event.commandId() == 108).details()).containsIgnoringCase("connection id");
-        assertThat(events.last(ConnectionCommandFailed.class, event -> event.commandId() == 109).port()).isEqualTo(unusedPort);
-        assertThat(events.last(ConnectionCommandFailed.class, event -> event.commandId() == 109).details()).containsIgnoringCase("port");
+        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 109).port()).isEqualTo(unusedPort);
+        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 109).details()).containsIgnoringCase("port");
     }
 
     @Test
@@ -118,9 +116,9 @@ class DataSendingTest
         runner.keepRunning(transport::work).untilCompleted(() -> client.read(3, 3, dataConsumer));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("bar");
 
-        workUntil(() -> !events.all(ConnectionCommandFailed.class).isEmpty(), transport);
-        assertThat(events.last(ConnectionCommandFailed.class).port()).isEqualTo(conn.port() + 1);
-        assertThat(events.last(ConnectionCommandFailed.class).details()).containsIgnoringCase("port");
+        workUntil(() -> !events.all(CommandFailed.class).isEmpty(), transport);
+        assertThat(events.last(CommandFailed.class).port()).isEqualTo(conn.port() + 1);
+        assertThat(events.last(CommandFailed.class).details()).containsIgnoringCase("port");
         assertThat(events.last(DataSent.class)).usingRecursiveComparison()
                 .isEqualTo(new DataSent(conn.port(), conn.connectionId(), "bar".getBytes(US_ASCII).length, "bar".getBytes(US_ASCII).length));
     }

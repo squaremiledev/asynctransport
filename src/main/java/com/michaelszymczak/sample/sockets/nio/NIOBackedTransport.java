@@ -15,9 +15,9 @@ import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
-import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
+import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
 import com.michaelszymczak.sample.sockets.connection.ConnectionRepository;
 
@@ -54,7 +54,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         }
         catch (Exception e)
         {
-            transportEventsListener.onEvent(new CommandFailed(command, e.getMessage()));
+            transportEventsListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
         }
     }
 
@@ -62,7 +62,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
     {
         if (!connectionRepository.contains(command.connectionId()))
         {
-            transportEventsListener.onEvent(new CommandFailed(command, "Connection id not found"));
+            transportEventsListener.onEvent(new TransportCommandFailed(command, "Connection id not found"));
             return;
         }
 
@@ -190,7 +190,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         catch (IOException e)
         {
             Resources.close(listeningSocket);
-            transportEventsListener.onEvent(new CommandFailed(command, e.getMessage()));
+            transportEventsListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
             return;
         }
         listeningSockets.add(listeningSocket);
@@ -208,6 +208,6 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
                 return;
             }
         }
-        transportEventsListener.onEvent(new CommandFailed(command, "No listening socket found on this port"));
+        transportEventsListener.onEvent(new TransportCommandFailed(command, "No listening socket found on this port"));
     }
 }

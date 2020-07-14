@@ -6,10 +6,10 @@ import java.util.List;
 
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
-import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
+import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.nio.Workmen;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
@@ -115,14 +115,14 @@ class ConnectingTransportTest
         assertThat(events.last(ConnectionClosed.class)).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), 15));
         assertThat(events.all(ConnectionClosed.class)).hasSize(1);
-        assertThat(events.all(CommandFailed.class)).isEmpty();
+        assertThat(events.all(TransportCommandFailed.class)).isEmpty();
         assertThat(client.hasServerClosedConnection()).isTrue();
 
         // When
         transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 16));
 
         // Then
-        assertThat(events.last(CommandFailed.class).commandId()).isEqualTo(16);
+        assertThat(events.last(TransportCommandFailed.class).commandId()).isEqualTo(16);
         assertThat(events.all(ConnectionClosed.class)).hasSize(1);
     }
 
@@ -135,8 +135,8 @@ class ConnectingTransportTest
         transport.handle(new CloseConnection(1234, 11111, 15));
 
         // Then
-        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 15).details()).containsIgnoringCase("connection id");
-        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 15).port()).isEqualTo(1234);
+        assertThat(events.last(TransportCommandFailed.class, event -> event.commandId() == 15).details()).containsIgnoringCase("connection id");
+        assertThat(events.last(TransportCommandFailed.class, event -> event.commandId() == 15).port()).isEqualTo(1234);
     }
 
     @Test
