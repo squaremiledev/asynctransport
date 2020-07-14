@@ -8,22 +8,17 @@ import java.nio.channels.SocketChannel;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
-import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
-import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
-import com.michaelszymczak.sample.sockets.api.events.ConnectionCommandFailed;
-import com.michaelszymczak.sample.sockets.api.events.DataReceived;
-import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
 
 public class Connection implements AutoCloseable, ConnectionAggregate
 {
     private final SocketChannel channel;
-    private final ConnectionEventsListener eventsListener;
     private final int port;
     private final long connectionId;
     private final int remotePort;
     private final int initialSenderBufferSize;
+    private final ThisConnectionEvents thisConnectionEvents;
     private long totalBytesSent;
     private long totalBytesReceived;
     private boolean isClosed = false;
@@ -41,7 +36,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         this.remotePort = remotePort;
         this.channel = channel;
         this.initialSenderBufferSize = channel.socket().getSendBufferSize();
-        this.eventsListener = eventsListener;
+        this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, port, connectionId);
     }
 
     @Override
@@ -65,7 +60,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         }
         if (command.port() != port)
         {
-            eventsListener.onEvent(new ConnectionCommandFailed(command, "Incorrect port"));
+            thisConnectionEvents.commandFailed(command, "Incorrect port");
             return;
         }
 
@@ -74,7 +69,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             Resources.close(channel);
             if (!isClosed)
             {
-                eventsListener.onEvent(new ConnectionClosed(port, connectionId, command.commandId()));
+                thisConnectionEvents.connectionClosed(command.commandId());
                 isClosed = true;
             }
         }
@@ -115,7 +110,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         Resources.close(channel);
         if (!isClosed)
         {
-            eventsListener.onEvent(new ConnectionClosed(port, connectionId, TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID));
+            thisConnectionEvents.connectionClosed();
             isClosed = true;
         }
     }
@@ -130,7 +125,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
                 totalBytesSent += bytesSent;
             }
             // TODO: test a SendData command with no data
-            eventsListener.onEvent(new DataSent(port, connectionId, bytesSent, totalBytesSent, command.commandId()));
+            thisConnectionEvents.dataSent(bytesSent, totalBytesSent, command.commandId());
         }
         catch (IOException e)
         {
@@ -150,7 +145,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             {
                 totalBytesReceived += read;
             }
-            eventsListener.onEvent(new DataReceived(port, connectionId, totalBytesReceived, content, read));
+            thisConnectionEvents.dataReceived(totalBytesReceived, content, read);
         }
         catch (Exception e)
         {
