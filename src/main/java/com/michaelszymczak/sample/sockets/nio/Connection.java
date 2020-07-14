@@ -8,6 +8,7 @@ import java.nio.channels.SocketChannel;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
 
@@ -23,13 +24,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     private long totalBytesReceived;
     private boolean isClosed = false;
 
-    public Connection(
-            final int port,
-            final long connectionId,
-            final int remotePort,
-            final SocketChannel channel,
-            final ConnectionEventsListener eventsListener
-    ) throws SocketException
+    public Connection(final int port, final long connectionId, final int remotePort, final SocketChannel channel, final ConnectionEventsListener eventsListener) throws SocketException
     {
         this.port = port;
         this.connectionId = connectionId;
@@ -54,32 +49,22 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     @Override
     public void handle(final ConnectionCommand command)
     {
-        if (command.connectionId() != connectionId)
+        if (!validate(command))
         {
-            throw new IllegalArgumentException();
-        }
-        if (command.port() != port)
-        {
-            thisConnectionEvents.commandFailed(command, "Incorrect port");
             return;
         }
 
         if (command instanceof CloseConnection)
         {
-            Resources.close(channel);
-            if (!isClosed)
-            {
-                thisConnectionEvents.connectionClosed(command.commandId());
-                isClosed = true;
-            }
+            handle((CloseConnection)command);
         }
         else if (command instanceof SendData)
         {
-            sendData((SendData)command);
+            handle((SendData)command);
         }
         else
         {
-            throw new IllegalArgumentException(command.getClass().getSimpleName());
+            thisConnectionEvents.commandFailed(command, "Unrecognized command");
         }
     }
 
@@ -89,33 +74,12 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         return isClosed;
     }
 
-    public int remotePort()
+    private void handle(final CloseConnection command)
     {
-        return remotePort;
+        closeConnection(command.commandId());
     }
 
-    public SocketChannel channel()
-    {
-        return channel;
-    }
-
-    public int initialSenderBufferSize()
-    {
-        return initialSenderBufferSize;
-    }
-
-    @Override
-    public void close()
-    {
-        Resources.close(channel);
-        if (!isClosed)
-        {
-            thisConnectionEvents.connectionClosed();
-            isClosed = true;
-        }
-    }
-
-    private void sendData(final SendData command)
+    private void handle(final SendData command)
     {
         try
         {
@@ -151,6 +115,51 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         {
             // TODO: return failure
             throw new RuntimeException(e);
+        }
+    }
+
+    private boolean validate(final ConnectionCommand command)
+    {
+        if (command.connectionId() != connectionId)
+        {
+            thisConnectionEvents.commandFailed(command, "Incorrect connection id");
+        }
+        if (command.port() != port)
+        {
+            thisConnectionEvents.commandFailed(command, "Incorrect port");
+            return false;
+        }
+        return true;
+    }
+
+    public int remotePort()
+    {
+        return remotePort;
+    }
+
+    public SocketChannel channel()
+    {
+        return channel;
+    }
+
+    public int initialSenderBufferSize()
+    {
+        return initialSenderBufferSize;
+    }
+
+    @Override
+    public void close()
+    {
+        closeConnection(TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID);
+    }
+
+    private void closeConnection(final long conventionalIgnoredCommandId)
+    {
+        Resources.close(channel);
+        if (!isClosed)
+        {
+            thisConnectionEvents.connectionClosed(conventionalIgnoredCommandId);
+            isClosed = true;
         }
     }
 }

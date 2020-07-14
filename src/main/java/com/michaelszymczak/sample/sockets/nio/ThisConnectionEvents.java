@@ -1,7 +1,6 @@
 package com.michaelszymczak.sample.sockets.nio;
 
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
-import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionCommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
@@ -24,12 +23,7 @@ public class ThisConnectionEvents
 
     public void commandFailed(final ConnectionCommand command, final String reason)
     {
-        eventsListener.onEvent(new ConnectionCommandFailed(command, reason));
-    }
-
-    public void connectionClosed()
-    {
-        connectionClosed(TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID);
+        eventsListener.onEvent(new ConnectionCommandFailed(command, reason + " (" + command.getClass().getSimpleName() + ")"));
     }
 
     public void connectionClosed(final long commandId)
