@@ -9,6 +9,7 @@ import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
@@ -25,6 +26,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     private final int initialSenderBufferSize;
     private long totalBytesSent;
     private long totalBytesReceived;
+    private boolean isClosed = false;
 
     public Connection(
             final int port,
@@ -70,8 +72,11 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         if (command instanceof CloseConnection)
         {
             Resources.close(channel);
-            // TODO do not send multiple times when already closed
-            transportEventsListener.onEvent(new ConnectionClosed(port, connectionId, command.commandId()));
+            if (!isClosed)
+            {
+                transportEventsListener.onEvent(new ConnectionClosed(port, connectionId, command.commandId()));
+                isClosed = true;
+            }
         }
         else if (command instanceof SendData)
         {
@@ -81,6 +86,12 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         {
             throw new IllegalArgumentException(command.getClass().getSimpleName());
         }
+    }
+
+    @Override
+    public boolean isClosed()
+    {
+        return isClosed;
     }
 
     public int remotePort()
@@ -102,6 +113,11 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     public void close()
     {
         Resources.close(channel);
+        if (!isClosed)
+        {
+            transportEventsListener.onEvent(new ConnectionClosed(port, connectionId, TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID));
+            isClosed = true;
+        }
     }
 
     private void sendData(final SendData command)

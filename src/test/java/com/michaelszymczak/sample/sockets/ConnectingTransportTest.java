@@ -14,6 +14,7 @@ import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.nio.Workmen;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
+import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
 
 import org.junit.jupiter.api.Test;
@@ -98,6 +99,30 @@ class ConnectingTransportTest
         assertThat(client.hasServerClosedConnection()).isTrue();
         assertThat(events.last(ConnectionClosed.class)).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(connectionAccepted.port(), connectionAccepted.connectionId(), 10));
+        assertThat(events.all(ConnectionClosed.class)).hasSize(1);
+    }
+
+    @Test
+    void shouldCloseConnectionOnce() throws IOException
+    {
+        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final SampleClient client = new SampleClient();
+        final TransportDriver driver = new TransportDriver(transport, events);
+
+        // Given
+        final ConnectionAccepted conn = driver.listenAndConnect(client);
+        transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 15));
+        assertThat(events.last(ConnectionClosed.class)).usingRecursiveComparison()
+                .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), 15));
+        assertThat(events.all(ConnectionClosed.class)).hasSize(1);
+        assertThat(events.all(CommandFailed.class)).isEmpty();
+        assertThat(client.hasServerClosedConnection()).isTrue();
+
+        // When
+        transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 16));
+
+        // Then
+        assertThat(events.last(CommandFailed.class).commandId()).isEqualTo(16);
         assertThat(events.all(ConnectionClosed.class)).hasSize(1);
     }
 

@@ -7,11 +7,8 @@ import com.michaelszymczak.sample.sockets.nio.Resources;
 
 public class ConnectionRepository implements AutoCloseable
 {
+    // TODO: autoboxing
     private final Map<Long, ConnectionAggregate> connections = new HashMap<>();
-
-    public ConnectionRepository()
-    {
-    }
 
     public void add(final ConnectionAggregate connection)
     {
@@ -38,5 +35,19 @@ public class ConnectionRepository implements AutoCloseable
     {
         // TODO - remember to close when implementing removal (with void return value) or clear
         connections.values().forEach(Resources::close);
+    }
+
+    public void removeById(final long connectionId)
+    {
+        if (!connections.containsKey(connectionId))
+        {
+            return;
+        }
+        final ConnectionAggregate connection = connections.get(connectionId);
+        if (!connection.isClosed())
+        {
+            throw new IllegalStateException("Connection must be closed before it's removed");
+        }
+        connections.remove(connectionId);
     }
 }

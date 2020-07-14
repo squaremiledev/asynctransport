@@ -9,4 +9,6 @@ public interface ConnectionAggregate extends AutoCloseable
     long connectionId();
 
     void handle(ConnectionCommand command);
+
+    boolean isClosed();
 }

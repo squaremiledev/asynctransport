@@ -11,7 +11,6 @@ import java.util.List;
 
 import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
-import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
@@ -19,6 +18,7 @@ import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
+import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
 import com.michaelszymczak.sample.sockets.connection.ConnectionRepository;
 
 public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.NonBlockingWorkman
@@ -58,7 +58,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         }
     }
 
-    private void handleConnectionCommand(final ConnectionCommand command) throws Exception
+    private void handleConnectionCommand(final ConnectionCommand command)
     {
         if (!connectionRepository.contains(command.connectionId()))
         {
@@ -66,12 +66,13 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
             return;
         }
 
-        connectionRepository.findByConnectionId(command.connectionId()).handle(command);
+        // TODO: handle a graceful FIN and abrupt RST sending appropriate events
+        final ConnectionAggregate targetConnection = connectionRepository.findByConnectionId(command.connectionId());
+        targetConnection.handle(command);
 
-        if (command instanceof CloseConnection)
+        if (targetConnection.isClosed())
         {
-            // TODO: handle a graceful FIN and abrupt RST sending appropriate events
-            connectionRepository.findByConnectionId(command.connectionId()).close();
+            connectionRepository.removeById(command.connectionId());
         }
     }
 
