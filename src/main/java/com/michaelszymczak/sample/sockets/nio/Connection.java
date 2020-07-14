@@ -5,21 +5,21 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
-import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionCommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
+import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
 
 public class Connection implements AutoCloseable, ConnectionAggregate
 {
     private final SocketChannel channel;
-    private final TransportEventsListener transportEventsListener;
+    private final ConnectionEventsListener eventsListener;
     private final int port;
     private final long connectionId;
     private final int remotePort;
@@ -33,7 +33,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             final long connectionId,
             final int remotePort,
             final SocketChannel channel,
-            final TransportEventsListener transportEventsListener
+            final ConnectionEventsListener eventsListener
     ) throws SocketException
     {
         this.port = port;
@@ -41,7 +41,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         this.remotePort = remotePort;
         this.channel = channel;
         this.initialSenderBufferSize = channel.socket().getSendBufferSize();
-        this.transportEventsListener = transportEventsListener;
+        this.eventsListener = eventsListener;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         }
         if (command.port() != port)
         {
-            transportEventsListener.onEvent(new CommandFailed(command, "Incorrect port"));
+            eventsListener.onEvent(new ConnectionCommandFailed(command, "Incorrect port"));
             return;
         }
 
@@ -74,7 +74,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             Resources.close(channel);
             if (!isClosed)
             {
-                transportEventsListener.onEvent(new ConnectionClosed(port, connectionId, command.commandId()));
+                eventsListener.onEvent(new ConnectionClosed(port, connectionId, command.commandId()));
                 isClosed = true;
             }
         }
@@ -115,7 +115,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         Resources.close(channel);
         if (!isClosed)
         {
-            transportEventsListener.onEvent(new ConnectionClosed(port, connectionId, TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID));
+            eventsListener.onEvent(new ConnectionClosed(port, connectionId, TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID));
             isClosed = true;
         }
     }
@@ -130,7 +130,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
                 totalBytesSent += bytesSent;
             }
             // TODO: test a SendData command with no data
-            transportEventsListener.onEvent(new DataSent(port, connectionId, bytesSent, totalBytesSent, command.commandId()));
+            eventsListener.onEvent(new DataSent(port, connectionId, bytesSent, totalBytesSent, command.commandId()));
         }
         catch (IOException e)
         {
@@ -150,7 +150,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             {
                 totalBytesReceived += read;
             }
-            transportEventsListener.onEvent(new DataReceived(port, connectionId, totalBytesReceived, content, read));
+            eventsListener.onEvent(new DataReceived(port, connectionId, totalBytesReceived, content, read));
         }
         catch (Exception e)
         {

@@ -50,7 +50,7 @@ public class ListeningSocket implements AutoCloseable
         acceptedSocketChannel.configureBlocking(false);
         final Socket acceptedSocket = acceptedSocketChannel.socket();
         final long connectionId = connectionIdSource.newId();
-        final Connection connection = new Connection(acceptedSocket.getLocalPort(), connectionId, acceptedSocket.getPort(), acceptedSocketChannel, transportEventsListener);
+        final Connection connection = new Connection(acceptedSocket.getLocalPort(), connectionId, acceptedSocket.getPort(), acceptedSocketChannel, transportEventsListener::onEvent);
         transportEventsListener.onEvent(new ConnectionAccepted(
                 connection.port(),
                 commandIdThatTriggeredListening,
