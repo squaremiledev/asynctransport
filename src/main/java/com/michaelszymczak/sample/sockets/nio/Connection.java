@@ -10,6 +10,7 @@ import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
@@ -68,7 +69,9 @@ public class Connection implements AutoCloseable, ConnectionAggregate
 
         if (command instanceof CloseConnection)
         {
-            // no op here at the moment
+            Resources.close(channel);
+            // TODO do not send multiple times when already closed
+            transportEventsListener.onEvent(new ConnectionClosed(port, connectionId, command.commandId()));
         }
         else if (command instanceof SendData)
         {

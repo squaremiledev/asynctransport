@@ -155,6 +155,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
                     final Connection connection = listeningSocket.acceptConnection();
                     final SocketChannel socketChannel = connection.channel();
                     final SelectionKey selectionKey = socketChannel.register(connectionsSelector, SelectionKey.OP_READ);
+                    // TODO: do we need to 'detatch' the connection when closed not to have hanging reference there?
                     selectionKey.attach(connection);
                     connectionRepository.add(connection);
                 }

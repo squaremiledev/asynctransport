@@ -8,6 +8,7 @@ import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.nio.Workmen;
@@ -95,6 +96,9 @@ class ConnectingTransportTest
 
         // Then
         assertThat(client.hasServerClosedConnection()).isTrue();
+        assertThat(events.last(ConnectionClosed.class)).usingRecursiveComparison()
+                .isEqualTo(new ConnectionClosed(connectionAccepted.port(), connectionAccepted.connectionId(), 10));
+        assertThat(events.all(ConnectionClosed.class)).hasSize(1);
     }
 
     @Test
