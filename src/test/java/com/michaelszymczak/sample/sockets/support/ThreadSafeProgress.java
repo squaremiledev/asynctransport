@@ -2,11 +2,11 @@ package com.michaelszymczak.sample.sockets.support;
 
 import java.util.concurrent.CountDownLatch;
 
-public class Progress
+public class ThreadSafeProgress
 {
     private final CountDownLatch serverReadyLatch;
 
-    public Progress()
+    public ThreadSafeProgress()
     {
         this.serverReadyLatch = new CountDownLatch(1);
     }

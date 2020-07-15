@@ -9,14 +9,14 @@ import com.michaelszymczak.sample.sockets.nio.Resources;
 
 public class DelegatingServer implements FakeServer
 {
-    private final Progress onReady;
+    private final ThreadSafeProgress onReady;
     private final NIOBackedTransport transport;
     private final BooleanSupplier threadInterrupted = () -> Thread.currentThread().isInterrupted();
     private final Runnable parkForOneMs = () -> LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
 
     public DelegatingServer(final NIOBackedTransport transport)
     {
-        this.onReady = new Progress();
+        this.onReady = new ThreadSafeProgress();
         this.transport = transport;
     }
 

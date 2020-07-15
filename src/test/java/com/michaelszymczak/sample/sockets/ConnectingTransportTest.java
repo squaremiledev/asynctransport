@@ -29,7 +29,7 @@ import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherT
 class ConnectingTransportTest
 {
     private final TransportEventsSpy events = new TransportEventsSpy();
-    private final BackgroundRunner runner = new BackgroundRunner();
+    private final BackgroundRunner inBackground = new BackgroundRunner();
 
     @Test
     void shouldNotifyWhenConnected() throws IOException
@@ -42,7 +42,7 @@ class ConnectingTransportTest
 
         // When
         final int clientPort = freePort();
-        runner.keepRunning(transport).untilCompleted(() -> new SampleClient().connectedTo(serverPort, clientPort));
+        transport.workUntil(inBackground.completed(() -> new SampleClient().connectedTo(serverPort, clientPort)));
         transport.workUntil(() -> events.contains(ConnectionAccepted.class));
 
         // Then
@@ -63,8 +63,8 @@ class ConnectingTransportTest
 
         // When
         final BackgroundRunner.ThrowingRunnable clientConnectsTask = () -> new SampleClient().connectedTo(serverPort);
-        runner.keepRunning(transport).untilCompleted(clientConnectsTask);
-        runner.keepRunning(transport).untilCompleted(clientConnectsTask);
+        transport.workUntil(inBackground.completed(clientConnectsTask));
+        transport.workUntil(inBackground.completed(clientConnectsTask));
         workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);
 
         // Then
@@ -87,7 +87,7 @@ class ConnectingTransportTest
         final int serverPort = events.last(StartedListening.class).port();
         final SampleClient client = new SampleClient();
         assertThrows(SocketException.class, client::write); // throws if not connected when writing
-        runner.keepRunning(transport).untilCompleted(() -> client.connectedTo(serverPort));
+        transport.workUntil(inBackground.completed(() -> client.connectedTo(serverPort)));
         workUntil(() -> !events.all(ConnectionAccepted.class).isEmpty(), transport);
         final ConnectionAccepted connectionAccepted = events.last(ConnectionAccepted.class);
 
@@ -154,8 +154,8 @@ class ConnectingTransportTest
 //        // When
         final int clientPort1 = freePortOtherThan(listeningPort1, listeningPort2);
         final int clientPort2 = freePortOtherThan(listeningPort1, listeningPort2, clientPort1);
-        runner.keepRunning(transport).untilCompleted(() -> new SampleClient().connectedTo(listeningPort1, clientPort1));
-        runner.keepRunning(transport).untilCompleted(() -> new SampleClient().connectedTo(listeningPort2, clientPort2));
+        transport.workUntil(inBackground.completed(() -> new SampleClient().connectedTo(listeningPort1, clientPort1)));
+        transport.workUntil(inBackground.completed(() -> new SampleClient().connectedTo(listeningPort2, clientPort2)));
 
         // Then
         workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);
@@ -184,10 +184,10 @@ class ConnectingTransportTest
         // When
         transport.handle(new Listen(5, listeningPort1));
         assertThat(events.last(StartedListening.class, event -> event.commandId() == 5).port()).isEqualTo(listeningPort1);
-        runner.keepRunning(transport).untilCompleted(() -> new SampleClient().connectedTo(listeningPort1, clientPort1));
+        transport.workUntil(inBackground.completed(() -> new SampleClient().connectedTo(listeningPort1, clientPort1)));
         transport.handle(new Listen(6, listeningPort2));
         assertThat(events.last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
-        runner.keepRunning(transport).untilCompleted(() -> new SampleClient().connectedTo(listeningPort2, clientPort2));
+        transport.workUntil(inBackground.completed(() -> new SampleClient().connectedTo(listeningPort2, clientPort2)));
 
         // Then
         workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);

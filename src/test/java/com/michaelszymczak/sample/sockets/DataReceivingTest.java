@@ -30,7 +30,7 @@ import static java.util.Arrays.copyOf;
 class DataReceivingTest
 {
     private final TransportEventsSpy events = new TransportEventsSpy();
-    private final BackgroundRunner runner = new BackgroundRunner();
+    private final BackgroundRunner inBackground = new BackgroundRunner();
 
     @SafeVarargs
     private static <T> Set<?> distinct(final Function<T, Object> property, final T... items)
@@ -50,7 +50,7 @@ class DataReceivingTest
         final ConnectionAccepted conn = driver.listenAndConnect(client);
 
         // When
-        runner.keepRunning(transport).untilCompleted(() -> client.write("foo".getBytes(US_ASCII)));
+        transport.workUntil(inBackground.completed(() -> client.write("foo".getBytes(US_ASCII))));
         workUntil(bytesReceived(events, conn.connectionId(), 3), transport);
 
         // Then
@@ -82,10 +82,10 @@ class DataReceivingTest
         assertThat(distinct(ConnectionAccepted::connectionId, connS1C1, connS2C2, connS1C3, connS2C4)).hasSize(4);
 
         // When
-        runner.keepRunning(transport).untilCompleted(() -> client1.write(fixedLengthStringStartingWith("S1 -> C1 ", 10).getBytes(US_ASCII)));
-        runner.keepRunning(transport).untilCompleted(() -> client2.write(fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII)));
-        runner.keepRunning(transport).untilCompleted(() -> client3.write(fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII)));
-        runner.keepRunning(transport).untilCompleted(() -> client4.write(fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII)));
+        transport.workUntil(inBackground.completed(() -> client1.write(fixedLengthStringStartingWith("S1 -> C1 ", 10).getBytes(US_ASCII))));
+        transport.workUntil(inBackground.completed(() -> client2.write(fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII))));
+        transport.workUntil(inBackground.completed(() -> client3.write(fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII))));
+        transport.workUntil(inBackground.completed(() -> client4.write(fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII))));
         workUntil(bytesReceived(events, connS1C1.connectionId(), 10), transport);
         workUntil(bytesReceived(events, connS2C2.connectionId(), 20), transport);
         workUntil(bytesReceived(events, connS1C3.connectionId(), 30), transport);

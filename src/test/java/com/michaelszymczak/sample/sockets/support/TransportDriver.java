@@ -17,7 +17,7 @@ public class TransportDriver
 
     private final Transport transport;
     private final TransportEventsSpy events;
-    private final BackgroundRunner runner = new BackgroundRunner();
+    private final BackgroundRunner inBackground = new BackgroundRunner();
     private int nextCommandId = 0;
 
     public TransportDriver(final Transport transport, final TransportEventsSpy events)
@@ -45,7 +45,7 @@ public class TransportDriver
 
     public ConnectionAccepted connectClient(StartedListening startedListeningEvent, final SampleClient client, final int clientPort)
     {
-        runner.keepRunning(transport).untilCompleted(() -> client.connectedTo(startedListeningEvent.port(), clientPort));
+        transport.workUntil(inBackground.completed(() -> client.connectedTo(startedListeningEvent.port(), clientPort)));
         final Predicate<ConnectionAccepted> connectionAcceptedPredicate = event -> event.commandId() == startedListeningEvent.commandId() && event.remotePort() == clientPort;
         workUntil(() -> !events.all(ConnectionAccepted.class, connectionAcceptedPredicate).isEmpty(), transport);
         return events.last(ConnectionAccepted.class, connectionAcceptedPredicate);

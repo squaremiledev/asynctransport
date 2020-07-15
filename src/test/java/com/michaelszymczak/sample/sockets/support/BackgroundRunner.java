@@ -2,48 +2,32 @@ package com.michaelszymczak.sample.sockets.support;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import com.michaelszymczak.sample.sockets.api.Workman;
+import java.util.function.BooleanSupplier;
 
 public class BackgroundRunner
 {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    public RunBuilder keepRunning(Workman taskToKeepRunningInTheSameThread)
+    public BooleanSupplier completed(final ThrowingRunnable taskToRunOnceInBackground)
     {
-        return new RunBuilder(taskToKeepRunningInTheSameThread);
+        final ThreadSafeProgress progress = new ThreadSafeProgress();
+        executorService.submit(() ->
+                               {
+                                   try
+                                   {
+                                       taskToRunOnceInBackground.run();
+                                       progress.onReady();
+                                   }
+                                   catch (Exception e)
+                                   {
+                                       throw new RuntimeException(e);
+                                   }
+                               });
+        return progress::hasCompleted;
     }
 
     public interface ThrowingRunnable
     {
         void run() throws Exception;
-    }
-
-    public class RunBuilder
-    {
-        final Workman taskToKeepRunningInTheSameThread;
-
-        RunBuilder(final Workman taskToKeepRunningInTheSameThread)
-        {
-            this.taskToKeepRunningInTheSameThread = taskToKeepRunningInTheSameThread;
-        }
-
-        public void untilCompleted(final ThrowingRunnable taskToRunOnceInBackground)
-        {
-            final Progress progress = new Progress();
-            executorService.submit(() ->
-                                   {
-                                       try
-                                       {
-                                           taskToRunOnceInBackground.run();
-                                           progress.onReady();
-                                       }
-                                       catch (Exception e)
-                                       {
-                                           throw new RuntimeException(e);
-                                       }
-                                   });
-            taskToKeepRunningInTheSameThread.workUntil(progress::hasCompleted);
-        }
     }
 }
