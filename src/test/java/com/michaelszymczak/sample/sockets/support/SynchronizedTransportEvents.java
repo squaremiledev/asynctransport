@@ -7,7 +7,7 @@ import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 
 public class SynchronizedTransportEvents implements TransportEventsListener
 {
-    private final TransportEvents transportEvents = new TransportEvents();
+    private final TransportEventsSpy transportEvents = new TransportEventsSpy();
 
     @Override
     public synchronized void onEvent(final TransportEvent event)
@@ -17,7 +17,7 @@ public class SynchronizedTransportEvents implements TransportEventsListener
 
     public synchronized List<TransportEvent> events()
     {
-        return transportEvents.events();
+        return transportEvents.all();
     }
 
     public synchronized <T extends TransportEvent> T last(final Class<T> clazz)

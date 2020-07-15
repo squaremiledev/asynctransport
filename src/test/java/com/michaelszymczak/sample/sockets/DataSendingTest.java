@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -19,7 +18,6 @@ import com.michaelszymczak.sample.sockets.support.FreePort;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
-import com.michaelszymczak.sample.sockets.support.TransportEvents;
 import com.michaelszymczak.sample.sockets.support.TransportEventsSpy;
 
 import org.junit.jupiter.api.Test;
@@ -37,10 +35,9 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 
 class DataSendingTest
 {
-    private final TransportEvents events = new TransportEvents();
+    private final TransportEventsSpy events = new TransportEventsSpy();
     private final BackgroundRunner runner = new BackgroundRunner();
     private final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
-    private TransportEventsSpy transportEventsSpy = new TransportEventsSpy(events);
 
     @SafeVarargs
     private static <T> Set<?> distinct(final Function<T, Object> property, final T... items)
@@ -95,10 +92,10 @@ class DataSendingTest
 
 
         workUntil(() -> events.all(CommandFailed.class).size() > 1, transport);
-        assertThat(transportEventsSpy.lastResponse(CommandFailed.class, 108).port()).isEqualTo(conn.port());
-        assertThat(transportEventsSpy.lastResponse(CommandFailed.class, 108).details()).containsIgnoringCase("connection id");
-        assertThat(transportEventsSpy.lastResponse(CommandFailed.class, 109).port()).isEqualTo(unusedPort);
-        assertThat(transportEventsSpy.lastResponse(CommandFailed.class, 109).details()).containsIgnoringCase("port");
+        assertThat(events.lastResponse(CommandFailed.class, 108).port()).isEqualTo(conn.port());
+        assertThat(events.lastResponse(CommandFailed.class, 108).details()).containsIgnoringCase("connection id");
+        assertThat(events.lastResponse(CommandFailed.class, 109).port()).isEqualTo(unusedPort);
+        assertThat(events.lastResponse(CommandFailed.class, 109).details()).containsIgnoringCase("port");
     }
 
     @Test
@@ -277,14 +274,6 @@ class DataSendingTest
             sb.append(i % 10);
         }
         return sb.toString();
-    }
-
-    private BooleanSupplier bytesSent(final TransportEvents events, final long connectionId, final int size)
-    {
-        return () -> !events.all(
-                DataSent.class,
-                event -> event.connectionId() == connectionId && event.totalBytesSent() >= size
-        ).isEmpty();
     }
 
     private byte[] generateData(final int size, final int fraction)

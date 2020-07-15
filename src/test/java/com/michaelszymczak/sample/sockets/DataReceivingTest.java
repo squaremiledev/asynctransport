@@ -16,7 +16,7 @@ import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
-import com.michaelszymczak.sample.sockets.support.TransportEvents;
+import com.michaelszymczak.sample.sockets.support.TransportEventsSpy;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +29,7 @@ import static java.util.Arrays.copyOf;
 
 class DataReceivingTest
 {
-    private final TransportEvents events = new TransportEvents();
+    private final TransportEventsSpy events = new TransportEventsSpy();
     private final BackgroundRunner runner = new BackgroundRunner();
 
     @SafeVarargs
@@ -102,7 +102,7 @@ class DataReceivingTest
                 .isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
     }
 
-    private BooleanSupplier bytesReceived(final TransportEvents events, final long connectionId, final int size)
+    private BooleanSupplier bytesReceived(final TransportEventsSpy events, final long connectionId, final int size)
     {
         return () -> !events.all(
                 DataReceived.class,

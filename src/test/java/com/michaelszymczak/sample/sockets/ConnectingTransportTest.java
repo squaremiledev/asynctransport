@@ -15,7 +15,7 @@ import com.michaelszymczak.sample.sockets.nio.Workmen;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
-import com.michaelszymczak.sample.sockets.support.TransportEvents;
+import com.michaelszymczak.sample.sockets.support.TransportEventsSpy;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +29,7 @@ import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherT
 
 class ConnectingTransportTest
 {
-    private final TransportEvents events = new TransportEvents();
+    private final TransportEventsSpy events = new TransportEventsSpy();
     private final BackgroundRunner runner = new BackgroundRunner();
 
     @Test

@@ -16,11 +16,11 @@ public class TransportDriver
 {
 
     private final Transport transport;
-    private final TransportEvents events;
+    private final TransportEventsSpy events;
     private final BackgroundRunner runner = new BackgroundRunner();
     private int nextCommandId = 0;
 
-    public TransportDriver(final Transport transport, final TransportEvents events)
+    public TransportDriver(final Transport transport, final TransportEventsSpy events)
     {
         this.transport = transport;
         this.events = events;
