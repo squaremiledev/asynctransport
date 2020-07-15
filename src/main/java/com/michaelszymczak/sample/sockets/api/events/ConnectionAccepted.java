@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-public class ConnectionAccepted implements ConnectionEvent, CorrelatedEvent
+public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedEvent
 {
     private final int port;
     private final long commandId;

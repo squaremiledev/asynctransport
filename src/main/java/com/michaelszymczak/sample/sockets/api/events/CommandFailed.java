@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-public interface CommandFailed extends TransportEvent, CorrelatedEvent
+public interface CommandFailed extends TransportCorrelatedEvent
 {
     String details();
 }

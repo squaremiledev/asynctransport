@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-public class ConnectionClosed implements ConnectionEvent, CorrelatedEvent
+public class ConnectionClosed implements ConnectionEvent, TransportCorrelatedEvent
 {
     private final int port;
     private final long commandId;

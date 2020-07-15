@@ -2,7 +2,7 @@ package com.michaelszymczak.sample.sockets.api.events;
 
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 
-public class DataSent implements ConnectionEvent
+public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
 {
     private final int port;
     private final long connectionId;
@@ -46,6 +46,7 @@ public class DataSent implements ConnectionEvent
         return bytesSent;
     }
 
+    @Override
     public long commandId()
     {
         return commandId;

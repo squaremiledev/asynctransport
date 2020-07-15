@@ -2,8 +2,8 @@ package com.michaelszymczak.sample.sockets.support;
 
 import java.util.List;
 
-import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 
 public class SynchronizedTransportEvents implements TransportEventsListener
 {
@@ -20,13 +20,8 @@ public class SynchronizedTransportEvents implements TransportEventsListener
         return transportEvents.events();
     }
 
-    public synchronized <T> T last(final Class<T> clazz)
+    public synchronized <T extends TransportEvent> T last(final Class<T> clazz)
     {
         return transportEvents.last(clazz);
-    }
-
-    public synchronized <T> List<T> all(final Class<T> clazz)
-    {
-        return transportEvents.all(clazz);
     }
 }

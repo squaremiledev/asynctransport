@@ -20,6 +20,7 @@ import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportEvents;
+import com.michaelszymczak.sample.sockets.support.TransportEventsSpy;
 
 import org.junit.jupiter.api.Test;
 
@@ -39,6 +40,7 @@ class DataSendingTest
     private final TransportEvents events = new TransportEvents();
     private final BackgroundRunner runner = new BackgroundRunner();
     private final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
+    private TransportEventsSpy transportEventsSpy = new TransportEventsSpy(events);
 
     @SafeVarargs
     private static <T> Set<?> distinct(final Function<T, Object> property, final T... items)
@@ -91,11 +93,12 @@ class DataSendingTest
         runner.keepRunning(transport::work).untilCompleted(() -> client.read(3, 3, dataConsumer));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("bar");
 
+
         workUntil(() -> events.all(CommandFailed.class).size() > 1, transport);
-        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 108).port()).isEqualTo(conn.port());
-        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 108).details()).containsIgnoringCase("connection id");
-        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 109).port()).isEqualTo(unusedPort);
-        assertThat(events.last(CommandFailed.class, event -> event.commandId() == 109).details()).containsIgnoringCase("port");
+        assertThat(transportEventsSpy.lastResponse(CommandFailed.class, 108).port()).isEqualTo(conn.port());
+        assertThat(transportEventsSpy.lastResponse(CommandFailed.class, 108).details()).containsIgnoringCase("connection id");
+        assertThat(transportEventsSpy.lastResponse(CommandFailed.class, 109).port()).isEqualTo(unusedPort);
+        assertThat(transportEventsSpy.lastResponse(CommandFailed.class, 109).details()).containsIgnoringCase("port");
     }
 
     @Test

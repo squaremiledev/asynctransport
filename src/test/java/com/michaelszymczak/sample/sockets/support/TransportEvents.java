@@ -3,8 +3,6 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 import java.util.function.Predicate;
 
 import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
@@ -12,6 +10,7 @@ import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 public class TransportEvents implements TransportEventsListener
 {
@@ -28,13 +27,14 @@ public class TransportEvents implements TransportEventsListener
         return new ArrayList<>(events);
     }
 
-    public synchronized <T> T last(final Class<T> clazz)
+    public <T extends TransportEvent> T last(final Class<T> clazz)
     {
         return last(clazz, event -> true);
     }
 
-    public synchronized <T> T last(final Class<T> clazz, final Predicate<T> predicate)
+    public <T extends TransportEvent> T last(final Class<T> clazz, final Predicate<T> predicate)
     {
+
         final List<T> result = all(clazz, predicate);
         if (!result.isEmpty())
         {
@@ -42,41 +42,22 @@ public class TransportEvents implements TransportEventsListener
         }
         else
         {
-            throw new IllegalStateException(clazz.getCanonicalName() + " not received");
+            throw new IllegalStateException();
         }
     }
 
-    public synchronized <T> List<T> all(final Class<T> itemType)
+    public <T extends TransportEvent> List<T> all(final Class<T> itemType)
     {
         return all(itemType, foundItem -> true);
     }
 
-    public synchronized <T> List<T> all(final Class<T> itemType, final Predicate<T> predicate)
+    public <T extends TransportEvent> List<T> all(final Class<T> itemType, final Predicate<T> predicate)
     {
-        final ArrayList<T> result = new ArrayList<>();
-        for (int j = 0; j < 10; j++)
-        {
-            for (int k = 0; k < events.size(); k++)
-            {
-                if (itemType.isInstance(events.get(k)))
-                {
-                    final T casted = itemType.cast(events.get(k));
-                    if (predicate.test(casted))
-                    {
-                        result.add(casted);
-                    }
-                }
-            }
-            if (!result.isEmpty())
-            {
-                return result;
-            }
-            else
-            {
-                LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
-            }
-        }
-        return result;
+        return events.stream()
+                .filter(itemType::isInstance)
+                .map(itemType::cast)
+                .filter(predicate)
+                .collect(toList());
     }
 
     @Override
