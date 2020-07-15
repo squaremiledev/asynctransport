@@ -8,9 +8,9 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 import com.michaelszymczak.sample.sockets.api.Transport;
-import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
@@ -18,10 +18,11 @@ import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
+import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
 import com.michaelszymczak.sample.sockets.connection.ConnectionRepository;
 
-public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.NonBlockingWorkman
+public class NIOBackedTransport implements AutoCloseable, Transport
 {
     private final TransportEventsListener transportEventsListener;
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
@@ -92,6 +93,22 @@ public class NIOBackedTransport implements AutoCloseable, Transport, Workmen.Non
         }
     }
 
+
+    @Override
+    public void workUntil(final BooleanSupplier stopCondition, final Runnable taskAfterIteration)
+    {
+        while (!stopCondition.getAsBoolean())
+        {
+            work();
+        }
+        taskAfterIteration.run();
+    }
+
+    @Override
+    public void workUntil(final BooleanSupplier stopCondition)
+    {
+        workUntil(stopCondition, NOTHING_TO_RUN_BETWEEN_ITERATIONS);
+    }
 
     @Override
     public void work()

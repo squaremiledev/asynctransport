@@ -6,8 +6,8 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
+import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 
 public class ListeningSocket implements AutoCloseable
 {

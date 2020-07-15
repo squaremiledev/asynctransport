@@ -45,7 +45,7 @@ public class TransportDriver
 
     public ConnectionAccepted connectClient(StartedListening startedListeningEvent, final SampleClient client, final int clientPort)
     {
-        runner.keepRunning(transport::work).untilCompleted(() -> client.connectedTo(startedListeningEvent.port(), clientPort));
+        runner.keepRunning(transport).untilCompleted(() -> client.connectedTo(startedListeningEvent.port(), clientPort));
         final Predicate<ConnectionAccepted> connectionAcceptedPredicate = event -> event.commandId() == startedListeningEvent.commandId() && event.remotePort() == clientPort;
         workUntil(() -> !events.all(ConnectionAccepted.class, connectionAcceptedPredicate).isEmpty(), transport);
         return events.last(ConnectionAccepted.class, connectionAcceptedPredicate);

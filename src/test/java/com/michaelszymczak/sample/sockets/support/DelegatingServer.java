@@ -2,6 +2,7 @@ package com.michaelszymczak.sample.sockets.support;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.BooleanSupplier;
 
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.nio.Resources;
@@ -10,6 +11,8 @@ public class DelegatingServer implements FakeServer
 {
     private final Progress onReady;
     private final NIOBackedTransport transport;
+    private final BooleanSupplier threadInterrupted = () -> Thread.currentThread().isInterrupted();
+    private final Runnable parkForOneMs = () -> LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
 
     public DelegatingServer(final NIOBackedTransport transport)
     {
@@ -34,11 +37,7 @@ public class DelegatingServer implements FakeServer
     public void startServer()
     {
         onReady.onReady();
-        while (!Thread.currentThread().isInterrupted())
-        {
-            transport.work();
-            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
-        }
+        transport.workUntil(threadInterrupted, parkForOneMs);
         System.out.println("Server shutting down...");
         Resources.close(transport);
     }

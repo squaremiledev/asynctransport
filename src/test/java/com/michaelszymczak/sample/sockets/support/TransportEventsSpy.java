@@ -3,13 +3,18 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.michaelszymczak.sample.sockets.api.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.api.events.TransportCorrelatedEvent;
 import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
+import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 
 public class TransportEventsSpy implements TransportEventsListener
 {
     private final CapturedItems<TransportEvent> items = new CapturedItems<>();
+
+    public <T extends TransportEvent> boolean contains(final Class<T> itemType)
+    {
+        return !all(itemType).isEmpty();
+    }
 
     public List<TransportEvent> all()
     {

@@ -2,21 +2,13 @@ package com.michaelszymczak.sample.sockets.support;
 
 import java.util.function.BooleanSupplier;
 
-import com.michaelszymczak.sample.sockets.nio.Workmen;
-
-
-import static com.michaelszymczak.sample.sockets.support.RethrowingWorkman.rethrowing;
+import com.michaelszymczak.sample.sockets.api.Workman;
 
 public class Foreman
 {
     private static final int DEFAULT_TIMEOUT_MS = 1_000;
 
-    public static void workUntil(final BooleanSupplier condition, final Workmen.ThrowingNonBlockingWorkman workman)
-    {
-        workUntil(condition, rethrowing(workman));
-    }
-
-    public static void workUntil(final BooleanSupplier condition, final Workmen.NonBlockingWorkman workman)
+    public static void workUntil(final BooleanSupplier condition, final Workman workman)
     {
         final long startTime = System.currentTimeMillis();
         while (!condition.getAsBoolean() && !timedOut(startTime))

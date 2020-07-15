@@ -50,7 +50,7 @@ class DataReceivingTest
         final ConnectionAccepted conn = driver.listenAndConnect(client);
 
         // When
-        runner.keepRunning(transport::work).untilCompleted(() -> client.write("foo".getBytes(US_ASCII)));
+        runner.keepRunning(transport).untilCompleted(() -> client.write("foo".getBytes(US_ASCII)));
         workUntil(bytesReceived(events, conn.connectionId(), 3), transport);
 
         // Then
@@ -82,10 +82,10 @@ class DataReceivingTest
         assertThat(distinct(ConnectionAccepted::connectionId, connS1C1, connS2C2, connS1C3, connS2C4)).hasSize(4);
 
         // When
-        runner.keepRunning(transport::work).untilCompleted(() -> client1.write(fixedLengthStringStartingWith("S1 -> C1 ", 10).getBytes(US_ASCII)));
-        runner.keepRunning(transport::work).untilCompleted(() -> client2.write(fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII)));
-        runner.keepRunning(transport::work).untilCompleted(() -> client3.write(fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII)));
-        runner.keepRunning(transport::work).untilCompleted(() -> client4.write(fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII)));
+        runner.keepRunning(transport).untilCompleted(() -> client1.write(fixedLengthStringStartingWith("S1 -> C1 ", 10).getBytes(US_ASCII)));
+        runner.keepRunning(transport).untilCompleted(() -> client2.write(fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII)));
+        runner.keepRunning(transport).untilCompleted(() -> client3.write(fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII)));
+        runner.keepRunning(transport).untilCompleted(() -> client4.write(fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII)));
         workUntil(bytesReceived(events, connS1C1.connectionId(), 10), transport);
         workUntil(bytesReceived(events, connS2C2.connectionId(), 20), transport);
         workUntil(bytesReceived(events, connS1C3.connectionId(), 30), transport);

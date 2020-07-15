@@ -13,11 +13,6 @@ public class CapturedItems<T>
 {
     private final List<T> items = new ArrayList<>();
 
-    public CapturedItems()
-    {
-    }
-
-
     public void add(final T event)
     {
         items.add(event);
