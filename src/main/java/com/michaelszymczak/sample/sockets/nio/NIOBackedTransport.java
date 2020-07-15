@@ -8,7 +8,6 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
@@ -91,23 +90,6 @@ public class NIOBackedTransport implements AutoCloseable, Transport
         {
             throw new UnsupportedOperationException(command.getClass().getCanonicalName());
         }
-    }
-
-
-    @Override
-    public void workUntil(final BooleanSupplier stopCondition, final Runnable taskAfterIteration)
-    {
-        while (!stopCondition.getAsBoolean())
-        {
-            work();
-        }
-        taskAfterIteration.run();
-    }
-
-    @Override
-    public void workUntil(final BooleanSupplier stopCondition)
-    {
-        workUntil(stopCondition, NOTHING_TO_RUN_BETWEEN_ITERATIONS);
     }
 
     @Override

@@ -9,11 +9,11 @@ import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
-import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
 import com.michaelszymczak.sample.sockets.support.SynchronizedTransportEvents;
+import com.michaelszymczak.sample.sockets.support.TestedTransport;
 
 import org.junit.jupiter.api.Test;
 
@@ -104,7 +104,7 @@ class ListeningTransportTest
     {
         try
         {
-            final NIOBackedTransport transport = new NIOBackedTransport(events);
+            final TestedTransport transport = new TestedTransport(events);
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
                     SampleClient client1 = new SampleClient();
@@ -133,7 +133,7 @@ class ListeningTransportTest
     {
         try
         {
-            final NIOBackedTransport transport = new NIOBackedTransport(events);
+            final TestedTransport transport = new TestedTransport(events);
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
                     SampleClient client1 = new SampleClient();
@@ -178,7 +178,7 @@ class ListeningTransportTest
     {
         try
         {
-            final NIOBackedTransport transport = new NIOBackedTransport(events);
+            final TestedTransport transport = new TestedTransport(events);
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
                     SampleClient client = new SampleClient()

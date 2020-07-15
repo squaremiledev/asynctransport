@@ -10,9 +10,9 @@ import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
-import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
+import com.michaelszymczak.sample.sockets.support.TestedTransport;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportEventsSpy;
 
@@ -22,9 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
+import static com.michaelszymczak.sample.sockets.support.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
 
 class ConnectingTransportTest
 {
@@ -32,9 +32,9 @@ class ConnectingTransportTest
     private final BackgroundRunner inBackground = new BackgroundRunner();
 
     @Test
-    void shouldNotifyWhenConnected() throws IOException
+    void shouldNotifyWhenConnected()
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
 
         // Given
         transport.handle(new Listen(1, freePort()));
@@ -53,9 +53,9 @@ class ConnectingTransportTest
     }
 
     @Test
-    void shouldProvideConnectionDetailsForEachConnection() throws IOException
+    void shouldProvideConnectionDetailsForEachConnection()
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
 
         // Given
         transport.handle(new Listen(5, freePort()));
@@ -65,7 +65,7 @@ class ConnectingTransportTest
         final BackgroundRunner.ThrowingRunnable clientConnectsTask = () -> new SampleClient().connectedTo(serverPort);
         transport.workUntil(inBackground.completed(clientConnectsTask));
         transport.workUntil(inBackground.completed(clientConnectsTask));
-        workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);
+        transport.workUntil(timeoutOr(() -> events.all(ConnectionAccepted.class).size() >= 2));
 
         // Then
         final List<ConnectionAccepted> events = this.events.all(ConnectionAccepted.class);
@@ -79,16 +79,16 @@ class ConnectingTransportTest
     @Test
     void shouldCloseConnection() throws IOException
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
 
         // Given
         transport.handle(new Listen(9, freePort()));
-        workUntil(() -> !events.all(StartedListening.class).isEmpty(), transport);
+        transport.workUntil(timeoutOr(() -> !events.all(StartedListening.class).isEmpty()));
         final int serverPort = events.last(StartedListening.class).port();
         final SampleClient client = new SampleClient();
         assertThrows(SocketException.class, client::write); // throws if not connected when writing
         transport.workUntil(inBackground.completed(() -> client.connectedTo(serverPort)));
-        workUntil(() -> !events.all(ConnectionAccepted.class).isEmpty(), transport);
+        transport.workUntil(timeoutOr(() -> !events.all(ConnectionAccepted.class).isEmpty()));
         final ConnectionAccepted connectionAccepted = events.last(ConnectionAccepted.class);
 
         // When
@@ -104,7 +104,7 @@ class ConnectingTransportTest
     @Test
     void shouldCloseConnectionOnce() throws IOException
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport, events);
 
@@ -126,9 +126,9 @@ class ConnectingTransportTest
     }
 
     @Test
-    void shouldRejectClosingNonExistingConnection() throws IOException
+    void shouldRejectClosingNonExistingConnection()
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
 
         // When
         transport.handle(new CloseConnection(1234, 11111, 15));
@@ -139,9 +139,9 @@ class ConnectingTransportTest
     }
 
     @Test
-    void shouldNotifyWhenConnectedWhileListeningOnMultiplePorts() throws IOException
+    void shouldNotifyWhenConnectedWhileListeningOnMultiplePorts()
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
 
         // Given
         final int listeningPort1 = freePort();
@@ -158,7 +158,7 @@ class ConnectingTransportTest
         transport.workUntil(inBackground.completed(() -> new SampleClient().connectedTo(listeningPort2, clientPort2)));
 
         // Then
-        workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);
+        transport.workUntil(timeoutOr(() -> events.all(ConnectionAccepted.class).size() >= 2));
         final ConnectionAccepted connectionAccepted1 = events.last(ConnectionAccepted.class, event -> event.port() == listeningPort1);
         final ConnectionAccepted connectionAccepted2 = events.last(ConnectionAccepted.class, event -> event.port() == listeningPort2);
 
@@ -171,9 +171,9 @@ class ConnectingTransportTest
     }
 
     @Test
-    void shouldNotifyWhenStartedListeningAndConnectedTwice() throws IOException
+    void shouldNotifyWhenStartedListeningAndConnectedTwice()
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
 
         // Given
         final int listeningPort1 = freePort();
@@ -190,7 +190,7 @@ class ConnectingTransportTest
         transport.workUntil(inBackground.completed(() -> new SampleClient().connectedTo(listeningPort2, clientPort2)));
 
         // Then
-        workUntil(() -> events.all(ConnectionAccepted.class).size() >= 2, transport);
+        transport.workUntil(timeoutOr(() -> events.all(ConnectionAccepted.class).size() >= 2));
         final ConnectionAccepted connectionAccepted1 = events.last(ConnectionAccepted.class, event -> event.port() == listeningPort1);
         final ConnectionAccepted connectionAccepted2 = events.last(ConnectionAccepted.class, event -> event.port() == listeningPort2);
 

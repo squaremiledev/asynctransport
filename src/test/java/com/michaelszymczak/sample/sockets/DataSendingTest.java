@@ -12,11 +12,12 @@ import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
-import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.FreePort;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
+import com.michaelszymczak.sample.sockets.support.TestedTransport;
 import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
+import com.michaelszymczak.sample.sockets.support.ThrowWhenTimedOutBeforeMeeting;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportEventsSpy;
 
@@ -26,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
-import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.byteArrayWith;
@@ -49,7 +49,7 @@ class DataSendingTest
     @Test
     void shouldSendData() throws IOException
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport, events);
 
@@ -73,7 +73,7 @@ class DataSendingTest
     @Test
     void shouldFailToSendDataUsingNonExistingConnectionOrPort() throws IOException
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport, events);
 
@@ -91,7 +91,7 @@ class DataSendingTest
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("bar");
 
 
-        workUntil(() -> events.all(CommandFailed.class).size() > 1, transport);
+        transport.workUntil(ThrowWhenTimedOutBeforeMeeting.timeoutOr(() -> events.all(CommandFailed.class).size() > 1));
         assertThat(events.lastResponse(CommandFailed.class, 108).port()).isEqualTo(conn.port());
         assertThat(events.lastResponse(CommandFailed.class, 108).details()).containsIgnoringCase("connection id");
         assertThat(events.lastResponse(CommandFailed.class, 109).port()).isEqualTo(unusedPort);
@@ -101,7 +101,7 @@ class DataSendingTest
     @Test
     void shouldFailToSendDataUsingWrongPort() throws IOException
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport, events);
 
@@ -116,7 +116,7 @@ class DataSendingTest
         transport.workUntil(inBackground.completed(() -> client.read(3, 3, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("bar");
 
-        workUntil(() -> !events.all(CommandFailed.class).isEmpty(), transport);
+        transport.workUntil(ThrowWhenTimedOutBeforeMeeting.timeoutOr(() -> !events.all(CommandFailed.class).isEmpty()));
         assertThat(events.last(CommandFailed.class).port()).isEqualTo(conn.port() + 1);
         assertThat(events.last(CommandFailed.class).details()).containsIgnoringCase("port");
         assertThat(events.last(DataSent.class)).usingRecursiveComparison()
@@ -126,7 +126,7 @@ class DataSendingTest
     @Test
     void shouldSendDataViaMultipleConnections() throws IOException
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
         final SampleClient client1 = new SampleClient();
         final SampleClient client2 = new SampleClient();
         final SampleClient client3 = new SampleClient();
@@ -178,7 +178,7 @@ class DataSendingTest
         final int contentSizeInBytes = 1_000_000;
 
         try (
-                final NIOBackedTransport transport = new NIOBackedTransport(events);
+                final TestedTransport transport = new TestedTransport(events);
                 final SampleClient client = new SampleClient()
         )
         {
@@ -206,7 +206,7 @@ class DataSendingTest
     void shouldBeAbleToSendDataInMultipleChunks() throws IOException
     {
         try (
-                final NIOBackedTransport transport = new NIOBackedTransport(events);
+                final TestedTransport transport = new TestedTransport(events);
                 final SampleClient client = new SampleClient()
         )
         {
@@ -240,7 +240,7 @@ class DataSendingTest
     void shouldBeAbleToSendPartOfTheData() throws IOException
     {
         try (
-                final NIOBackedTransport transport = new NIOBackedTransport(events);
+                final TestedTransport transport = new TestedTransport(events);
                 final SampleClient client = new SampleClient()
         )
         {
@@ -255,7 +255,7 @@ class DataSendingTest
 
             //When
             transport.handle(new SendData(conn.port(), conn.connectionId(), data));
-            workUntil(() -> !events.all(DataSent.class, event -> event.connectionId() == conn.connectionId()).isEmpty(), transport);
+            transport.workUntil(ThrowWhenTimedOutBeforeMeeting.timeoutOr(() -> !events.all(DataSent.class, event1 -> event1.connectionId() == conn.connectionId()).isEmpty()));
 
             // Then
             final DataSent notAllDataSentEvent = events.last(DataSent.class, event -> event.connectionId() == conn.connectionId());

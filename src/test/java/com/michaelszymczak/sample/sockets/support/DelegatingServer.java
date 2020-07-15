@@ -4,17 +4,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 
-import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.nio.Resources;
 
 public class DelegatingServer implements FakeServer
 {
     private final ThreadSafeProgress onReady;
-    private final NIOBackedTransport transport;
+    private final TestedTransport transport;
     private final BooleanSupplier threadInterrupted = () -> Thread.currentThread().isInterrupted();
     private final Runnable parkForOneMs = () -> LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
 
-    public DelegatingServer(final NIOBackedTransport transport)
+    public DelegatingServer(final TestedTransport transport)
     {
         this.onReady = new ThreadSafeProgress();
         this.transport = transport;

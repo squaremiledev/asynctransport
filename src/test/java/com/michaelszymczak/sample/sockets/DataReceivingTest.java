@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
-import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
+import com.michaelszymczak.sample.sockets.support.TestedTransport;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportEventsSpy;
 
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import static com.michaelszymczak.sample.sockets.support.Foreman.workUntil;
+import static com.michaelszymczak.sample.sockets.support.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Arrays.copyOf;
 
@@ -42,7 +42,7 @@ class DataReceivingTest
     @Test
     void shouldReceiveData() throws IOException
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport, events);
 
@@ -51,7 +51,7 @@ class DataReceivingTest
 
         // When
         transport.workUntil(inBackground.completed(() -> client.write("foo".getBytes(US_ASCII))));
-        workUntil(bytesReceived(events, conn.connectionId(), 3), transport);
+        transport.workUntil(timeoutOr(bytesReceived(events, conn.connectionId(), 3)));
 
         // Then
         assertThat(events.all(DataReceived.class)).isNotEmpty();
@@ -64,7 +64,7 @@ class DataReceivingTest
     @Test
     void shouldReceivedDataFromMultipleConnections() throws IOException
     {
-        final NIOBackedTransport transport = new NIOBackedTransport(events);
+        final TestedTransport transport = new TestedTransport(events);
         final SampleClient client1 = new SampleClient();
         final SampleClient client2 = new SampleClient();
         final SampleClient client3 = new SampleClient();
@@ -86,10 +86,10 @@ class DataReceivingTest
         transport.workUntil(inBackground.completed(() -> client2.write(fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII))));
         transport.workUntil(inBackground.completed(() -> client3.write(fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII))));
         transport.workUntil(inBackground.completed(() -> client4.write(fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII))));
-        workUntil(bytesReceived(events, connS1C1.connectionId(), 10), transport);
-        workUntil(bytesReceived(events, connS2C2.connectionId(), 20), transport);
-        workUntil(bytesReceived(events, connS1C3.connectionId(), 30), transport);
-        workUntil(bytesReceived(events, connS2C4.connectionId(), 40), transport);
+        transport.workUntil(timeoutOr(bytesReceived(events, connS1C1.connectionId(), 10)));
+        transport.workUntil(timeoutOr(bytesReceived(events, connS2C2.connectionId(), 20)));
+        transport.workUntil(timeoutOr(bytesReceived(events, connS1C3.connectionId(), 30)));
+        transport.workUntil(timeoutOr(bytesReceived(events, connS2C4.connectionId(), 40)));
 
         // Then
         assertThat(dataAsString(events.all(DataReceived.class, event -> event.connectionId() == connS1C1.connectionId()), US_ASCII))

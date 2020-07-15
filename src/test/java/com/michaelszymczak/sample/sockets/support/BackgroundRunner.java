@@ -4,6 +4,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BooleanSupplier;
 
+
+import static com.michaelszymczak.sample.sockets.support.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
+
 public class BackgroundRunner
 {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -23,7 +26,7 @@ public class BackgroundRunner
                                        throw new RuntimeException(e);
                                    }
                                });
-        return progress::hasCompleted;
+        return timeoutOr(progress::hasCompleted);
     }
 
     public interface ThrowingRunnable
