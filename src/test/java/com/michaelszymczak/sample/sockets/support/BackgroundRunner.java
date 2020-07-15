@@ -4,14 +4,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BooleanSupplier;
 
-
-import static com.michaelszymczak.sample.sockets.support.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
-
 public class BackgroundRunner
 {
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    public BooleanSupplier completed(final ThrowingRunnable taskToRunOnceInBackground)
+    public static BooleanSupplier completed(final ThrowingRunnable taskToRunOnceInBackground)
     {
         final ThreadSafeProgress progress = new ThreadSafeProgress();
         executorService.submit(() ->
@@ -26,7 +23,7 @@ public class BackgroundRunner
                                        throw new RuntimeException(e);
                                    }
                                });
-        return timeoutOr(progress::hasCompleted);
+        return progress::hasCompleted;
     }
 
     public interface ThrowingRunnable

@@ -7,19 +7,18 @@ import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 
 
+import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
-import static com.michaelszymczak.sample.sockets.support.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
 
 public class TransportDriver
 {
 
-    private final TestedTransport transport;
+    private final TestableTransport transport;
     private final TransportEventsSpy events;
-    private final BackgroundRunner inBackground = new BackgroundRunner();
     private int nextCommandId = 0;
 
-    public TransportDriver(final TestedTransport transport, final TransportEventsSpy events)
+    public TransportDriver(final TestableTransport transport, final TransportEventsSpy events)
     {
         this.transport = transport;
         this.events = events;
@@ -44,9 +43,9 @@ public class TransportDriver
 
     public ConnectionAccepted connectClient(StartedListening startedListeningEvent, final SampleClient client, final int clientPort)
     {
-        transport.workUntil(inBackground.completed(() -> client.connectedTo(startedListeningEvent.port(), clientPort)));
+        transport.workUntil(completed(() -> client.connectedTo(startedListeningEvent.port(), clientPort)));
         final Predicate<ConnectionAccepted> connectionAcceptedPredicate = event -> event.commandId() == startedListeningEvent.commandId() && event.remotePort() == clientPort;
-        transport.workUntil(timeoutOr(() -> !events.all(ConnectionAccepted.class, connectionAcceptedPredicate).isEmpty()));
+        transport.workUntil(() -> !events.all(ConnectionAccepted.class, connectionAcceptedPredicate).isEmpty());
         return events.last(ConnectionAccepted.class, connectionAcceptedPredicate);
     }
 

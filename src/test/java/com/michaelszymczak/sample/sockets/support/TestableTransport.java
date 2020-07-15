@@ -1,5 +1,6 @@
 package com.michaelszymczak.sample.sockets.support;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 import com.michaelszymczak.sample.sockets.api.Transport;
@@ -7,12 +8,18 @@ import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 
-public class TestedTransport implements Transport
+
+import static com.michaelszymczak.sample.sockets.support.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
+import static java.util.concurrent.locks.LockSupport.parkNanos;
+
+public class TestableTransport<E extends TransportEventsListener> implements Transport
 {
     private final NIOBackedTransport delegate;
+    private final E events;
 
-    public TestedTransport(final TransportEventsListener events)
+    public TestableTransport(final E events)
     {
+        this.events = events;
         try
         {
             this.delegate = new NIOBackedTransport(events);
@@ -23,21 +30,19 @@ public class TestedTransport implements Transport
         }
     }
 
-    public void workUntil(final BooleanSupplier stopCondition, final Runnable taskAfterIteration)
+    public E events()
     {
-        while (!stopCondition.getAsBoolean())
-        {
-            work();
-        }
-        taskAfterIteration.run();
+        return events;
     }
 
     public void workUntil(final BooleanSupplier stopCondition)
     {
-        workUntil(stopCondition, () ->
+        final BooleanSupplier abort = timeoutOr(stopCondition);
+        while (!abort.getAsBoolean())
         {
-
-        });
+            work();
+            parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
+        }
     }
 
     @Override
