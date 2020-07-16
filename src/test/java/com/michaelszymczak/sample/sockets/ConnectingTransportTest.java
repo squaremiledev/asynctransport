@@ -6,8 +6,10 @@ import java.util.List;
 
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
+import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
@@ -196,5 +198,40 @@ class ConnectingTransportTest
         assertThat(connectionAccepted1.port()).isEqualTo(listeningPort1);
         assertThat(connectionAccepted2.port()).isEqualTo(listeningPort2);
         assertThat(connectionAccepted1.remotePort()).isNotEqualTo(connectionAccepted2.remotePort());
+    }
+
+    @Test
+    void shouldNotifyWhenRemoteEndpointClosedConnection() throws IOException, InterruptedException
+    {
+        final TransportUnderTest transport = new TransportUnderTest();
+        final SampleClient client = new SampleClient();
+        final TransportDriver driver = new TransportDriver(transport, transport.events());
+
+        // Given
+        final ConnectionAccepted conn = driver.listenAndConnect(client);
+
+        // When
+        client.close();
+        transport.workUntil(() -> transport.events().contains(ConnectionClosed.class));
+
+        // Then
+        final ConnectionClosed connectionClosed = transport.events().last(ConnectionClosed.class, event -> event.connectionId() == conn.connectionId());
+        assertThat(connectionClosed).usingRecursiveComparison()
+                .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID));
+        assertThat(transport.events().contains(DataReceived.class)).isFalse();
+
+//        transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 15));
+//        assertThat(transport.events().last(ConnectionClosed.class)).usingRecursiveComparison()
+//                .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), 15));
+//        assertThat(transport.events().all(ConnectionClosed.class)).hasSize(1);
+//        assertThat(transport.events().all(TransportCommandFailed.class)).isEmpty();
+//        assertThat(client.hasServerClosedConnection()).isTrue();
+//
+//        // When
+//        transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 16));
+//
+//        // Then
+//        assertThat(transport.events().last(TransportCommandFailed.class).commandId()).isEqualTo(16);
+//        assertThat(transport.events().all(ConnectionClosed.class)).hasSize(1);
     }
 }

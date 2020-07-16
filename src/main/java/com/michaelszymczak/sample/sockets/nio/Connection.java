@@ -105,6 +105,12 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         try
         {
             final int read = channel.read(readBuffer);
+            if (read == -1)
+            {
+                thisConnectionEvents.connectionClosed(TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID);
+                return;
+            }
+
             if (read > 0)
             {
                 totalBytesReceived += read;
