@@ -6,10 +6,13 @@ import java.util.List;
 
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionResetByPeer;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
+import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
@@ -23,9 +26,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
+import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
 import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 
 class ConnectingTransportTest
 {
@@ -201,7 +206,7 @@ class ConnectingTransportTest
     }
 
     @Test
-    void shouldNotifyWhenRemoteEndpointClosedConnection() throws IOException, InterruptedException
+    void shouldNotifyWhenRemoteEndpointClosedConnection() throws IOException
     {
         final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
@@ -219,19 +224,32 @@ class ConnectingTransportTest
         assertThat(connectionClosed).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID));
         assertThat(transport.events().contains(DataReceived.class)).isFalse();
+    }
 
-//        transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 15));
-//        assertThat(transport.events().last(ConnectionClosed.class)).usingRecursiveComparison()
-//                .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), 15));
-//        assertThat(transport.events().all(ConnectionClosed.class)).hasSize(1);
-//        assertThat(transport.events().all(TransportCommandFailed.class)).isEmpty();
-//        assertThat(client.hasServerClosedConnection()).isTrue();
-//
-//        // When
-//        transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 16));
-//
-//        // Then
-//        assertThat(transport.events().last(TransportCommandFailed.class).commandId()).isEqualTo(16);
-//        assertThat(transport.events().all(ConnectionClosed.class)).hasSize(1);
+    @Test
+    void shouldInformedThatConnectionResetByPeer() throws SocketException
+    {
+        final TransportUnderTest transport = new TransportUnderTest();
+        final SampleClient client = new SampleClient();
+        final TransportDriver driver = new TransportDriver(transport, transport.events());
+
+        // Given
+        final ConnectionAccepted conn = driver.listenAndConnect(client);
+        transport.handle(new SendData(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII)));
+        transport.handle(new SendData(conn.port(), conn.connectionId(), "BA".getBytes(US_ASCII)));
+        transport.workUntil(() -> transport.events().all(DataSent.class).size() == 2);
+
+        //When
+        client.close();
+        transport.workUntil(() -> transport.events().contains(ConnectionResetByPeer.class));
+        transport.workTimes(10);
+
+        // Then
+        assertEqual(
+                transport.events().all(ConnectionResetByPeer.class),
+                new ConnectionResetByPeer(conn.port(), conn.connectionId(), TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID)
+        );
+        assertThat(transport.events().contains(ConnectionClosed.class)).isFalse();
+        assertThat(transport.events().contains(DataReceived.class)).isFalse();
     }
 }
