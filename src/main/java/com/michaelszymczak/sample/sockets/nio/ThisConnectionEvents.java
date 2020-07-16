@@ -3,6 +3,7 @@ package com.michaelszymczak.sample.sockets.nio;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionCommandFailed;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionResetByPeer;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
@@ -29,6 +30,11 @@ public class ThisConnectionEvents
     public void connectionClosed(final long commandId)
     {
         eventsListener.onEvent(new ConnectionClosed(port, connectionId, commandId));
+    }
+
+    public void connectionResetByPeer(final long commandId)
+    {
+        eventsListener.onEvent(new ConnectionResetByPeer(port, connectionId, commandId));
     }
 
     public void dataSent(final int bytesSent, final long totalBytesSent, final long commandId)

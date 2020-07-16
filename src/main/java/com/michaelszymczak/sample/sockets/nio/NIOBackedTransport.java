@@ -127,6 +127,11 @@ public class NIOBackedTransport implements AutoCloseable, Transport
                 {
                     final Connection connection = (Connection)key.attachment();
                     connection.read();
+                    if (connection.isClosed())
+                    {
+                        connection.close();
+                        key.attach(null); // probably unnecessary
+                    }
                 }
             }
         }

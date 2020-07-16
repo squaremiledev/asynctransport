@@ -35,6 +35,14 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
         return events;
     }
 
+    public void workTimes(int iterations)
+    {
+        for (int i = 0; i < iterations; i++)
+        {
+            work();
+        }
+    }
+
     public void workUntil(final BooleanSupplier stopCondition)
     {
         final BooleanSupplier abort = timeoutOr(stopCondition);

@@ -107,6 +107,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             final int read = channel.read(readBuffer);
             if (read == -1)
             {
+                isClosed = true;
                 thisConnectionEvents.connectionClosed(TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID);
                 return;
             }
@@ -116,6 +117,14 @@ public class Connection implements AutoCloseable, ConnectionAggregate
                 totalBytesReceived += read;
             }
             thisConnectionEvents.dataReceived(totalBytesReceived, content, read);
+        }
+        catch (IOException e)
+        {
+            if ("Connection reset by peer".equalsIgnoreCase(e.getMessage()))
+            {
+                isClosed = true;
+                thisConnectionEvents.connectionResetByPeer(TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID);
+            }
         }
         catch (Exception e)
         {

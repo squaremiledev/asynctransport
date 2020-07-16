@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -8,8 +9,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionResetByPeer;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.FreePort;
@@ -264,6 +268,32 @@ class DataSendingTest
             // TODO: this can be tested when there is an internal buffer installed in the connection
             // assertThat(notAllDataSentEvent.totalBytesSent()).isEqualTo(data.length);
         }
+    }
+
+    @Test
+    void shouldHandleTheCaseWhenNoDataReadAndClosedRemotely() throws SocketException, InterruptedException
+    {
+        final TransportUnderTest transport = new TransportUnderTest();
+        final SampleClient client = new SampleClient();
+        final TransportDriver driver = new TransportDriver(transport, transport.events());
+
+        // Given
+        final ConnectionAccepted conn = driver.listenAndConnect(client);
+        transport.handle(new SendData(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII)));
+        transport.handle(new SendData(conn.port(), conn.connectionId(), "BA".getBytes(US_ASCII)));
+        transport.workUntil(() -> transport.events().all(DataSent.class).size() == 2);
+
+        //When
+        client.close();
+        transport.workUntil(() -> transport.events().contains(ConnectionResetByPeer.class));
+        transport.workTimes(10);
+
+        // Then
+        assertEqual(
+                transport.events().all(ConnectionResetByPeer.class),
+                new ConnectionResetByPeer(conn.port(), conn.connectionId(), TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID)
+        );
+        assertThat(transport.events().contains(ConnectionClosed.class)).isFalse();
     }
 
     private String fixedLengthStringStartingWith(final String content, final int minLength)
