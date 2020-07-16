@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.michaelszymczak.sample.sockets.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
-import com.michaelszymczak.sample.sockets.api.commands.Command;
+import com.michaelszymczak.sample.sockets.api.CommandId;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
@@ -223,7 +223,7 @@ class ConnectingTransportTest
         // Then
         final ConnectionClosed connectionClosed = transport.connectionEvents().last(ConnectionClosed.class, conn.connectionId());
         assertThat(connectionClosed).usingRecursiveComparison()
-                .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), Command.NO_COMMAND_ID));
+                .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), CommandId.NO_COMMAND_ID));
         assertThat(transport.events().contains(DataReceived.class)).isFalse();
     }
 
@@ -246,7 +246,7 @@ class ConnectingTransportTest
         // Then
         final ConnectionClosed connectionClosed = transport.connectionEvents().last(ConnectionClosed.class, connection.connectionId());
         assertThat(connectionClosed).usingRecursiveComparison()
-                .isEqualTo(new ConnectionClosed(connection.port(), connection.connectionId(), Command.NO_COMMAND_ID));
+                .isEqualTo(new ConnectionClosed(connection.port(), connection.connectionId(), CommandId.NO_COMMAND_ID));
         assertThat(transport.events().contains(DataReceived.class)).isFalse();
         assertThat(transport.connectionEvents().last(DataSent.class, connection.connectionId())).usingRecursiveComparison()
                 .isEqualTo(lastDataSent);
@@ -273,7 +273,7 @@ class ConnectingTransportTest
         // Then
         assertEqual(
                 transport.events().all(ConnectionResetByPeer.class),
-                new ConnectionResetByPeer(conn.port(), conn.connectionId(), Command.NO_COMMAND_ID)
+                new ConnectionResetByPeer(conn.port(), conn.connectionId(), CommandId.NO_COMMAND_ID)
         );
         assertThat(transport.events().contains(ConnectionClosed.class)).isFalse();
         assertThat(transport.events().contains(DataReceived.class)).isFalse();

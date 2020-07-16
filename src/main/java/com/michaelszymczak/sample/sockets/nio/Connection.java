@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
-import com.michaelszymczak.sample.sockets.api.commands.Command;
+import com.michaelszymczak.sample.sockets.api.CommandId;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
@@ -108,7 +108,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             if (read == -1)
             {
                 isClosed = true;
-                thisConnectionEvents.connectionClosed(Command.NO_COMMAND_ID);
+                thisConnectionEvents.connectionClosed(CommandId.NO_COMMAND_ID);
                 return;
             }
 
@@ -123,7 +123,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             if ("Connection reset by peer".equalsIgnoreCase(e.getMessage()))
             {
                 isClosed = true;
-                thisConnectionEvents.connectionResetByPeer(Command.NO_COMMAND_ID);
+                thisConnectionEvents.connectionResetByPeer(CommandId.NO_COMMAND_ID);
             }
         }
         catch (Exception e)
@@ -165,7 +165,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     @Override
     public void close()
     {
-        closeConnection(Command.NO_COMMAND_ID);
+        closeConnection(CommandId.NO_COMMAND_ID);
     }
 
     private void closeConnection(final long conventionalIgnoredCommandId)
