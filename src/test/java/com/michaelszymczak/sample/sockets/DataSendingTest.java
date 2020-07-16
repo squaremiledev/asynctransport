@@ -152,22 +152,22 @@ class DataSendingTest
         // Then
         transport.workUntil(completed(() -> client1.read(10, 100, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S1 -> C1 ", 10));
-        assertThat(transport.events().last(DataSent.class, event -> event.connectionId() == connS1C1.connectionId())).usingRecursiveComparison()
+        assertThat(transport.connectionEvents().last(DataSent.class, connS1C1.connectionId())).usingRecursiveComparison()
                 .isEqualTo(new DataSent(connS1C1.port(), connS1C1.connectionId(), 10, 10));
 
         transport.workUntil(completed(() -> client2.read(20, 100, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C2 ", 20));
-        assertThat(transport.events().last(DataSent.class, event -> event.connectionId() == connS2C2.connectionId())).usingRecursiveComparison()
+        assertThat(transport.connectionEvents().last(DataSent.class, connS2C2.connectionId())).usingRecursiveComparison()
                 .isEqualTo(new DataSent(connS2C2.port(), connS2C2.connectionId(), 20, 20));
 
         transport.workUntil(completed(() -> client3.read(30, 100, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S1 -> C3 ", 30));
-        assertThat(transport.events().last(DataSent.class, event -> event.connectionId() == connS1C3.connectionId())).usingRecursiveComparison()
+        assertThat(transport.connectionEvents().last(DataSent.class, connS1C3.connectionId())).usingRecursiveComparison()
                 .isEqualTo(new DataSent(connS1C3.port(), connS1C3.connectionId(), 30, 30));
 
         transport.workUntil(completed(() -> client4.read(40, 100, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
-        assertThat(transport.events().last(DataSent.class, event -> event.connectionId() == connS2C4.connectionId())).usingRecursiveComparison()
+        assertThat(transport.connectionEvents().last(DataSent.class, connS2C4.connectionId())).usingRecursiveComparison()
                 .isEqualTo(new DataSent(connS2C4.port(), connS2C4.connectionId(), 40, 40));
     }
 
@@ -196,7 +196,7 @@ class DataSendingTest
             transport.workUntil(completed(() -> client.read(data.length, data.length, dataConsumer)));
             assertThat(dataConsumer.dataRead().length).isEqualTo(data.length);
             assertThat(stringWith(dataConsumer.dataRead())).isEqualTo(stringWith(data));
-            final DataSent dataSentEvent = transport.events().last(DataSent.class, event -> event.connectionId() == conn.connectionId());
+            final DataSent dataSentEvent = transport.connectionEvents().last(DataSent.class, conn.connectionId());
             assertThat(dataSentEvent).usingRecursiveComparison()
                     .isEqualTo(new DataSent(conn.port(), conn.connectionId(), dataSentEvent.bytesSent(), data.length));
         }
@@ -224,12 +224,11 @@ class DataSendingTest
                 transport.handle(new SendData(conn.port(), conn.connectionId(), dataThatFitsTheBuffer));
             }
             // TODO: waiting when invoking the 'last' method is probably not fit for purpose here
-            while (transport.events().last(DataSent.class, event -> event.connectionId() == conn.connectionId()).bytesSent() != 0);
+            while (transport.connectionEvents().last(DataSent.class, conn.connectionId()).bytesSent() != 0);
 
             // Then
-            final long totalBytesSentUntilFilledTheSendQueue = transport.events().last(DataSent.class, event ->
-                    event.connectionId() == conn.connectionId() && event.bytesSent() == 0
-            ).totalBytesSent();
+            final long totalBytesSentUntilFilledTheSendQueue = transport.connectionEvents()
+                    .last(DataSent.class, conn.connectionId(), event -> event.bytesSent() == 0).totalBytesSent();
             assertThat(totalBytesSentUntilFilledTheSendQueue).isEqualTo((int)totalBytesSentUntilFilledTheSendQueue);
             assertThat(totalBytesSentUntilFilledTheSendQueue).isGreaterThanOrEqualTo(conn.sendBufferSize());
             transport.workUntil(completed(
@@ -259,7 +258,7 @@ class DataSendingTest
             transport.workUntil(() -> !transport.events().all(DataSent.class, event1 -> event1.connectionId() == conn.connectionId()).isEmpty());
 
             // Then
-            final DataSent notAllDataSentEvent = transport.events().last(DataSent.class, event -> event.connectionId() == conn.connectionId());
+            final DataSent notAllDataSentEvent = transport.connectionEvents().last(DataSent.class, conn.connectionId());
             assertThat(notAllDataSentEvent.bytesSent()).isLessThan(data.length);
             // TODO: this can be tested when there is an internal buffer installed in the connection
             // assertThat(notAllDataSentEvent.totalBytesSent()).isEqualTo(data.length);

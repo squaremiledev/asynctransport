@@ -221,7 +221,7 @@ class ConnectingTransportTest
         transport.workUntil(() -> transport.events().contains(ConnectionClosed.class));
 
         // Then
-        final ConnectionClosed connectionClosed = transport.events().last(ConnectionClosed.class, event -> event.connectionId() == conn.connectionId());
+        final ConnectionClosed connectionClosed = transport.connectionEvents().last(ConnectionClosed.class, conn.connectionId());
         assertThat(connectionClosed).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID));
         assertThat(transport.events().contains(DataReceived.class)).isFalse();
@@ -237,16 +237,19 @@ class ConnectingTransportTest
         // Given
         final ConnectionId connection = driver.listenAndConnect(client);
         driver.successfullySendToClient(connection, client, "foo");
+        final DataSent lastDataSent = transport.connectionEvents().last(DataSent.class, connection.connectionId());
 
         // When
         client.close();
         transport.workUntil(() -> transport.events().contains(ConnectionClosed.class));
 
         // Then
-        final ConnectionClosed connectionClosed = transport.events().last(ConnectionClosed.class, event -> event.connectionId() == connection.connectionId());
+        final ConnectionClosed connectionClosed = transport.connectionEvents().last(ConnectionClosed.class, connection.connectionId());
         assertThat(connectionClosed).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(connection.port(), connection.connectionId(), TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID));
         assertThat(transport.events().contains(DataReceived.class)).isFalse();
+        assertThat(transport.connectionEvents().last(DataSent.class, connection.connectionId())).usingRecursiveComparison()
+                .isEqualTo(lastDataSent);
     }
 
     @Test

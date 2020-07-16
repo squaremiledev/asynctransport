@@ -70,8 +70,8 @@ public class TransportDriver
     {
         final byte[] content = message.getBytes(US_ASCII);
         final long connectionId = connection.connectionId();
-        final long totalBytesSentBefore = (transport.events().contains(DataSent.class, event -> event.connectionId() == connectionId)) ?
-                                          transport.events().last(DataSent.class, event -> event.connectionId() == connectionId).totalBytesSent() :
+        final long totalBytesSentBefore = (transport.connectionEvents().contains(DataSent.class, connectionId)) ?
+                                          transport.connectionEvents().last(DataSent.class, connectionId).totalBytesSent() :
                                           0;
         final long randomCommandId = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
         transport.handle(new SendData(connection.port(), connection.connectionId(), content, randomCommandId));

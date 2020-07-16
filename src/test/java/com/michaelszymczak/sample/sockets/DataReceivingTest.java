@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
+import com.michaelszymczak.sample.sockets.support.ConnectionEventsSpy;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
-import com.michaelszymczak.sample.sockets.support.TransportEventsSpy;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,7 @@ class DataReceivingTest
 
         // When
         transport.workUntil(completed(() -> client.write("foo".getBytes(US_ASCII))));
-        transport.workUntil(bytesReceived(transport.events(), conn.connectionId(), 3));
+        transport.workUntil(bytesReceived(transport.connectionEvents(), conn.connectionId(), 3));
 
         // Then
         assertThat(transport.events().all(DataReceived.class)).isNotEmpty();
@@ -83,28 +83,25 @@ class DataReceivingTest
         transport.workUntil(completed(() -> client2.write(fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII))));
         transport.workUntil(completed(() -> client3.write(fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII))));
         transport.workUntil(completed(() -> client4.write(fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII))));
-        transport.workUntil(bytesReceived(transport.events(), connS1C1.connectionId(), 10));
-        transport.workUntil(bytesReceived(transport.events(), connS2C2.connectionId(), 20));
-        transport.workUntil(bytesReceived(transport.events(), connS1C3.connectionId(), 30));
-        transport.workUntil(bytesReceived(transport.events(), connS2C4.connectionId(), 40));
+        transport.workUntil(bytesReceived(transport.connectionEvents(), connS1C1.connectionId(), 10));
+        transport.workUntil(bytesReceived(transport.connectionEvents(), connS2C2.connectionId(), 20));
+        transport.workUntil(bytesReceived(transport.connectionEvents(), connS1C3.connectionId(), 30));
+        transport.workUntil(bytesReceived(transport.connectionEvents(), connS2C4.connectionId(), 40));
 
         // Then
-        assertThat(dataAsString(transport.events().all(DataReceived.class, event -> event.connectionId() == connS1C1.connectionId()), US_ASCII))
+        assertThat(dataAsString(transport.connectionEvents().all(DataReceived.class, connS1C1.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S1 -> C1 ", 10));
-        assertThat(dataAsString(transport.events().all(DataReceived.class, event -> event.connectionId() == connS2C2.connectionId()), US_ASCII))
+        assertThat(dataAsString(transport.connectionEvents().all(DataReceived.class, connS2C2.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S2 -> C2 ", 20));
-        assertThat(dataAsString(transport.events().all(DataReceived.class, event -> event.connectionId() == connS1C3.connectionId()), US_ASCII))
+        assertThat(dataAsString(transport.connectionEvents().all(DataReceived.class, connS1C3.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S1 -> C3 ", 30));
-        assertThat(dataAsString(transport.events().all(DataReceived.class, event -> event.connectionId() == connS2C4.connectionId()), US_ASCII))
+        assertThat(dataAsString(transport.connectionEvents().all(DataReceived.class, connS2C4.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
     }
 
-    private BooleanSupplier bytesReceived(final TransportEventsSpy events, final long connectionId, final int size)
+    private BooleanSupplier bytesReceived(final ConnectionEventsSpy events, final long connectionId, final int size)
     {
-        return () -> !events.all(
-                DataReceived.class,
-                event -> event.connectionId() == connectionId && event.totalBytesReceived() >= size
-        ).isEmpty();
+        return () -> !events.all(DataReceived.class, connectionId, event -> event.totalBytesReceived() >= size).isEmpty();
     }
 
     private String dataAsString(final List<DataReceived> all, final Charset charset)
