@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-public interface ConnectionEvent extends TransportEvent
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
+
+public interface ConnectionEvent extends TransportEvent, ConnectionId
 {
-    long connectionId();
 }

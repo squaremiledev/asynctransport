@@ -1,6 +1,8 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
-public interface TransportEvent
+import com.michaelszymczak.sample.sockets.api.TransportId;
+
+public interface TransportEvent extends TransportId
 {
-    int port();
+
 }

@@ -13,7 +13,12 @@ public class TransportEventsSpy implements TransportEventsListener
 
     public <T extends TransportEvent> boolean contains(final Class<T> itemType)
     {
-        return !all(itemType).isEmpty();
+        return contains(itemType, all -> true);
+    }
+
+    public <T extends TransportEvent> boolean contains(final Class<T> itemType, final Predicate<T> predicate)
+    {
+        return !all(itemType, predicate).isEmpty();
     }
 
     public List<TransportEvent> all()

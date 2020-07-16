@@ -1,7 +1,6 @@
 package com.michaelszymczak.sample.sockets;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -9,11 +8,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
-import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
-import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
-import com.michaelszymczak.sample.sockets.api.events.ConnectionResetByPeer;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.FreePort;
@@ -51,7 +47,7 @@ class DataSendingTest
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
         final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
-        final TransportDriver driver = new TransportDriver(transport, transport.events());
+        final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
@@ -76,7 +72,7 @@ class DataSendingTest
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
         final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
-        final TransportDriver driver = new TransportDriver(transport, transport.events());
+        final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
@@ -105,7 +101,7 @@ class DataSendingTest
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
         final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
-        final TransportDriver driver = new TransportDriver(transport, transport.events());
+        final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
@@ -134,7 +130,7 @@ class DataSendingTest
         final SampleClient client2 = new SampleClient();
         final SampleClient client3 = new SampleClient();
         final SampleClient client4 = new SampleClient();
-        final TransportDriver driver = new TransportDriver(transport, transport.events());
+        final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final StartedListening startedListeningEvent1 = driver.startListening();
@@ -186,7 +182,7 @@ class DataSendingTest
                 final SampleClient client = new SampleClient()
         )
         {
-            final TransportDriver driver = new TransportDriver(transport, transport.events());
+            final TransportDriver driver = new TransportDriver(transport);
             final int serverPort = freePort();
             final int clientPort = freePortOtherThan(serverPort);
             final ConnectionAccepted conn = driver.listenAndConnect(client, serverPort, clientPort);
@@ -215,7 +211,7 @@ class DataSendingTest
                 final SampleClient client = new SampleClient()
         )
         {
-            final TransportDriver driver = new TransportDriver(transport, transport.events());
+            final TransportDriver driver = new TransportDriver(transport);
             final int serverPort = freePort();
             final int clientPort = freePortOtherThan(serverPort);
             final ConnectionAccepted conn = driver.listenAndConnect(client, serverPort, clientPort);
@@ -249,7 +245,7 @@ class DataSendingTest
                 final SampleClient client = new SampleClient()
         )
         {
-            final TransportDriver driver = new TransportDriver(transport, transport.events());
+            final TransportDriver driver = new TransportDriver(transport);
             final int serverPort = freePort();
             final int clientPort = freePortOtherThan(serverPort);
             final ConnectionAccepted conn = driver.listenAndConnect(client, serverPort, clientPort);
@@ -269,7 +265,6 @@ class DataSendingTest
             // assertThat(notAllDataSentEvent.totalBytesSent()).isEqualTo(data.length);
         }
     }
-
 
 
     private String fixedLengthStringStartingWith(final String content, final int minLength)

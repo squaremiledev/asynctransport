@@ -41,7 +41,7 @@ class DataReceivingTest
     {
         final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
-        final TransportDriver driver = new TransportDriver(transport, transport.events());
+        final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
@@ -66,7 +66,7 @@ class DataReceivingTest
         final SampleClient client2 = new SampleClient();
         final SampleClient client3 = new SampleClient();
         final SampleClient client4 = new SampleClient();
-        final TransportDriver driver = new TransportDriver(transport, transport.events());
+        final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final StartedListening startedListeningEvent1 = driver.startListening();

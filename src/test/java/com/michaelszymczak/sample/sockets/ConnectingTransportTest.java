@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.List;
 
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
@@ -109,7 +110,7 @@ class ConnectingTransportTest
     {
         final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
-        final TransportDriver driver = new TransportDriver(transport, transport.events());
+        final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
@@ -206,11 +207,11 @@ class ConnectingTransportTest
     }
 
     @Test
-    void shouldNotifyWhenRemoteEndpointClosedConnection() throws IOException
+    void shouldNotifyWhenRemoteEndpointImmediatelyClosedConnection() throws IOException
     {
         final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
-        final TransportDriver driver = new TransportDriver(transport, transport.events());
+        final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
@@ -227,11 +228,33 @@ class ConnectingTransportTest
     }
 
     @Test
+    void shouldNotifyWhenRemoteEndpointEventuallyClosedConnection() throws IOException
+    {
+        final TransportUnderTest transport = new TransportUnderTest();
+        final SampleClient client = new SampleClient();
+        final TransportDriver driver = new TransportDriver(transport);
+
+        // Given
+        final ConnectionId connection = driver.listenAndConnect(client);
+        driver.successfullySendToClient(connection, client, "foo");
+
+        // When
+        client.close();
+        transport.workUntil(() -> transport.events().contains(ConnectionClosed.class));
+
+        // Then
+        final ConnectionClosed connectionClosed = transport.events().last(ConnectionClosed.class, event -> event.connectionId() == connection.connectionId());
+        assertThat(connectionClosed).usingRecursiveComparison()
+                .isEqualTo(new ConnectionClosed(connection.port(), connection.connectionId(), TransportCommand.CONVENTIONAL_IGNORED_COMMAND_ID));
+        assertThat(transport.events().contains(DataReceived.class)).isFalse();
+    }
+
+    @Test
     void shouldInformedThatConnectionResetByPeer() throws SocketException
     {
         final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
-        final TransportDriver driver = new TransportDriver(transport, transport.events());
+        final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
