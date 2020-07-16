@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
-public interface ConnectionCommand extends TransportCommand
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
+
+public interface ConnectionCommand extends TransportCommand, ConnectionId
 {
-    long connectionId();
 }

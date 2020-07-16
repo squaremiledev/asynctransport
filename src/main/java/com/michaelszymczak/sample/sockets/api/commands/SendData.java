@@ -9,7 +9,7 @@ public class SendData implements ConnectionCommand
 
     public SendData(final int port, final long connectionId, final byte[] content)
     {
-        this(port, connectionId, content, CONVENTIONAL_IGNORED_COMMAND_ID);
+        this(port, connectionId, content, NO_COMMAND_ID);
     }
 
     public SendData(final int port, final long connectionId, final byte[] content, final long commandId)

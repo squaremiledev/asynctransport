@@ -1,10 +1,7 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
-public interface TransportCommand
+import com.michaelszymczak.sample.sockets.api.TransportId;
+
+public interface TransportCommand extends Command, TransportId
 {
-    long CONVENTIONAL_IGNORED_COMMAND_ID = -1;
-
-    int port();
-
-    long commandId();
 }
