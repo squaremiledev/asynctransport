@@ -9,10 +9,22 @@ public class ConnectionRepository implements AutoCloseable
 {
     // TODO: autoboxing
     private final Map<Long, ConnectionAggregate> connections = new HashMap<>();
+    private final RepositoryUpdates repositoryUpdates;
+
+    public ConnectionRepository()
+    {
+        this(RepositoryUpdates.NOOP);
+    }
+
+    public ConnectionRepository(final RepositoryUpdates repositoryUpdates)
+    {
+        this.repositoryUpdates = repositoryUpdates;
+    }
 
     public void add(final ConnectionAggregate connection)
     {
         connections.put(connection.connectionId(), connection);
+        notifyOfNumberOfConnections();
     }
 
     public int size()
@@ -49,5 +61,21 @@ public class ConnectionRepository implements AutoCloseable
             throw new IllegalStateException("Connection must be closed before it's removed");
         }
         connections.remove(connectionId);
+        notifyOfNumberOfConnections();
+    }
+
+    private void notifyOfNumberOfConnections()
+    {
+        repositoryUpdates.onNumberOfConnectionsChanged(connections.size());
+    }
+
+    interface RepositoryUpdates
+    {
+
+        RepositoryUpdates NOOP = ignored ->
+        {
+        };
+
+        void onNumberOfConnectionsChanged(int newNumberOfConnections);
     }
 }

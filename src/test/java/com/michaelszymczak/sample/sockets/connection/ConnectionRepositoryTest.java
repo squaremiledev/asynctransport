@@ -7,24 +7,32 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+
 class ConnectionRepositoryTest
 {
+    private final RepositoryUpdatesSpy repositoryUpdates = new RepositoryUpdatesSpy();
+
     @Test
     void shouldBeEmptyInitially()
     {
-        assertThat(new ConnectionRepository().size()).isEqualTo(0);
+        assertThat(new ConnectionRepository(repositoryUpdates).size()).isEqualTo(0);
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEmpty();
     }
 
     @Test
     void shouldAddConnectionToTheRepository()
     {
         final ConnectionAggregate connection = new SampleConnection(5544, 2);
-        final ConnectionRepository repository = new ConnectionRepository();
+        final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
 
         // When
         repository.add(connection);
 
         // Then
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(singletonList(1));
         assertThat(repository.size()).isEqualTo(1);
         assertThat(repository.findByConnectionId(2)).usingRecursiveComparison().isEqualTo(connection);
     }
@@ -32,12 +40,13 @@ class ConnectionRepositoryTest
     @Test
     void shouldFindConnectionById()
     {
-        final ConnectionRepository repository = new ConnectionRepository();
+        final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
         repository.add(new SampleConnection(5542, 2));
         repository.add(new SampleConnection(5543, 3));
         repository.add(new SampleConnection(5544, 4));
 
         // Then
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 2, 3));
         assertThat(repository.findByConnectionId(3)).usingRecursiveComparison().isEqualTo((ConnectionAggregate)new SampleConnection(5543, 3));
         assertThat(repository.contains(3)).isTrue();
         assertThat(repository.findByConnectionId(5)).isNull();
@@ -47,7 +56,7 @@ class ConnectionRepositoryTest
     @Test
     void shouldCloseAllConnectionWhenClosed()
     {
-        final ConnectionRepository repository = new ConnectionRepository();
+        final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
         final SampleConnection connection1 = new SampleConnection(5541, 1);
         final SampleConnection connection2 = new SampleConnection(5542, 2);
         final SampleConnection connection3 = new SampleConnection(5543, 3);
@@ -57,11 +66,13 @@ class ConnectionRepositoryTest
         assertThat(connection1.isClosed()).isFalse();
         assertThat(connection1.isClosed()).isFalse();
         assertThat(connection1.isClosed()).isFalse();
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 2, 3));
 
         // When
         repository.close();
 
         // Then
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 2, 3));
         assertThat(connection1.isClosed()).isTrue();
         assertThat(connection1.isClosed()).isTrue();
         assertThat(connection1.isClosed()).isTrue();
@@ -70,7 +81,7 @@ class ConnectionRepositoryTest
     @Test
     void shouldRemoveConnections()
     {
-        final ConnectionRepository repository = new ConnectionRepository();
+        final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
         final SampleConnection connection1 = new SampleConnection(5541, 1);
         final SampleConnection connection2 = new SampleConnection(5542, 2);
         final SampleConnection connection3 = new SampleConnection(5543, 3);
@@ -80,11 +91,13 @@ class ConnectionRepositoryTest
         repository.add(connection1);
         repository.add(connection2);
         repository.add(connection3);
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 2, 3));
 
         // When
         repository.removeById(2);
 
         // Then
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 2, 3, 2));
         assertThat(repository.contains(1)).isTrue();
         assertThat(repository.contains(2)).isFalse();
         assertThat(repository.contains(3)).isTrue();
@@ -93,30 +106,34 @@ class ConnectionRepositoryTest
     @Test
     void shouldNotAllowRemovingUnclosedConnection()
     {
-        final ConnectionRepository repository = new ConnectionRepository();
+        final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
         final SampleConnection connection = new SampleConnection(5542, 2);
         assertThat(connection.isClosed()).isFalse();
         repository.add(connection);
         assertThat(repository.contains(2)).isTrue();
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(singletonList(1));
 
         // When
         assertThrows(IllegalStateException.class, () -> repository.removeById(2));
 
         // Then
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(singletonList(1));
         assertThat(repository.contains(2)).isTrue();
     }
 
     @Test
     void shouldIgnoreRemovalOfNonExistingConnection()
     {
-        final ConnectionRepository repository = new ConnectionRepository();
+        final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
         repository.add(new SampleConnection(5542, 1));
         assertThat(repository.size()).isEqualTo(1);
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(singletonList(1));
 
         // When
         repository.removeById(123);
 
         // Then
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(singletonList(1));
         assertThat(repository.size()).isEqualTo(1);
     }
 
