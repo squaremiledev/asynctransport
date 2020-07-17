@@ -1,4 +1,4 @@
-package com.michaelszymczak.sample.sockets.nio;
+package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.util.HashSet;
 import java.util.Set;

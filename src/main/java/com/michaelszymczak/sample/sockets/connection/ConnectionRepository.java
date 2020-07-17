@@ -3,12 +3,14 @@ package com.michaelszymczak.sample.sockets.connection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.michaelszymczak.sample.sockets.nio.Resources;
+import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
+import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
+import com.michaelszymczak.sample.sockets.support.Resources;
 
 public class ConnectionRepository implements AutoCloseable
 {
     // TODO: autoboxing
-    private final Map<Long, ConnectionAggregate> connections = new HashMap<>();
+    private final Map<Long, Connection> connections = new HashMap<>();
     private final RepositoryUpdates repositoryUpdates;
 
     public ConnectionRepository(final RepositoryUpdates repositoryUpdates)
@@ -16,7 +18,7 @@ public class ConnectionRepository implements AutoCloseable
         this.repositoryUpdates = repositoryUpdates;
     }
 
-    public void add(final ConnectionAggregate connection)
+    public void add(final Connection connection)
     {
         connections.put(connection.connectionId(), connection);
         notifyOfNumberOfConnections();
@@ -27,7 +29,7 @@ public class ConnectionRepository implements AutoCloseable
         return connections.size();
     }
 
-    public ConnectionAggregate findByConnectionId(final long connectionId)
+    public Connection findByConnectionId(final long connectionId)
     {
         return connections.get(connectionId);
     }
@@ -51,7 +53,7 @@ public class ConnectionRepository implements AutoCloseable
         {
             return;
         }
-        final ConnectionAggregate connection = connections.get(connectionId);
+        final Connection connection = connections.get(connectionId);
         if (!connection.isClosed())
         {
             throw new IllegalStateException("Connection must be closed before it's removed");
@@ -68,5 +70,21 @@ public class ConnectionRepository implements AutoCloseable
     public interface RepositoryUpdates
     {
         void onNumberOfConnectionsChanged(int newNumberOfConnections);
+    }
+
+    public static class StatusRepositoryUpdates implements RepositoryUpdates
+    {
+        private StatusEventListener statusEventListener;
+
+        public StatusRepositoryUpdates(final StatusEventListener statusEventListener)
+        {
+            this.statusEventListener = statusEventListener;
+        }
+
+        @Override
+        public void onNumberOfConnectionsChanged(final int newNumberOfConnections)
+        {
+            statusEventListener.onEvent(new NumberOfConnectionsChanged(newNumberOfConnections));
+        }
     }
 }

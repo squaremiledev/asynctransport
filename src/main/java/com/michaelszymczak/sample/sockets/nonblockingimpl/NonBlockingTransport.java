@@ -1,10 +1,9 @@
-package com.michaelszymczak.sample.sockets.nio;
+package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,43 +18,30 @@ import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
-import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
-import com.michaelszymczak.sample.sockets.connection.ConnectionRepository;
+import com.michaelszymczak.sample.sockets.connection.ConnectionService;
+import com.michaelszymczak.sample.sockets.support.Resources;
 
-public class NIOBackedTransport implements AutoCloseable, Transport
+public class NonBlockingTransport implements AutoCloseable, Transport
 {
     private final TransportEventsListener transportEventsListener;
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
     private final List<ListeningSocket> listeningSockets;
     private final Selector acceptingSelector;
     private final Selector connectionsSelector;
-    private final ConnectionRepository connectionRepository;
+    private final ConnectionService connectionService;
 
-    public NIOBackedTransport(final TransportEventsListener transportEventsListener, final StatusEventListener statusEventListener) throws IOException
+    public NonBlockingTransport(final TransportEventsListener transportEventsListener, final StatusEventListener statusEventListener) throws IOException
     {
         this.transportEventsListener = transportEventsListener;
         this.acceptingSelector = Selector.open();
         this.connectionsSelector = Selector.open();
         this.listeningSockets = new ArrayList<>(10);
-        this.connectionRepository = new ConnectionRepository(new StatusRepositoryUpdates(statusEventListener));
+        this.connectionService = new ConnectionService(transportEventsListener, statusEventListener);
     }
 
     private void handleConnectionCommand(final ConnectionCommand command)
     {
-        if (!connectionRepository.contains(command.connectionId()))
-        {
-            transportEventsListener.onEvent(new TransportCommandFailed(command, "Connection id not found"));
-            return;
-        }
-
-        // TODO: handle a graceful FIN and abrupt RST sending appropriate events
-        final ConnectionAggregate targetConnection = connectionRepository.findByConnectionId(command.connectionId());
-        targetConnection.handle(command);
-
-        if (targetConnection.isClosed())
-        {
-            connectionRepository.removeById(command.connectionId());
-        }
+        connectionService.handle(command);
     }
 
     private void handleTransportCommand(final TransportCommand command) throws Exception
@@ -121,21 +107,11 @@ public class NIOBackedTransport implements AutoCloseable, Transport
             {
                 final SelectionKey key = keyIterator.next();
                 keyIterator.remove();
-                if (!key.isValid())
+                final boolean isClosed = connectionService.handle(((ConnectionConductor)key.attachment()).command(key));
+                if (isClosed)
                 {
-                    continue;
-                }
-                if (key.isReadable())
-                {
-                    final ConnectionAttachment attachment = (ConnectionAttachment)key.attachment();
-                    final ConnectionAggregate connection = connectionRepository.findByConnectionId(attachment.connectionId());
-                    connection.handle(attachment.readDataCommand());
-                    if (connection.isClosed())
-                    {
-                        key.cancel();
-                        key.attach(null);
-                        connectionRepository.removeById(attachment.connectionId());
-                    }
+                    key.cancel();
+                    key.attach(null);
                 }
             }
         }
@@ -161,11 +137,10 @@ public class NIOBackedTransport implements AutoCloseable, Transport
                 if (key.isAcceptable())
                 {
                     final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
-                    final Connection connection = listeningSocket.acceptConnection();
-                    final SocketChannel socketChannel = connection.channel();
-                    final SelectionKey selectionKey = socketChannel.register(connectionsSelector, SelectionKey.OP_READ);
-                    selectionKey.attach(new ConnectionAttachment(connection.port(), connection.connectionId()));
-                    connectionRepository.add(connection);
+                    final NonBlockingConnection connection = listeningSocket.acceptConnection();
+                    connectionService.newConnection(connection);
+                    final SelectionKey selectionKey = connection.channel().register(connectionsSelector, SelectionKey.OP_READ);
+                    selectionKey.attach(new ConnectionConductor(connection.port(), connection.connectionId()));
                 }
             }
         }
@@ -181,7 +156,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport
         }
         Resources.close(acceptingSelector);
         Resources.close(connectionsSelector);
-        Resources.close(connectionRepository);
+        Resources.close(connectionService);
     }
 
     private void handle(final Listen command) throws IOException

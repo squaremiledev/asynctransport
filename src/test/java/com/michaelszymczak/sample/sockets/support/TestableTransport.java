@@ -7,7 +7,7 @@ import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
-import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
+import com.michaelszymczak.sample.sockets.nonblockingimpl.NonBlockingTransport;
 
 
 import static com.michaelszymczak.sample.sockets.support.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
@@ -15,7 +15,7 @@ import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 public class TestableTransport<E extends TransportEventsListener> implements Transport
 {
-    private final NIOBackedTransport delegate;
+    private final NonBlockingTransport delegate;
     private final E events;
 
     public TestableTransport(final E events, final StatusEventListener statusEventListener)
@@ -23,7 +23,7 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
         this.events = events;
         try
         {
-            this.delegate = new NIOBackedTransport(events, statusEventListener);
+            this.delegate = new NonBlockingTransport(events, statusEventListener);
         }
         catch (Exception e)
         {

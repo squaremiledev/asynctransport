@@ -1,4 +1,4 @@
-package com.michaelszymczak.sample.sockets.nio;
+package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -8,6 +8,7 @@ import java.nio.channels.SocketChannel;
 
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.support.Resources;
 
 public class ListeningSocket implements AutoCloseable
 {
@@ -44,13 +45,19 @@ public class ListeningSocket implements AutoCloseable
         return serverSocketChannel;
     }
 
-    public Connection acceptConnection() throws IOException
+    public NonBlockingConnection acceptConnection() throws IOException
     {
         final SocketChannel acceptedSocketChannel = serverSocketChannel.accept();
         acceptedSocketChannel.configureBlocking(false);
         final Socket acceptedSocket = acceptedSocketChannel.socket();
         final long connectionId = connectionIdSource.newId();
-        final Connection connection = new Connection(acceptedSocket.getLocalPort(), connectionId, acceptedSocket.getPort(), acceptedSocketChannel, transportEventsListener::onEvent);
+        final NonBlockingConnection connection = new NonBlockingConnection(
+                acceptedSocket.getLocalPort(),
+                connectionId,
+                acceptedSocket.getPort(),
+                acceptedSocketChannel,
+                transportEventsListener::onEvent
+        );
         transportEventsListener.onEvent(new ConnectionAccepted(
                 connection.port(),
                 commandIdThatTriggeredListening,

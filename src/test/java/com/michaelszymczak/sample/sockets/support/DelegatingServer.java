@@ -5,7 +5,6 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 
 import com.michaelszymczak.sample.sockets.api.Transport;
-import com.michaelszymczak.sample.sockets.nio.Resources;
 
 public class DelegatingServer implements FakeServer
 {

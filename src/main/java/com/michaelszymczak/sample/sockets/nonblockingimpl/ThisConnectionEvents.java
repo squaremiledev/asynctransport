@@ -1,4 +1,4 @@
-package com.michaelszymczak.sample.sockets.nio;
+package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;

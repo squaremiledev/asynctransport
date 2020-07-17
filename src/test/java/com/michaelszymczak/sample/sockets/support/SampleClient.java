@@ -6,8 +6,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
-import com.michaelszymczak.sample.sockets.nio.Resources;
-
 public class SampleClient implements AutoCloseable
 {
 

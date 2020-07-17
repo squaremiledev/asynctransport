@@ -9,7 +9,7 @@ import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
-import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
+import com.michaelszymczak.sample.sockets.nonblockingimpl.NonBlockingTransport;
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
@@ -106,7 +106,7 @@ class ListeningTransportTest
     {
         try
         {
-            final NIOBackedTransport transport = new NIOBackedTransport(events, new StatusEventsSpy());
+            final NonBlockingTransport transport = new NonBlockingTransport(events, new StatusEventsSpy());
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
                     SampleClient client1 = new SampleClient();

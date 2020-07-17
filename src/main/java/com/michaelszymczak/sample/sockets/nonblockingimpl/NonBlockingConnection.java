@@ -1,4 +1,4 @@
-package com.michaelszymczak.sample.sockets.nio;
+package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -8,12 +8,14 @@ import java.nio.channels.SocketChannel;
 import com.michaelszymczak.sample.sockets.api.CommandId;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
+import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
 import com.michaelszymczak.sample.sockets.api.commands.ReadData;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
-import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
+import com.michaelszymczak.sample.sockets.connection.Connection;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
+import com.michaelszymczak.sample.sockets.support.Resources;
 
-public class Connection implements AutoCloseable, ConnectionAggregate
+public class NonBlockingConnection implements AutoCloseable, Connection
 {
     private final SocketChannel channel;
     private final int port;
@@ -25,7 +27,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     private long totalBytesReceived;
     private boolean isClosed = false;
 
-    public Connection(final int port, final long connectionId, final int remotePort, final SocketChannel channel, final ConnectionEventsListener eventsListener) throws SocketException
+    public NonBlockingConnection(final int port, final long connectionId, final int remotePort, final SocketChannel channel, final ConnectionEventsListener eventsListener) throws SocketException
     {
         this.port = port;
         this.connectionId = connectionId;
@@ -50,6 +52,10 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     @Override
     public void handle(final ConnectionCommand command)
     {
+        if (command instanceof NoOpCommand)
+        {
+            return;
+        }
         if (!validate(command))
         {
             return;

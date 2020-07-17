@@ -25,7 +25,7 @@ class ConnectionRepositoryTest
     @Test
     void shouldAddConnectionToTheRepository()
     {
-        final ConnectionAggregate connection = new SampleConnection(5544, 2);
+        final Connection connection = new SampleConnection(5544, 2);
         final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
 
         // When
@@ -47,7 +47,7 @@ class ConnectionRepositoryTest
 
         // Then
         assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 2, 3));
-        assertThat(repository.findByConnectionId(3)).usingRecursiveComparison().isEqualTo((ConnectionAggregate)new SampleConnection(5543, 3));
+        assertThat(repository.findByConnectionId(3)).usingRecursiveComparison().isEqualTo(new SampleConnection(5543, 3));
         assertThat(repository.contains(3)).isTrue();
         assertThat(repository.findByConnectionId(5)).isNull();
         assertThat(repository.contains(5)).isFalse();
@@ -137,7 +137,7 @@ class ConnectionRepositoryTest
         assertThat(repository.size()).isEqualTo(1);
     }
 
-    private static class SampleConnection implements ConnectionAggregate
+    private static class SampleConnection implements Connection
     {
 
         private final int port;
