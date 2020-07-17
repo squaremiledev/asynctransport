@@ -1,13 +1,10 @@
 package com.michaelszymczak.sample.sockets.connection;
 
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 
-public interface ConnectionAggregate extends AutoCloseable
+public interface ConnectionAggregate extends AutoCloseable, ConnectionId
 {
-    int port();
-
-    long connectionId();
-
     void handle(ConnectionCommand command);
 
     boolean isClosed();

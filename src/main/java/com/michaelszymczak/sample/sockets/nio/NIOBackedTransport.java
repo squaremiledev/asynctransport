@@ -127,19 +127,15 @@ public class NIOBackedTransport implements AutoCloseable, Transport
                 }
                 if (key.isReadable())
                 {
-                    final Connection connection = (Connection)key.attachment();
-                    connection.read();
-                }
-                if (key.attachment() != null)
-                {
-                    final Connection connection = (Connection)key.attachment();
+                    final ConnectionAttachment attachment = (ConnectionAttachment)key.attachment();
+                    final ConnectionAggregate connection = connectionRepository.findByConnectionId(attachment.connectionId());
+                    connection.handle(attachment.readDataCommand());
                     if (connection.isClosed())
                     {
                         key.cancel();
                         key.attach(null);
-                        connectionRepository.removeById(connection.connectionId());
+                        connectionRepository.removeById(attachment.connectionId());
                     }
-
                 }
             }
         }
@@ -168,7 +164,7 @@ public class NIOBackedTransport implements AutoCloseable, Transport
                     final Connection connection = listeningSocket.acceptConnection();
                     final SocketChannel socketChannel = connection.channel();
                     final SelectionKey selectionKey = socketChannel.register(connectionsSelector, SelectionKey.OP_READ);
-                    selectionKey.attach(connection);
+                    selectionKey.attach(new ConnectionAttachment(connection.port(), connection.connectionId()));
                     connectionRepository.add(connection);
                 }
             }

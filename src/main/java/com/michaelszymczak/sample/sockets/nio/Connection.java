@@ -8,6 +8,7 @@ import java.nio.channels.SocketChannel;
 import com.michaelszymczak.sample.sockets.api.CommandId;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
+import com.michaelszymczak.sample.sockets.api.commands.ReadData;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
@@ -62,6 +63,10 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         {
             handle((SendData)command);
         }
+        else if (command instanceof ReadData)
+        {
+            handle((ReadData)command);
+        }
         else
         {
             thisConnectionEvents.commandFailed(command, "Unrecognized command");
@@ -95,6 +100,11 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             // TODO: return failure
             throw new RuntimeException(e);
         }
+    }
+
+    private void handle(final ReadData command)
+    {
+        read();
     }
 
     public void read()
