@@ -67,6 +67,22 @@ class DataSendingTest
     }
 
     @Test
+    void shouldNotifyThatAttemptToSendNoDataWasMade() throws IOException
+    {
+        final TransportUnderTest transport = new TransportUnderTest();
+
+        // Given
+        final ConnectionAccepted conn = new TransportDriver(transport).listenAndConnect(new SampleClient());
+
+        //When
+        transport.handle(new SendData(conn.port(), conn.connectionId(), new byte[]{}, 100));
+        transport.workUntil(() -> transport.connectionEvents().contains(DataSent.class, conn.connectionId()));
+
+        // Then
+        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), 0, 0, 100));
+    }
+
+    @Test
     void shouldFailToSendDataUsingNonExistingConnectionOrPort() throws IOException
     {
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();

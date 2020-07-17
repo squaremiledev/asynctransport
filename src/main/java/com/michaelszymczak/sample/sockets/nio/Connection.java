@@ -5,8 +5,8 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.CommandId;
+import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.connection.ConnectionAggregate;
@@ -88,7 +88,6 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             {
                 totalBytesSent += bytesSent;
             }
-            // TODO: test a SendData command with no data
             thisConnectionEvents.dataSent(bytesSent, totalBytesSent, command.commandId());
         }
         catch (IOException e)
