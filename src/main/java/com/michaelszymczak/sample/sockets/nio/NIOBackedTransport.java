@@ -127,11 +127,11 @@ public class NIOBackedTransport implements AutoCloseable, Transport
                 {
                     final Connection connection = (Connection)key.attachment();
                     connection.read();
-                    if (connection.isClosed())
-                    {
-                        connection.close();
-                        key.attach(null); // probably unnecessary
-                    }
+                }
+                if (key.attachment() != null && (((Connection)key.attachment()).isClosed()))
+                {
+                    key.cancel();
+                    key.attach(null);
                 }
             }
         }
@@ -160,7 +160,6 @@ public class NIOBackedTransport implements AutoCloseable, Transport
                     final Connection connection = listeningSocket.acceptConnection();
                     final SocketChannel socketChannel = connection.channel();
                     final SelectionKey selectionKey = socketChannel.register(connectionsSelector, SelectionKey.OP_READ);
-                    // TODO: do we need to 'detatch' the connection when closed not to have hanging reference there?
                     selectionKey.attach(connection);
                     connectionRepository.add(connection);
                 }

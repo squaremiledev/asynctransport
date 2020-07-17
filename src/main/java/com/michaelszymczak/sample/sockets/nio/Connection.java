@@ -76,7 +76,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
 
     private void handle(final CloseConnection command)
     {
-        closeConnection(command.commandId());
+        closeConnection(command.commandId(), false);
     }
 
     private void handle(final SendData command)
@@ -106,8 +106,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
             final int read = channel.read(readBuffer);
             if (read == -1)
             {
-                isClosed = true;
-                thisConnectionEvents.connectionClosed(CommandId.NO_COMMAND_ID);
+                closeConnection(CommandId.NO_COMMAND_ID, false);
                 return;
             }
 
@@ -121,8 +120,7 @@ public class Connection implements AutoCloseable, ConnectionAggregate
         {
             if ("Connection reset by peer".equalsIgnoreCase(e.getMessage()))
             {
-                isClosed = true;
-                thisConnectionEvents.connectionResetByPeer(CommandId.NO_COMMAND_ID);
+                closeConnection(CommandId.NO_COMMAND_ID, true);
             }
         }
         catch (Exception e)
@@ -164,15 +162,22 @@ public class Connection implements AutoCloseable, ConnectionAggregate
     @Override
     public void close()
     {
-        closeConnection(CommandId.NO_COMMAND_ID);
+        closeConnection(CommandId.NO_COMMAND_ID, false);
     }
 
-    private void closeConnection(final long conventionalIgnoredCommandId)
+    private void closeConnection(final long commandId, final boolean resetByPeer)
     {
         Resources.close(channel);
         if (!isClosed)
         {
-            thisConnectionEvents.connectionClosed(conventionalIgnoredCommandId);
+            if (resetByPeer)
+            {
+                thisConnectionEvents.connectionResetByPeer(commandId);
+            }
+            else
+            {
+                thisConnectionEvents.connectionClosed(commandId);
+            }
             isClosed = true;
         }
     }
