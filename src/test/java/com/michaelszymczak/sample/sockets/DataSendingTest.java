@@ -11,6 +11,7 @@ import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
+import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.FreePort;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
@@ -18,6 +19,7 @@ import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +36,8 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 class DataSendingTest
 {
 
+    private final TransportUnderTest transport = new TransportUnderTest();
+
     @SafeVarargs
     private static <T> Set<?> distinct(final Function<T, Object> property, final T... items)
     {
@@ -45,7 +49,6 @@ class DataSendingTest
     void shouldSendData() throws IOException
     {
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
-        final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport);
 
@@ -69,8 +72,6 @@ class DataSendingTest
     @Test
     void shouldNotifyThatAttemptToSendNoDataWasMade() throws IOException
     {
-        final TransportUnderTest transport = new TransportUnderTest();
-
         // Given
         final ConnectionAccepted conn = new TransportDriver(transport).listenAndConnect(new SampleClient());
 
@@ -86,7 +87,6 @@ class DataSendingTest
     void shouldFailToSendDataUsingNonExistingConnectionOrPort() throws IOException
     {
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
-        final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport);
 
@@ -115,7 +115,6 @@ class DataSendingTest
     void shouldFailToSendDataUsingWrongPort() throws IOException
     {
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
-        final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport);
 
@@ -141,7 +140,6 @@ class DataSendingTest
     void shouldSendDataViaMultipleConnections() throws IOException
     {
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
-        final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client1 = new SampleClient();
         final SampleClient client2 = new SampleClient();
         final SampleClient client3 = new SampleClient();
@@ -194,7 +192,6 @@ class DataSendingTest
         final int contentSizeInBytes = 1_000_000;
 
         try (
-                final TransportUnderTest transport = new TransportUnderTest();
                 final SampleClient client = new SampleClient()
         )
         {
@@ -223,7 +220,6 @@ class DataSendingTest
     {
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
         try (
-                final TransportUnderTest transport = new TransportUnderTest();
                 final SampleClient client = new SampleClient()
         )
         {
@@ -256,7 +252,6 @@ class DataSendingTest
     void shouldBeAbleToSendPartOfTheData() throws IOException
     {
         try (
-                final TransportUnderTest transport = new TransportUnderTest();
                 final SampleClient client = new SampleClient()
         )
         {
@@ -278,6 +273,16 @@ class DataSendingTest
             assertThat(notAllDataSentEvent.bytesSent()).isLessThan(data.length);
             // TODO: this can be tested when there is an internal buffer installed in the connection
             // assertThat(notAllDataSentEvent.totalBytesSent()).isEqualTo(data.length);
+        }
+    }
+
+    @AfterEach
+    void tearDown()
+    {
+        transport.close();
+        if (transport.statusEvents().contains(NumberOfConnectionsChanged.class))
+        {
+            assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
         }
     }
 

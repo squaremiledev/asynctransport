@@ -11,11 +11,6 @@ public class ConnectionRepository implements AutoCloseable
     private final Map<Long, ConnectionAggregate> connections = new HashMap<>();
     private final RepositoryUpdates repositoryUpdates;
 
-    public ConnectionRepository()
-    {
-        this(RepositoryUpdates.NOOP);
-    }
-
     public ConnectionRepository(final RepositoryUpdates repositoryUpdates)
     {
         this.repositoryUpdates = repositoryUpdates;
@@ -45,8 +40,9 @@ public class ConnectionRepository implements AutoCloseable
     @Override
     public void close()
     {
-        // TODO - remember to close when implementing removal (with void return value) or clear
         connections.values().forEach(Resources::close);
+        connections.clear();
+        notifyOfNumberOfConnections();
     }
 
     public void removeById(final long connectionId)
@@ -69,13 +65,8 @@ public class ConnectionRepository implements AutoCloseable
         repositoryUpdates.onNumberOfConnectionsChanged(connections.size());
     }
 
-    interface RepositoryUpdates
+    public interface RepositoryUpdates
     {
-
-        RepositoryUpdates NOOP = ignored ->
-        {
-        };
-
         void onNumberOfConnectionsChanged(int newNumberOfConnections);
     }
 }

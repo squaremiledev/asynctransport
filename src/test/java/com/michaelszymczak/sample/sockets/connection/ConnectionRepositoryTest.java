@@ -72,7 +72,7 @@ class ConnectionRepositoryTest
         repository.close();
 
         // Then
-        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 2, 3));
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 2, 3, 0));
         assertThat(connection1.isClosed()).isTrue();
         assertThat(connection1.isClosed()).isTrue();
         assertThat(connection1.isClosed()).isTrue();

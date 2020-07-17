@@ -13,6 +13,7 @@ import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 import com.michaelszymczak.sample.sockets.support.DelegatingServer;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.ServerRun;
+import com.michaelszymczak.sample.sockets.support.StatusEventsSpy;
 import com.michaelszymczak.sample.sockets.support.SynchronizedTransportEvents;
 import com.michaelszymczak.sample.sockets.support.TestableTransport;
 
@@ -105,7 +106,7 @@ class ListeningTransportTest
     {
         try
         {
-            final NIOBackedTransport transport = new NIOBackedTransport(events);
+            final NIOBackedTransport transport = new NIOBackedTransport(events, new StatusEventsSpy());
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
                     SampleClient client1 = new SampleClient();
@@ -134,7 +135,7 @@ class ListeningTransportTest
     {
         try
         {
-            final TestableTransport<SynchronizedTransportEvents> transport = new TestableTransport<>(events);
+            final TestableTransport<SynchronizedTransportEvents> transport = new TestableTransport<>(events, new StatusEventsSpy());
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
                     SampleClient client1 = new SampleClient();
@@ -179,7 +180,7 @@ class ListeningTransportTest
     {
         try
         {
-            final TestableTransport<SynchronizedTransportEvents> transport = new TestableTransport<>(events);
+            final TestableTransport<SynchronizedTransportEvents> transport = new TestableTransport<>(events, new StatusEventsSpy());
             try (
                     ServerRun ignored = startServer(new DelegatingServer(transport));
                     SampleClient client = new SampleClient()

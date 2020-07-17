@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.List;
 
+import com.michaelszymczak.sample.sockets.api.CommandId;
 import com.michaelszymczak.sample.sockets.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
-import com.michaelszymczak.sample.sockets.api.CommandId;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
@@ -14,6 +14,7 @@ import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionResetByPeer;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
+import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.support.BackgroundRunner;
@@ -21,6 +22,7 @@ import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,14 +37,16 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 
 class ConnectingTransportTest
 {
+    private final TransportUnderTest transport = new TransportUnderTest();
+
     @Test
     void shouldNotifyWhenConnected()
     {
-        final TransportUnderTest transport = new TransportUnderTest();
-
         // Given
         transport.handle(new Listen(1, freePort()));
         final int serverPort = transport.events().last(StartedListening.class).port();
+        assertThat(transport.statusEvents().contains(NumberOfConnectionsChanged.class)).isFalse();
+
 
         // When
         final int clientPort = freePort();
@@ -50,6 +54,7 @@ class ConnectingTransportTest
         transport.workUntil(() -> transport.events().contains(ConnectionAccepted.class));
 
         // Then
+        assertEqual(transport.statusEvents().all(NumberOfConnectionsChanged.class), new NumberOfConnectionsChanged(1));
         assertThat(transport.events().all(ConnectionAccepted.class)).hasSize(1);
         final ConnectionAccepted connectionAcceptedEvent = transport.events().last(ConnectionAccepted.class);
         assertThat(connectionAcceptedEvent).usingRecursiveComparison()
@@ -59,8 +64,6 @@ class ConnectingTransportTest
     @Test
     void shouldProvideConnectionDetailsForEachConnection()
     {
-        final TransportUnderTest transport = new TransportUnderTest();
-
         // Given
         transport.handle(new Listen(5, freePort()));
         final int serverPort = transport.events().last(StartedListening.class).port();
@@ -78,13 +81,12 @@ class ConnectingTransportTest
         assertThat(events.get(0).port()).isEqualTo(events.get(1).port());
         assertThat(events.get(0).remotePort()).isNotEqualTo(events.get(1).remotePort());
         assertThat(events.get(0).connectionId()).isNotEqualTo(events.get(1).connectionId());
+        assertEqual(transport.statusEvents().all(NumberOfConnectionsChanged.class), new NumberOfConnectionsChanged(1), new NumberOfConnectionsChanged(2));
     }
 
     @Test
     void shouldCloseConnection() throws IOException
     {
-        final TransportUnderTest transport = new TransportUnderTest();
-
         // Given
         transport.handle(new Listen(9, freePort()));
         transport.workUntil(() -> !transport.events().all(StartedListening.class).isEmpty());
@@ -94,6 +96,7 @@ class ConnectingTransportTest
         transport.workUntil(completed(() -> client.connectedTo(serverPort)));
         transport.workUntil(() -> !transport.events().all(ConnectionAccepted.class).isEmpty());
         final ConnectionAccepted connectionAccepted = transport.events().last(ConnectionAccepted.class);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
 
         // When
         transport.handle(new CloseConnection(connectionAccepted.port(), connectionAccepted.connectionId(), 10));
@@ -103,23 +106,26 @@ class ConnectingTransportTest
         assertThat(transport.events().last(ConnectionClosed.class)).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(connectionAccepted.port(), connectionAccepted.connectionId(), 10));
         assertThat(transport.events().all(ConnectionClosed.class)).hasSize(1);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
     }
 
     @Test
     void shouldCloseConnectionOnce() throws IOException
     {
-        final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
         transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 15));
         assertThat(transport.events().last(ConnectionClosed.class)).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), 15));
         assertThat(transport.events().all(ConnectionClosed.class)).hasSize(1);
         assertThat(transport.events().all(TransportCommandFailed.class)).isEmpty();
         assertThat(client.hasServerClosedConnection()).isTrue();
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSize(2);
 
         // When
         transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 16));
@@ -127,12 +133,14 @@ class ConnectingTransportTest
         // Then
         assertThat(transport.events().last(TransportCommandFailed.class).commandId()).isEqualTo(16);
         assertThat(transport.events().all(ConnectionClosed.class)).hasSize(1);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSize(2);
     }
 
     @Test
     void shouldRejectClosingNonExistingConnection()
     {
-        final TransportUnderTest transport = new TransportUnderTest();
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).isEmpty();
 
         // When
         transport.handle(new CloseConnection(1234, 11111, 15));
@@ -140,13 +148,12 @@ class ConnectingTransportTest
         // Then
         assertThat(transport.events().last(TransportCommandFailed.class, event -> event.commandId() == 15).details()).containsIgnoringCase("connection id");
         assertThat(transport.events().last(TransportCommandFailed.class, event -> event.commandId() == 15).port()).isEqualTo(1234);
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).isEmpty();
     }
 
     @Test
     void shouldNotifyWhenConnectedWhileListeningOnMultiplePorts()
     {
-        final TransportUnderTest transport = new TransportUnderTest();
-
         // Given
         final int listeningPort1 = freePort();
         final int listeningPort2 = freePortOtherThan(listeningPort1);
@@ -165,6 +172,8 @@ class ConnectingTransportTest
         transport.workUntil(() -> transport.events().all(ConnectionAccepted.class).size() >= 2);
         final ConnectionAccepted connectionAccepted1 = transport.events().last(ConnectionAccepted.class, event -> event.port() == listeningPort1);
         final ConnectionAccepted connectionAccepted2 = transport.events().last(ConnectionAccepted.class, event -> event.port() == listeningPort2);
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(2);
 
         assertThat(connectionAccepted1.connectionId()).isNotEqualTo(connectionAccepted2.connectionId());
         assertThat(connectionAccepted1.commandId()).isEqualTo(5);
@@ -177,8 +186,6 @@ class ConnectingTransportTest
     @Test
     void shouldNotifyWhenStartedListeningAndConnectedTwice()
     {
-        final TransportUnderTest transport = new TransportUnderTest();
-
         // Given
         final int listeningPort1 = freePort();
         final int listeningPort2 = freePortOtherThan(listeningPort1);
@@ -197,6 +204,7 @@ class ConnectingTransportTest
         transport.workUntil(() -> transport.events().all(ConnectionAccepted.class).size() >= 2);
         final ConnectionAccepted connectionAccepted1 = transport.events().last(ConnectionAccepted.class, event -> event.port() == listeningPort1);
         final ConnectionAccepted connectionAccepted2 = transport.events().last(ConnectionAccepted.class, event -> event.port() == listeningPort2);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(2);
 
         assertThat(connectionAccepted1.connectionId()).isNotEqualTo(connectionAccepted2.connectionId());
         assertThat(connectionAccepted1.commandId()).isEqualTo(5);
@@ -209,12 +217,13 @@ class ConnectingTransportTest
     @Test
     void shouldNotifyWhenRemoteEndpointImmediatelyClosedConnection() throws IOException
     {
-        final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSizeGreaterThanOrEqualTo(1);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
 
         // When
         client.close();
@@ -225,17 +234,20 @@ class ConnectingTransportTest
         assertThat(connectionClosed).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), CommandId.NO_COMMAND_ID));
         assertThat(transport.events().contains(DataReceived.class)).isFalse();
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
     }
 
     @Test
     void shouldNotifyWhenRemoteEndpointEventuallyClosedConnection() throws IOException
     {
-        final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final ConnectionId connection = driver.listenAndConnect(client);
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSizeGreaterThanOrEqualTo(1);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
         driver.successfullySendToClient(connection, client, "foo");
         final DataSent lastDataSent = transport.connectionEvents().last(DataSent.class, connection.connectionId());
 
@@ -250,12 +262,13 @@ class ConnectingTransportTest
         assertThat(transport.events().contains(DataReceived.class)).isFalse();
         assertThat(transport.connectionEvents().last(DataSent.class, connection.connectionId())).usingRecursiveComparison()
                 .isEqualTo(lastDataSent);
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
     }
 
     @Test
     void shouldInformedThatConnectionResetByPeer() throws SocketException
     {
-        final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport);
 
@@ -277,5 +290,17 @@ class ConnectingTransportTest
         );
         assertThat(transport.events().contains(ConnectionClosed.class)).isFalse();
         assertThat(transport.events().contains(DataReceived.class)).isFalse();
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
+    }
+
+    @AfterEach
+    void tearDown()
+    {
+        transport.close();
+        if (transport.statusEvents().contains(NumberOfConnectionsChanged.class))
+        {
+            assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
+        }
     }
 }

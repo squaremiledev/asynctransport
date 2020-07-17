@@ -11,12 +11,14 @@ import java.util.stream.Collectors;
 
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
+import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.ConnectionEventsSpy;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,6 +30,7 @@ import static java.util.Arrays.copyOf;
 
 class DataReceivingTest
 {
+    private final TransportUnderTest transport = new TransportUnderTest();
 
     @SafeVarargs
     private static <T> Set<?> distinct(final Function<T, Object> property, final T... items)
@@ -39,7 +42,6 @@ class DataReceivingTest
     @Test
     void shouldReceiveData() throws IOException
     {
-        final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport);
 
@@ -61,7 +63,6 @@ class DataReceivingTest
     @Test
     void shouldReceivedDataFromMultipleConnections() throws IOException
     {
-        final TransportUnderTest transport = new TransportUnderTest();
         final SampleClient client1 = new SampleClient();
         final SampleClient client2 = new SampleClient();
         final SampleClient client3 = new SampleClient();
@@ -97,6 +98,16 @@ class DataReceivingTest
                 .isEqualTo(fixedLengthStringStartingWith("S1 -> C3 ", 30));
         assertThat(dataAsString(transport.connectionEvents().all(DataReceived.class, connS2C4.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
+    }
+
+    @AfterEach
+    void tearDown()
+    {
+        transport.close();
+        if (transport.statusEvents().contains(NumberOfConnectionsChanged.class))
+        {
+            assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
+        }
     }
 
     private BooleanSupplier bytesReceived(final ConnectionEventsSpy events, final long connectionId, final int size)

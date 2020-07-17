@@ -15,6 +15,7 @@ import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
+import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
@@ -28,34 +29,15 @@ public class NIOBackedTransport implements AutoCloseable, Transport
     private final List<ListeningSocket> listeningSockets;
     private final Selector acceptingSelector;
     private final Selector connectionsSelector;
-    private final ConnectionRepository connectionRepository = new ConnectionRepository();
+    private final ConnectionRepository connectionRepository;
 
-    public NIOBackedTransport(final TransportEventsListener transportEventsListener) throws IOException
+    public NIOBackedTransport(final TransportEventsListener transportEventsListener, final StatusEventListener statusEventListener) throws IOException
     {
         this.transportEventsListener = transportEventsListener;
         this.acceptingSelector = Selector.open();
         this.connectionsSelector = Selector.open();
         this.listeningSockets = new ArrayList<>(10);
-    }
-
-    @Override
-    public void handle(final TransportCommand command)
-    {
-        try
-        {
-            if (command instanceof ConnectionCommand)
-            {
-                handleConnectionCommand((ConnectionCommand)command);
-            }
-            else
-            {
-                handleTransportCommand(command);
-            }
-        }
-        catch (Exception e)
-        {
-            transportEventsListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
-        }
+        this.connectionRepository = new ConnectionRepository(new StatusRepositoryUpdates(statusEventListener));
     }
 
     private void handleConnectionCommand(final ConnectionCommand command)
@@ -106,6 +88,26 @@ public class NIOBackedTransport implements AutoCloseable, Transport
         }
     }
 
+    @Override
+    public void handle(final TransportCommand command)
+    {
+        try
+        {
+            if (command instanceof ConnectionCommand)
+            {
+                handleConnectionCommand((ConnectionCommand)command);
+            }
+            else
+            {
+                handleTransportCommand(command);
+            }
+        }
+        catch (Exception e)
+        {
+            transportEventsListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
+        }
+    }
+
     private void connectionsWork() throws IOException
     {
         final int availableCount;
@@ -128,10 +130,16 @@ public class NIOBackedTransport implements AutoCloseable, Transport
                     final Connection connection = (Connection)key.attachment();
                     connection.read();
                 }
-                if (key.attachment() != null && (((Connection)key.attachment()).isClosed()))
+                if (key.attachment() != null)
                 {
-                    key.cancel();
-                    key.attach(null);
+                    final Connection connection = (Connection)key.attachment();
+                    if (connection.isClosed())
+                    {
+                        key.cancel();
+                        key.attach(null);
+                        connectionRepository.removeById(connection.connectionId());
+                    }
+
                 }
             }
         }
@@ -213,4 +221,5 @@ public class NIOBackedTransport implements AutoCloseable, Transport
         }
         transportEventsListener.onEvent(new TransportCommandFailed(command, "No listening socket found on this port"));
     }
+
 }

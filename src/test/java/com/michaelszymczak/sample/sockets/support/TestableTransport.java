@@ -5,6 +5,7 @@ import java.util.function.BooleanSupplier;
 
 import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
+import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.nio.NIOBackedTransport;
 
@@ -17,12 +18,12 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
     private final NIOBackedTransport delegate;
     private final E events;
 
-    public TestableTransport(final E events)
+    public TestableTransport(final E events, final StatusEventListener statusEventListener)
     {
         this.events = events;
         try
         {
-            this.delegate = new NIOBackedTransport(events);
+            this.delegate = new NIOBackedTransport(events, statusEventListener);
         }
         catch (Exception e)
         {

@@ -1,49 +1,22 @@
 package com.michaelszymczak.sample.sockets.support;
 
-import java.util.List;
-import java.util.function.Predicate;
-
 import com.michaelszymczak.sample.sockets.api.events.TransportCorrelatedEvent;
 import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 
-public class TransportEventsSpy implements TransportEventsListener
+public final class TransportEventsSpy extends EventsSpy<TransportEvent> implements TransportEventsListener
 {
-    private final CapturedItems<TransportEvent> items = new CapturedItems<>();
+    private final CapturedItems<TransportEvent> items;
 
-    public <T extends TransportEvent> boolean contains(final Class<T> itemType)
+    TransportEventsSpy()
     {
-        return contains(itemType, all -> true);
+        this(new CapturedItems<>());
     }
 
-    public <T extends TransportEvent> boolean contains(final Class<T> itemType, final Predicate<T> predicate)
+    private TransportEventsSpy(final CapturedItems<TransportEvent> items)
     {
-        return !all(itemType, predicate).isEmpty();
-    }
-
-    public List<TransportEvent> all()
-    {
-        return items.all();
-    }
-
-    public <T extends TransportEvent> List<T> all(final Class<T> itemType)
-    {
-        return items.all(itemType, foundItem -> true);
-    }
-
-    public <T extends TransportEvent> List<T> all(final Class<T> itemType, final Predicate<T> predicate)
-    {
-        return items.all(itemType, predicate);
-    }
-
-    public <T extends TransportEvent> T last(final Class<T> clazz)
-    {
-        return items.last(clazz, event -> true);
-    }
-
-    public <T extends TransportEvent> T last(final Class<T> clazz, final Predicate<T> predicate)
-    {
-        return items.last(clazz, predicate);
+        super(items);
+        this.items = items;
     }
 
     public <T extends TransportCorrelatedEvent> T lastResponse(final Class<T> eventType, final int commandId)
@@ -55,11 +28,5 @@ public class TransportEventsSpy implements TransportEventsListener
     public void onEvent(final TransportEvent event)
     {
         items.add(event);
-    }
-
-    @Override
-    public String toString()
-    {
-        return items.toString();
     }
 }

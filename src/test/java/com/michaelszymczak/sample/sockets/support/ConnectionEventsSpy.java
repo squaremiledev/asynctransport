@@ -5,7 +5,7 @@ import java.util.function.Predicate;
 
 import com.michaelszymczak.sample.sockets.api.events.ConnectionEvent;
 
-public class ConnectionEventsSpy
+public final class ConnectionEventsSpy
 {
     private final TransportEventsSpy events;
 
