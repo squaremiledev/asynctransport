@@ -1,11 +1,9 @@
 package com.michaelszymczak.sample.sockets.connection;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
-public interface Channel extends AutoCloseable
+public interface Channel extends WritableByteChannel, ReadableByteChannel
 {
-    int write(ByteBuffer src) throws IOException;
 
-    int read(ByteBuffer dst) throws IOException;
 }

@@ -25,6 +25,11 @@ public final class ConnectionEventsSpy implements ConnectionEventsListener
         return events.contains(itemType, event -> event.connectionId() == connectionId);
     }
 
+    public <T extends ConnectionEvent> List<T> all(final Class<T> itemType)
+    {
+        return events.all(itemType, event -> true);
+    }
+
     public <T extends ConnectionEvent> List<T> all(final Class<T> itemType, final long connectionId)
     {
         return events.all(itemType, event -> event.connectionId() == connectionId);
@@ -33,6 +38,11 @@ public final class ConnectionEventsSpy implements ConnectionEventsListener
     public <T extends ConnectionEvent> List<T> all(final Class<T> itemType, final long connectionId, final Predicate<T> predicate)
     {
         return events.all(itemType, event -> event.connectionId() == connectionId && predicate.test(event));
+    }
+
+    public <T extends ConnectionEvent> T last(final Class<T> clazz)
+    {
+        return events.last(clazz, event -> true);
     }
 
     public <T extends ConnectionEvent> T last(final Class<T> clazz, long connectionId)

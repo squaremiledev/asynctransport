@@ -28,7 +28,13 @@ public class SocketBackedChannel implements Channel
     }
 
     @Override
-    public void close() throws Exception
+    public boolean isOpen()
+    {
+        return socketChannel.isOpen();
+    }
+
+    @Override
+    public void close() throws IOException
     {
         socketChannel.close();
     }

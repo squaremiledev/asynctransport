@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
 import com.michaelszymczak.sample.sockets.api.CommandId;
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
 
 public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
 {
@@ -9,6 +10,11 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
     private final int bytesSent;
     private final long totalBytesSent;
     private final long commandId;
+
+    public DataSent(final ConnectionId connectionId, final int bytesSent, final long totalBytesSent)
+    {
+        this(connectionId.port(), connectionId.connectionId(), bytesSent, totalBytesSent, CommandId.NO_COMMAND_ID);
+    }
 
     public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent)
     {

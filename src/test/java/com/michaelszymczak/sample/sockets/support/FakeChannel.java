@@ -1,28 +1,65 @@
 package com.michaelszymczak.sample.sockets.support;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.michaelszymczak.sample.sockets.connection.Channel;
 
 public class FakeChannel implements Channel
 {
+    private boolean isOpen = true;
+    private int maxBytesReadInOneGo = 0;
+    private int maxBytesWrittenInOneGo = 0;
+    private List<String> writeAttempts = new ArrayList<>();
 
-    @Override
-    public void close() throws Exception
+    public FakeChannel maxBytesReadInOneGo(int value)
     {
+        this.maxBytesWrittenInOneGo = value;
+        return this;
+    }
 
+    public FakeChannel maxBytesWrittenInOneGo(int value)
+    {
+        this.maxBytesReadInOneGo = value;
+        return this;
+    }
+
+    public FakeChannel isOpen(boolean value)
+    {
+        isOpen = value;
+        return this;
     }
 
     @Override
-    public int write(final ByteBuffer src) throws IOException
+    public int write(final ByteBuffer src)
     {
-        return 0;
+        final int bytesWritten = Math.min(maxBytesReadInOneGo, src.remaining());
+        writeAttempts.add(new String(src.array(), src.position(), bytesWritten));
+        // TODO: need to update the src buffer state?
+        return bytesWritten;
     }
 
     @Override
-    public int read(final ByteBuffer dst) throws IOException
+    public int read(final ByteBuffer dst)
     {
-        return 0;
+        return maxBytesWrittenInOneGo;
+    }
+
+    @Override
+    public boolean isOpen()
+    {
+        return isOpen;
+    }
+
+    @Override
+    public void close()
+    {
+        isOpen = false;
+    }
+
+    public List<String> attemptedToWrite()
+    {
+        return writeAttempts;
     }
 }
