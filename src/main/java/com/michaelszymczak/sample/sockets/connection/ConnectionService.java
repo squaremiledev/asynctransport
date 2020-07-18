@@ -17,7 +17,7 @@ public class ConnectionService implements AutoCloseable
         this.transportEventsListener = transportEventsListener;
     }
 
-    public <Con extends Connection> Con newConnection(final Con connection)
+    public <C extends Connection> C newConnection(final C connection)
     {
         connectionRepository.add(connection);
         return connection;

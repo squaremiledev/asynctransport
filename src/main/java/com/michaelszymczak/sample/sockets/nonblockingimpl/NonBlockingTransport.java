@@ -10,7 +10,7 @@ import java.util.List;
 
 import com.michaelszymczak.sample.sockets.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.api.Transport;
-import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
+import com.michaelszymczak.sample.sockets.api.commands.CommandFactory;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
@@ -33,6 +33,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final Selector acceptingSelector;
     private final Selector connectionsSelector;
     private final ConnectionService connectionService;
+    private final CommandFactory commandFactory;
 
     public NonBlockingTransport(final TransportEventsListener transportEventsListener, final StatusEventListener statusEventListener) throws IOException
     {
@@ -41,6 +42,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         this.connectionsSelector = Selector.open();
         this.listeningSockets = new ArrayList<>(10);
         this.connectionService = new ConnectionService(transportEventsListener, statusEventListener);
+        this.commandFactory = new CommandFactory();
     }
 
     private void handleConnectionCommand(final ConnectionCommand command)
@@ -101,19 +103,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     @Override
     public <C extends TransportCommand> C command(final Class<C> commandType)
     {
-        if (commandType.equals(Listen.class))
-        {
-            return commandType.cast(new Listen());
-        }
-        if (commandType.equals(CloseConnection.class))
-        {
-            return commandType.cast(new CloseConnection());
-        }
-        if (commandType.equals(StopListening.class))
-        {
-            return commandType.cast(new StopListening());
-        }
-        throw new UnsupportedOperationException(commandType.getSimpleName());
+        return commandFactory.create(commandType);
     }
 
     @Override
@@ -168,7 +158,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                     connection.channel().register(
                             connectionsSelector,
                             SelectionKey.OP_READ,
-                            new ConnectionConductor(connection.command(ReadData.class), connection.command(NoOpCommand.class))
+                            new ConnectionConductor(commandFactory.create(connection, ReadData.class), commandFactory.create(connection, NoOpCommand.class))
                     );
                 }
             }
@@ -190,7 +180,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
 
     private void handle(final Listen command) throws IOException
     {
-        final ListeningSocket listeningSocket = new ListeningSocket(command.port(), command.commandId(), connectionIdSource, transportEventsListener);
+        final ListeningSocket listeningSocket = new ListeningSocket(command.port(), command.commandId(), connectionIdSource, transportEventsListener, commandFactory);
         try
         {
             listeningSocket.listen();

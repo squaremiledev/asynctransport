@@ -6,53 +6,56 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 import com.michaelszymczak.sample.sockets.api.CommandId;
+import com.michaelszymczak.sample.sockets.api.ConnectionIdValue;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
+import com.michaelszymczak.sample.sockets.api.commands.CommandFactory;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
 import com.michaelszymczak.sample.sockets.api.commands.ReadData;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.connection.Connection;
+import com.michaelszymczak.sample.sockets.connection.ConnectionCommands;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
 import com.michaelszymczak.sample.sockets.support.Resources;
 
 public class NonBlockingConnection implements AutoCloseable, Connection
 {
+    private final ConnectionIdValue connectionId;
     private final SocketChannel channel;
-    private final int port;
-    private final long connectionId;
     private final int remotePort;
     private final int initialSenderBufferSize;
     private final ThisConnectionEvents thisConnectionEvents;
-    private final SendData sendDataCommand;
-    private final ReadData readDataCommand;
-    private final NoOpCommand noOpCommand;
+    private final ConnectionCommands connectionCommands;
     private long totalBytesSent;
     private long totalBytesReceived;
     private boolean isClosed = false;
 
-    public NonBlockingConnection(final int port, final long connectionId, final int remotePort, final SocketChannel channel, final ConnectionEventsListener eventsListener) throws SocketException
+    public NonBlockingConnection(
+            final CommandFactory commandFactory,
+            final ConnectionEventsListener eventsListener,
+            final SocketChannel channel,
+            final ConnectionIdValue connectionId,
+            final int remotePort
+    ) throws SocketException
     {
-        this.port = port;
         this.connectionId = connectionId;
         this.remotePort = remotePort;
         this.channel = channel;
         this.initialSenderBufferSize = channel.socket().getSendBufferSize();
-        this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, port, connectionId);
-        this.sendDataCommand = new SendData(port, connectionId);
-        this.readDataCommand = new ReadData(port, connectionId);
-        this.noOpCommand = new NoOpCommand(port, connectionId);
+        this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, connectionId.port(), connectionId.connectionId());
+        this.connectionCommands = new ConnectionCommands(commandFactory, connectionId);
     }
 
     @Override
     public int port()
     {
-        return port;
+        return connectionId.port();
     }
 
     @Override
     public long connectionId()
     {
-        return connectionId;
+        return connectionId.connectionId();
     }
 
     @Override
@@ -94,19 +97,7 @@ public class NonBlockingConnection implements AutoCloseable, Connection
     @Override
     public <C extends ConnectionCommand> C command(final Class<C> commandType)
     {
-        if (commandType.equals(SendData.class))
-        {
-            return commandType.cast(sendDataCommand);
-        }
-        if (commandType.equals(ReadData.class))
-        {
-            return commandType.cast(readDataCommand);
-        }
-        if (commandType.equals(NoOpCommand.class))
-        {
-            return commandType.cast(noOpCommand);
-        }
-        throw new UnsupportedOperationException(commandType.getSimpleName());
+        return connectionCommands.command(commandType);
     }
 
     private void handle(final CloseConnection command)
@@ -172,13 +163,10 @@ public class NonBlockingConnection implements AutoCloseable, Connection
 
     private boolean validate(final ConnectionCommand command)
     {
-        if (command.connectionId() != connectionId)
+        final String result = connectionId.validate(command);
+        if (result != null)
         {
-            thisConnectionEvents.commandFailed(command, "Incorrect connection id");
-        }
-        if (command.port() != port)
-        {
-            thisConnectionEvents.commandFailed(command, "Incorrect port");
+            thisConnectionEvents.commandFailed(command, result);
             return false;
         }
         return true;

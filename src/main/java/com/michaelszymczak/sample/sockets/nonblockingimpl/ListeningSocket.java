@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+import com.michaelszymczak.sample.sockets.api.ConnectionIdValue;
+import com.michaelszymczak.sample.sockets.api.commands.CommandFactory;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.support.Resources;
@@ -16,19 +18,22 @@ public class ListeningSocket implements AutoCloseable
     private final long commandIdThatTriggeredListening;
     private final ConnectionIdSource connectionIdSource;
     private final TransportEventsListener transportEventsListener;
+    private final CommandFactory commandFactory;
     private final ServerSocketChannel serverSocketChannel;
 
     ListeningSocket(
             final int port,
             final long commandIdThatTriggeredListening,
             final ConnectionIdSource connectionIdSource,
-            final TransportEventsListener transportEventsListener
+            final TransportEventsListener transportEventsListener,
+            final CommandFactory commandFactory
     ) throws IOException
     {
         this.port = port;
         this.commandIdThatTriggeredListening = commandIdThatTriggeredListening;
         this.connectionIdSource = connectionIdSource;
         this.transportEventsListener = transportEventsListener;
+        this.commandFactory = commandFactory;
         this.serverSocketChannel = ServerSocketChannel.open();
         // non-blocking mode, but in case something was missed, it should fail fast
         serverSocketChannel.socket().setSoTimeout(1);
@@ -52,11 +57,11 @@ public class ListeningSocket implements AutoCloseable
         final Socket acceptedSocket = acceptedSocketChannel.socket();
         final long connectionId = connectionIdSource.newId();
         final NonBlockingConnection connection = new NonBlockingConnection(
-                acceptedSocket.getLocalPort(),
-                connectionId,
-                acceptedSocket.getPort(),
+                commandFactory,
+                transportEventsListener::onEvent,
                 acceptedSocketChannel,
-                transportEventsListener::onEvent
+                new ConnectionIdValue(acceptedSocket.getLocalPort(), connectionId),
+                acceptedSocket.getPort()
         );
         transportEventsListener.onEvent(new ConnectionAccepted(
                 connection.port(),
