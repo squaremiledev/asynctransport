@@ -25,6 +25,12 @@ public class FakeChannel implements Channel
         return this;
     }
 
+    public FakeChannel allBytesWrittenInOneGo()
+    {
+        maxBytesWrittenInOneGo(Integer.MAX_VALUE);
+        return this;
+    }
+
     public FakeChannel isOpen(boolean value)
     {
         isOpen = value;

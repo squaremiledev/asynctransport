@@ -103,6 +103,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     {
         try
         {
+            // TODO: handle -1 as closed connection
             final int bytesSent = channel.write(command.byteBuffer());
 
             if (bytesSent > 0)
