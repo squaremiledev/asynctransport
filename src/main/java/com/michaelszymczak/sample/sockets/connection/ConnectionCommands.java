@@ -24,7 +24,7 @@ public class ConnectionCommands
     {
         if (commandType.equals(SendData.class))
         {
-            return commandType.cast(sendDataCommand);
+            return commandType.cast(sendDataCommand.reset());
         }
         if (commandType.equals(ReadData.class))
         {

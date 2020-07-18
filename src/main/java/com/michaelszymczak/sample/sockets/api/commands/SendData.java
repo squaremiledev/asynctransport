@@ -50,9 +50,16 @@ public class SendData implements ConnectionCommand
 
     public ByteBuffer byteBuffer()
     {
-        final ByteBuffer byteBuffer = buffer.byteBuffer();
-        byteBuffer.position(0).limit(length);
-        return byteBuffer;
+        buffer.byteBuffer().position(0).limit(length);
+        return buffer.byteBuffer();
+    }
+
+    public SendData reset()
+    {
+        commandId = CommandId.NO_COMMAND_ID;
+        length = 0;
+        buffer.byteBuffer().position(0).limit(length);
+        return this;
     }
 
     public SendData set(final byte[] content)

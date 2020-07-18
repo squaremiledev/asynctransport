@@ -141,6 +141,42 @@ class ChannelBackedConnectionTest
     }
 
     @Test
+    void shouldNotKeepSetDataWhenRetrievedAgain()
+    {
+        final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
+        final ChannelBackedConnection connection = newConnection(channel);
+        final byte[] content = "fooBAR".getBytes(US_ASCII);
+        connection.command(SendData.class).set(content);
+
+        // When
+        connection.handle(connection.command(SendData.class));
+
+
+        // Then
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0));
+        assertTotalNumberOfEvents(1);
+        assertThat(channel.attemptedToWrite()).isEqualTo(singletonList(""));
+    }
+
+    @Test
+    void shouldNotKeepUnsentDataWhenRetrievedAgain()
+    {
+        // TODO
+        final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
+        final ChannelBackedConnection connection = newConnection(channel);
+        connection.handle(connection.command(SendData.class).set("fooBAR".getBytes(US_ASCII)));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3));
+
+        // When
+        connection.handle(connection.command(SendData.class));
+
+        // Then
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3), new DataSent(connection, 0, 3));
+        assertTotalNumberOfEvents(2);
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", ""));
+    }
+
+    @Test
     void shouldCalculateTotalDataSent()
     {
         final FakeChannel channel = new FakeChannel().allBytesWrittenInOneGo();
