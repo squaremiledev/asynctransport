@@ -25,6 +25,7 @@ application {
 }
 
 dependencies {
-    testImplementation('org.junit.jupiter:junit-jupiter:5.5.2')
-    testImplementation('org.assertj:assertj-core:3.16.1')
+    implementation 'org.agrona:agrona:1.6.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
+    testImplementation 'org.assertj:assertj-core:3.16.1'
 }

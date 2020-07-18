@@ -43,7 +43,7 @@ public class NonBlockingConnection implements AutoCloseable, Connection
         this.channel = channel;
         this.initialSenderBufferSize = channel.socket().getSendBufferSize();
         this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, connectionId.port(), connectionId.connectionId());
-        this.connectionCommands = new ConnectionCommands(commandFactory, connectionId);
+        this.connectionCommands = new ConnectionCommands(commandFactory, connectionId, initialSenderBufferSize);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class NonBlockingConnection implements AutoCloseable, Connection
     {
         try
         {
-            final int bytesSent = channel.write(ByteBuffer.wrap(command.content(), 0, Math.min(command.content().length, initialSenderBufferSize)));
+            final int bytesSent = channel.write(command.byteBuffer());
             if (bytesSent > 0)
             {
                 totalBytesSent += bytesSent;

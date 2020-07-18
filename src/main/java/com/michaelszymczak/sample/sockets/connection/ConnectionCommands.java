@@ -13,9 +13,9 @@ public class ConnectionCommands
     private final ReadData readDataCommand;
     private final NoOpCommand noOpCommand;
 
-    public ConnectionCommands(final CommandFactory commandFactory, final ConnectionIdValue connectionId)
+    public ConnectionCommands(final CommandFactory commandFactory, final ConnectionIdValue connectionId, final int initialSenderBufferSize)
     {
-        this.sendDataCommand = commandFactory.create(connectionId, SendData.class);
+        this.sendDataCommand = new SendData(connectionId, initialSenderBufferSize);
         this.readDataCommand = commandFactory.create(connectionId, ReadData.class);
         this.noOpCommand = commandFactory.create(connectionId, NoOpCommand.class);
     }

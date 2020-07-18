@@ -53,6 +53,27 @@ class DataSendingTest
     }
 
     @Test
+    void shouldClaimAndSendData()
+    {
+        final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
+        final TransportDriver driver = new TransportDriver(transport);
+
+        // Given
+        final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
+
+        //When
+        final SendData command = transport.command(conn, SendData.class);
+        final byte[] content = "foo".getBytes(US_ASCII);
+        command.set(content);
+        transport.handle(command);
+
+        // Then
+        transport.workUntil(completed(() -> clients.client(1).read(3, 10, dataConsumer)));
+        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("foo");
+        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), content.length, content.length));
+    }
+
+    @Test
     void shouldSendData()
     {
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
@@ -62,11 +83,25 @@ class DataSendingTest
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
 
         //When
-        conn.port();
-        conn.connectionId();
         transport.handle(transport.command(conn, SendData.class).set("foo".getBytes(US_ASCII)));
-        conn.port();
-        conn.connectionId();
+
+        // Then
+        transport.workUntil(completed(() -> clients.client(1).read(3, 10, dataConsumer)));
+        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("foo");
+        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII).length, "foo".getBytes(US_ASCII).length));
+    }
+
+    @Test
+    void shouldSendDataManyTimes()
+    {
+        final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
+        final TransportDriver driver = new TransportDriver(transport);
+
+        // Given
+        final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
+
+        //When
+        transport.handle(transport.command(conn, SendData.class).set("foo".getBytes(US_ASCII)));
         transport.handle(transport.command(conn, SendData.class).set("BA".getBytes(US_ASCII)));
 
         // Then
@@ -106,9 +141,9 @@ class DataSendingTest
         final int unusedPort = FreePort.freePortOtherThan(conn.port());
 
         //When
-        transport.handle(new SendData(conn.port(), conn.connectionId() + 1).set("foo".getBytes(US_ASCII), 108));
-        transport.handle(new SendData(unusedPort, conn.connectionId()).set("foo".getBytes(US_ASCII), 109));
-        transport.handle(new SendData(conn.port(), conn.connectionId()).set("bar".getBytes(US_ASCII), 110));
+        transport.handle(new SendData(conn.port(), conn.connectionId() + 1, 20).set("foo".getBytes(US_ASCII), 108));
+        transport.handle(new SendData(unusedPort, conn.connectionId(), 20).set("foo".getBytes(US_ASCII), 109));
+        transport.handle(new SendData(conn.port(), conn.connectionId(), 20).set("bar".getBytes(US_ASCII), 110));
 
         // Then
         transport.workUntil(completed(() -> clients.client(1).read(3, 3, dataConsumer)));
@@ -132,7 +167,7 @@ class DataSendingTest
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
 
         //When
-        transport.handle(new SendData(conn.port() + 1, conn.connectionId()).set("fo".getBytes(US_ASCII)));
+        transport.handle(new SendData(conn.port() + 1, conn.connectionId(), 20).set("fo".getBytes(US_ASCII)));
         transport.handle(transport.command(conn, SendData.class).set("bar".getBytes(US_ASCII)));
 
         // Then
@@ -269,8 +304,6 @@ class DataSendingTest
 
 
         //When
-        conn.port();
-        conn.connectionId();
         transport.handle(transport.command(conn, SendData.class).set(data));
         transport.workUntil(() -> !transport.events().all(DataSent.class, event1 -> event1.connectionId() == conn.connectionId()).isEmpty());
 

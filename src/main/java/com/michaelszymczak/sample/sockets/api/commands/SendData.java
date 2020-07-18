@@ -1,24 +1,33 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
+import java.nio.ByteBuffer;
+
 import com.michaelszymczak.sample.sockets.api.CommandId;
 import com.michaelszymczak.sample.sockets.api.ConnectionId;
+
+import org.agrona.concurrent.UnsafeBuffer;
 
 public class SendData implements ConnectionCommand
 {
     private final int port;
     private final long connectionId;
-    private byte[] content = null;
+    private final int initialSenderBufferSize;
+    private final UnsafeBuffer buffer;
+    private int length;
     private long commandId = CommandId.NO_COMMAND_ID;
 
-    public SendData(final ConnectionId connectionId)
+    public SendData(final ConnectionId connectionId, final int initialSenderBufferSize)
     {
-        this(connectionId.port(), connectionId.connectionId());
+        this(connectionId.port(), connectionId.connectionId(), initialSenderBufferSize);
     }
 
-    public SendData(final int port, final long connectionId)
+    public SendData(final int port, final long connectionId, final int initialSenderBufferSize)
     {
         this.port = port;
         this.connectionId = connectionId;
+        this.initialSenderBufferSize = initialSenderBufferSize;
+        this.buffer = new UnsafeBuffer(ByteBuffer.allocate(initialSenderBufferSize));
+        this.length = 0;
     }
 
     @Override
@@ -39,22 +48,23 @@ public class SendData implements ConnectionCommand
         return connectionId;
     }
 
-    public byte[] content()
+    public ByteBuffer byteBuffer()
     {
-        return content;
+        final ByteBuffer byteBuffer = buffer.byteBuffer();
+        byteBuffer.position(0).limit(length);
+        return byteBuffer;
     }
 
     public SendData set(final byte[] content)
     {
-        this.content = content;
-        return this;
+        return set(content, CommandId.NO_COMMAND_ID);
     }
 
     public SendData set(final byte[] content, final long commandId)
     {
-        this.content = content;
+        this.length = Math.min(content.length, initialSenderBufferSize);
+        this.buffer.putBytes(0, content, 0, length);
         this.commandId = commandId;
         return this;
     }
-
 }

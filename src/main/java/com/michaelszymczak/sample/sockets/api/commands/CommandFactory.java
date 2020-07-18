@@ -6,10 +6,6 @@ public class CommandFactory
 {
     public <C extends ConnectionCommand> C create(final ConnectionId connectionId, final Class<C> commandType)
     {
-        if (commandType.equals(SendData.class))
-        {
-            return commandType.cast(new SendData(connectionId));
-        }
         if (commandType.equals(ReadData.class))
         {
             return commandType.cast(new ReadData(connectionId));
