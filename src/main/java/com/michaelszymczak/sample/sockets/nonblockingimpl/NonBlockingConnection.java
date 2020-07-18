@@ -1,7 +1,6 @@
 package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -23,7 +22,7 @@ public class NonBlockingConnection implements AutoCloseable, Connection
     private final ConnectionIdValue connectionId;
     private final SocketChannel channel;
     private final int remotePort;
-    private final int initialSenderBufferSize;
+    private final int sendBufferSize;
     private final ThisConnectionEvents thisConnectionEvents;
     private final ConnectionCommands connectionCommands;
     private long totalBytesSent;
@@ -35,15 +34,16 @@ public class NonBlockingConnection implements AutoCloseable, Connection
             final ConnectionEventsListener eventsListener,
             final SocketChannel channel,
             final ConnectionIdValue connectionId,
-            final int remotePort
-    ) throws SocketException
+            final int remotePort,
+            final int sendBufferSize
+    )
     {
         this.connectionId = connectionId;
         this.remotePort = remotePort;
         this.channel = channel;
-        this.initialSenderBufferSize = channel.socket().getSendBufferSize();
+        this.sendBufferSize = sendBufferSize;
         this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, connectionId.port(), connectionId.connectionId());
-        this.connectionCommands = new ConnectionCommands(commandFactory, connectionId, initialSenderBufferSize);
+        this.connectionCommands = new ConnectionCommands(commandFactory, connectionId, sendBufferSize);
     }
 
     @Override
@@ -110,6 +110,7 @@ public class NonBlockingConnection implements AutoCloseable, Connection
         try
         {
             final int bytesSent = channel.write(command.byteBuffer());
+
             if (bytesSent > 0)
             {
                 totalBytesSent += bytesSent;
@@ -124,11 +125,6 @@ public class NonBlockingConnection implements AutoCloseable, Connection
     }
 
     private void handle(final ReadData command)
-    {
-        read();
-    }
-
-    public void read()
     {
         final byte[] content = new byte[10];
         final ByteBuffer readBuffer = ByteBuffer.wrap(content);
@@ -177,14 +173,9 @@ public class NonBlockingConnection implements AutoCloseable, Connection
         return remotePort;
     }
 
-    public SocketChannel channel()
-    {
-        return channel;
-    }
-
     public int initialSenderBufferSize()
     {
-        return initialSenderBufferSize;
+        return sendBufferSize;
     }
 
     @Override

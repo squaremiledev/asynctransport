@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -154,8 +155,11 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                 }
                 if (key.isAcceptable())
                 {
-                    final NonBlockingConnection connection = connectionService.newConnection(((ListeningSocket)key.attachment()).acceptConnection());
-                    connection.channel().register(
+                    final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
+                    final SocketChannel acceptedSocketChannel = listeningSocket.acceptChannel();
+                    final NonBlockingConnection connection1 = listeningSocket.createConnection(acceptedSocketChannel);
+                    final NonBlockingConnection connection = connectionService.newConnection(connection1);
+                    acceptedSocketChannel.register(
                             connectionsSelector,
                             SelectionKey.OP_READ,
                             new ConnectionConductor(commandFactory.create(connection, ReadData.class), commandFactory.create(connection, NoOpCommand.class))

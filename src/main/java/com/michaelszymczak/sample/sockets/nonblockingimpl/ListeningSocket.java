@@ -3,6 +3,7 @@ package com.michaelszymczak.sample.sockets.nonblockingimpl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
@@ -50,10 +51,8 @@ public class ListeningSocket implements AutoCloseable
         return serverSocketChannel;
     }
 
-    public NonBlockingConnection acceptConnection() throws IOException
+    public NonBlockingConnection createConnection(final SocketChannel acceptedSocketChannel) throws SocketException
     {
-        final SocketChannel acceptedSocketChannel = serverSocketChannel.accept();
-        acceptedSocketChannel.configureBlocking(false);
         final Socket acceptedSocket = acceptedSocketChannel.socket();
         final long connectionId = connectionIdSource.newId();
         final NonBlockingConnection connection = new NonBlockingConnection(
@@ -61,7 +60,8 @@ public class ListeningSocket implements AutoCloseable
                 transportEventsListener::onEvent,
                 acceptedSocketChannel,
                 new ConnectionIdValue(acceptedSocket.getLocalPort(), connectionId),
-                acceptedSocket.getPort()
+                acceptedSocket.getPort(),
+                acceptedSocketChannel.socket().getSendBufferSize()
         );
         transportEventsListener.onEvent(new ConnectionAccepted(
                 connection.port(),
@@ -71,6 +71,13 @@ public class ListeningSocket implements AutoCloseable
                 connection.initialSenderBufferSize()
         ));
         return connection;
+    }
+
+    public SocketChannel acceptChannel() throws IOException
+    {
+        final SocketChannel acceptedSocketChannel = serverSocketChannel.accept();
+        acceptedSocketChannel.configureBlocking(false);
+        return acceptedSocketChannel;
     }
 
     int port()
