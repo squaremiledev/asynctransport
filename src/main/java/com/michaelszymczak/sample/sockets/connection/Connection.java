@@ -8,4 +8,6 @@ public interface Connection extends AutoCloseable, ConnectionId
     void handle(ConnectionCommand command);
 
     boolean isClosed();
+
+    <C extends ConnectionCommand> C command(Class<C> commandType);
 }

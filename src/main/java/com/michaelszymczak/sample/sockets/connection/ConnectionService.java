@@ -1,5 +1,6 @@
 package com.michaelszymczak.sample.sockets.connection;
 
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
@@ -44,5 +45,10 @@ public class ConnectionService implements AutoCloseable
     public void close()
     {
         connectionRepository.close();
+    }
+
+    public <C extends ConnectionCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    {
+        return connectionRepository.contains(connectionId.connectionId()) ? connectionRepository.findByConnectionId(connectionId.connectionId()).command(commandType) : null;
     }
 }

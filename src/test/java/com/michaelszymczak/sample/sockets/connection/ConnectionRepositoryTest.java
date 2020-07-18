@@ -181,6 +181,12 @@ class ConnectionRepositoryTest
         }
 
         @Override
+        public <C extends ConnectionCommand> C command(final Class<C> commandType)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public void close()
         {
             closed = true;

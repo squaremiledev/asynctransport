@@ -74,7 +74,9 @@ public class TransportDriver
                                           transport.connectionEvents().last(DataSent.class, connectionId).totalBytesSent() :
                                           0;
         final long randomCommandId = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
-        transport.handle(transport.command(connection, SendData.class).set(connection.port(), connection.connectionId(), content, randomCommandId));
+        connection.port();
+        connection.connectionId();
+        transport.handle(transport.command(connection, SendData.class).set(content, randomCommandId));
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
         transport.workUntil(completed(() -> client.read(content.length, content.length, dataConsumer)));
         transport.workUntil(() -> transport.events().contains(DataSent.class, event -> event.commandId() == randomCommandId));

@@ -99,7 +99,7 @@ class ConnectingTransportTest
         assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
 
         // When
-        transport.handle(transport.command(connectionAccepted, CloseConnection.class).set(connectionAccepted.port(), connectionAccepted.connectionId(), 10));
+        transport.handle(transport.command(CloseConnection.class).set(connectionAccepted.port(), connectionAccepted.connectionId(), 10));
 
         // Then
         assertThat(client.hasServerClosedConnection()).isTrue();
@@ -118,7 +118,7 @@ class ConnectingTransportTest
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
         assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
-        transport.handle(transport.command(conn, CloseConnection.class).set(conn.port(), conn.connectionId(), 15));
+        transport.handle(transport.command(CloseConnection.class).set(conn.port(), conn.connectionId(), 15));
         assertThat(transport.events().last(ConnectionClosed.class)).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), 15));
         assertThat(transport.events().all(ConnectionClosed.class)).hasSize(1);
@@ -128,7 +128,7 @@ class ConnectingTransportTest
         assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSize(2);
 
         // When
-        transport.handle(transport.command(conn, CloseConnection.class).set(conn.port(), conn.connectionId(), 16));
+        transport.handle(transport.command(CloseConnection.class).set(conn.port(), conn.connectionId(), 16));
 
         // Then
         assertThat(transport.events().last(TransportCommandFailed.class).commandId()).isEqualTo(16);
@@ -141,10 +141,9 @@ class ConnectingTransportTest
     void shouldRejectClosingNonExistingConnection()
     {
         assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).isEmpty();
-        final ConnectionId nonExistingConnectionId = new ConnectionAccepted(1234, 567, 7777, 9999, 10);
 
         // When
-        transport.handle(transport.command(nonExistingConnectionId, CloseConnection.class).set(1234, 11111, 15));
+        transport.handle(transport.command(CloseConnection.class).set(1234, 11111, 15));
 
         // Then
         assertThat(transport.events().last(TransportCommandFailed.class, event -> event.commandId() == 15).details()).containsIgnoringCase("connection id");
@@ -275,8 +274,12 @@ class ConnectingTransportTest
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
-        transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII)));
-        transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), "BA".getBytes(US_ASCII)));
+        conn.port();
+        conn.connectionId();
+        transport.handle(transport.command(conn, SendData.class).set("foo".getBytes(US_ASCII)));
+        conn.port();
+        conn.connectionId();
+        transport.handle(transport.command(conn, SendData.class).set("BA".getBytes(US_ASCII)));
         transport.workUntil(() -> transport.events().all(DataSent.class).size() == 2);
 
         //When

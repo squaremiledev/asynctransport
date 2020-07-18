@@ -23,6 +23,7 @@ public class NonBlockingConnection implements AutoCloseable, Connection
     private final int remotePort;
     private final int initialSenderBufferSize;
     private final ThisConnectionEvents thisConnectionEvents;
+    private final SendData sendDataCommand;
     private long totalBytesSent;
     private long totalBytesReceived;
     private boolean isClosed = false;
@@ -35,6 +36,7 @@ public class NonBlockingConnection implements AutoCloseable, Connection
         this.channel = channel;
         this.initialSenderBufferSize = channel.socket().getSendBufferSize();
         this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, port, connectionId);
+        this.sendDataCommand = new SendData(port, connectionId);
     }
 
     @Override
@@ -83,6 +85,16 @@ public class NonBlockingConnection implements AutoCloseable, Connection
     public boolean isClosed()
     {
         return isClosed;
+    }
+
+    @Override
+    public <C extends ConnectionCommand> C command(final Class<C> commandType)
+    {
+        if (commandType.equals(SendData.class))
+        {
+            return commandType.cast(sendDataCommand);
+        }
+        throw new UnsupportedOperationException(commandType.getSimpleName());
     }
 
     private void handle(final CloseConnection command)

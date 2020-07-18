@@ -13,7 +13,6 @@ import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
-import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
@@ -108,10 +107,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         {
             return commandType.cast(new CloseConnection());
         }
-        if (commandType.equals(SendData.class))
-        {
-            return commandType.cast(new SendData());
-        }
         if (commandType.equals(StopListening.class))
         {
             return commandType.cast(new StopListening());
@@ -122,15 +117,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     @Override
     public <C extends ConnectionCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
     {
-        if (commandType.equals(SendData.class))
-        {
-            return commandType.cast(new SendData());
-        }
-        if (commandType.equals(CloseConnection.class))
-        {
-            return commandType.cast(new CloseConnection());
-        }
-        throw new UnsupportedOperationException(commandType.getSimpleName());
+        return connectionService.command(connectionId, commandType);
     }
 
     private void connectionsWork() throws IOException
