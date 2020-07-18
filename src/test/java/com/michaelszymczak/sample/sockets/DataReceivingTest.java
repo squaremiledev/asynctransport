@@ -1,6 +1,6 @@
 package com.michaelszymczak.sample.sockets;
 
-import java.io.IOException;
+import java.net.SocketException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -11,10 +11,9 @@ import java.util.stream.Collectors;
 
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
-import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.ConnectionEventsSpy;
-import com.michaelszymczak.sample.sockets.support.SampleClient;
+import com.michaelszymczak.sample.sockets.support.SampleClients;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
@@ -25,12 +24,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
+import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Arrays.copyOf;
 
 class DataReceivingTest
 {
-    private final TransportUnderTest transport = new TransportUnderTest();
+    private final TransportUnderTest transport;
+    private final SampleClients clients;
+
+    DataReceivingTest() throws SocketException
+    {
+        transport = new TransportUnderTest();
+        clients = new SampleClients();
+    }
 
     @SafeVarargs
     private static <T> Set<?> distinct(final Function<T, Object> property, final T... items)
@@ -40,16 +47,15 @@ class DataReceivingTest
     }
 
     @Test
-    void shouldReceiveData() throws IOException
+    void shouldReceiveData()
     {
-        final SampleClient client = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport);
 
         // Given
-        final ConnectionAccepted conn = driver.listenAndConnect(client);
+        final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
 
         // When
-        transport.workUntil(completed(() -> client.write("foo".getBytes(US_ASCII))));
+        transport.workUntil(completed(() -> clients.client(1).write("foo".getBytes(US_ASCII))));
         transport.workUntil(bytesReceived(transport.connectionEvents(), conn.connectionId(), 3));
 
         // Then
@@ -61,29 +67,25 @@ class DataReceivingTest
     }
 
     @Test
-    void shouldReceivedDataFromMultipleConnections() throws IOException
+    void shouldReceivedDataFromMultipleConnections()
     {
-        final SampleClient client1 = new SampleClient();
-        final SampleClient client2 = new SampleClient();
-        final SampleClient client3 = new SampleClient();
-        final SampleClient client4 = new SampleClient();
         final TransportDriver driver = new TransportDriver(transport);
 
         // Given
         final StartedListening startedListeningEvent1 = driver.startListening();
-        final ConnectionAccepted connS1C1 = driver.connectClient(startedListeningEvent1, client1);
+        final ConnectionAccepted connS1C1 = driver.connectClient(startedListeningEvent1, clients.client(1));
         final StartedListening startedListeningEvent2 = driver.startListening();
-        final ConnectionAccepted connS2C2 = driver.connectClient(startedListeningEvent2, client2);
-        final ConnectionAccepted connS1C3 = driver.connectClient(startedListeningEvent1, client3);
-        final ConnectionAccepted connS2C4 = driver.connectClient(startedListeningEvent2, client4);
+        final ConnectionAccepted connS2C2 = driver.connectClient(startedListeningEvent2, clients.client(2));
+        final ConnectionAccepted connS1C3 = driver.connectClient(startedListeningEvent1, clients.client(3));
+        final ConnectionAccepted connS2C4 = driver.connectClient(startedListeningEvent2, clients.client(4));
         assertThat(distinct(ConnectionAccepted::commandId, connS1C1, connS2C2, connS1C3, connS2C4)).hasSize(2);
         assertThat(distinct(ConnectionAccepted::connectionId, connS1C1, connS2C2, connS1C3, connS2C4)).hasSize(4);
 
         // When
-        transport.workUntil(completed(() -> client1.write(fixedLengthStringStartingWith("S1 -> C1 ", 10).getBytes(US_ASCII))));
-        transport.workUntil(completed(() -> client2.write(fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII))));
-        transport.workUntil(completed(() -> client3.write(fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII))));
-        transport.workUntil(completed(() -> client4.write(fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII))));
+        transport.workUntil(completed(() -> clients.client(1).write(fixedLengthStringStartingWith("S1 -> C1 ", 10).getBytes(US_ASCII))));
+        transport.workUntil(completed(() -> clients.client(2).write(fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII))));
+        transport.workUntil(completed(() -> clients.client(3).write(fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII))));
+        transport.workUntil(completed(() -> clients.client(4).write(fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII))));
         transport.workUntil(bytesReceived(transport.connectionEvents(), connS1C1.connectionId(), 10));
         transport.workUntil(bytesReceived(transport.connectionEvents(), connS2C2.connectionId(), 20));
         transport.workUntil(bytesReceived(transport.connectionEvents(), connS1C3.connectionId(), 30));
@@ -103,11 +105,7 @@ class DataReceivingTest
     @AfterEach
     void tearDown()
     {
-        transport.close();
-        if (transport.statusEvents().contains(NumberOfConnectionsChanged.class))
-        {
-            assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
-        }
+        closeCleanly(transport, clients, transport.statusEvents());
     }
 
     private BooleanSupplier bytesReceived(final ConnectionEventsSpy events, final long connectionId, final int size)

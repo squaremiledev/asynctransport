@@ -42,7 +42,6 @@ public class DelegatingServer implements FakeServer
         }
         parkForOneMs.run();
         System.out.println("Server shutting down...");
-        Resources.close(transport);
     }
 }
 

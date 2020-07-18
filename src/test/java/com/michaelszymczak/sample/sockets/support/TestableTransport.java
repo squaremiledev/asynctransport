@@ -52,7 +52,7 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
         while (!abort.getAsBoolean())
         {
             work();
-            parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
+            parkNanos(TimeUnit.MILLISECONDS.toNanos(10));
         }
     }
 

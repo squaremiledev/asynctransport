@@ -28,4 +28,13 @@ public class ReadData implements ConnectionCommand
     {
         return connectionId;
     }
+
+    @Override
+    public String toString()
+    {
+        return "ReadData{" +
+               "port=" + port +
+               ", connectionId=" + connectionId +
+               '}';
+    }
 }
