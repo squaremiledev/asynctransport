@@ -11,6 +11,7 @@ import com.michaelszymczak.sample.sockets.api.ConnectionIdValue;
 import com.michaelszymczak.sample.sockets.api.commands.CommandFactory;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
 import com.michaelszymczak.sample.sockets.support.Resources;
 
 public class ListeningSocket implements AutoCloseable
@@ -51,25 +52,21 @@ public class ListeningSocket implements AutoCloseable
         return serverSocketChannel;
     }
 
-    public NonBlockingConnection createConnection(final SocketChannel acceptedSocketChannel) throws SocketException
+    public ChannelBackedConnection createConnection(final SocketChannel acceptedSocketChannel) throws SocketException
     {
         final Socket acceptedSocket = acceptedSocketChannel.socket();
-        final long connectionId = connectionIdSource.newId();
-        final NonBlockingConnection connection = new NonBlockingConnection(
-                commandFactory,
-                transportEventsListener::onEvent,
-                acceptedSocketChannel,
-                new ConnectionIdValue(acceptedSocket.getLocalPort(), connectionId),
+        final ConnectionConfiguration configuration = new ConnectionConfiguration(
+                new ConnectionIdValue(acceptedSocket.getLocalPort(), connectionIdSource.newId()),
                 acceptedSocket.getPort(),
                 acceptedSocketChannel.socket().getSendBufferSize()
         );
-        transportEventsListener.onEvent(new ConnectionAccepted(
-                connection.port(),
-                commandIdThatTriggeredListening,
-                connection.remotePort(),
-                connection.connectionId(),
-                connection.initialSenderBufferSize()
-        ));
+        final ChannelBackedConnection connection = new ChannelBackedConnection(
+                configuration,
+                new SocketBackedChannel(acceptedSocketChannel),
+                transportEventsListener::onEvent,
+                commandFactory
+        );
+        transportEventsListener.onEvent(new ConnectionAccepted(connection, commandIdThatTriggeredListening, configuration.remotePort, configuration.sendBufferSize));
         return connection;
     }
 
@@ -96,8 +93,11 @@ public class ListeningSocket implements AutoCloseable
     {
         return "ListeningSocket{" +
                "port=" + port +
-               ", serverSocketChannel=" + serverSocketChannel +
                ", commandIdThatTriggeredListening=" + commandIdThatTriggeredListening +
+               ", connectionIdSource=" + connectionIdSource +
+               ", transportEventsListener=" + transportEventsListener +
+               ", commandFactory=" + commandFactory +
+               ", serverSocketChannel=" + serverSocketChannel +
                '}';
     }
 }

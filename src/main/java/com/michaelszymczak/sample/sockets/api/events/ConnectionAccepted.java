@@ -1,5 +1,7 @@
 package com.michaelszymczak.sample.sockets.api.events;
 
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
+
 public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedEvent
 {
     private final int port;
@@ -7,6 +9,11 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     private final int remotePort;
     private final long connectionId;
     private final int sendBufferSize;
+
+    public ConnectionAccepted(final ConnectionId connectionId, final long commandId, final int remotePort, final int sendBufferSize)
+    {
+        this(connectionId.port(), commandId, remotePort, connectionId.connectionId(), sendBufferSize);
+    }
 
     public ConnectionAccepted(final int port, final long commandId, final int remotePort, final long connectionId, final int sendBufferSize)
     {

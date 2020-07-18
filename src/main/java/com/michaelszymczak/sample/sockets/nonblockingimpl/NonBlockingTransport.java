@@ -157,8 +157,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                 {
                     final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
                     final SocketChannel acceptedSocketChannel = listeningSocket.acceptChannel();
-                    final NonBlockingConnection connection1 = listeningSocket.createConnection(acceptedSocketChannel);
-                    final NonBlockingConnection connection = connectionService.newConnection(connection1);
+                    final ChannelBackedConnection connection = connectionService.newConnection(listeningSocket.createConnection(acceptedSocketChannel));
                     acceptedSocketChannel.register(
                             connectionsSelector,
                             SelectionKey.OP_READ,

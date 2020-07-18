@@ -2,60 +2,54 @@ package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
 import com.michaelszymczak.sample.sockets.api.CommandId;
-import com.michaelszymczak.sample.sockets.api.ConnectionIdValue;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.CommandFactory;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
 import com.michaelszymczak.sample.sockets.api.commands.ReadData;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.connection.Channel;
 import com.michaelszymczak.sample.sockets.connection.Connection;
 import com.michaelszymczak.sample.sockets.connection.ConnectionCommands;
+import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
 import com.michaelszymczak.sample.sockets.support.Resources;
 
-public class NonBlockingConnection implements AutoCloseable, Connection
+public class ChannelBackedConnection implements AutoCloseable, Connection
 {
-    private final ConnectionIdValue connectionId;
-    private final SocketChannel channel;
-    private final int remotePort;
-    private final int sendBufferSize;
+    private final Channel channel;
     private final ThisConnectionEvents thisConnectionEvents;
     private final ConnectionCommands connectionCommands;
+    private final ConnectionConfiguration configuration;
     private long totalBytesSent;
     private long totalBytesReceived;
     private boolean isClosed = false;
 
-    public NonBlockingConnection(
-            final CommandFactory commandFactory,
-            final ConnectionEventsListener eventsListener,
-            final SocketChannel channel,
-            final ConnectionIdValue connectionId,
-            final int remotePort,
-            final int sendBufferSize
-    )
+    ChannelBackedConnection(final ConnectionConfiguration configuration, final Channel channel, final ConnectionEventsListener eventsListener)
     {
-        this.connectionId = connectionId;
-        this.remotePort = remotePort;
+        this(configuration, channel, eventsListener, new CommandFactory());
+    }
+
+    ChannelBackedConnection(final ConnectionConfiguration configuration, final Channel channel, final ConnectionEventsListener eventsListener, final CommandFactory commandFactory)
+    {
+        this.configuration = configuration;
         this.channel = channel;
-        this.sendBufferSize = sendBufferSize;
-        this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, connectionId.port(), connectionId.connectionId());
-        this.connectionCommands = new ConnectionCommands(commandFactory, connectionId, sendBufferSize);
+        this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, configuration.connectionId.port(), configuration.connectionId.connectionId());
+        this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.sendBufferSize);
     }
 
     @Override
     public int port()
     {
-        return connectionId.port();
+        return configuration.connectionId.port();
     }
 
     @Override
     public long connectionId()
     {
-        return connectionId.connectionId();
+        return configuration.connectionId.connectionId();
     }
 
     @Override
@@ -159,23 +153,13 @@ public class NonBlockingConnection implements AutoCloseable, Connection
 
     private boolean validate(final ConnectionCommand command)
     {
-        final String result = connectionId.validate(command);
+        final String result = configuration.connectionId.validate(command);
         if (result != null)
         {
             thisConnectionEvents.commandFailed(command, result);
             return false;
         }
         return true;
-    }
-
-    public int remotePort()
-    {
-        return remotePort;
-    }
-
-    public int initialSenderBufferSize()
-    {
-        return sendBufferSize;
     }
 
     @Override
@@ -199,5 +183,19 @@ public class NonBlockingConnection implements AutoCloseable, Connection
             }
             isClosed = true;
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "ChannelBackedConnection{" +
+               "channel=" + channel +
+               ", thisConnectionEvents=" + thisConnectionEvents +
+               ", connectionCommands=" + connectionCommands +
+               ", configuration=" + configuration +
+               ", totalBytesSent=" + totalBytesSent +
+               ", totalBytesReceived=" + totalBytesReceived +
+               ", isClosed=" + isClosed +
+               '}';
     }
 }

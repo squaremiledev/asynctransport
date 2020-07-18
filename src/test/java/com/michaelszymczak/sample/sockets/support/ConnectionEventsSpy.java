@@ -4,10 +4,16 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import com.michaelszymczak.sample.sockets.api.events.ConnectionEvent;
+import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
 
-public final class ConnectionEventsSpy
+public final class ConnectionEventsSpy implements ConnectionEventsListener
 {
     private final TransportEventsSpy events;
+
+    public ConnectionEventsSpy()
+    {
+        this(new TransportEventsSpy());
+    }
 
     public ConnectionEventsSpy(final TransportEventsSpy events)
     {
@@ -37,5 +43,11 @@ public final class ConnectionEventsSpy
     public <T extends ConnectionEvent> T last(final Class<T> clazz, long connectionId, final Predicate<T> predicate)
     {
         return events.last(clazz, event -> event.connectionId() == connectionId && predicate.test(event));
+    }
+
+    @Override
+    public void onEvent(final ConnectionEvent event)
+    {
+        events.onEvent(event);
     }
 }
