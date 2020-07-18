@@ -11,18 +11,6 @@ public class ThreadSafeProgress
         this.serverReadyLatch = new CountDownLatch(1);
     }
 
-    public void blockUntilReady()
-    {
-        try
-        {
-            serverReadyLatch.await();
-        }
-        catch (InterruptedException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
     public boolean hasCompleted()
     {
         return serverReadyLatch.getCount() < 1;
