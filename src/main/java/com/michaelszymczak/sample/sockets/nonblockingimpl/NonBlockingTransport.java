@@ -8,9 +8,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.api.Transport;
+import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
@@ -92,6 +95,42 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         {
             transportEventsListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
         }
+    }
+
+    @Override
+    public <C extends TransportCommand> C command(final Class<C> commandType)
+    {
+        if (commandType.equals(Listen.class))
+        {
+            return commandType.cast(new Listen());
+        }
+        if (commandType.equals(CloseConnection.class))
+        {
+            return commandType.cast(new CloseConnection());
+        }
+        if (commandType.equals(SendData.class))
+        {
+            return commandType.cast(new SendData());
+        }
+        if (commandType.equals(StopListening.class))
+        {
+            return commandType.cast(new StopListening());
+        }
+        throw new UnsupportedOperationException(commandType.getSimpleName());
+    }
+
+    @Override
+    public <C extends ConnectionCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    {
+        if (commandType.equals(SendData.class))
+        {
+            return commandType.cast(new SendData());
+        }
+        if (commandType.equals(CloseConnection.class))
+        {
+            return commandType.cast(new CloseConnection());
+        }
+        throw new UnsupportedOperationException(commandType.getSimpleName());
     }
 
     private void connectionsWork() throws IOException

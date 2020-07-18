@@ -56,8 +56,8 @@ class DataSendingTest
         final ConnectionAccepted conn = driver.listenAndConnect(client);
 
         //When
-        transport.handle(new SendData(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII)));
-        transport.handle(new SendData(conn.port(), conn.connectionId(), "BA".getBytes(US_ASCII)));
+        transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII)));
+        transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), "BA".getBytes(US_ASCII)));
 
         // Then
         transport.workUntil(completed(() -> client.read(5, 10, dataConsumer)));
@@ -76,7 +76,7 @@ class DataSendingTest
         final ConnectionAccepted conn = new TransportDriver(transport).listenAndConnect(new SampleClient());
 
         //When
-        transport.handle(new SendData(conn.port(), conn.connectionId(), new byte[]{}, 100));
+        transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), new byte[]{}, 100));
         transport.workUntil(() -> transport.connectionEvents().contains(DataSent.class, conn.connectionId()));
 
         // Then
@@ -95,9 +95,9 @@ class DataSendingTest
         final int unusedPort = FreePort.freePortOtherThan(conn.port());
 
         //When
-        transport.handle(new SendData(conn.port(), conn.connectionId() + 1, "foo".getBytes(US_ASCII), 108));
-        transport.handle(new SendData(unusedPort, conn.connectionId(), "foo".getBytes(US_ASCII), 109));
-        transport.handle(new SendData(conn.port(), conn.connectionId(), "bar".getBytes(US_ASCII)));
+        transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId() + 1, "foo".getBytes(US_ASCII), 108));
+        transport.handle(transport.command(conn, SendData.class).set(unusedPort, conn.connectionId(), "foo".getBytes(US_ASCII), 109));
+        transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), "bar".getBytes(US_ASCII)));
 
         // Then
         transport.workUntil(completed(() -> client.read(3, 3, dataConsumer)));
@@ -122,8 +122,8 @@ class DataSendingTest
         final ConnectionAccepted conn = driver.listenAndConnect(client);
 
         //When
-        transport.handle(new SendData(conn.port() + 1, conn.connectionId(), "fo".getBytes(US_ASCII)));
-        transport.handle(new SendData(conn.port(), conn.connectionId(), "bar".getBytes(US_ASCII)));
+        transport.handle(transport.command(conn, SendData.class).set(conn.port() + 1, conn.connectionId(), "fo".getBytes(US_ASCII)));
+        transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), "bar".getBytes(US_ASCII)));
 
         // Then
         transport.workUntil(completed(() -> client.read(3, 3, dataConsumer)));
@@ -158,10 +158,10 @@ class DataSendingTest
 
 
         //When
-        transport.handle(new SendData(connS1C1.port(), connS1C1.connectionId(), fixedLengthStringStartingWith("S1 -> C1 ", 10).getBytes(US_ASCII)));
-        transport.handle(new SendData(connS2C2.port(), connS2C2.connectionId(), fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII)));
-        transport.handle(new SendData(connS1C3.port(), connS1C3.connectionId(), fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII)));
-        transport.handle(new SendData(connS2C4.port(), connS2C4.connectionId(), fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII)));
+        transport.handle(transport.command(connS1C1, SendData.class).set(connS1C1.port(), connS1C1.connectionId(), fixedLengthStringStartingWith("S1 -> C1 ", 10).getBytes(US_ASCII)));
+        transport.handle(transport.command(connS2C2, SendData.class).set(connS2C2.port(), connS2C2.connectionId(), fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII)));
+        transport.handle(transport.command(connS1C3, SendData.class).set(connS1C3.port(), connS1C3.connectionId(), fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII)));
+        transport.handle(transport.command(connS2C4, SendData.class).set(connS2C4.port(), connS2C4.connectionId(), fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII)));
 
         // Then
         transport.workUntil(completed(() -> client1.read(10, 100, dataConsumer)));
@@ -203,7 +203,7 @@ class DataSendingTest
             //When
             final byte[] data = byteArrayWith(pos -> String.format("%9d%n", pos), 100_000);
             assertThat(data.length).isEqualTo(contentSizeInBytes);
-            transport.handle(new SendData(conn.port(), conn.connectionId(), data));
+            transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), data));
 
             // Then
             transport.workUntil(completed(() -> client.read(data.length, data.length, dataConsumer)));
@@ -233,7 +233,7 @@ class DataSendingTest
             //When
             do
             {
-                transport.handle(new SendData(conn.port(), conn.connectionId(), dataThatFitsTheBuffer));
+                transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), dataThatFitsTheBuffer));
             }
             // TODO: waiting when invoking the 'last' method is probably not fit for purpose here
             while (transport.connectionEvents().last(DataSent.class, conn.connectionId()).bytesSent() != 0);
@@ -265,7 +265,7 @@ class DataSendingTest
 
 
             //When
-            transport.handle(new SendData(conn.port(), conn.connectionId(), data));
+            transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), data));
             transport.workUntil(() -> !transport.events().all(DataSent.class, event1 -> event1.connectionId() == conn.connectionId()).isEmpty());
 
             // Then

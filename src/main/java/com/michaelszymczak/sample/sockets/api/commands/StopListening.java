@@ -1,15 +1,12 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
+import com.michaelszymczak.sample.sockets.api.CommandId;
+import com.michaelszymczak.sample.sockets.api.TransportId;
+
 public class StopListening implements TransportCommand
 {
-    private final int commandId;
-    private final int port;
-
-    public StopListening(final int commandId, final int port)
-    {
-        this.commandId = commandId;
-        this.port = port;
-    }
+    private long commandId = CommandId.NO_COMMAND_ID;
+    private int port = TransportId.NO_PORT;
 
     @Override
     public int port()
@@ -21,5 +18,12 @@ public class StopListening implements TransportCommand
     public long commandId()
     {
         return commandId;
+    }
+
+    public StopListening set(final long commandId, final int port)
+    {
+        this.commandId = commandId;
+        this.port = port;
+        return this;
     }
 }

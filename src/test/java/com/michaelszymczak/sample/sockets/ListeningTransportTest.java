@@ -42,7 +42,7 @@ class ListeningTransportTest
                 {
                     // When
                     final int port = freePort();
-                    transport.handle(new Listen(7, port));
+                    transport.handle(transport.command(Listen.class).set(7, port));
 
                     // Then
                     final StartedListening event = events.last(StartedListening.class);
@@ -66,11 +66,11 @@ class ListeningTransportTest
         runTest((transport, client) ->
                 {
                     // Given
-                    transport.handle(new Listen(0, freePort()));
+                    transport.handle(transport.command(Listen.class).set(0, freePort()));
                     final int port = events.last(StartedListening.class).port();
 
                     // When
-                    transport.handle(new StopListening(9, port));
+                    transport.handle(transport.command(StopListening.class).set(9, port));
 
                     // Then
                     assertEquals(port, events.last(StoppedListening.class).port());
@@ -88,10 +88,10 @@ class ListeningTransportTest
                     // Given
                     final int port = freePort();
                     final int anotherPort = freePortOtherThan(port);
-                    transport.handle(new Listen(2, port));
+                    transport.handle(transport.command(Listen.class).set(2, port));
 
                     // When
-                    transport.handle(new StopListening(4, anotherPort));
+                    transport.handle(transport.command(StopListening.class).set(4, anotherPort));
 
                     // Then
                     assertThat(events.last(TransportCommandFailed.class).commandId()).isEqualTo(4);
@@ -115,9 +115,9 @@ class ListeningTransportTest
             {
                 // When
                 final int port1 = freePort();
-                transport.handle(new Listen(0, port1));
+                transport.handle(transport.command(Listen.class).set(0, port1));
                 final int port2 = freePortOtherThan(port1);
-                transport.handle(new Listen(1, port2));
+                transport.handle(transport.command(Listen.class).set(1, port2));
 
                 // Then
                 client1.connectedTo(port1);
@@ -153,13 +153,13 @@ class ListeningTransportTest
                 assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port2));
                 assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port3));
 
-                transport.handle(new Listen(5, port1));
-                transport.handle(new Listen(6, port2));
-                transport.handle(new Listen(7, port3));
+                transport.handle(transport.command(Listen.class).set(5, port1));
+                transport.handle(transport.command(Listen.class).set(6, port2));
+                transport.handle(transport.command(Listen.class).set(7, port3));
                 assertEqual(events.events(), new StartedListening(port1, 5), new StartedListening(port2, 6), new StartedListening(port3, 7));
 
                 // When
-                transport.handle(new StopListening(9, port2));
+                transport.handle(transport.command(StopListening.class).set(9, port2));
 
                 // Then
                 assertThat(events.last(StoppedListening.class).commandId()).isEqualTo(9);

@@ -43,7 +43,7 @@ class ConnectingTransportTest
     void shouldNotifyWhenConnected()
     {
         // Given
-        transport.handle(new Listen(1, freePort()));
+        transport.handle(transport.command(Listen.class).set(1, freePort()));
         final int serverPort = transport.events().last(StartedListening.class).port();
         assertThat(transport.statusEvents().contains(NumberOfConnectionsChanged.class)).isFalse();
 
@@ -65,7 +65,7 @@ class ConnectingTransportTest
     void shouldProvideConnectionDetailsForEachConnection()
     {
         // Given
-        transport.handle(new Listen(5, freePort()));
+        transport.handle(transport.command(Listen.class).set(5, freePort()));
         final int serverPort = transport.events().last(StartedListening.class).port();
 
         // When
@@ -88,7 +88,7 @@ class ConnectingTransportTest
     void shouldCloseConnection() throws IOException
     {
         // Given
-        transport.handle(new Listen(9, freePort()));
+        transport.handle(transport.command(Listen.class).set(9, freePort()));
         transport.workUntil(() -> !transport.events().all(StartedListening.class).isEmpty());
         final int serverPort = transport.events().last(StartedListening.class).port();
         final SampleClient client = new SampleClient();
@@ -99,7 +99,7 @@ class ConnectingTransportTest
         assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
 
         // When
-        transport.handle(new CloseConnection(connectionAccepted.port(), connectionAccepted.connectionId(), 10));
+        transport.handle(transport.command(connectionAccepted, CloseConnection.class).set(connectionAccepted.port(), connectionAccepted.connectionId(), 10));
 
         // Then
         assertThat(client.hasServerClosedConnection()).isTrue();
@@ -118,7 +118,7 @@ class ConnectingTransportTest
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
         assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
-        transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 15));
+        transport.handle(transport.command(conn, CloseConnection.class).set(conn.port(), conn.connectionId(), 15));
         assertThat(transport.events().last(ConnectionClosed.class)).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), 15));
         assertThat(transport.events().all(ConnectionClosed.class)).hasSize(1);
@@ -128,7 +128,7 @@ class ConnectingTransportTest
         assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSize(2);
 
         // When
-        transport.handle(new CloseConnection(conn.port(), conn.connectionId(), 16));
+        transport.handle(transport.command(conn, CloseConnection.class).set(conn.port(), conn.connectionId(), 16));
 
         // Then
         assertThat(transport.events().last(TransportCommandFailed.class).commandId()).isEqualTo(16);
@@ -141,9 +141,10 @@ class ConnectingTransportTest
     void shouldRejectClosingNonExistingConnection()
     {
         assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).isEmpty();
+        final ConnectionId nonExistingConnectionId = new ConnectionAccepted(1234, 567, 7777, 9999, 10);
 
         // When
-        transport.handle(new CloseConnection(1234, 11111, 15));
+        transport.handle(transport.command(nonExistingConnectionId, CloseConnection.class).set(1234, 11111, 15));
 
         // Then
         assertThat(transport.events().last(TransportCommandFailed.class, event -> event.commandId() == 15).details()).containsIgnoringCase("connection id");
@@ -157,8 +158,8 @@ class ConnectingTransportTest
         // Given
         final int listeningPort1 = freePort();
         final int listeningPort2 = freePortOtherThan(listeningPort1);
-        transport.handle(new Listen(5, listeningPort1));
-        transport.handle(new Listen(6, listeningPort2));
+        transport.handle(transport.command(Listen.class).set(5, listeningPort1));
+        transport.handle(transport.command(Listen.class).set(6, listeningPort2));
         assertThat(transport.events().last(StartedListening.class, event -> event.commandId() == 5).port()).isEqualTo(listeningPort1);
         assertThat(transport.events().last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
 
@@ -193,10 +194,10 @@ class ConnectingTransportTest
         final int clientPort2 = freePortOtherThan(listeningPort1, listeningPort2, clientPort1);
 
         // When
-        transport.handle(new Listen(5, listeningPort1));
+        transport.handle(transport.command(Listen.class).set(5, listeningPort1));
         assertThat(transport.events().last(StartedListening.class, event -> event.commandId() == 5).port()).isEqualTo(listeningPort1);
         transport.workUntil(completed(() -> new SampleClient().connectedTo(listeningPort1, clientPort1)));
-        transport.handle(new Listen(6, listeningPort2));
+        transport.handle(transport.command(Listen.class).set(6, listeningPort2));
         assertThat(transport.events().last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
         transport.workUntil(completed(() -> new SampleClient().connectedTo(listeningPort2, clientPort2)));
 
@@ -274,8 +275,8 @@ class ConnectingTransportTest
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(client);
-        transport.handle(new SendData(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII)));
-        transport.handle(new SendData(conn.port(), conn.connectionId(), "BA".getBytes(US_ASCII)));
+        transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII)));
+        transport.handle(transport.command(conn, SendData.class).set(conn.port(), conn.connectionId(), "BA".getBytes(US_ASCII)));
         transport.workUntil(() -> transport.events().all(DataSent.class).size() == 2);
 
         //When

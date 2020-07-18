@@ -62,7 +62,7 @@ public class TransportDriver
     public StartedListening startListening(final int port)
     {
         final int commandId = nextCommandId++;
-        transport.handle(new Listen(commandId, port));
+        transport.handle(transport.command(Listen.class).set(commandId, port));
         return transport.events().last(StartedListening.class, event -> event.commandId() == commandId);
     }
 
@@ -74,7 +74,7 @@ public class TransportDriver
                                           transport.connectionEvents().last(DataSent.class, connectionId).totalBytesSent() :
                                           0;
         final long randomCommandId = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
-        transport.handle(new SendData(connection.port(), connection.connectionId(), content, randomCommandId));
+        transport.handle(transport.command(connection, SendData.class).set(connection.port(), connection.connectionId(), content, randomCommandId));
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
         transport.workUntil(completed(() -> client.read(content.length, content.length, dataConsumer)));
         transport.workUntil(() -> transport.events().contains(DataSent.class, event -> event.commandId() == randomCommandId));

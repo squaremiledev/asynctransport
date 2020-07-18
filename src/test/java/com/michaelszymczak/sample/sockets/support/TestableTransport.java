@@ -3,7 +3,9 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.api.Transport;
+import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
@@ -70,5 +72,17 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
     public void close()
     {
         delegate.close();
+    }
+
+    @Override
+    public <C extends TransportCommand> C command(final Class<C> commandType)
+    {
+        return delegate.command(commandType);
+    }
+
+    @Override
+    public <C extends ConnectionCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    {
+        return delegate.command(connectionId, commandType);
     }
 }
