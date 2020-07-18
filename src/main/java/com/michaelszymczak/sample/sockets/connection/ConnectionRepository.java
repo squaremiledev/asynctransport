@@ -10,7 +10,7 @@ import com.michaelszymczak.sample.sockets.support.Resources;
 public class ConnectionRepository implements AutoCloseable
 {
     // TODO: autoboxing
-    private final Map<Long, Connection> connections = new HashMap<>();
+    private final Map<Long, Connection> connectionsById = new HashMap<>();
     private final RepositoryUpdates repositoryUpdates;
 
     public ConnectionRepository(final RepositoryUpdates repositoryUpdates)
@@ -20,51 +20,55 @@ public class ConnectionRepository implements AutoCloseable
 
     public void add(final Connection connection)
     {
-        connections.put(connection.connectionId(), connection);
+        if (contains(connection.connectionId()))
+        {
+            throw new IllegalStateException("Connection " + connection.connectionId() + " already exists");
+        }
+        connectionsById.put(connection.connectionId(), connection);
         notifyOfNumberOfConnections();
     }
 
     public int size()
     {
-        return connections.size();
+        return connectionsById.size();
     }
 
     public Connection findByConnectionId(final long connectionId)
     {
-        return connections.get(connectionId);
+        return connectionsById.get(connectionId);
     }
 
     public boolean contains(final long connectionId)
     {
-        return connections.containsKey(connectionId);
+        return connectionsById.containsKey(connectionId);
     }
 
     @Override
     public void close()
     {
-        connections.values().forEach(Resources::close);
-        connections.clear();
+        connectionsById.values().forEach(Resources::close);
+        connectionsById.clear();
         notifyOfNumberOfConnections();
     }
 
     public void removeById(final long connectionId)
     {
-        if (!connections.containsKey(connectionId))
+        if (!connectionsById.containsKey(connectionId))
         {
             return;
         }
-        final Connection connection = connections.get(connectionId);
+        final Connection connection = connectionsById.get(connectionId);
         if (!connection.isClosed())
         {
             throw new IllegalStateException("Connection must be closed before it's removed");
         }
-        connections.remove(connectionId);
+        connectionsById.remove(connectionId);
         notifyOfNumberOfConnections();
     }
 
     private void notifyOfNumberOfConnections()
     {
-        repositoryUpdates.onNumberOfConnectionsChanged(connections.size());
+        repositoryUpdates.onNumberOfConnectionsChanged(connectionsById.size());
     }
 
     public interface RepositoryUpdates

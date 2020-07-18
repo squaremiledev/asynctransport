@@ -5,19 +5,8 @@ import com.michaelszymczak.sample.sockets.api.TransportId;
 
 public class Listen implements TransportCommand
 {
-    private int port;
-    private long commandId;
-
-    public Listen()
-    {
-        port = TransportId.NO_PORT;
-        commandId = CommandId.NO_COMMAND_ID;
-    }
-
-    public Listen(final int commandId, final int port)
-    {
-        set(commandId, port);
-    }
+    private int port = TransportId.NO_PORT;
+    private long commandId = CommandId.NO_COMMAND_ID;
 
     public Listen set(final int commandId, final int port)
     {

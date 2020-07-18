@@ -24,6 +24,8 @@ public class NonBlockingConnection implements AutoCloseable, Connection
     private final int initialSenderBufferSize;
     private final ThisConnectionEvents thisConnectionEvents;
     private final SendData sendDataCommand;
+    private final ReadData readDataCommand;
+    private final NoOpCommand noOpCommand;
     private long totalBytesSent;
     private long totalBytesReceived;
     private boolean isClosed = false;
@@ -37,6 +39,8 @@ public class NonBlockingConnection implements AutoCloseable, Connection
         this.initialSenderBufferSize = channel.socket().getSendBufferSize();
         this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, port, connectionId);
         this.sendDataCommand = new SendData(port, connectionId);
+        this.readDataCommand = new ReadData(port, connectionId);
+        this.noOpCommand = new NoOpCommand(port, connectionId);
     }
 
     @Override
@@ -93,6 +97,14 @@ public class NonBlockingConnection implements AutoCloseable, Connection
         if (commandType.equals(SendData.class))
         {
             return commandType.cast(sendDataCommand);
+        }
+        if (commandType.equals(ReadData.class))
+        {
+            return commandType.cast(readDataCommand);
+        }
+        if (commandType.equals(NoOpCommand.class))
+        {
+            return commandType.cast(noOpCommand);
         }
         throw new UnsupportedOperationException(commandType.getSimpleName());
     }

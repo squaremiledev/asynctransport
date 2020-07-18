@@ -38,6 +38,66 @@ class ConnectionRepositoryTest
     }
 
     @Test
+    void shouldPreventFromAddingConnectionTwice()
+    {
+        final Connection connection = new SampleConnection(5544, 2);
+        final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
+        repository.add(connection);
+        assertThat(repository.size()).isEqualTo(1);
+        assertThat(repository.contains(2)).isTrue();
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(singletonList(1));
+
+        // When
+        assertThrows(IllegalStateException.class, () -> repository.add(new SampleConnection(9999, 2)));
+        assertThrows(IllegalStateException.class, () -> repository.add(new SampleConnection(5544, 2)));
+
+        // Then
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(singletonList(1));
+        assertThat(repository.size()).isEqualTo(1);
+        assertThat(repository.contains(2)).isTrue();
+        assertThat(repository.contains(3)).isFalse();
+    }
+
+    @Test
+    void shouldAllowReAddTheSameConnectionAfterRemoved() throws Exception
+    {
+        final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
+        repository.add(new SampleConnection(5544, 2));
+        repository.findByConnectionId(2).close();
+        repository.removeById(2);
+        assertThat(repository.size()).isEqualTo(0);
+        assertThat(repository.contains(2)).isFalse();
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 0));
+
+        // When
+        repository.add(new SampleConnection(5544, 2));
+
+        // Then
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 0, 1));
+        assertThat(repository.size()).isEqualTo(1);
+        assertThat(repository.contains(2)).isTrue();
+    }
+
+    @Test
+    void shouldAllowReAddTheSameConnectionAfterCleared()
+    {
+        final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
+        repository.add(new SampleConnection(5544, 2));
+        repository.close();
+        assertThat(repository.size()).isEqualTo(0);
+        assertThat(repository.contains(2)).isFalse();
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 0));
+
+        // When
+        repository.add(new SampleConnection(5544, 2));
+
+        // Then
+        assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 0, 1));
+        assertThat(repository.size()).isEqualTo(1);
+        assertThat(repository.contains(2)).isTrue();
+    }
+
+    @Test
     void shouldFindConnectionById()
     {
         final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);

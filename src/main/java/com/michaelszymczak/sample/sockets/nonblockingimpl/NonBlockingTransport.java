@@ -13,6 +13,8 @@ import com.michaelszymczak.sample.sockets.api.Transport;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
+import com.michaelszymczak.sample.sockets.api.commands.ReadData;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
@@ -162,11 +164,12 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                 }
                 if (key.isAcceptable())
                 {
-                    final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
-                    final NonBlockingConnection connection = listeningSocket.acceptConnection();
-                    connectionService.newConnection(connection);
-                    final SelectionKey selectionKey = connection.channel().register(connectionsSelector, SelectionKey.OP_READ);
-                    selectionKey.attach(new ConnectionConductor(connection.port(), connection.connectionId()));
+                    final NonBlockingConnection connection = connectionService.newConnection(((ListeningSocket)key.attachment()).acceptConnection());
+                    connection.channel().register(
+                            connectionsSelector,
+                            SelectionKey.OP_READ,
+                            new ConnectionConductor(connection.command(ReadData.class), connection.command(NoOpCommand.class))
+                    );
                 }
             }
         }
