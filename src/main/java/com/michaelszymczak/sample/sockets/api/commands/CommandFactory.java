@@ -8,15 +8,15 @@ public class CommandFactory
     {
         if (commandType.equals(SendData.class))
         {
-            return commandType.cast(new SendData(connectionId.port(), connectionId.connectionId()));
+            return commandType.cast(new SendData(connectionId));
         }
         if (commandType.equals(ReadData.class))
         {
-            return commandType.cast(new ReadData(connectionId.port(), connectionId.connectionId()));
+            return commandType.cast(new ReadData(connectionId));
         }
         if (commandType.equals(NoOpCommand.class))
         {
-            return commandType.cast(new NoOpCommand(connectionId.port(), connectionId.connectionId()));
+            return commandType.cast(new NoOpCommand(connectionId));
         }
         throw new IllegalArgumentException(commandType.getSimpleName());
     }

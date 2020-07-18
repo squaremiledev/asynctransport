@@ -10,6 +10,11 @@ public class CloseConnection implements ConnectionCommand
     private long connectionId = ConnectionId.NO_CONNECTION;
     private long commandId = CommandId.NO_COMMAND_ID;
 
+    public CloseConnection set(final ConnectionId connectionId, final long commandId)
+    {
+        return set(connectionId.port(), connectionId.connectionId(), commandId);
+    }
+
     public CloseConnection set(final int port, final long connectionId, final long commandId)
     {
         this.port = port;

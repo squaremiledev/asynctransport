@@ -104,7 +104,7 @@ class ConnectingTransportTest
         assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
 
         // When
-        transport.handle(transport.command(CloseConnection.class).set(connectionAccepted.port(), connectionAccepted.connectionId(), 10));
+        transport.handle(transport.command(CloseConnection.class).set(connectionAccepted, 10));
 
         // Then
         assertThat(clients.client(1).hasServerClosedConnection()).isTrue();
@@ -122,7 +122,7 @@ class ConnectingTransportTest
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
         assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
-        transport.handle(transport.command(CloseConnection.class).set(conn.port(), conn.connectionId(), 15));
+        transport.handle(transport.command(CloseConnection.class).set(conn, 15));
         assertThat(transport.events().last(ConnectionClosed.class)).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), 15));
         assertThat(transport.events().all(ConnectionClosed.class)).hasSize(1);
@@ -132,7 +132,7 @@ class ConnectingTransportTest
         assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSize(2);
 
         // When
-        transport.handle(transport.command(CloseConnection.class).set(conn.port(), conn.connectionId(), 16));
+        transport.handle(transport.command(CloseConnection.class).set(conn, 16));
 
         // Then
         assertThat(transport.events().last(TransportCommandFailed.class).commandId()).isEqualTo(16);

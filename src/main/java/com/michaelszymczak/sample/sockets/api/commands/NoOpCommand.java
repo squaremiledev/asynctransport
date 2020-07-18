@@ -1,9 +1,16 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
+
 public class NoOpCommand implements ConnectionCommand
 {
     private final int port;
     private final long connectionId;
+
+    public NoOpCommand(final ConnectionId connectionId)
+    {
+        this(connectionId.port(), connectionId.connectionId());
+    }
 
     public NoOpCommand(final int port, final long connectionId)
     {

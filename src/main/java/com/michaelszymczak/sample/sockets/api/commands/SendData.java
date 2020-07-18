@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
 import com.michaelszymczak.sample.sockets.api.CommandId;
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
 
 public class SendData implements ConnectionCommand
 {
@@ -8,6 +9,11 @@ public class SendData implements ConnectionCommand
     private final long connectionId;
     private byte[] content = null;
     private long commandId = CommandId.NO_COMMAND_ID;
+
+    public SendData(final ConnectionId connectionId)
+    {
+        this(connectionId.port(), connectionId.connectionId());
+    }
 
     public SendData(final int port, final long connectionId)
     {

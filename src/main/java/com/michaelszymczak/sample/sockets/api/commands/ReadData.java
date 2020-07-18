@@ -1,9 +1,16 @@
 package com.michaelszymczak.sample.sockets.api.commands;
 
+import com.michaelszymczak.sample.sockets.api.ConnectionId;
+
 public class ReadData implements ConnectionCommand
 {
     private final int port;
     private final long connectionId;
+
+    public ReadData(final ConnectionId connectionId)
+    {
+        this(connectionId.port(), connectionId.connectionId());
+    }
 
     public ReadData(final int port, final long connectionId)
     {
