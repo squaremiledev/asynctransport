@@ -110,7 +110,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
             {
                 totalBytesSent += bytesSent;
             }
-            thisConnectionEvents.dataSent(bytesSent, totalBytesSent, command.commandId());
+            thisConnectionEvents.dataSent(bytesSent, totalBytesSent, totalBytesSent, command.commandId());
         }
         catch (IOException e)
         {

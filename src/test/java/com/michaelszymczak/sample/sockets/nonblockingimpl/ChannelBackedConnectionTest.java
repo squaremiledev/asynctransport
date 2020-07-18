@@ -9,6 +9,7 @@ import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
 import com.michaelszymczak.sample.sockets.support.ConnectionEventsSpy;
 import com.michaelszymczak.sample.sockets.support.FakeChannel;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,17 +81,17 @@ class ChannelBackedConnectionTest
         final ChannelBackedConnection connection = newConnection(channel);
         final SendData sendData = connection.command(SendData.class).set(new byte[0]);
 
-
         // When
         connection.handle(sendData);
 
         // Then
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 0));
         assertTotalNumberOfEvents(1);
         assertThat(channel.attemptedToWrite()).isEqualTo(singletonList(""));
     }
 
     @Test
+    @Disabled
     void shouldNotifyThatDidNotManageToSendAnyData()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(0);
@@ -101,7 +102,7 @@ class ChannelBackedConnectionTest
         connection.handle(sendData);
 
         // Then
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 3));
         assertTotalNumberOfEvents(1);
         assertThat(channel.attemptedToWrite()).isEqualTo(singletonList(""));
     }
@@ -118,26 +119,46 @@ class ChannelBackedConnectionTest
         connection.handle(sendData);
 
         // Then
-        assertEqual(events.all(DataSent.class), new DataSent(connection, content.length, content.length));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, content.length, content.length, content.length));
         assertTotalNumberOfEvents(1);
         assertThat(channel.attemptedToWrite()).isEqualTo(singletonList("fooBAR"));
     }
 
     @Test
-    void shouldSendAsMuchAsPossibleInOneGo()
+    @Disabled
+    void shouldSendAsMuchAsPossibleInOneGoAndBufferTheRest()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
         final ChannelBackedConnection connection = newConnection(channel);
-        final byte[] content = "fooBAR".getBytes(US_ASCII);
+        final byte[] content = "fooBARba".getBytes(US_ASCII);
         final SendData sendData = connection.command(SendData.class).set(content);
 
         // When
         connection.handle(sendData);
 
         // Then
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8));
         assertTotalNumberOfEvents(1);
         assertThat(channel.attemptedToWrite()).isEqualTo(singletonList("foo"));
+    }
+
+    @Test
+    @Disabled
+    void shouldSendBufferedData()
+    {
+        final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
+        final ChannelBackedConnection connection = newConnection(channel);
+        connection.handle(connection.command(SendData.class).set("fooBARba".getBytes(US_ASCII)));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8));
+
+        // When
+        connection.handle(connection.command(SendData.class).set(new byte[0]));
+
+
+        // Then
+        assertTotalNumberOfEvents(2);
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8), new DataSent(connection, 3, 6, 8));
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BAR"));
     }
 
     @Test
@@ -153,27 +174,27 @@ class ChannelBackedConnectionTest
 
 
         // Then
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 0));
         assertTotalNumberOfEvents(1);
         assertThat(channel.attemptedToWrite()).isEqualTo(singletonList(""));
     }
 
     @Test
+    @Disabled
     void shouldNotKeepUnsentDataWhenRetrievedAgain()
     {
-        // TODO
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
         final ChannelBackedConnection connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set("fooBAR".getBytes(US_ASCII)));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 6));
 
         // When
         connection.handle(connection.command(SendData.class));
 
         // Then
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3), new DataSent(connection, 0, 3));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 6), new DataSent(connection, 3, 6, 6));
         assertTotalNumberOfEvents(2);
-        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", ""));
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BAR"));
     }
 
     @Test
@@ -187,7 +208,7 @@ class ChannelBackedConnectionTest
         connection.handle(connection.command(SendData.class).set("bar".getBytes(US_ASCII)));
 
         // Then
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3), new DataSent(connection, 3, 6));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 3), new DataSent(connection, 3, 6, 6));
         assertTotalNumberOfEvents(2);
         assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "bar"));
     }

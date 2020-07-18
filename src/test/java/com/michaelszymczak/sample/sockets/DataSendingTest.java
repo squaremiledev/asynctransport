@@ -70,7 +70,7 @@ class DataSendingTest
         // Then
         transport.workUntil(completed(() -> clients.client(1).read(3, 10, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("foo");
-        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), content.length, content.length));
+        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), content.length, content.length, content.length));
     }
 
     @Test
@@ -88,7 +88,9 @@ class DataSendingTest
         // Then
         transport.workUntil(completed(() -> clients.client(1).read(3, 10, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("foo");
-        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII).length, "foo".getBytes(US_ASCII).length));
+        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII).length, "foo".getBytes(US_ASCII).length,
+                                                                         "foo".getBytes(US_ASCII).length
+        ));
     }
 
     @Test
@@ -109,8 +111,8 @@ class DataSendingTest
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("fooBA");
         assertEqual(
                 transport.events().all(DataSent.class),
-                new DataSent(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII).length, "foo".getBytes(US_ASCII).length),
-                new DataSent(conn.port(), conn.connectionId(), "BA".getBytes(US_ASCII).length, "fooBA".getBytes(US_ASCII).length)
+                new DataSent(conn.port(), conn.connectionId(), "foo".getBytes(US_ASCII).length, "foo".getBytes(US_ASCII).length, "foo".getBytes(US_ASCII).length),
+                new DataSent(conn.port(), conn.connectionId(), "BA".getBytes(US_ASCII).length, "fooBA".getBytes(US_ASCII).length, "fooBA".getBytes(US_ASCII).length)
         );
     }
 
@@ -127,7 +129,7 @@ class DataSendingTest
         transport.workUntil(() -> transport.connectionEvents().contains(DataSent.class, conn.connectionId()));
 
         // Then
-        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), 0, 0, 100));
+        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), 0, 0, 0, 100));
     }
 
     @Test
@@ -178,7 +180,7 @@ class DataSendingTest
         assertThat(transport.events().last(CommandFailed.class).port()).isEqualTo(conn.port() + 1);
         assertThat(transport.events().last(CommandFailed.class).details()).containsIgnoringCase("port");
         assertThat(transport.events().last(DataSent.class)).usingRecursiveComparison()
-                .isEqualTo(new DataSent(conn.port(), conn.connectionId(), "bar".getBytes(US_ASCII).length, "bar".getBytes(US_ASCII).length));
+                .isEqualTo(new DataSent(conn.port(), conn.connectionId(), "bar".getBytes(US_ASCII).length, "bar".getBytes(US_ASCII).length, "bar".getBytes(US_ASCII).length));
     }
 
     @Test
@@ -216,22 +218,22 @@ class DataSendingTest
         transport.workUntil(completed(() -> clients.client(1).read(10, 100, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S1 -> C1 ", 10));
         assertThat(transport.connectionEvents().last(DataSent.class, connS1C1.connectionId())).usingRecursiveComparison()
-                .isEqualTo(new DataSent(connS1C1.port(), connS1C1.connectionId(), 10, 10));
+                .isEqualTo(new DataSent(connS1C1.port(), connS1C1.connectionId(), 10, 10, 10));
 
         transport.workUntil(completed(() -> clients.client(2).read(20, 100, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C2 ", 20));
         assertThat(transport.connectionEvents().last(DataSent.class, connS2C2.connectionId())).usingRecursiveComparison()
-                .isEqualTo(new DataSent(connS2C2.port(), connS2C2.connectionId(), 20, 20));
+                .isEqualTo(new DataSent(connS2C2.port(), connS2C2.connectionId(), 20, 20, 20));
 
         transport.workUntil(completed(() -> clients.client(3).read(30, 100, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S1 -> C3 ", 30));
         assertThat(transport.connectionEvents().last(DataSent.class, connS1C3.connectionId())).usingRecursiveComparison()
-                .isEqualTo(new DataSent(connS1C3.port(), connS1C3.connectionId(), 30, 30));
+                .isEqualTo(new DataSent(connS1C3.port(), connS1C3.connectionId(), 30, 30, 30));
 
         transport.workUntil(completed(() -> clients.client(4).read(40, 100, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
         assertThat(transport.connectionEvents().last(DataSent.class, connS2C4.connectionId())).usingRecursiveComparison()
-                .isEqualTo(new DataSent(connS2C4.port(), connS2C4.connectionId(), 40, 40));
+                .isEqualTo(new DataSent(connS2C4.port(), connS2C4.connectionId(), 40, 40, 40));
     }
 
     @Test
@@ -257,7 +259,7 @@ class DataSendingTest
         assertThat(stringWith(dataConsumer.dataRead())).isEqualTo(stringWith(data));
         final DataSent dataSentEvent = transport.connectionEvents().last(DataSent.class, conn.connectionId());
         assertThat(dataSentEvent).usingRecursiveComparison()
-                .isEqualTo(new DataSent(conn.port(), conn.connectionId(), dataSentEvent.bytesSent(), data.length));
+                .isEqualTo(new DataSent(conn.port(), conn.connectionId(), dataSentEvent.bytesSent(), data.length, data.length));
 
     }
 

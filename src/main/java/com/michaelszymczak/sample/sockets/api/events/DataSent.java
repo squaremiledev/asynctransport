@@ -9,25 +9,27 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
     private final long connectionId;
     private final int bytesSent;
     private final long totalBytesSent;
+    private final long totalBytesBuffered;
     private final long commandId;
 
-    public DataSent(final ConnectionId connectionId, final int bytesSent, final long totalBytesSent)
+    public DataSent(final ConnectionId connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered)
     {
-        this(connectionId.port(), connectionId.connectionId(), bytesSent, totalBytesSent, CommandId.NO_COMMAND_ID);
+        this(connectionId.port(), connectionId.connectionId(), bytesSent, totalBytesSent, totalBytesBuffered, CommandId.NO_COMMAND_ID);
     }
 
-    public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent)
+    public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered)
     {
-        this(port, connectionId, bytesSent, totalBytesSent, CommandId.NO_COMMAND_ID);
+        this(port, connectionId, bytesSent, totalBytesSent, totalBytesBuffered, CommandId.NO_COMMAND_ID);
     }
 
-    public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long commandId)
+    public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final long commandId)
     {
         this.port = port;
         this.connectionId = connectionId;
         this.bytesSent = bytesSent;
         this.totalBytesSent = totalBytesSent;
         this.commandId = commandId;
+        this.totalBytesBuffered = totalBytesBuffered;
     }
 
     @Override
@@ -45,6 +47,11 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
     public long totalBytesSent()
     {
         return totalBytesSent;
+    }
+
+    public long totalBytesBuffered()
+    {
+        return totalBytesBuffered;
     }
 
     public int bytesSent()
@@ -66,6 +73,7 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
                ", connectionId=" + connectionId +
                ", bytesSent=" + bytesSent +
                ", totalBytesSent=" + totalBytesSent +
+               ", totalBytesBuffered=" + totalBytesBuffered +
                ", commandId=" + commandId +
                '}';
     }

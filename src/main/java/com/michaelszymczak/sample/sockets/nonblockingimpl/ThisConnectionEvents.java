@@ -37,9 +37,9 @@ public class ThisConnectionEvents
         eventsListener.onEvent(new ConnectionResetByPeer(port, connectionId, commandId));
     }
 
-    public void dataSent(final int bytesSent, final long totalBytesSent, final long commandId)
+    public void dataSent(final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final long commandId)
     {
-        eventsListener.onEvent(new DataSent(port, connectionId, bytesSent, totalBytesSent, commandId));
+        eventsListener.onEvent(new DataSent(port, connectionId, bytesSent, totalBytesSent, totalBytesBuffered, commandId));
     }
 
     public void dataReceived(final long totalBytesReceived, final byte[] content, final int read)
