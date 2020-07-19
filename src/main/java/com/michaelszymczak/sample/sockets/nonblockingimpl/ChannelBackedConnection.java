@@ -42,6 +42,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.sendBufferSize);
         // TODO: size appropriately
         this.readyToSendBuffer = ByteBuffer.allocate(configuration.sendBufferSize);
+        this.readyToSendBuffer.flip();
     }
 
     @Override
@@ -103,27 +104,48 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         closeConnection(command.commandId(), false);
     }
 
+    // TODO: handle -1 as closed connection
     private void handle(final SendData command)
     {
         try
         {
-            // TODO: handle -1 as closed connection
+            final int bytesSentFromBufferNow;
+            if (readyToSendBuffer.remaining() > 0)
+            {
+                final int result = channel.write(readyToSendBuffer);
+                bytesSentFromBufferNow = result >= 0 ? result : 0;
+            }
+            else
+            {
+                bytesSentFromBufferNow = 0;
+            }
+
+
             final ByteBuffer src = command.byteBuffer();
-            final int bytesSent = channel.write(src);
+            final int bytesSentFromCommandNow;
+            if (src.remaining() > 0)
+            {
+                final int result = channel.write(src);
+                bytesSentFromCommandNow = result >= 0 ? result : 0;
+            }
+            else
+            {
+                bytesSentFromCommandNow = 0;
+            }
+
             final int remainingToSend = src.remaining();
             if (remainingToSend > 0)
             {
                 readyToSendBuffer.clear();
                 readyToSendBuffer.put(src);
-                totalBytesBuffered += remainingToSend;
+                readyToSendBuffer.flip();
             }
 
-            if (bytesSent > 0)
-            {
-                totalBytesSent += bytesSent;
-                totalBytesBuffered += bytesSent;
-            }
-            thisConnectionEvents.dataSent(bytesSent, totalBytesSent, totalBytesBuffered, command.commandId());
+
+            totalBytesBuffered += remainingToSend + bytesSentFromCommandNow;
+            totalBytesSent += bytesSentFromCommandNow + bytesSentFromBufferNow;
+
+            thisConnectionEvents.dataSent(bytesSentFromCommandNow + bytesSentFromBufferNow, totalBytesSent, totalBytesBuffered, command.commandId());
         }
         catch (IOException e)
         {
