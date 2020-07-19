@@ -9,11 +9,6 @@ import java.nio.charset.StandardCharsets;
 public class SampleClient implements AutoCloseable
 {
 
-    private static final ReadDataConsumer DEV_NULL = (data, length) ->
-    {
-
-    };
-
     private final Socket socket;
     private final int timeoutMs;
 
@@ -41,7 +36,7 @@ public class SampleClient implements AutoCloseable
 
     public byte[] read(final int contentSize, final int allocatedSize) throws IOException
     {
-        return read(contentSize, allocatedSize, DEV_NULL);
+        return read(contentSize, allocatedSize, ReadDataConsumer.DEV_NULL);
     }
 
     public byte[] read(final int contentSize, final int allocatedSize, final ReadDataConsumer dataConsumer) throws IOException
@@ -81,6 +76,11 @@ public class SampleClient implements AutoCloseable
 
     public interface ReadDataConsumer
     {
+        ReadDataConsumer DEV_NULL = (data, length) ->
+        {
+
+        };
+
         void consume(byte[] data, int length);
     }
 }

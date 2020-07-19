@@ -30,6 +30,7 @@ import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
 import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
+import static com.michaelszymczak.sample.sockets.support.SampleClient.ReadDataConsumer.DEV_NULL;
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.byteArrayWith;
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.stringWith;
 import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
@@ -336,6 +337,34 @@ class DataSendingTest
                 () -> clients.client(1).read(totalDataSentByIndividualChunks, totalDataSentByIndividualChunks, dataConsumerForTheClient)));
         assertThat(dataConsumerForTheClient.dataRead()).hasSize(totalDataSentByIndividualChunks);
         assertThat(dataConsumerForTheClient.dataRead()).isEqualTo(Arrays.copyOf(dataConsumerForTheTest.dataRead(), dataConsumerForTheClient.dataRead().length));
+    }
+
+    @Test
+    void shouldSendRemainingBufferedDataWhenWindowUnstuck()
+    {
+        final TransportDriver driver = new TransportDriver(transport);
+        final int serverPort = freePort();
+        final int clientPort = freePortOtherThan(serverPort);
+        final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1), serverPort, clientPort);
+        final DataSent eventAfterWindowFilled = driver.fillTheSendingWindow(conn, conn.maxMessageSize());
+        assertThat(eventAfterWindowFilled.bytesSent()).isEqualTo(0);
+        int totalBytesBuffered = (int)(eventAfterWindowFilled.totalBytesBuffered() - eventAfterWindowFilled.totalBytesSent());
+        assertThat(totalBytesBuffered).isGreaterThan(0);
+        transport.workUntil(completed(() -> clients.client(1).read((int)eventAfterWindowFilled.totalBytesSent(), (int)eventAfterWindowFilled.totalBytesSent(), DEV_NULL)));
+        DataSent eventAfterClientReadAllDataSentSoFar = transport.connectionEvents().last(DataSent.class, conn.connectionId());
+        assertThat(eventAfterClientReadAllDataSentSoFar.totalBytesBuffered()).isEqualTo(eventAfterWindowFilled.totalBytesBuffered());
+        assertThat(eventAfterClientReadAllDataSentSoFar.totalBytesSent()).isEqualTo(eventAfterWindowFilled.totalBytesSent());
+
+        // When
+        transport.workUntil(() ->
+                            {
+                                transport.handle(transport.command(conn, SendData.class)); // TODO: this line becomes unnecessary once the transport duty cycle is able to send remaining data
+                                DataSent lastEvent = transport.connectionEvents().last(DataSent.class, conn.connectionId());
+                                return lastEvent.totalBytesSent() == lastEvent.totalBytesBuffered();
+                            });
+        transport.workUntil(completed(() -> clients.client(1).read(totalBytesBuffered, totalBytesBuffered, DEV_NULL)));
+        final DataSent lastEventAfterAllDataDelivered = transport.connectionEvents().last(DataSent.class, conn.connectionId());
+        assertThat(lastEventAfterAllDataDelivered.totalBytesBuffered()).isEqualTo(eventAfterClientReadAllDataSentSoFar.totalBytesSent() + totalBytesBuffered);
     }
 
     @AfterEach

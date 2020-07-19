@@ -9,6 +9,9 @@ import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
+import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
+
+import org.agrona.collections.MutableInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
+import static com.michaelszymczak.sample.sockets.support.StringFixtures.byteArrayWith;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 public class TransportDriver
@@ -27,6 +31,35 @@ public class TransportDriver
     public TransportDriver(final TransportUnderTest transport)
     {
         this.transport = transport;
+    }
+
+    public DataSent fillTheSendingWindow(final ConnectionId connectionId, final int maxMessageSize)
+    {
+        final int totalNumberOfEventsBefore = transport.events().all(TransportEvent.class).size();
+        final byte[] singleMessageData = byteArrayWith(pos -> String.format("%9d%n", pos), maxMessageSize / 10);
+        assertThat(singleMessageData.length).isEqualTo(maxMessageSize);
+
+        //When
+        MutableInteger commandsCount = new MutableInteger(0);
+        transport.workUntil(() ->
+                            {
+                                transport.handle(transport.command(connectionId, SendData.class).set(singleMessageData, commandsCount.incrementAndGet()));
+                                // stop when unable to send more data
+                                return !transport.connectionEvents().all(DataSent.class, connectionId.connectionId()).isEmpty() &&
+                                       transport.connectionEvents().last(DataSent.class, connectionId.connectionId()).bytesSent() == 0;
+                            });
+        final int commandsSentCount = commandsCount.get();
+
+        // Then
+        assertThat(transport.events().all(TransportEvent.class)).hasSize(totalNumberOfEventsBefore + commandsSentCount);
+        final DataSent lastEvent = transport.connectionEvents().last(DataSent.class, connectionId.connectionId());
+        assertThat(lastEvent.bytesSent()).isEqualTo(0);
+        assertThat(lastEvent.commandId()).isEqualTo(commandsSentCount);
+        final int dataSizeInAllCommands = singleMessageData.length * commandsSentCount;
+        assertThat(lastEvent.totalBytesBuffered()).isEqualTo(dataSizeInAllCommands);
+        final int totalDataSentByIndividualChunks = (int)transport.connectionEvents().all(DataSent.class, connectionId.connectionId()).stream().mapToLong(DataSent::bytesSent).sum();
+        assertThat(lastEvent.totalBytesSent()).isEqualTo(totalDataSentByIndividualChunks);
+        return transport.connectionEvents().last(DataSent.class, connectionId.connectionId());
     }
 
     public ConnectionAccepted listenAndConnect(final SampleClient client)
