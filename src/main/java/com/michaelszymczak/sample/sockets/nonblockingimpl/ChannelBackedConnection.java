@@ -28,6 +28,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     private long totalBytesBuffered;
     private long totalBytesReceived;
     private boolean isClosed = false;
+    private ConnectionSendingState sendingState;
 
     ChannelBackedConnection(final ConnectionConfiguration configuration, final Channel channel, final ConnectionEventsListener eventsListener)
     {
@@ -42,7 +43,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.sendBufferSize);
         // TODO: size appropriately
         this.readyToSendBuffer = ByteBuffer.allocate(configuration.sendBufferSize);
-        this.readyToSendBuffer.flip();
+        this.sendingState = ConnectionSendingState.EMPTY;
+
     }
 
     @Override
@@ -110,20 +112,30 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         try
         {
             final int bytesSentFromBufferNow;
-            if (readyToSendBuffer.remaining() > 0)
+            final int previouslyBufferedBytes;
+            try
             {
-                final int result = channel.write(readyToSendBuffer);
-                bytesSentFromBufferNow = result >= 0 ? result : 0;
+                readyToSendBuffer.flip();
+                previouslyBufferedBytes = readyToSendBuffer.remaining();
+                if (previouslyBufferedBytes > 0)
+                {
+                    final int result = channel.write(readyToSendBuffer);
+                    bytesSentFromBufferNow = result >= 0 ? result : 0;
+                }
+                else
+                {
+                    bytesSentFromBufferNow = 0;
+                }
             }
-            else
+            finally
             {
-                bytesSentFromBufferNow = 0;
+                readyToSendBuffer.compact();
             }
 
 
             final ByteBuffer src = command.byteBuffer();
             final int bytesSentFromCommandNow;
-            if (src.remaining() > 0)
+            if (previouslyBufferedBytes == 0 && src.remaining() > 0)
             {
                 final int result = channel.write(src);
                 bytesSentFromCommandNow = result >= 0 ? result : 0;
@@ -136,9 +148,12 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
             final int remainingToSend = src.remaining();
             if (remainingToSend > 0)
             {
-                readyToSendBuffer.clear();
+                sendingState = ConnectionSendingState.NOT_ALL_DATA_SENT;
                 readyToSendBuffer.put(src);
-                readyToSendBuffer.flip();
+            }
+            else
+            {
+                sendingState = ConnectionSendingState.ALL_DATA_SENT;
             }
 
 

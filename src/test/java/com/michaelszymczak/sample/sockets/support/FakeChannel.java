@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets.support;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,8 +42,9 @@ public class FakeChannel implements Channel
     public int write(final ByteBuffer src)
     {
         final int bytesWritten = Math.min(maxBytesReadInOneGo, src.remaining());
-        writeAttempts.add(new String(src.array(), src.position(), bytesWritten));
-        src.position(src.position() + bytesWritten);
+        final byte[] target = new byte[bytesWritten];
+        src.get(target);
+        writeAttempts.add(new String(target, StandardCharsets.US_ASCII));
         return bytesWritten;
     }
 
