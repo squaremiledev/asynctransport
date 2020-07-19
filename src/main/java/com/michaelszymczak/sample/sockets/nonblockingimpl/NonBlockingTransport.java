@@ -26,6 +26,8 @@ import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.connection.ConnectionService;
 import com.michaelszymczak.sample.sockets.support.Resources;
 
+import static org.agrona.LangUtil.rethrowUnchecked;
+
 public class NonBlockingTransport implements AutoCloseable, Transport
 {
     private final TransportEventsListener transportEventsListener;
@@ -98,6 +100,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         catch (Exception e)
         {
             transportEventsListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
+            rethrowUnchecked(e);
         }
     }
 

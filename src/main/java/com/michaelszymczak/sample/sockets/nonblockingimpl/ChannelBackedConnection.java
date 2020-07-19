@@ -23,7 +23,9 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     private final ThisConnectionEvents thisConnectionEvents;
     private final ConnectionCommands connectionCommands;
     private final ConnectionConfiguration configuration;
+    private final ByteBuffer readyToSendBuffer;
     private long totalBytesSent;
+    private long totalBytesBuffered;
     private long totalBytesReceived;
     private boolean isClosed = false;
 
@@ -38,6 +40,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.channel = channel;
         this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, configuration.connectionId.port(), configuration.connectionId.connectionId());
         this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.sendBufferSize);
+        // TODO: size appropriately
+        this.readyToSendBuffer = ByteBuffer.allocate(configuration.sendBufferSize);
     }
 
     @Override
@@ -104,13 +108,22 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         try
         {
             // TODO: handle -1 as closed connection
-            final int bytesSent = channel.write(command.byteBuffer());
+            final ByteBuffer src = command.byteBuffer();
+            final int bytesSent = channel.write(src);
+            final int remainingToSend = src.remaining();
+            if (remainingToSend > 0)
+            {
+                readyToSendBuffer.clear();
+                readyToSendBuffer.put(src);
+                totalBytesBuffered += remainingToSend;
+            }
 
             if (bytesSent > 0)
             {
                 totalBytesSent += bytesSent;
+                totalBytesBuffered += bytesSent;
             }
-            thisConnectionEvents.dataSent(bytesSent, totalBytesSent, totalBytesSent, command.commandId());
+            thisConnectionEvents.dataSent(bytesSent, totalBytesSent, totalBytesBuffered, command.commandId());
         }
         catch (IOException e)
         {

@@ -42,7 +42,7 @@ public class FakeChannel implements Channel
     {
         final int bytesWritten = Math.min(maxBytesReadInOneGo, src.remaining());
         writeAttempts.add(new String(src.array(), src.position(), bytesWritten));
-        // TODO: need to update the src buffer state?
+        src.position(src.position() + bytesWritten);
         return bytesWritten;
     }
 

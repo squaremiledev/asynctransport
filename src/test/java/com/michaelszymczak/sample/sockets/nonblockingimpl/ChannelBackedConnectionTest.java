@@ -91,8 +91,7 @@ class ChannelBackedConnectionTest
     }
 
     @Test
-    @Disabled
-    void shouldNotifyThatDidNotManageToSendAnyData()
+    void shouldNotifyThatBufferedTheDataIfUnableToSendAtAll()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(0);
         final ChannelBackedConnection connection = newConnection(channel);
@@ -125,7 +124,6 @@ class ChannelBackedConnectionTest
     }
 
     @Test
-    @Disabled
     void shouldSendAsMuchAsPossibleInOneGoAndBufferTheRest()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
