@@ -58,7 +58,9 @@ public class ListeningSocket implements AutoCloseable
         final ConnectionConfiguration configuration = new ConnectionConfiguration(
                 new ConnectionIdValue(acceptedSocket.getLocalPort(), connectionIdSource.newId()),
                 acceptedSocket.getPort(),
-                acceptedSocketChannel.socket().getSendBufferSize()
+                acceptedSocketChannel.socket().getSendBufferSize(),
+                // TODO: decide how to select buffer size (prod and test performance)
+                acceptedSocketChannel.socket().getSendBufferSize() * 5
         );
         final ChannelBackedConnection connection = new ChannelBackedConnection(
                 configuration,
@@ -66,7 +68,7 @@ public class ListeningSocket implements AutoCloseable
                 transportEventsListener::onEvent,
                 commandFactory
         );
-        transportEventsListener.onEvent(new ConnectionAccepted(connection, commandIdThatTriggeredListening, configuration.remotePort, configuration.sendBufferSize));
+        transportEventsListener.onEvent(new ConnectionAccepted(connection, commandIdThatTriggeredListening, configuration.remotePort, configuration.maxMsgSize));
         return connection;
     }
 

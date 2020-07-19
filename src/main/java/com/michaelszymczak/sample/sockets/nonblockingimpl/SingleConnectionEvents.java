@@ -8,14 +8,14 @@ import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
 
-public class ThisConnectionEvents
+public class SingleConnectionEvents
 {
 
     private final ConnectionEventsListener eventsListener;
     private final int port;
     private final long connectionId;
 
-    public ThisConnectionEvents(final ConnectionEventsListener eventsListener, final int port, final long connectionId)
+    public SingleConnectionEvents(final ConnectionEventsListener eventsListener, final int port, final long connectionId)
     {
         this.eventsListener = eventsListener;
         this.port = port;

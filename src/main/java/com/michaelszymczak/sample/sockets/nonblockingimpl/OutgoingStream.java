@@ -2,8 +2,7 @@ package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
-import com.michaelszymczak.sample.sockets.connection.Channel;
+import java.nio.channels.WritableByteChannel;
 
 
 import static com.michaelszymczak.sample.sockets.nonblockingimpl.OutgoingStream.State.ALL_DATA_SENT;
@@ -11,56 +10,56 @@ import static com.michaelszymczak.sample.sockets.nonblockingimpl.OutgoingStream.
 
 public class OutgoingStream
 {
-    private final ByteBuffer waitingToBeSentBuffer;
-    private final ThisConnectionEvents thisConnectionEvents;
+    private final ByteBuffer buffer;
+    private final SingleConnectionEvents events;
 
     private State state;
     private long totalBytesSent;
     private long totalBytesBuffered;
 
-    OutgoingStream(final int bufferSize, final ThisConnectionEvents thisConnectionEvents)
+    OutgoingStream(final SingleConnectionEvents events, final int bufferSize)
     {
-        this.waitingToBeSentBuffer = ByteBuffer.allocate(bufferSize);
-        this.thisConnectionEvents = thisConnectionEvents;
+        this.buffer = ByteBuffer.allocate(bufferSize * 2);
+        this.events = events;
         this.state = State.ALL_DATA_SENT;
     }
 
-    void sendData(final Channel channel, final ByteBuffer newDataToSend, final long commandId) throws IOException
+    void sendData(final WritableByteChannel channel, final ByteBuffer newDataToSend, final long commandId) throws IOException
     {
         if (state == ALL_DATA_SENT)
         {
             final int bytesSent = sendNewData(0, newDataToSend, channel);
-            thisConnectionEvents.dataSent(bytesSent, totalBytesSent, totalBytesBuffered, commandId);
+            events.dataSent(bytesSent, totalBytesSent, totalBytesBuffered, commandId);
         }
         else if (state == DATA_BUFFERED)
         {
-            waitingToBeSentBuffer.flip();
-            final int bufferedDataSentResult = channel.write(waitingToBeSentBuffer);
+            buffer.flip();
+            final int bufferedDataSentResult = channel.write(buffer);
             final int bufferedBytesSent = bufferedDataSentResult >= 0 ? bufferedDataSentResult : 0;
-            final boolean hasSentAllBufferedData = waitingToBeSentBuffer.remaining() == 0;
-            waitingToBeSentBuffer.compact();
+            final boolean hasSentAllBufferedData = buffer.remaining() == 0;
+            buffer.compact();
 
             if (hasSentAllBufferedData)
             {
                 final int bytesSent = sendNewData(bufferedBytesSent, newDataToSend, channel);
-                thisConnectionEvents.dataSent(bytesSent, totalBytesSent, totalBytesBuffered, commandId);
+                events.dataSent(bytesSent, totalBytesSent, totalBytesBuffered, commandId);
             }
             else
             {
                 final int newBytesUnsent = newDataToSend.remaining();
                 if (newBytesUnsent > 0)
                 {
-                    waitingToBeSentBuffer.put(newDataToSend);
+                    buffer.put(newDataToSend);
                 }
 
                 totalBytesBuffered += newBytesUnsent;
                 totalBytesSent += bufferedBytesSent;
-                thisConnectionEvents.dataSent(bufferedBytesSent, totalBytesSent, totalBytesBuffered, commandId);
+                events.dataSent(bufferedBytesSent, totalBytesSent, totalBytesBuffered, commandId);
             }
         }
     }
 
-    private int sendNewData(final int bufferedBytesSent, final ByteBuffer newDataToSend, final Channel channel) throws IOException
+    private int sendNewData(final int bufferedBytesSent, final ByteBuffer newDataToSend, final WritableByteChannel channel) throws IOException
     {
         int newBytesSent = 0;
         if (newDataToSend.remaining() > 0)
@@ -71,7 +70,7 @@ public class OutgoingStream
         final int newBytesUnsent = newDataToSend.remaining();
         if (newBytesUnsent > 0)
         {
-            waitingToBeSentBuffer.put(newDataToSend);
+            buffer.put(newDataToSend);
         }
 
         final int bytesSent = bufferedBytesSent + newBytesSent;
@@ -85,7 +84,7 @@ public class OutgoingStream
     public String toString()
     {
         return "OutgoingStream{" +
-               "waitingToBeSentBuffer=" + waitingToBeSentBuffer +
+               "buffer=" + buffer +
                ", state=" + state +
                ", totalBytesSent=" + totalBytesSent +
                ", totalBytesBuffered=" + totalBytesBuffered +

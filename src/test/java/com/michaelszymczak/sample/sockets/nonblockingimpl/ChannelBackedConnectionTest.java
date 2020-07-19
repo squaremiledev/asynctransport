@@ -40,7 +40,7 @@ class ChannelBackedConnectionTest
     @Test
     void shouldReadConfiguration()
     {
-        final ChannelBackedConnection connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(8080, 51), 9090, 10));
+        final ChannelBackedConnection connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(8080, 51), 9090, 10, 20));
 
         assertThat(connection.connectionId()).isEqualTo(51);
         assertThat(connection.port()).isEqualTo(8080);
@@ -50,7 +50,7 @@ class ChannelBackedConnectionTest
     @Test
     void shouldIncludeConnectionIdInTheEvent()
     {
-        final ChannelBackedConnection connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(1234, 3), 5678, 7));
+        final ChannelBackedConnection connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(1234, 3), 5678, 7, 7));
 
         // When
         connection.handle(connection.command(SendData.class));
@@ -356,6 +356,6 @@ class ChannelBackedConnectionTest
 
     private ConnectionConfiguration config()
     {
-        return new ConnectionConfiguration(new ConnectionIdValue(8080, 51), 9090, 10);
+        return new ConnectionConfiguration(new ConnectionIdValue(8080, 51), 9090, 10, 20);
     }
 }

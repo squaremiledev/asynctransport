@@ -22,7 +22,7 @@ import static org.agrona.LangUtil.rethrowUnchecked;
 public class ChannelBackedConnection implements AutoCloseable, Connection
 {
     private final Channel channel;
-    private final ThisConnectionEvents thisConnectionEvents;
+    private final SingleConnectionEvents singleConnectionEvents;
     private final ConnectionCommands connectionCommands;
     private final ConnectionConfiguration configuration;
     private final OutgoingStream outgoingStream;
@@ -38,10 +38,9 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     {
         this.configuration = configuration;
         this.channel = channel;
-        this.thisConnectionEvents = new ThisConnectionEvents(eventsListener, configuration.connectionId.port(), configuration.connectionId.connectionId());
-        this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.sendBufferSize);
-        // TODO: size appropriately
-        this.outgoingStream = new OutgoingStream(configuration.sendBufferSize, thisConnectionEvents);
+        this.singleConnectionEvents = new SingleConnectionEvents(eventsListener, configuration.connectionId.port(), configuration.connectionId.connectionId());
+        this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.maxMsgSize);
+        this.outgoingStream = new OutgoingStream(singleConnectionEvents, configuration.sendBufferSize);
     }
 
     @Override
@@ -82,7 +81,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         }
         else
         {
-            thisConnectionEvents.commandFailed(command, "Unrecognized command");
+            singleConnectionEvents.commandFailed(command, "Unrecognized command");
         }
     }
 
@@ -133,7 +132,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
             {
                 totalBytesReceived += read;
             }
-            thisConnectionEvents.dataReceived(totalBytesReceived, content, read);
+            singleConnectionEvents.dataReceived(totalBytesReceived, content, read);
         }
         catch (IOException e)
         {
@@ -154,7 +153,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         final String result = configuration.connectionId.validate(command);
         if (result != null)
         {
-            thisConnectionEvents.commandFailed(command, result);
+            singleConnectionEvents.commandFailed(command, result);
             return false;
         }
         return true;
@@ -173,11 +172,11 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         {
             if (resetByPeer)
             {
-                thisConnectionEvents.connectionResetByPeer(commandId);
+                singleConnectionEvents.connectionResetByPeer(commandId);
             }
             else
             {
-                thisConnectionEvents.connectionClosed(commandId);
+                singleConnectionEvents.connectionClosed(commandId);
             }
             isClosed = true;
         }
@@ -188,7 +187,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     {
         return "ChannelBackedConnection{" +
                "channel=" + channel +
-               ", thisConnectionEvents=" + thisConnectionEvents +
+               ", singleConnectionEvents=" + singleConnectionEvents +
                ", connectionCommands=" + connectionCommands +
                ", configuration=" + configuration +
                ", outgoingStream=" + outgoingStream +
