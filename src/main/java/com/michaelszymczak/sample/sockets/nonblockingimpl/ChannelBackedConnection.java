@@ -157,8 +157,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         }
         catch (Exception e)
         {
-            // TODO: return failure
-            throw new RuntimeException(e);
+            rethrowUnchecked(e);
         }
     }
 

@@ -35,6 +35,7 @@ import static com.michaelszymczak.sample.sockets.support.SampleClient.ReadDataCo
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.byteArrayWith;
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.stringWith;
 import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
+import static com.michaelszymczak.sample.sockets.support.Worker.runUntil;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 class DataSendingTest
@@ -281,14 +282,11 @@ class DataSendingTest
         final byte[] dataThatFitsTheBuffer = generateData(conn.maxMessageSize(), 2);
 
         //When
-        do
-        {
-            conn.port();
-            conn.connectionId();
+        runUntil(() -> {
             transport.handle(transport.command(conn, SendData.class).set(dataThatFitsTheBuffer));
-        }
-        // TODO: waiting when invoking the 'last' method is probably not fit for purpose here
-        while (transport.connectionEvents().last(DataSent.class, conn.connectionId()).bytesSent() != 0);
+            return transport.connectionEvents().contains(DataSent.class, conn.connectionId()) &&
+                   transport.connectionEvents().last(DataSent.class, conn.connectionId()).bytesSent() == 0;
+        });
 
         // Then
         final long totalBytesSentUntilFilledTheSendQueue = transport.connectionEvents()
@@ -351,7 +349,7 @@ class DataSendingTest
         assertThat(eventAfterWindowFilled.bytesSent()).isEqualTo(0);
         int totalBytesBuffered = (int)(eventAfterWindowFilled.totalBytesBuffered() - eventAfterWindowFilled.totalBytesSent());
         assertThat(totalBytesBuffered).isGreaterThan(0);
-        Worker.runUntil(completed(() -> clients.client(1).read((int)eventAfterWindowFilled.totalBytesSent(), (int)eventAfterWindowFilled.totalBytesSent(), DEV_NULL)));
+        runUntil(completed(() -> clients.client(1).read((int)eventAfterWindowFilled.totalBytesSent(), (int)eventAfterWindowFilled.totalBytesSent(), DEV_NULL)));
         DataSent eventAfterClientReadAllDataSentSoFar = transport.connectionEvents().last(DataSent.class, conn.connectionId());
         assertThat(eventAfterClientReadAllDataSentSoFar.totalBytesBuffered()).isEqualTo(eventAfterWindowFilled.totalBytesBuffered());
         assertThat(eventAfterClientReadAllDataSentSoFar.totalBytesSent()).isEqualTo(eventAfterWindowFilled.totalBytesSent());
