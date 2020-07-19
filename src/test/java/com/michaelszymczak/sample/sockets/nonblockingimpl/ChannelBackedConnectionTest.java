@@ -259,7 +259,50 @@ class ChannelBackedConnectionTest
         );
     }
 
-    // TODO: test when drained the buffer and some more data from the new command can be still written during the same cycle
+    @Test
+    void shouldSendAlsoDataFromTheCurrentCommandIfWholeBufferDrained()
+    {
+        final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(5);
+        final ChannelBackedConnection connection = newConnection(channel);
+        connection.handle(connection.command(SendData.class).set(bytes("1234567"), 100));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 5, 5, 7, 100));
+
+        // When
+        connection.handle(connection.command(SendData.class).set(bytes("89"), 101));
+
+        // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("12345", "67", "89"));
+        assertTotalNumberOfEvents(2);
+        assertEqual(
+                events.all(DataSent.class),
+                new DataSent(connection, 5, 5, 7, 100),
+                new DataSent(connection, 4, 9, 9, 101)
+        );
+    }
+
+    @Test
+    void shouldSendAlsoAsMuchDataAsPossibleAndBufferRestIfWholeBufferDrained()
+    {
+        final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(5);
+        final ChannelBackedConnection connection = newConnection(channel);
+        connection.handle(connection.command(SendData.class).set(bytes("1234567"), 100));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 5, 5, 7, 100));
+
+        // When
+        connection.handle(connection.command(SendData.class).set(bytes("8901234"), 101));
+        connection.handle(connection.command(SendData.class).set(bytes("5"), 102));
+
+        // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("12345", "67", "89012", "34", "5"));
+        assertTotalNumberOfEvents(3);
+        assertEqual(
+                events.all(DataSent.class),
+                new DataSent(connection, 5, 5, 7, 100),
+                new DataSent(connection, 7, 12, 14, 101),
+                new DataSent(connection, 3, 15, 15, 102)
+        );
+    }
+
     // TODO: test when no data can be sent when buffer drained but channel frees up some space afterwards during the same cycle
 
     @Test
