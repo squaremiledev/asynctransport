@@ -65,7 +65,7 @@ class ConnectingTransportTest
         assertThat(transport.events().all(ConnectionAccepted.class)).hasSize(1);
         final ConnectionAccepted connectionAcceptedEvent = transport.events().last(ConnectionAccepted.class);
         assertThat(connectionAcceptedEvent).usingRecursiveComparison()
-                .isEqualTo(new ConnectionAccepted(serverPort, 1, clientPort, 0, connectionAcceptedEvent.sendBufferSize()));
+                .isEqualTo(new ConnectionAccepted(serverPort, 1, clientPort, 0, connectionAcceptedEvent.maxMessageSize()));
     }
 
     @Test

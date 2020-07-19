@@ -8,20 +8,20 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     private final long commandId;
     private final int remotePort;
     private final long connectionId;
-    private final int maxMsgSize;
+    private final int maxMessageSize;
 
-    public ConnectionAccepted(final ConnectionId connectionId, final long commandId, final int remotePort, final int maxMsgSize)
+    public ConnectionAccepted(final ConnectionId connectionId, final long commandId, final int remotePort, final int maxMessageSize)
     {
-        this(connectionId.port(), commandId, remotePort, connectionId.connectionId(), maxMsgSize);
+        this(connectionId.port(), commandId, remotePort, connectionId.connectionId(), maxMessageSize);
     }
 
-    public ConnectionAccepted(final int port, final long commandId, final int remotePort, final long connectionId, final int maxMsgSize)
+    public ConnectionAccepted(final int port, final long commandId, final int remotePort, final long connectionId, final int maxMessageSize)
     {
         this.port = port;
         this.commandId = commandId;
         this.remotePort = remotePort;
         this.connectionId = connectionId;
-        this.maxMsgSize = maxMsgSize;
+        this.maxMessageSize = maxMessageSize;
     }
 
     @Override
@@ -47,9 +47,9 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
         return connectionId;
     }
 
-    public int sendBufferSize()
+    public int maxMessageSize()
     {
-        return maxMsgSize;
+        return maxMessageSize;
     }
 
     @Override
@@ -60,7 +60,7 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
                ", commandId=" + commandId +
                ", remotePort=" + remotePort +
                ", connectionId=" + connectionId +
-               ", maxMsgSize=" + maxMsgSize +
+               ", maxMessageSize=" + maxMessageSize +
                '}';
     }
 }

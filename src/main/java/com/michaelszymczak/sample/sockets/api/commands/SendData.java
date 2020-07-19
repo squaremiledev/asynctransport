@@ -5,15 +5,11 @@ import java.nio.ByteBuffer;
 import com.michaelszymczak.sample.sockets.api.CommandId;
 import com.michaelszymczak.sample.sockets.api.ConnectionId;
 
-import org.agrona.MutableDirectBuffer;
-import org.agrona.concurrent.UnsafeBuffer;
-
 public class SendData implements ConnectionCommand
 {
     private final int port;
     private final long connectionId;
-    private final int capacity;
-    private final MutableDirectBuffer buffer;
+    private final ByteBuffer buffer;
     private int length;
     private long commandId = CommandId.NO_COMMAND_ID;
 
@@ -26,8 +22,7 @@ public class SendData implements ConnectionCommand
     {
         this.port = port;
         this.connectionId = connectionId;
-        this.capacity = capacity;
-        this.buffer = new UnsafeBuffer(ByteBuffer.allocate(capacity));
+        this.buffer = ByteBuffer.allocate(capacity);
         this.length = 0;
     }
 
@@ -51,15 +46,15 @@ public class SendData implements ConnectionCommand
 
     public ByteBuffer byteBuffer()
     {
-        buffer.byteBuffer().position(0).limit(length);
-        return buffer.byteBuffer();
+        buffer.position(0).limit(length);
+        return buffer;
     }
 
     public SendData reset()
     {
         commandId = CommandId.NO_COMMAND_ID;
         length = 0;
-        buffer.byteBuffer().position(0).limit(length);
+        buffer.clear();
         return this;
     }
 
@@ -70,8 +65,9 @@ public class SendData implements ConnectionCommand
 
     public SendData set(final byte[] content, final long commandId)
     {
-        this.length = Math.min(content.length, capacity);
-        this.buffer.putBytes(0, content, 0, length);
+        this.buffer.clear();
+        this.buffer.put(content);
+        this.length = content.length;
         this.commandId = commandId;
         return this;
     }
