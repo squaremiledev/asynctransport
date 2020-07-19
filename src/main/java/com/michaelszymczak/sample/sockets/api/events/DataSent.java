@@ -14,7 +14,18 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
 
     public DataSent(final ConnectionId connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered)
     {
-        this(connectionId.port(), connectionId.connectionId(), bytesSent, totalBytesSent, totalBytesBuffered, CommandId.NO_COMMAND_ID);
+        this(connectionId, bytesSent, totalBytesSent, totalBytesBuffered, CommandId.NO_COMMAND_ID);
+    }
+
+    public DataSent(
+            final ConnectionId connectionId,
+            final int bytesSent,
+            final long totalBytesSent,
+            final long totalBytesBuffered,
+            final long commandId
+    )
+    {
+        this(connectionId.port(), connectionId.connectionId(), bytesSent, totalBytesSent, totalBytesBuffered, commandId);
     }
 
     public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered)

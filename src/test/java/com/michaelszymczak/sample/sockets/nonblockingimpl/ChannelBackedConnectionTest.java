@@ -9,6 +9,7 @@ import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
 import com.michaelszymczak.sample.sockets.support.ConnectionEventsSpy;
 import com.michaelszymczak.sample.sockets.support.FakeChannel;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,9 +86,9 @@ class ChannelBackedConnectionTest
         connection.handle(sendData);
 
         // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(emptyList());
         assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 0));
         assertTotalNumberOfEvents(1);
-        assertThat(channel.attemptedToWrite()).isEqualTo(emptyList());
     }
 
     @Test
@@ -101,9 +102,9 @@ class ChannelBackedConnectionTest
         connection.handle(sendData);
 
         // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(singletonList(""));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 3));
         assertTotalNumberOfEvents(1);
-        assertThat(channel.attemptedToWrite()).isEqualTo(singletonList(""));
     }
 
     @Test
@@ -118,9 +119,9 @@ class ChannelBackedConnectionTest
         connection.handle(sendData);
 
         // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(singletonList("fooBAR"));
         assertEqual(events.all(DataSent.class), new DataSent(connection, content.length, content.length, content.length));
         assertTotalNumberOfEvents(1);
-        assertThat(channel.attemptedToWrite()).isEqualTo(singletonList("fooBAR"));
     }
 
     @Test
@@ -135,9 +136,9 @@ class ChannelBackedConnectionTest
         connection.handle(sendData);
 
         // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(singletonList("foo"));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8));
         assertTotalNumberOfEvents(1);
-        assertThat(channel.attemptedToWrite()).isEqualTo(singletonList("foo"));
     }
 
     @Test
@@ -153,9 +154,9 @@ class ChannelBackedConnectionTest
 
 
         // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BA"));
         assertTotalNumberOfEvents(2);
         assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 5), new DataSent(connection, 2, 5, 5));
-        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BA"));
     }
 
     @Test
@@ -171,9 +172,9 @@ class ChannelBackedConnectionTest
 
 
         // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BAR"));
         assertTotalNumberOfEvents(2);
         assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8), new DataSent(connection, 3, 6, 8));
-        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BAR"));
     }
 
     @Test
@@ -189,9 +190,9 @@ class ChannelBackedConnectionTest
 
 
         // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(emptyList());
         assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 0));
         assertTotalNumberOfEvents(1);
-        assertThat(channel.attemptedToWrite()).isEqualTo(emptyList());
     }
 
     @Test
@@ -206,9 +207,9 @@ class ChannelBackedConnectionTest
         connection.handle(connection.command(SendData.class));
 
         // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BAR"));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 6), new DataSent(connection, 3, 6, 6));
         assertTotalNumberOfEvents(2);
-        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BAR"));
     }
 
     @Test
@@ -222,9 +223,54 @@ class ChannelBackedConnectionTest
         connection.handle(connection.command(SendData.class).set("bar".getBytes(US_ASCII)));
 
         // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "bar"));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 3), new DataSent(connection, 3, 6, 6));
         assertTotalNumberOfEvents(2);
-        assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "bar"));
+    }
+
+    @Test
+    void shouldEventuallyDrainTheBuffer()
+    {
+        final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(2);
+        final ChannelBackedConnection connection = newConnection(channel);
+        connection.handle(connection.command(SendData.class).set("0123456".getBytes(US_ASCII), 100));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 2, 2, 7, 100));
+
+        // When
+        connection.handle(connection.command(SendData.class).set(new byte[0], 101));
+        connection.handle(connection.command(SendData.class).set(new byte[0], 102));
+        connection.handle(connection.command(SendData.class).set(new byte[0], 103));
+        connection.handle(connection.command(SendData.class).set(new byte[0], 104));
+
+        // Then
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("01", "23", "45", "6"));
+        assertTotalNumberOfEvents(5);
+        assertEqual(
+                events.all(DataSent.class),
+                new DataSent(connection, 2, 2, 7, 100),
+                new DataSent(connection, 2, 4, 7, 101),
+                new DataSent(connection, 2, 6, 7, 102),
+                new DataSent(connection, 1, 7, 7, 103),
+                new DataSent(connection, 0, 7, 7, 104)
+        );
+    }
+
+    @Test
+    @Disabled
+    void shouldNotSendAnyNewDataUntilBufferedDataSent()
+    {
+        final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(2);
+        final ChannelBackedConnection connection = newConnection(channel);
+        connection.handle(connection.command(SendData.class).set("0123".getBytes(US_ASCII)));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 2, 2, 4));
+
+        // When
+        connection.handle(connection.command(SendData.class).set("45".getBytes(US_ASCII)));
+
+        // Then
+        assertTotalNumberOfEvents(2);
+        assertThat(channel.attemptedToWrite()).isEqualTo(asList("01", "23"));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 2, 2, 4), new DataSent(connection, 2, 4, 6));
     }
 
     private void assertTotalNumberOfEvents(final int expected)
