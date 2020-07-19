@@ -4,16 +4,18 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
+import com.michaelszymczak.sample.sockets.connection.ConnectionState;
 
-import static com.michaelszymczak.sample.sockets.nonblockingimpl.OutgoingStream.State.ALL_DATA_SENT;
-import static com.michaelszymczak.sample.sockets.nonblockingimpl.OutgoingStream.State.DATA_BUFFERED;
+
+import static com.michaelszymczak.sample.sockets.connection.ConnectionState.ALL_DATA_SENT;
+import static com.michaelszymczak.sample.sockets.connection.ConnectionState.DATA_TO_SEND_BUFFERED;
 
 public class OutgoingStream
 {
     private final ByteBuffer buffer;
     private final SingleConnectionEvents events;
 
-    private State state;
+    private ConnectionState state;
     private long totalBytesSent;
     private long totalBytesBuffered;
 
@@ -21,17 +23,17 @@ public class OutgoingStream
     {
         this.buffer = ByteBuffer.allocate(bufferSize * 2);
         this.events = events;
-        this.state = State.ALL_DATA_SENT;
+        this.state = ConnectionState.ALL_DATA_SENT;
     }
 
-    void sendData(final WritableByteChannel channel, final ByteBuffer newDataToSend, final long commandId) throws IOException
+    ConnectionState sendData(final WritableByteChannel channel, final ByteBuffer newDataToSend, final long commandId) throws IOException
     {
         if (state == ALL_DATA_SENT)
         {
             final int bytesSent = sendNewData(0, newDataToSend, channel);
             events.dataSent(bytesSent, totalBytesSent, totalBytesBuffered, commandId);
         }
-        else if (state == DATA_BUFFERED)
+        else if (state == DATA_TO_SEND_BUFFERED)
         {
             buffer.flip();
             final int bufferedDataSentResult = channel.write(buffer);
@@ -57,6 +59,7 @@ public class OutgoingStream
                 events.dataSent(bufferedBytesSent, totalBytesSent, totalBytesBuffered, commandId);
             }
         }
+        return state;
     }
 
     private int sendNewData(final int bufferedBytesSent, final ByteBuffer newDataToSend, final WritableByteChannel channel) throws IOException
@@ -76,7 +79,7 @@ public class OutgoingStream
         final int bytesSent = bufferedBytesSent + newBytesSent;
         totalBytesBuffered += newBytesSent + newBytesUnsent;
         totalBytesSent += bytesSent;
-        state = newBytesUnsent > 0 ? DATA_BUFFERED : ALL_DATA_SENT;
+        state = newBytesUnsent > 0 ? DATA_TO_SEND_BUFFERED : ALL_DATA_SENT;
         return bytesSent;
     }
 
@@ -91,8 +94,4 @@ public class OutgoingStream
                '}';
     }
 
-    public enum State
-    {
-        ALL_DATA_SENT, DATA_BUFFERED
-    }
 }

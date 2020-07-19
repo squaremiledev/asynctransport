@@ -10,6 +10,10 @@ public class CommandFactory
         {
             return commandType.cast(new ReadData(connectionId));
         }
+        if (commandType.equals(SendData.class))
+        {
+            return commandType.cast(new SendData(connectionId, 0));
+        }
         if (commandType.equals(NoOpCommand.class))
         {
             return commandType.cast(new NoOpCommand(connectionId));

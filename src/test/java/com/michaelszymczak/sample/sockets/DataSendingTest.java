@@ -18,6 +18,7 @@ import com.michaelszymczak.sample.sockets.support.SampleClients;
 import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
+import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.agrona.collections.MutableInteger;
 import org.junit.jupiter.api.AfterEach;
@@ -350,7 +351,7 @@ class DataSendingTest
         assertThat(eventAfterWindowFilled.bytesSent()).isEqualTo(0);
         int totalBytesBuffered = (int)(eventAfterWindowFilled.totalBytesBuffered() - eventAfterWindowFilled.totalBytesSent());
         assertThat(totalBytesBuffered).isGreaterThan(0);
-        transport.workUntil(completed(() -> clients.client(1).read((int)eventAfterWindowFilled.totalBytesSent(), (int)eventAfterWindowFilled.totalBytesSent(), DEV_NULL)));
+        Worker.runUntil(completed(() -> clients.client(1).read((int)eventAfterWindowFilled.totalBytesSent(), (int)eventAfterWindowFilled.totalBytesSent(), DEV_NULL)));
         DataSent eventAfterClientReadAllDataSentSoFar = transport.connectionEvents().last(DataSent.class, conn.connectionId());
         assertThat(eventAfterClientReadAllDataSentSoFar.totalBytesBuffered()).isEqualTo(eventAfterWindowFilled.totalBytesBuffered());
         assertThat(eventAfterClientReadAllDataSentSoFar.totalBytesSent()).isEqualTo(eventAfterWindowFilled.totalBytesSent());
@@ -358,7 +359,6 @@ class DataSendingTest
         // When
         transport.workUntil(() ->
                             {
-                                transport.handle(transport.command(conn, SendData.class)); // TODO: this line becomes unnecessary once the transport duty cycle is able to send remaining data
                                 DataSent lastEvent = transport.connectionEvents().last(DataSent.class, conn.connectionId());
                                 return lastEvent.totalBytesSent() == lastEvent.totalBytesBuffered();
                             });

@@ -6,8 +6,10 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.michaelszymczak.sample.sockets.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.api.Transport;
@@ -16,6 +18,7 @@ import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
 import com.michaelszymczak.sample.sockets.api.commands.ReadData;
+import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
 import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
@@ -24,6 +27,7 @@ import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.connection.ConnectionService;
+import com.michaelszymczak.sample.sockets.connection.ConnectionState;
 import com.michaelszymczak.sample.sockets.support.Resources;
 
 import static org.agrona.LangUtil.rethrowUnchecked;
@@ -37,6 +41,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final Selector connectionsSelector;
     private final ConnectionService connectionService;
     private final CommandFactory commandFactory;
+    private final Map<Long, SelectionKey> selectionKeyByConnectionId = new HashMap<>();
 
     public NonBlockingTransport(final TransportEventsListener transportEventsListener, final StatusEventListener statusEventListener) throws IOException
     {
@@ -50,7 +55,17 @@ public class NonBlockingTransport implements AutoCloseable, Transport
 
     private void handleConnectionCommand(final ConnectionCommand command)
     {
-        connectionService.handle(command);
+        ConnectionState state = connectionService.handle(command);
+        SelectionKey key = selectionKeyByConnectionId.get(command.connectionId());
+        if (key == null)
+        {
+            return;
+        }
+        updateSelectionKeyInterest(state, key);
+        if (state == ConnectionState.CLOSED)
+        {
+            selectionKeyByConnectionId.remove(command.connectionId());
+        }
     }
 
     private void handleTransportCommand(final TransportCommand command) throws Exception
@@ -129,13 +144,40 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             {
                 final SelectionKey key = keyIterator.next();
                 keyIterator.remove();
-                final boolean isClosed = connectionService.handle(((ConnectionConductor)key.attachment()).command(key));
-                if (isClosed)
+                ConnectionCommand command = ((ConnectionConductor)key.attachment()).command(key);
+                ConnectionState state = connectionService.handle(command);
+                updateSelectionKeyInterest(state, key);
+                if (state == ConnectionState.CLOSED)
                 {
-                    key.cancel();
-                    key.attach(null);
+                    selectionKeyByConnectionId.remove(command.connectionId());
                 }
             }
+        }
+    }
+
+    private void updateSelectionKeyInterest(final ConnectionState state, final SelectionKey key)
+    {
+        switch (state)
+        {
+            case ALL_DATA_SENT:
+                if ((key.interestOps() & SelectionKey.OP_WRITE) != 0)
+                {
+                    key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
+                }
+                break;
+            case DATA_TO_SEND_BUFFERED:
+                if ((key.interestOps() & SelectionKey.OP_WRITE) == 0)
+                {
+                    key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
+                }
+                key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
+                break;
+            case UNDEFINED:
+                break;
+            case CLOSED:
+                key.cancel();
+                key.attach(null);
+                break;
         }
     }
 
@@ -161,11 +203,15 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                     final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
                     final SocketChannel acceptedSocketChannel = listeningSocket.acceptChannel();
                     final ChannelBackedConnection connection = connectionService.newConnection(listeningSocket.createConnection(acceptedSocketChannel));
-                    acceptedSocketChannel.register(
+                    selectionKeyByConnectionId.put(connection.connectionId(), acceptedSocketChannel.register(
                             connectionsSelector,
                             SelectionKey.OP_READ,
-                            new ConnectionConductor(commandFactory.create(connection, ReadData.class), commandFactory.create(connection, NoOpCommand.class))
-                    );
+                            new ConnectionConductor(
+                                    commandFactory.create(connection, ReadData.class),
+                                    commandFactory.create(connection, SendData.class),
+                                    commandFactory.create(connection, NoOpCommand.class)
+                            )
+                    ));
                 }
             }
         }
@@ -179,6 +225,8 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             final ListeningSocket listeningSocket = listeningSockets.get(k);
             Resources.close(listeningSocket);
         }
+        selectionKeyByConnectionId.values().forEach(SelectionKey::cancel);
+        selectionKeyByConnectionId.clear();
         Resources.close(acceptingSelector);
         Resources.close(connectionsSelector);
         Resources.close(connectionService);

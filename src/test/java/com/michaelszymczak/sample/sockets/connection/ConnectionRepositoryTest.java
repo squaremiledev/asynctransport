@@ -247,6 +247,12 @@ class ConnectionRepositoryTest
         }
 
         @Override
+        public ConnectionState state()
+        {
+            return null;
+        }
+
+        @Override
         public void close()
         {
             closed = true;

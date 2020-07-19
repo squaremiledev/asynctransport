@@ -15,9 +15,14 @@ import com.michaelszymczak.sample.sockets.connection.Connection;
 import com.michaelszymczak.sample.sockets.connection.ConnectionCommands;
 import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
+import com.michaelszymczak.sample.sockets.connection.ConnectionState;
 import com.michaelszymczak.sample.sockets.support.Resources;
 
 import static org.agrona.LangUtil.rethrowUnchecked;
+
+
+import static com.michaelszymczak.sample.sockets.connection.ConnectionState.CLOSED;
+import static com.michaelszymczak.sample.sockets.connection.ConnectionState.UNDEFINED;
 
 public class ChannelBackedConnection implements AutoCloseable, Connection
 {
@@ -28,6 +33,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     private final OutgoingStream outgoingStream;
     private long totalBytesReceived;
     private boolean isClosed = false;
+    private ConnectionState connectionState;
 
     ChannelBackedConnection(final ConnectionConfiguration configuration, final Channel channel, final ConnectionEventsListener eventsListener)
     {
@@ -41,6 +47,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.singleConnectionEvents = new SingleConnectionEvents(eventsListener, configuration.connectionId.port(), configuration.connectionId.connectionId());
         this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.maxMsgSize);
         this.outgoingStream = new OutgoingStream(singleConnectionEvents, configuration.sendBufferSize);
+        this.connectionState = UNDEFINED;
     }
 
     @Override
@@ -97,6 +104,17 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         return connectionCommands.command(commandType);
     }
 
+    @Override
+    public ConnectionState state()
+    {
+        if (connectionState == UNDEFINED)
+        {
+            System.out.println("@@@ " + connectionState);
+        }
+
+        return isClosed ? CLOSED : connectionState;
+    }
+
     private void handle(final CloseConnection command)
     {
         closeConnection(command.commandId(), false);
@@ -107,7 +125,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     {
         try
         {
-            outgoingStream.sendData(channel, command.byteBuffer(), command.commandId());
+            connectionState = outgoingStream.sendData(channel, command.byteBuffer(), command.commandId());
         }
         catch (IOException e)
         {
@@ -179,6 +197,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
                 singleConnectionEvents.connectionClosed(commandId);
             }
             isClosed = true;
+            connectionState = CLOSED;
         }
     }
 
