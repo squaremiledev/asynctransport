@@ -28,16 +28,22 @@ public class ConnectionService implements AutoCloseable
         if (!connectionRepository.contains(command.connectionId()))
         {
             transportEventsListener.onEvent(new TransportCommandFailed(command, "Connection id not found"));
-            return ConnectionState.UNDEFINED;
+            return null;
         }
 
         final Connection connection = connectionRepository.findByConnectionId(command.connectionId());
-        connection.handle(command);
+        boolean success = connection.handle(command);
+        if (!success)
+        {
+            return null;
+        }
+
         ConnectionState state = connection.state();
         if (state == ConnectionState.CLOSED)
         {
             connectionRepository.removeById(command.connectionId());
         }
+
         return state;
     }
 

@@ -7,8 +7,8 @@ import java.nio.channels.WritableByteChannel;
 import com.michaelszymczak.sample.sockets.connection.ConnectionState;
 
 
-import static com.michaelszymczak.sample.sockets.connection.ConnectionState.ALL_DATA_SENT;
 import static com.michaelszymczak.sample.sockets.connection.ConnectionState.DATA_TO_SEND_BUFFERED;
+import static com.michaelszymczak.sample.sockets.connection.ConnectionState.NO_OUTSTANDING_DATA;
 
 public class OutgoingStream
 {
@@ -23,12 +23,17 @@ public class OutgoingStream
     {
         this.buffer = ByteBuffer.allocate(bufferSize * 2);
         this.events = events;
-        this.state = ConnectionState.ALL_DATA_SENT;
+        this.state = ConnectionState.NO_OUTSTANDING_DATA;
+    }
+
+    public ConnectionState state()
+    {
+        return state;
     }
 
     ConnectionState sendData(final WritableByteChannel channel, final ByteBuffer newDataToSend, final long commandId) throws IOException
     {
-        if (state == ALL_DATA_SENT)
+        if (state == NO_OUTSTANDING_DATA)
         {
             final int bytesSent = sendNewData(0, newDataToSend, channel);
             events.dataSent(bytesSent, totalBytesSent, totalBytesBuffered, commandId);
@@ -79,7 +84,7 @@ public class OutgoingStream
         final int bytesSent = bufferedBytesSent + newBytesSent;
         totalBytesBuffered += newBytesSent + newBytesUnsent;
         totalBytesSent += bytesSent;
-        state = newBytesUnsent > 0 ? DATA_TO_SEND_BUFFERED : ALL_DATA_SENT;
+        state = newBytesUnsent > 0 ? DATA_TO_SEND_BUFFERED : NO_OUTSTANDING_DATA;
         return bytesSent;
     }
 

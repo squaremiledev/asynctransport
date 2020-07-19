@@ -5,7 +5,7 @@ import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 
 public interface Connection extends AutoCloseable, ConnectionId
 {
-    void handle(ConnectionCommand command);
+    boolean handle(ConnectionCommand command);
 
     boolean isClosed();
 

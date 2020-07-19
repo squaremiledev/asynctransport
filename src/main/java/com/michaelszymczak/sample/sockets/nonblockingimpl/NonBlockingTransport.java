@@ -56,6 +56,12 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private void handleConnectionCommand(final ConnectionCommand command)
     {
         ConnectionState state = connectionService.handle(command);
+        // means error (connection not found or invalid command)
+        if (state == null)
+        {
+            return;
+        }
+
         SelectionKey key = selectionKeyByConnectionId.get(command.connectionId());
         if (key == null)
         {
@@ -159,7 +165,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     {
         switch (state)
         {
-            case ALL_DATA_SENT:
+            case NO_OUTSTANDING_DATA:
                 if ((key.interestOps() & SelectionKey.OP_WRITE) != 0)
                 {
                     key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
@@ -171,8 +177,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                     key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
                 }
                 key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
-                break;
-            case UNDEFINED:
                 break;
             case CLOSED:
                 key.cancel();

@@ -281,7 +281,7 @@ class ChannelBackedConnectionTest
     }
 
     @Test
-    void shouldSendAlsoAsMuchDataAsPossibleAndBufferRestIfWholeBufferDrained()
+    void shouldSendAsMuchDataAsPossibleAndBufferRestIfWholeBufferDrained()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(5);
         final ChannelBackedConnection connection = newConnection(channel);
@@ -302,8 +302,6 @@ class ChannelBackedConnectionTest
                 new DataSent(connection, 3, 15, 15, 102)
         );
     }
-
-    // TODO: test when no data can be sent when buffer drained but channel frees up some space afterwards during the same cycle
 
     @Test
     void shouldNotSendAnyNewDataUntilBufferedDataSent()

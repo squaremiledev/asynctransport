@@ -229,9 +229,9 @@ class ConnectionRepositoryTest
         }
 
         @Override
-        public void handle(final ConnectionCommand command)
+        public boolean handle(final ConnectionCommand command)
         {
-
+            return true;
         }
 
         @Override

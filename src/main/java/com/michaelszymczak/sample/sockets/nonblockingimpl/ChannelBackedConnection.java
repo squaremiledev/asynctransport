@@ -22,7 +22,6 @@ import static org.agrona.LangUtil.rethrowUnchecked;
 
 
 import static com.michaelszymczak.sample.sockets.connection.ConnectionState.CLOSED;
-import static com.michaelszymczak.sample.sockets.connection.ConnectionState.UNDEFINED;
 
 public class ChannelBackedConnection implements AutoCloseable, Connection
 {
@@ -47,7 +46,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.singleConnectionEvents = new SingleConnectionEvents(eventsListener, configuration.connectionId.port(), configuration.connectionId.connectionId());
         this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.maxMsgSize);
         this.outgoingStream = new OutgoingStream(singleConnectionEvents, configuration.sendBufferSize);
-        this.connectionState = UNDEFINED;
+        this.connectionState = outgoingStream.state();
     }
 
     @Override
@@ -63,17 +62,17 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     }
 
     @Override
-    public void handle(final ConnectionCommand command)
+    public boolean handle(final ConnectionCommand command)
     {
-        if (command instanceof NoOpCommand)
-        {
-            return;
-        }
         if (!validate(command))
         {
-            return;
+            return false;
         }
 
+        if (command instanceof NoOpCommand)
+        {
+            return true;
+        }
         if (command instanceof CloseConnection)
         {
             handle((CloseConnection)command);
@@ -89,7 +88,9 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         else
         {
             singleConnectionEvents.commandFailed(command, "Unrecognized command");
+            return false;
         }
+        return true;
     }
 
     @Override
@@ -107,11 +108,6 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     @Override
     public ConnectionState state()
     {
-        if (connectionState == UNDEFINED)
-        {
-            System.out.println("@@@ " + connectionState);
-        }
-
         return isClosed ? CLOSED : connectionState;
     }
 
