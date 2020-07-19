@@ -37,6 +37,7 @@ public class SingleConnectionEvents
         eventsListener.onEvent(new ConnectionResetByPeer(port, connectionId, commandId));
     }
 
+    // TODO: needs a similar approach that commands to reuse pre-created ones and avoid allocation
     public void dataSent(final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final long commandId)
     {
         eventsListener.onEvent(new DataSent(port, connectionId, bytesSent, totalBytesSent, totalBytesBuffered, commandId));

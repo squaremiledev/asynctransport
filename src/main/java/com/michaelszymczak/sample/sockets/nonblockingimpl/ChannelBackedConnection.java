@@ -33,6 +33,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     private long totalBytesReceived;
     private boolean isClosed = false;
     private ConnectionState connectionState;
+    private final ByteBuffer readBuffer;
 
     ChannelBackedConnection(final ConnectionConfiguration configuration, final Channel channel, final ConnectionEventsListener eventsListener)
     {
@@ -47,6 +48,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.maxMsgSize);
         this.outgoingStream = new OutgoingStream(singleConnectionEvents, configuration.sendBufferSize);
         this.connectionState = outgoingStream.state();
+        this.readBuffer = ByteBuffer.wrap(new byte[configuration.receiveBufferSize]);
     }
 
     @Override
@@ -131,22 +133,22 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
 
     private void handle(final ReadData command)
     {
-        final byte[] content = new byte[10];
-        final ByteBuffer readBuffer = ByteBuffer.wrap(content);
         try
         {
-            final int read = channel.read(readBuffer);
-            if (read == -1)
+            // TODO: all tests passed without clearing the read buffer - this logic needs testing
+            readBuffer.clear();
+            final int readLength = channel.read(readBuffer);
+            if (readLength == -1)
             {
                 closeConnection(CommandId.NO_COMMAND_ID, false);
                 return;
             }
 
-            if (read > 0)
+            if (readLength > 0)
             {
-                totalBytesReceived += read;
+                totalBytesReceived += readLength;
             }
-            singleConnectionEvents.dataReceived(totalBytesReceived, content, read);
+            singleConnectionEvents.dataReceived(totalBytesReceived, readBuffer.array(), readLength);
         }
         catch (IOException e)
         {
