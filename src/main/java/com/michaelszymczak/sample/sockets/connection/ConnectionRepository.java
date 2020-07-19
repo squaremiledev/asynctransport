@@ -1,16 +1,14 @@
 package com.michaelszymczak.sample.sockets.connection;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
 import com.michaelszymczak.sample.sockets.support.Resources;
 
+import org.agrona.collections.Long2ObjectHashMap;
+
 public class ConnectionRepository implements AutoCloseable
 {
-    // TODO: autoboxing
-    private final Map<Long, Connection> connectionsById = new HashMap<>();
+    private final Long2ObjectHashMap<Connection> connectionsById = new Long2ObjectHashMap<>();
     private final RepositoryUpdates repositoryUpdates;
 
     public ConnectionRepository(final RepositoryUpdates repositoryUpdates)

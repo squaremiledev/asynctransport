@@ -6,10 +6,8 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import com.michaelszymczak.sample.sockets.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.api.Transport;
@@ -30,6 +28,8 @@ import com.michaelszymczak.sample.sockets.connection.ConnectionService;
 import com.michaelszymczak.sample.sockets.connection.ConnectionState;
 import com.michaelszymczak.sample.sockets.support.Resources;
 
+import org.agrona.collections.Long2ObjectHashMap;
+
 import static org.agrona.LangUtil.rethrowUnchecked;
 
 public class NonBlockingTransport implements AutoCloseable, Transport
@@ -41,7 +41,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final Selector connectionsSelector;
     private final ConnectionService connectionService;
     private final CommandFactory commandFactory;
-    private final Map<Long, SelectionKey> selectionKeyByConnectionId = new HashMap<>();
+    private final Long2ObjectHashMap<SelectionKey> selectionKeyByConnectionId = new Long2ObjectHashMap<>();
 
     public NonBlockingTransport(final TransportEventsListener transportEventsListener, final StatusEventListener statusEventListener) throws IOException
     {
