@@ -259,6 +259,9 @@ class ChannelBackedConnectionTest
         );
     }
 
+    // TODO: test when drained the buffer and some more data from the new command can be still written during the same cycle
+    // TODO: test when no data can be sent when buffer drained but channel frees up some space afterwards during the same cycle
+
     @Test
     void shouldNotSendAnyNewDataUntilBufferedDataSent()
     {

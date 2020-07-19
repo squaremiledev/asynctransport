@@ -17,6 +17,12 @@ import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
 import com.michaelszymczak.sample.sockets.support.Resources;
 
+import static org.agrona.LangUtil.rethrowUnchecked;
+
+
+import static com.michaelszymczak.sample.sockets.nonblockingimpl.ConnectionSendingState.ALL_DATA_SENT;
+import static com.michaelszymczak.sample.sockets.nonblockingimpl.ConnectionSendingState.DATA_BUFFERED;
+
 public class ChannelBackedConnection implements AutoCloseable, Connection
 {
     private final Channel channel;
@@ -43,7 +49,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.sendBufferSize);
         // TODO: size appropriately
         this.readyToSendBuffer = ByteBuffer.allocate(configuration.sendBufferSize);
-        this.sendingState = ConnectionSendingState.EMPTY;
+        this.sendingState = ConnectionSendingState.ALL_DATA_SENT;
 
     }
 
@@ -111,62 +117,59 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     {
         try
         {
-            final int bytesSentFromBufferNow;
-            final int previouslyBufferedBytes;
-            try
-            {
-                readyToSendBuffer.flip();
-                previouslyBufferedBytes = readyToSendBuffer.remaining();
-                if (previouslyBufferedBytes > 0)
-                {
-                    final int result = channel.write(readyToSendBuffer);
-                    bytesSentFromBufferNow = result >= 0 ? result : 0;
-                }
-                else
-                {
-                    bytesSentFromBufferNow = 0;
-                }
-            }
-            finally
-            {
-                readyToSendBuffer.compact();
-            }
-
-
-            final ByteBuffer src = command.byteBuffer();
-            final int bytesSentFromCommandNow;
-            if (previouslyBufferedBytes == 0 && src.remaining() > 0)
-            {
-                final int result = channel.write(src);
-                bytesSentFromCommandNow = result >= 0 ? result : 0;
-            }
-            else
-            {
-                bytesSentFromCommandNow = 0;
-            }
-
-            final int remainingToSend = src.remaining();
-            if (remainingToSend > 0)
-            {
-                sendingState = ConnectionSendingState.NOT_ALL_DATA_SENT;
-                readyToSendBuffer.put(src);
-            }
-            else
-            {
-                sendingState = ConnectionSendingState.ALL_DATA_SENT;
-            }
-
-
-            totalBytesBuffered += remainingToSend + bytesSentFromCommandNow;
-            totalBytesSent += bytesSentFromCommandNow + bytesSentFromBufferNow;
-
-            thisConnectionEvents.dataSent(bytesSentFromCommandNow + bytesSentFromBufferNow, totalBytesSent, totalBytesBuffered, command.commandId());
+            tryHandle(command);
         }
         catch (IOException e)
         {
-            // TODO: return failure
-            throw new RuntimeException(e);
+            rethrowUnchecked(e);
         }
+    }
+
+    private void tryHandle(final SendData command) throws IOException
+    {
+        if (sendingState == ALL_DATA_SENT)
+        {
+            final ByteBuffer src = command.byteBuffer();
+            int bytesSentFromCommandNow = 0;
+            if (src.remaining() > 0)
+            {
+                final int result = channel.write(src);
+                bytesSentFromCommandNow += result >= 0 ? result : 0;
+            }
+            final int remainingAfterSent = src.remaining();
+            if (remainingAfterSent > 0)
+            {
+                readyToSendBuffer.put(src);
+            }
+
+            totalBytesBuffered += remainingAfterSent + bytesSentFromCommandNow;
+            totalBytesSent += bytesSentFromCommandNow;
+            sendingState = remainingAfterSent > 0 ? DATA_BUFFERED : ALL_DATA_SENT;
+            thisConnectionEvents.dataSent(bytesSentFromCommandNow, totalBytesSent, totalBytesBuffered, command.commandId());
+        }
+        else if (sendingState == DATA_BUFFERED)
+        {
+            readyToSendBuffer.flip();
+            final int result = channel.write(readyToSendBuffer);
+            final int bytesSentFromBufferNow = result >= 0 ? result : 0;
+            final int remainingInBufferAfterSent = readyToSendBuffer.remaining();
+            readyToSendBuffer.compact();
+
+            // TODO: try to send from the command if no remaining data in the buffer
+
+            final ByteBuffer src = command.byteBuffer();
+            final int remainingAfterSent = src.remaining();
+            if (remainingAfterSent > 0)
+            {
+                readyToSendBuffer.put(src);
+            }
+
+            totalBytesBuffered += remainingAfterSent;
+            totalBytesSent += bytesSentFromBufferNow;
+            sendingState = remainingAfterSent > 0 ? DATA_BUFFERED : remainingInBufferAfterSent == 0 ? ALL_DATA_SENT : sendingState;
+            thisConnectionEvents.dataSent(bytesSentFromBufferNow, totalBytesSent, totalBytesBuffered, command.commandId());
+        }
+
     }
 
     private void handle(final ReadData command)
