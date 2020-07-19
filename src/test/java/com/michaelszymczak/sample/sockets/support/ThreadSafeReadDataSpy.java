@@ -1,20 +1,21 @@
 package com.michaelszymczak.sample.sockets.support;
 
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReference;
-
 public class ThreadSafeReadDataSpy implements SampleClient.ReadDataConsumer
 {
-    private final AtomicReference<byte[]> dataHolder = new AtomicReference<>();
+    private byte[] dataHolder = new byte[0];
 
     @Override
-    public void consume(final byte[] data, final int length)
+    public synchronized void consume(final byte[] data, final int length)
     {
-        dataHolder.set(Arrays.copyOf(data, length));
+        byte[] previousData = this.dataHolder;
+        byte[] newData = new byte[previousData.length + length];
+        System.arraycopy(previousData, 0, newData, 0, previousData.length);
+        System.arraycopy(data, 0, newData, previousData.length, length);
+        this.dataHolder = newData;
     }
 
-    public byte[] dataRead()
+    public synchronized byte[] dataRead()
     {
-        return dataHolder.get();
+        return dataHolder;
     }
 }

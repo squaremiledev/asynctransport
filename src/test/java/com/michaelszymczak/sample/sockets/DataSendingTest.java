@@ -188,7 +188,6 @@ class DataSendingTest
     @Test
     void shouldSendDataViaMultipleConnections()
     {
-        final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
         final TransportDriver driver = new TransportDriver(transport);
 
         // Given
@@ -217,23 +216,27 @@ class DataSendingTest
         transport.handle(transport.command(connS2C4, SendData.class).set(bytes(fixedLengthStringStartingWith("S2 -> C4 ", 40))));
 
         // Then
-        transport.workUntil(completed(() -> clients.client(1).read(10, 100, dataConsumer)));
-        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S1 -> C1 ", 10));
+        final ThreadSafeReadDataSpy dataConsumer1 = new ThreadSafeReadDataSpy();
+        transport.workUntil(completed(() -> clients.client(1).read(10, 100, dataConsumer1)));
+        assertThat(new String(dataConsumer1.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S1 -> C1 ", 10));
         assertThat(transport.connectionEvents().last(DataSent.class, connS1C1.connectionId())).usingRecursiveComparison()
                 .isEqualTo(new DataSent(connS1C1.port(), connS1C1.connectionId(), 10, 10, 10));
 
-        transport.workUntil(completed(() -> clients.client(2).read(20, 100, dataConsumer)));
-        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C2 ", 20));
+        final ThreadSafeReadDataSpy dataConsumer2 = new ThreadSafeReadDataSpy();
+        transport.workUntil(completed(() -> clients.client(2).read(20, 100, dataConsumer2)));
+        assertThat(new String(dataConsumer2.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C2 ", 20));
         assertThat(transport.connectionEvents().last(DataSent.class, connS2C2.connectionId())).usingRecursiveComparison()
                 .isEqualTo(new DataSent(connS2C2.port(), connS2C2.connectionId(), 20, 20, 20));
 
-        transport.workUntil(completed(() -> clients.client(3).read(30, 100, dataConsumer)));
-        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S1 -> C3 ", 30));
+        final ThreadSafeReadDataSpy dataConsumer3 = new ThreadSafeReadDataSpy();
+        transport.workUntil(completed(() -> clients.client(3).read(30, 100, dataConsumer3)));
+        assertThat(new String(dataConsumer3.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S1 -> C3 ", 30));
         assertThat(transport.connectionEvents().last(DataSent.class, connS1C3.connectionId())).usingRecursiveComparison()
                 .isEqualTo(new DataSent(connS1C3.port(), connS1C3.connectionId(), 30, 30, 30));
 
-        transport.workUntil(completed(() -> clients.client(4).read(40, 100, dataConsumer)));
-        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
+        final ThreadSafeReadDataSpy dataConsumer4 = new ThreadSafeReadDataSpy();
+        transport.workUntil(completed(() -> clients.client(4).read(40, 100, dataConsumer4)));
+        assertThat(new String(dataConsumer4.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
         assertThat(transport.connectionEvents().last(DataSent.class, connS2C4.connectionId())).usingRecursiveComparison()
                 .isEqualTo(new DataSent(connS2C4.port(), connS2C4.connectionId(), 40, 40, 40));
     }
@@ -299,6 +302,8 @@ class DataSendingTest
     void shouldSendAsMuchDataAsPossibleAndBufferTheRest()
     {
         final TransportDriver driver = new TransportDriver(transport);
+        final ThreadSafeReadDataSpy dataConsumerForTheClient = new ThreadSafeReadDataSpy();
+        final ThreadSafeReadDataSpy dataConsumerForTheTest = new ThreadSafeReadDataSpy();
         final int serverPort = freePort();
         final int clientPort = freePortOtherThan(serverPort);
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1), serverPort, clientPort);
@@ -311,21 +316,26 @@ class DataSendingTest
         transport.workUntil(() ->
                             {
                                 transport.handle(transport.command(conn, SendData.class).set(singleMessageData, commandsCount.incrementAndGet()));
+                                dataConsumerForTheTest.consume(singleMessageData, singleMessageData.length);
                                 // stop when unable to send more data
                                 return !transport.connectionEvents().all(DataSent.class, conn.connectionId()).isEmpty() &&
                                        transport.connectionEvents().last(DataSent.class, conn.connectionId()).bytesSent() == 0;
                             });
         final int commandsSentCount = commandsCount.get();
-        transport.workUntil(() -> transport.connectionEvents().last(DataSent.class, conn.connectionId()).commandId() == commandsSentCount);
 
         // Then
         assertThat(transport.events().all(TransportEvent.class)).hasSize(totalNumberOfEventsBefore + commandsSentCount);
         final DataSent lastEvent = transport.connectionEvents().last(DataSent.class, conn.connectionId());
+        assertThat(lastEvent.bytesSent()).isEqualTo(0);
         assertThat(lastEvent.commandId()).isEqualTo(commandsSentCount);
         final int dataSizeInAllCommands = singleMessageData.length * commandsSentCount;
         assertThat(lastEvent.totalBytesBuffered()).isEqualTo(dataSizeInAllCommands);
-        final long totalDataSentByIndividualChunks = transport.connectionEvents().all(DataSent.class, conn.connectionId()).stream().mapToLong(DataSent::bytesSent).sum();
+        final int totalDataSentByIndividualChunks = (int)transport.connectionEvents().all(DataSent.class, conn.connectionId()).stream().mapToLong(DataSent::bytesSent).sum();
         assertThat(lastEvent.totalBytesSent()).isEqualTo(totalDataSentByIndividualChunks);
+        transport.workUntil(completed(
+                () -> clients.client(1).read(totalDataSentByIndividualChunks, totalDataSentByIndividualChunks, dataConsumerForTheClient)));
+        assertThat(dataConsumerForTheClient.dataRead()).hasSize(totalDataSentByIndividualChunks);
+        assertThat(dataConsumerForTheClient.dataRead()).isEqualTo(Arrays.copyOf(dataConsumerForTheTest.dataRead(), dataConsumerForTheClient.dataRead().length));
     }
 
     @AfterEach
