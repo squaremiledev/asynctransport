@@ -1,6 +1,7 @@
 package com.michaelszymczak.sample.sockets;
 
 import java.net.SocketException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -67,6 +68,56 @@ class DataReceivingTest
     }
 
     @Test
+    void shouldEventuallyReceiveAllData()
+    {
+        final TransportDriver driver = new TransportDriver(transport);
+
+        // Given
+        final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
+        final List<byte[]> dataChunksToSend = Arrays.asList(
+                // TODO: send more data
+//                bytes(fixedLengthStringStartingWith("foo", conn.maxInboundMessageSize())),
+//                bytes(fixedLengthStringStartingWith("bar", conn.maxInboundMessageSize())),
+                bytes(fixedLengthStringStartingWith("bazqux", conn.maxInboundMessageSize()))
+        );
+        byte[] wholeDataToSend = concatenatedData(dataChunksToSend);
+
+        // When
+        transport.workUntil(completed(() ->
+                                      {
+                                          for (byte[] dataChunk : dataChunksToSend)
+                                          {
+                                              clients.client(1).write(dataChunk);
+                                          }
+                                      }));
+        transport.workUntil(bytesReceived(transport.connectionEvents(), conn.connectionId(), wholeDataToSend.length));
+
+        // Then
+        assertThat(transport.connectionEvents().all(DataReceived.class, conn.connectionId())).isNotEmpty();
+        assertThat(transport.connectionEvents().last(DataReceived.class, conn.connectionId()).totalBytesReceived()).isEqualTo(wholeDataToSend.length);
+        assertThat(transport.connectionEvents().all(DataReceived.class, conn.connectionId()).stream().mapToLong(DataReceived::length).sum()).isEqualTo(wholeDataToSend.length);
+        assertThat(dataReceived(transport.connectionEvents().all(DataReceived.class, conn.connectionId()))).isEqualTo(wholeDataToSend);
+    }
+
+    private byte[] dataReceived(final List<DataReceived> events)
+    {
+        return concatenatedData(events.stream().map(DataReceived::data).collect(Collectors.toList()));
+    }
+
+    private byte[] concatenatedData(final List<byte[]> allChunks)
+    {
+        int totalSize = allChunks.stream().mapToInt(chunk -> chunk.length).sum();
+        byte[] content = new byte[totalSize];
+        ByteBuffer received = ByteBuffer.wrap(content);
+        for (final byte[] chunk : allChunks)
+        {
+            received.put(chunk);
+        }
+        return content;
+    }
+
+
+    @Test
     void shouldReceivedDataFromMultipleConnections()
     {
         final TransportDriver driver = new TransportDriver(transport);
@@ -106,6 +157,11 @@ class DataReceivingTest
     void tearDown()
     {
         closeCleanly(transport, clients, transport.statusEvents());
+    }
+
+    private byte[] bytes(final String foo)
+    {
+        return foo.getBytes(US_ASCII);
     }
 
     private BooleanSupplier bytesReceived(final ConnectionEventsSpy events, final long connectionId, final int size)
