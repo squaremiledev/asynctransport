@@ -75,10 +75,9 @@ class DataReceivingTest
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
         final List<byte[]> dataChunksToSend = Arrays.asList(
-                // TODO: send more data
-//                bytes(fixedLengthStringStartingWith("foo", conn.maxInboundMessageSize())),
-//                bytes(fixedLengthStringStartingWith("bar", conn.maxInboundMessageSize())),
-                bytes(fixedLengthStringStartingWith("bazqux", conn.maxInboundMessageSize()))
+                bytes(fixedLengthStringStartingWith("\nfoo", conn.maxInboundMessageSize())),
+                bytes(fixedLengthStringStartingWith("\nbar", conn.maxInboundMessageSize())),
+                bytes(fixedLengthStringStartingWith("\nbazqux", conn.maxInboundMessageSize()))
         );
         byte[] wholeDataToSend = concatenatedData(dataChunksToSend);
 
@@ -101,7 +100,7 @@ class DataReceivingTest
 
     private byte[] dataReceived(final List<DataReceived> events)
     {
-        return concatenatedData(events.stream().map(DataReceived::data).collect(Collectors.toList()));
+        return concatenatedData(events.stream().map(event -> Arrays.copyOf(event.data(), event.length())).collect(Collectors.toList()));
     }
 
     private byte[] concatenatedData(final List<byte[]> allChunks)

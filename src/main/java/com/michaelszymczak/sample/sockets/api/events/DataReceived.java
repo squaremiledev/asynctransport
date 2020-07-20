@@ -60,7 +60,7 @@ public class DataReceived implements ConnectionEvent
     }
 
     @Override
-    public TransportEvent copy()
+    public DataReceived copy()
     {
         return new DataReceived(port, connectionId, totalBytesReceived, Arrays.copyOf(data, data.length), length);
     }
