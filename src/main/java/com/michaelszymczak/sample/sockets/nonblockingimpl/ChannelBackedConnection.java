@@ -10,6 +10,7 @@ import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
 import com.michaelszymczak.sample.sockets.api.commands.ReadData;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.connection.Channel;
 import com.michaelszymczak.sample.sockets.connection.Connection;
 import com.michaelszymczak.sample.sockets.connection.ConnectionCommands;
@@ -31,10 +32,10 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     private final ConnectionCommands connectionCommands;
     private final ConnectionConfiguration configuration;
     private final OutgoingStream outgoingStream;
+    private final ByteBuffer readBuffer;
     private long totalBytesReceived;
     private boolean isClosed = false;
     private ConnectionState connectionState;
-    private final ByteBuffer readBuffer;
 
     ChannelBackedConnection(final ConnectionConfiguration configuration, final Channel channel, final ConnectionEventsListener eventsListener)
     {
@@ -45,7 +46,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     {
         this.configuration = configuration;
         this.channel = channel;
-        this.singleConnectionEvents = new SingleConnectionEvents(eventsListener, configuration.connectionId.port(), configuration.connectionId.connectionId());
+        this.singleConnectionEvents = new SingleConnectionEvents(eventsListener, configuration.connectionId.port(), configuration.connectionId.connectionId(), configuration.maxInboundMessageSize);
         this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.maxOutboundMessageSize);
         this.outgoingStream = new OutgoingStream(singleConnectionEvents, configuration.sendBufferSize);
         this.connectionState = outgoingStream.state();
@@ -136,9 +137,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     {
         try
         {
-            // TODO: all tests passed without clearing the read buffer - this logic needs testing
-            readBuffer.clear();
-            final int readLength = channel.read(readBuffer);
+            DataReceived dataReceivedEvent = singleConnectionEvents.dataReceivedEvent();
+            final int readLength = channel.read(dataReceivedEvent.prepare());
             if (readLength == -1)
             {
                 closeConnection(CommandId.NO_COMMAND_ID, false);
@@ -149,7 +149,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
             {
                 totalBytesReceived += readLength;
             }
-            singleConnectionEvents.dataReceived(totalBytesReceived, readBuffer.array(), readLength);
+
+            singleConnectionEvents.onEvent(dataReceivedEvent.commit(readLength, totalBytesReceived));
         }
         catch (IOException e)
         {

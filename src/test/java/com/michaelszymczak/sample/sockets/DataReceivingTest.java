@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
 import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static java.util.Arrays.copyOf;
 
 class DataReceivingTest
 {
@@ -64,8 +63,8 @@ class DataReceivingTest
         // Then
         assertThat(transport.events().all(DataReceived.class)).isNotEmpty();
         final DataReceived dataReceivedEvent = transport.events().last(DataReceived.class);
-        assertThat(dataReceivedEvent).usingRecursiveComparison()
-                .isEqualTo(new DataReceived(conn.port(), conn.connectionId(), 3, dataReceivedEvent.data(), dataReceivedEvent.length()));
+        assertThat(dataReceivedEvent.port()).isEqualTo(conn.port());
+        assertThat(dataReceivedEvent.connectionId()).isEqualTo(conn.connectionId());
         assertThat(dataAsString(transport.events().all(DataReceived.class), US_ASCII)).isEqualTo("foo");
     }
 
@@ -130,7 +129,12 @@ class DataReceivingTest
 
     private byte[] dataReceived(final List<DataReceived> events)
     {
-        return concatenatedData(events.stream().map(event -> Arrays.copyOf(event.data(), event.length())).collect(Collectors.toList()));
+        return concatenatedData(events.stream().map(event ->
+                                                    {
+                                                        byte[] target = new byte[event.length()];
+                                                        event.copyDataTo(target);
+                                                        return target;
+                                                    }).collect(Collectors.toList()));
     }
 
     private byte[] concatenatedData(final List<byte[]> allChunks)
@@ -201,7 +205,12 @@ class DataReceivingTest
     private String dataAsString(final List<DataReceived> all, final Charset charset)
     {
         return all.stream()
-                .map(dataReceived -> copyOf(dataReceived.data(), dataReceived.length()))
+                .map(dataReceived ->
+                     {
+                         byte[] target = new byte[dataReceived.length()];
+                         dataReceived.copyDataTo(target);
+                         return target;
+                     })
                 .map(data -> new String(data, charset))
                 .collect(Collectors.joining(""));
     }

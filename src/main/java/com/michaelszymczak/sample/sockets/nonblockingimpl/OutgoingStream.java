@@ -36,7 +36,7 @@ public class OutgoingStream
         if (state == NO_OUTSTANDING_DATA)
         {
             final int bytesSent = sendNewData(0, newDataToSend, channel);
-            events.dataSent(bytesSent, totalBytesSent, totalBytesBuffered, commandId);
+            events.onEvent(events.dataSentEvent().set(bytesSent, totalBytesSent, totalBytesBuffered, commandId));
         }
         else if (state == DATA_TO_SEND_BUFFERED)
         {
@@ -49,7 +49,7 @@ public class OutgoingStream
             if (hasSentAllBufferedData)
             {
                 final int bytesSent = sendNewData(bufferedBytesSent, newDataToSend, channel);
-                events.dataSent(bytesSent, totalBytesSent, totalBytesBuffered, commandId);
+                events.onEvent(events.dataSentEvent().set(bytesSent, totalBytesSent, totalBytesBuffered, commandId));
             }
             else
             {
@@ -61,7 +61,7 @@ public class OutgoingStream
 
                 totalBytesBuffered += newBytesUnsent;
                 totalBytesSent += bufferedBytesSent;
-                events.dataSent(bufferedBytesSent, totalBytesSent, totalBytesBuffered, commandId);
+                events.onEvent(events.dataSentEvent().set(bufferedBytesSent, totalBytesSent, totalBytesBuffered, commandId));
             }
         }
         return state;

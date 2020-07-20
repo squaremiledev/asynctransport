@@ -7,10 +7,10 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
 {
     private final int port;
     private final long connectionId;
-    private final int bytesSent;
-    private final long totalBytesSent;
-    private final long totalBytesBuffered;
-    private final long commandId;
+    private int bytesSent;
+    private long totalBytesSent;
+    private long totalBytesBuffered;
+    private long commandId;
 
     public DataSent(final ConnectionId connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered)
     {
@@ -28,6 +28,11 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
         this(connectionId.port(), connectionId.connectionId(), bytesSent, totalBytesSent, totalBytesBuffered, commandId);
     }
 
+    public DataSent(final int port, final long connectionId)
+    {
+        this(port, connectionId, -1, -1, -1, CommandId.NO_COMMAND_ID);
+    }
+
     public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered)
     {
         this(port, connectionId, bytesSent, totalBytesSent, totalBytesBuffered, CommandId.NO_COMMAND_ID);
@@ -41,6 +46,15 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
         this.totalBytesSent = totalBytesSent;
         this.commandId = commandId;
         this.totalBytesBuffered = totalBytesBuffered;
+    }
+
+    public DataSent set(final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final long commandId)
+    {
+        this.bytesSent = bytesSent;
+        this.totalBytesSent = totalBytesSent;
+        this.commandId = commandId;
+        this.totalBytesBuffered = totalBytesBuffered;
+        return this;
     }
 
     @Override
