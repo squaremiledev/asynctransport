@@ -21,4 +21,10 @@ public class NumberOfConnectionsChanged implements StatusEvent
                "newNumberOfConnections=" + newNumberOfConnections +
                '}';
     }
+
+    @Override
+    public StatusEvent copy()
+    {
+        return new NumberOfConnectionsChanged(newNumberOfConnections);
+    }
 }

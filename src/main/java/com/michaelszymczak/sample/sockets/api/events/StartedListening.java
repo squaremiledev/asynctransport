@@ -32,4 +32,9 @@ public class StartedListening implements TransportCorrelatedEvent
                '}';
     }
 
+    @Override
+    public TransportEvent copy()
+    {
+        return new StartedListening(port, commandId);
+    }
 }

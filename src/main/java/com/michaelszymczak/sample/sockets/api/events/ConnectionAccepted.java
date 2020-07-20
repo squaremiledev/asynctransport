@@ -84,4 +84,10 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
                ", maxOutboundMessageSize=" + maxOutboundMessageSize +
                '}';
     }
+
+    @Override
+    public TransportEvent copy()
+    {
+        return new ConnectionAccepted(port, commandId, remotePort, connectionId, maxInboundMessageSize, maxOutboundMessageSize);
+    }
 }

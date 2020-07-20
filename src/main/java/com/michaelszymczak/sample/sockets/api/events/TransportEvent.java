@@ -4,5 +4,5 @@ import com.michaelszymczak.sample.sockets.api.TransportId;
 
 public interface TransportEvent extends TransportId
 {
-
+    TransportEvent copy();
 }

@@ -88,4 +88,10 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
                ", commandId=" + commandId +
                '}';
     }
+
+    @Override
+    public TransportEvent copy()
+    {
+        return new DataSent(port, connectionId, bytesSent, totalBytesSent, totalBytesBuffered, commandId);
+    }
 }

@@ -27,6 +27,6 @@ public final class TransportEventsSpy extends EventsSpy<TransportEvent> implemen
     @Override
     public void onEvent(final TransportEvent event)
     {
-        items.add(event);
+        items.add(event.copy());
     }
 }

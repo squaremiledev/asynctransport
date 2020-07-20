@@ -32,4 +32,9 @@ public class StoppedListening implements TransportCorrelatedEvent
                '}';
     }
 
+    @Override
+    public TransportEvent copy()
+    {
+        return new StoppedListening(port, commandId);
+    }
 }

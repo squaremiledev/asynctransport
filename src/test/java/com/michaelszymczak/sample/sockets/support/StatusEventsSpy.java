@@ -21,6 +21,6 @@ public final class StatusEventsSpy extends EventsSpy<StatusEvent> implements Sta
     @Override
     public void onEvent(final StatusEvent event)
     {
-        items.add(event);
+        items.add(event.copy());
     }
 }

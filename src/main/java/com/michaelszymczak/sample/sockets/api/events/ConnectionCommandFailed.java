@@ -11,10 +11,15 @@ public class ConnectionCommandFailed implements CommandFailed, ConnectionEvent
 
     public ConnectionCommandFailed(final ConnectionCommand command, final String details)
     {
-        this.port = command.port();
-        this.commandId = command.commandId();
-        this.connectionId = command.connectionId();
+        this(command.port(), command.commandId(), details, command.connectionId());
+    }
+
+    public ConnectionCommandFailed(final int port, final long commandId, final String details, final long connectionId)
+    {
+        this.port = port;
+        this.commandId = commandId;
         this.details = details;
+        this.connectionId = connectionId;
     }
 
     @Override
@@ -50,5 +55,11 @@ public class ConnectionCommandFailed implements CommandFailed, ConnectionEvent
     public long connectionId()
     {
         return connectionId;
+    }
+
+    @Override
+    public TransportEvent copy()
+    {
+        return new ConnectionCommandFailed(port, commandId, details, connectionId);
     }
 }

@@ -42,4 +42,10 @@ public class ConnectionResetByPeer implements ConnectionEvent, TransportCorrelat
                ", connectionId=" + connectionId +
                '}';
     }
+
+    @Override
+    public TransportEvent copy()
+    {
+        return new ConnectionResetByPeer(port, connectionId, commandId);
+    }
 }

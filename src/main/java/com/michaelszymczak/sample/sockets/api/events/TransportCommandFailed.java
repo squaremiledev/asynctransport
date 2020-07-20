@@ -10,8 +10,13 @@ public class TransportCommandFailed implements CommandFailed
 
     public TransportCommandFailed(final TransportCommand command, final String details)
     {
-        this.port = command.port();
-        this.commandId = command.commandId();
+        this(command.port(), command.commandId(), details);
+    }
+
+    public TransportCommandFailed(final int port, final long commandId, final String details)
+    {
+        this.port = port;
+        this.commandId = commandId;
         this.details = details;
     }
 
@@ -41,5 +46,11 @@ public class TransportCommandFailed implements CommandFailed
                ", commandId=" + commandId +
                ", details='" + details + '\'' +
                '}';
+    }
+
+    @Override
+    public TransportEvent copy()
+    {
+        return new TransportCommandFailed(port, commandId, details);
     }
 }

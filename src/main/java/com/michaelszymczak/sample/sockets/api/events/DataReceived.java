@@ -58,4 +58,10 @@ public class DataReceived implements ConnectionEvent
                ", data=" + Arrays.toString(data) +
                '}';
     }
+
+    @Override
+    public TransportEvent copy()
+    {
+        return new DataReceived(port, connectionId, totalBytesReceived, Arrays.copyOf(data, data.length), length);
+    }
 }

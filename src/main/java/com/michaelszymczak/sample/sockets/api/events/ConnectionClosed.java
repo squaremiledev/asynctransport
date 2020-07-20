@@ -42,4 +42,10 @@ public class ConnectionClosed implements ConnectionEvent, TransportCorrelatedEve
                ", connectionId=" + connectionId +
                '}';
     }
+
+    @Override
+    public TransportEvent copy()
+    {
+        return new ConnectionClosed(port, connectionId, commandId);
+    }
 }
