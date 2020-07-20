@@ -31,6 +31,8 @@ import static java.util.Arrays.copyOf;
 
 class DataReceivingTest
 {
+    private static final int _10_MB_IN_BYTES = 10 * 1024 * 1024;
+
     private final TransportUnderTest transport;
     private final SampleClients clients;
 
@@ -96,6 +98,34 @@ class DataReceivingTest
         assertThat(transport.connectionEvents().last(DataReceived.class, conn.connectionId()).totalBytesReceived()).isEqualTo(wholeDataToSend.length);
         assertThat(transport.connectionEvents().all(DataReceived.class, conn.connectionId()).stream().mapToLong(DataReceived::length).sum()).isEqualTo(wholeDataToSend.length);
         assertThat(dataReceived(transport.connectionEvents().all(DataReceived.class, conn.connectionId()))).isEqualTo(wholeDataToSend);
+    }
+
+    @Test
+    void shouldEventuallyReceiveAllTheDataSentAsOneLargeChunk()
+    {
+        final TransportDriver driver = new TransportDriver(transport);
+
+        // Given
+        final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
+        final List<byte[]> dataChunksToSend = Arrays.asList(
+                bytes(fixedLengthStringStartingWith("\nfoo", _10_MB_IN_BYTES / 2)),
+                bytes(fixedLengthStringStartingWith("\nbar", _10_MB_IN_BYTES / 4)),
+                bytes(fixedLengthStringStartingWith("\nbazqux", _10_MB_IN_BYTES / 2))
+        );
+        byte[] wholeDataToSend = concatenatedData(dataChunksToSend);
+        assertThat(wholeDataToSend.length).isGreaterThan(_10_MB_IN_BYTES);
+
+        // When
+        transport.workUntil(completed(() -> clients.client(1).write(wholeDataToSend)));
+        transport.workUntil(bytesReceived(transport.connectionEvents(), conn.connectionId(), wholeDataToSend.length));
+
+        // Then
+        assertThat(transport.connectionEvents().all(DataReceived.class, conn.connectionId())).isNotEmpty();
+        assertThat(transport.connectionEvents().last(DataReceived.class, conn.connectionId()).totalBytesReceived()).isEqualTo(wholeDataToSend.length);
+        assertThat(transport.connectionEvents().all(DataReceived.class, conn.connectionId()).stream().mapToLong(DataReceived::length).sum()).isEqualTo(wholeDataToSend.length);
+        byte[] actualReceivedData = dataReceived(transport.connectionEvents().all(DataReceived.class, conn.connectionId()));
+        assertThat(actualReceivedData).isEqualTo(wholeDataToSend);
+        assertThat(actualReceivedData.length).isGreaterThan(_10_MB_IN_BYTES);
     }
 
     private byte[] dataReceived(final List<DataReceived> events)
