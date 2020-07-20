@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
+import org.agrona.CloseHelper;
+
 public class SampleClient implements AutoCloseable
 {
 
@@ -71,7 +73,7 @@ public class SampleClient implements AutoCloseable
     @Override
     public void close()
     {
-        Resources.close(socket);
+        CloseHelper.close(socket);
     }
 
     public interface ReadDataConsumer

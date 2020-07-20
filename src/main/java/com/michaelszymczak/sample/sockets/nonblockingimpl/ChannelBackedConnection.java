@@ -16,7 +16,8 @@ import com.michaelszymczak.sample.sockets.connection.ConnectionCommands;
 import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
 import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
 import com.michaelszymczak.sample.sockets.connection.ConnectionState;
-import com.michaelszymczak.sample.sockets.support.Resources;
+
+import org.agrona.CloseHelper;
 
 import static org.agrona.LangUtil.rethrowUnchecked;
 
@@ -182,7 +183,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
 
     private void closeConnection(final long commandId, final boolean resetByPeer)
     {
-        Resources.close(channel);
+        CloseHelper.close(channel);
         if (!isClosed)
         {
             if (resetByPeer)

@@ -26,8 +26,8 @@ import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.connection.ConnectionService;
 import com.michaelszymczak.sample.sockets.connection.ConnectionState;
-import com.michaelszymczak.sample.sockets.support.Resources;
 
+import org.agrona.CloseHelper;
 import org.agrona.collections.Long2ObjectHashMap;
 
 import static org.agrona.LangUtil.rethrowUnchecked;
@@ -224,16 +224,13 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     @Override
     public void close()
     {
-        for (int k = 0; k < listeningSockets.size(); k++)
-        {
-            final ListeningSocket listeningSocket = listeningSockets.get(k);
-            Resources.close(listeningSocket);
-        }
         selectionKeyByConnectionId.values().forEach(SelectionKey::cancel);
         selectionKeyByConnectionId.clear();
-        Resources.close(acceptingSelector);
-        Resources.close(connectionsSelector);
-        Resources.close(connectionService);
+
+        CloseHelper.closeAll(listeningSockets);
+        CloseHelper.close(acceptingSelector);
+        CloseHelper.close(connectionsSelector);
+        CloseHelper.close(connectionService);
     }
 
     private void handle(final Listen command) throws IOException
@@ -248,7 +245,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         }
         catch (IOException e)
         {
-            Resources.close(listeningSocket);
+            CloseHelper.close(listeningSocket);
             transportEventsListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
             return;
         }
@@ -262,7 +259,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         {
             if (listeningSockets.get(k).port() == command.port())
             {
-                Resources.close(listeningSockets.get(k));
+                CloseHelper.close(listeningSockets.get(k));
                 transportEventsListener.onEvent(new StoppedListening(command.port(), command.commandId()));
                 return;
             }

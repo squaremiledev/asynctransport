@@ -12,7 +12,8 @@ import com.michaelszymczak.sample.sockets.api.commands.CommandFactory;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
 import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
-import com.michaelszymczak.sample.sockets.support.Resources;
+
+import org.agrona.CloseHelper;
 
 public class ListeningSocket implements AutoCloseable
 {
@@ -88,7 +89,7 @@ public class ListeningSocket implements AutoCloseable
     @Override
     public void close()
     {
-        Resources.close(serverSocketChannel);
+        CloseHelper.close(serverSocketChannel);
     }
 
     @Override

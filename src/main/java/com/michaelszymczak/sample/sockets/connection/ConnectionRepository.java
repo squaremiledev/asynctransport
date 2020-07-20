@@ -2,8 +2,8 @@ package com.michaelszymczak.sample.sockets.connection;
 
 import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
-import com.michaelszymczak.sample.sockets.support.Resources;
 
+import org.agrona.CloseHelper;
 import org.agrona.collections.Long2ObjectHashMap;
 
 public class ConnectionRepository implements AutoCloseable
@@ -44,7 +44,7 @@ public class ConnectionRepository implements AutoCloseable
     @Override
     public void close()
     {
-        connectionsById.values().forEach(Resources::close);
+        connectionsById.values().forEach(CloseHelper::close);
         connectionsById.clear();
         notifyOfNumberOfConnections();
     }

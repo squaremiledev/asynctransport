@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.agrona.CloseHelper;
+
 public class SampleClients implements AutoCloseable
 {
     private final Map<Integer, SampleClient> clients = new HashMap<>();
@@ -25,6 +27,6 @@ public class SampleClients implements AutoCloseable
     @Override
     public void close()
     {
-        clients.values().forEach(Resources::close);
+        clients.values().forEach(CloseHelper::close);
     }
 }
