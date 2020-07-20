@@ -6,16 +6,16 @@ public class ConnectionConfiguration
 {
     public final ConnectionIdValue connectionId;
     public final int remotePort;
-    public final int maxMsgSize;
+    public final int maxOutboundMessageSize;
     public final int sendBufferSize;
-    public final int receiveBufferSize;
+    public final int maxInboundMessageSize;
 
-    public ConnectionConfiguration(final ConnectionIdValue connectionId, final int remotePort, final int maxMsgSize, final int sendBufferSize, final int receiveBufferSize)
+    public ConnectionConfiguration(final ConnectionIdValue connectionId, final int remotePort, final int maxOutboundMessageSize, final int sendBufferSize, final int maxInboundMessageSize)
     {
         this.connectionId = connectionId;
         this.remotePort = remotePort;
-        this.maxMsgSize = maxMsgSize;
+        this.maxOutboundMessageSize = maxOutboundMessageSize;
         this.sendBufferSize = sendBufferSize;
-        this.receiveBufferSize = receiveBufferSize;
+        this.maxInboundMessageSize = maxInboundMessageSize;
     }
 }

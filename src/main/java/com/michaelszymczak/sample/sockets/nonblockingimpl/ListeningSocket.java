@@ -70,7 +70,13 @@ public class ListeningSocket implements AutoCloseable
                 transportEventsListener::onEvent,
                 commandFactory
         );
-        transportEventsListener.onEvent(new ConnectionAccepted(connection, commandIdThatTriggeredListening, configuration.remotePort, configuration.maxMsgSize));
+        transportEventsListener.onEvent(new ConnectionAccepted(
+                connection,
+                commandIdThatTriggeredListening,
+                configuration.remotePort,
+                configuration.maxInboundMessageSize,
+                configuration.maxOutboundMessageSize
+        ));
         return connection;
     }
 

@@ -46,10 +46,10 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.configuration = configuration;
         this.channel = channel;
         this.singleConnectionEvents = new SingleConnectionEvents(eventsListener, configuration.connectionId.port(), configuration.connectionId.connectionId());
-        this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.maxMsgSize);
+        this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.maxOutboundMessageSize);
         this.outgoingStream = new OutgoingStream(singleConnectionEvents, configuration.sendBufferSize);
         this.connectionState = outgoingStream.state();
-        this.readBuffer = ByteBuffer.wrap(new byte[configuration.receiveBufferSize]);
+        this.readBuffer = ByteBuffer.wrap(new byte[configuration.maxInboundMessageSize]);
     }
 
     @Override

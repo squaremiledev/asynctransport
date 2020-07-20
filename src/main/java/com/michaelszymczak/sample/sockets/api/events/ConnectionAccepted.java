@@ -8,20 +8,35 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     private final long commandId;
     private final int remotePort;
     private final long connectionId;
-    private final int maxMessageSize;
+    private final int maxInboundMessageSize;
+    private final int maxOutboundMessageSize;
 
-    public ConnectionAccepted(final ConnectionId connectionId, final long commandId, final int remotePort, final int maxMessageSize)
+    public ConnectionAccepted(
+            final ConnectionId connectionId,
+            final long commandId,
+            final int remotePort,
+            final int maxInboundMessageSize,
+            final int maxOutboundMessageSize
+    )
     {
-        this(connectionId.port(), commandId, remotePort, connectionId.connectionId(), maxMessageSize);
+        this(connectionId.port(), commandId, remotePort, connectionId.connectionId(), maxInboundMessageSize, maxOutboundMessageSize);
     }
 
-    public ConnectionAccepted(final int port, final long commandId, final int remotePort, final long connectionId, final int maxMessageSize)
+    public ConnectionAccepted(
+            final int port,
+            final long commandId,
+            final int remotePort,
+            final long connectionId,
+            final int maxInboundMessageSize,
+            final int maxOutboundMessageSize
+    )
     {
         this.port = port;
         this.commandId = commandId;
         this.remotePort = remotePort;
         this.connectionId = connectionId;
-        this.maxMessageSize = maxMessageSize;
+        this.maxInboundMessageSize = maxInboundMessageSize;
+        this.maxOutboundMessageSize = maxOutboundMessageSize;
     }
 
     @Override
@@ -47,9 +62,14 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
         return connectionId;
     }
 
-    public int maxMessageSize()
+    public int maxInboundMessageSize()
     {
-        return maxMessageSize;
+        return maxInboundMessageSize;
+    }
+
+    public int maxOutboundMessageSize()
+    {
+        return maxOutboundMessageSize;
     }
 
     @Override
@@ -60,7 +80,8 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
                ", commandId=" + commandId +
                ", remotePort=" + remotePort +
                ", connectionId=" + connectionId +
-               ", maxMessageSize=" + maxMessageSize +
+               ", maxInboundMessageSize=" + maxInboundMessageSize +
+               ", maxOutboundMessageSize=" + maxOutboundMessageSize +
                '}';
     }
 }

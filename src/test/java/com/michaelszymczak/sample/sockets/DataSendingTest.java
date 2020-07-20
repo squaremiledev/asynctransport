@@ -18,7 +18,6 @@ import com.michaelszymczak.sample.sockets.support.SampleClients;
 import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
-import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.agrona.collections.MutableInteger;
 import org.junit.jupiter.api.AfterEach;
@@ -279,20 +278,21 @@ class DataSendingTest
         final int serverPort = freePort();
         final int clientPort = freePortOtherThan(serverPort);
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1), serverPort, clientPort);
-        final byte[] dataThatFitsTheBuffer = generateData(conn.maxMessageSize(), 2);
+        final byte[] dataThatFitsTheBuffer = generateData(conn.maxOutboundMessageSize(), 2);
 
         //When
-        runUntil(() -> {
-            transport.handle(transport.command(conn, SendData.class).set(dataThatFitsTheBuffer));
-            return transport.connectionEvents().contains(DataSent.class, conn.connectionId()) &&
-                   transport.connectionEvents().last(DataSent.class, conn.connectionId()).bytesSent() == 0;
-        });
+        runUntil(() ->
+                 {
+                     transport.handle(transport.command(conn, SendData.class).set(dataThatFitsTheBuffer));
+                     return transport.connectionEvents().contains(DataSent.class, conn.connectionId()) &&
+                            transport.connectionEvents().last(DataSent.class, conn.connectionId()).bytesSent() == 0;
+                 });
 
         // Then
         final long totalBytesSentUntilFilledTheSendQueue = transport.connectionEvents()
                 .last(DataSent.class, conn.connectionId(), event -> event.bytesSent() == 0).totalBytesSent();
         assertThat(totalBytesSentUntilFilledTheSendQueue).isEqualTo((int)totalBytesSentUntilFilledTheSendQueue);
-        assertThat(totalBytesSentUntilFilledTheSendQueue).isGreaterThanOrEqualTo(conn.maxMessageSize());
+        assertThat(totalBytesSentUntilFilledTheSendQueue).isGreaterThanOrEqualTo(conn.maxOutboundMessageSize());
         transport.workUntil(completed(
                 () -> clients.client(1).read((int)totalBytesSentUntilFilledTheSendQueue, (int)totalBytesSentUntilFilledTheSendQueue, dataConsumer)));
 
@@ -308,8 +308,8 @@ class DataSendingTest
         final int clientPort = freePortOtherThan(serverPort);
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1), serverPort, clientPort);
         final int totalNumberOfEventsBefore = transport.events().all(TransportEvent.class).size();
-        final byte[] singleMessageData = byteArrayWith(pos -> String.format("%9d%n", pos), conn.maxMessageSize() / 10);
-        assertThat(singleMessageData.length).isEqualTo(conn.maxMessageSize());
+        final byte[] singleMessageData = byteArrayWith(pos -> String.format("%9d%n", pos), conn.maxOutboundMessageSize() / 10);
+        assertThat(singleMessageData.length).isEqualTo(conn.maxOutboundMessageSize());
 
         //When
         MutableInteger commandsCount = new MutableInteger(0);
@@ -345,7 +345,7 @@ class DataSendingTest
         final int serverPort = freePort();
         final int clientPort = freePortOtherThan(serverPort);
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1), serverPort, clientPort);
-        final DataSent eventAfterWindowFilled = driver.fillTheSendingWindow(conn, conn.maxMessageSize());
+        final DataSent eventAfterWindowFilled = driver.fillTheSendingWindow(conn, conn.maxOutboundMessageSize());
         assertThat(eventAfterWindowFilled.bytesSent()).isEqualTo(0);
         int totalBytesBuffered = (int)(eventAfterWindowFilled.totalBytesBuffered() - eventAfterWindowFilled.totalBytesSent());
         assertThat(totalBytesBuffered).isGreaterThan(0);
