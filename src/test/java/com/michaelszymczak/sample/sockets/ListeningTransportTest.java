@@ -14,6 +14,7 @@ import com.michaelszymczak.sample.sockets.support.SampleClients;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -111,7 +112,8 @@ class ListeningTransportTest
 
 
     @Test
-    void shouldUseRequestIdToFindThePortItShouldStopListeningOn() throws Exception
+    @Tag("tcperror")
+    void shouldUseRequestIdToFindThePortItShouldStopListeningOn() throws IOException
     {
         // Given
         final int port1 = freePort();

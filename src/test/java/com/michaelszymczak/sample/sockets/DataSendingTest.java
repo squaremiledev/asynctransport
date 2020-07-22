@@ -26,6 +26,7 @@ import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.agrona.collections.MutableInteger;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -230,6 +231,7 @@ class DataSendingTest
     }
 
     @Test
+    @Tag("tcperror")
     void shouldBeAbleToSendLargeChunkOfData()
     {
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
@@ -257,6 +259,7 @@ class DataSendingTest
     }
 
     @Test
+    @Tag("tcperror")
     void shouldBeAbleToSendDataInMultipleChunks()
     {
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
@@ -285,6 +288,7 @@ class DataSendingTest
     }
 
     @Test
+    @Tag("tcperror")
     void shouldSendAsMuchDataAsPossibleAndBufferTheRest()
     {
         final TransportDriver driver = new TransportDriver(transport);
@@ -325,6 +329,7 @@ class DataSendingTest
     }
 
     @Test
+    @Tag("tcperror")
     void shouldSendRemainingBufferedDataWhenWindowUnstuck()
     {
         final TransportDriver driver = new TransportDriver(transport);

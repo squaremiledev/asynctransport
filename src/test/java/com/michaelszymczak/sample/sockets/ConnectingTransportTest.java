@@ -1,6 +1,5 @@
 package com.michaelszymczak.sample.sockets;
 
-import java.io.IOException;
 import java.net.SocketException;
 import java.util.List;
 
@@ -22,6 +21,7 @@ import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +34,7 @@ import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
 import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+
 
 class ConnectingTransportTest
 {
@@ -98,7 +99,7 @@ class ConnectingTransportTest
     }
 
     @Test
-    void shouldCloseConnection() throws IOException
+    void shouldCloseConnection()
     {
         // Given
         transport.handle(transport.command(Listen.class).set(9, freePort()));
@@ -122,7 +123,7 @@ class ConnectingTransportTest
     }
 
     @Test
-    void shouldCloseConnectionOnce() throws IOException
+    void shouldCloseConnectionOnce()
     {
         final TransportDriver driver = new TransportDriver(transport);
 
@@ -276,6 +277,7 @@ class ConnectingTransportTest
     }
 
     @Test
+    @Tag("tcperror")
     void shouldInformedThatConnectionResetByPeer()
     {
         final TransportDriver driver = new TransportDriver(transport);

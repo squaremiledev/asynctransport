@@ -19,6 +19,7 @@ import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
 import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+
 
 class DataReceivingTest
 {
@@ -100,6 +102,7 @@ class DataReceivingTest
     }
 
     @Test
+    @Tag("tcperror")
     void shouldEventuallyReceiveAllTheDataSentAsOneLargeChunk()
     {
         final TransportDriver driver = new TransportDriver(transport);
@@ -126,29 +129,6 @@ class DataReceivingTest
         assertThat(actualReceivedData).isEqualTo(wholeDataToSend);
         assertThat(actualReceivedData.length).isGreaterThan(_10_MB_IN_BYTES);
     }
-
-    private byte[] dataReceived(final List<DataReceived> events)
-    {
-        return concatenatedData(events.stream().map(event ->
-                                                    {
-                                                        byte[] target = new byte[event.length()];
-                                                        event.copyDataTo(target);
-                                                        return target;
-                                                    }).collect(Collectors.toList()));
-    }
-
-    private byte[] concatenatedData(final List<byte[]> allChunks)
-    {
-        int totalSize = allChunks.stream().mapToInt(chunk -> chunk.length).sum();
-        byte[] content = new byte[totalSize];
-        ByteBuffer received = ByteBuffer.wrap(content);
-        for (final byte[] chunk : allChunks)
-        {
-            received.put(chunk);
-        }
-        return content;
-    }
-
 
     @Test
     void shouldReceivedDataFromMultipleConnections()
@@ -185,6 +165,29 @@ class DataReceivingTest
         assertThat(dataAsString(transport.connectionEvents().all(DataReceived.class, connS2C4.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
     }
+
+    private byte[] dataReceived(final List<DataReceived> events)
+    {
+        return concatenatedData(events.stream().map(event ->
+                                                    {
+                                                        byte[] target = new byte[event.length()];
+                                                        event.copyDataTo(target);
+                                                        return target;
+                                                    }).collect(Collectors.toList()));
+    }
+
+    private byte[] concatenatedData(final List<byte[]> allChunks)
+    {
+        int totalSize = allChunks.stream().mapToInt(chunk -> chunk.length).sum();
+        byte[] content = new byte[totalSize];
+        ByteBuffer received = ByteBuffer.wrap(content);
+        for (final byte[] chunk : allChunks)
+        {
+            received.put(chunk);
+        }
+        return content;
+    }
+
 
     @AfterEach
     void tearDown()

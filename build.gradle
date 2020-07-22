@@ -14,7 +14,9 @@ compileJava {
 }
 
 test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+//        excludeTags 'tcperror' // uncomment not to run tests that produce tcp errors (expected)
+    }
     testLogging {
         events "passed", "skipped", "failed"
     }
