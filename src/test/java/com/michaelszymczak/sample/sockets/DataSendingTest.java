@@ -7,17 +7,22 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.michaelszymczak.sample.sockets.api.CommandId;
 import com.michaelszymczak.sample.sockets.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionClosed;
 import com.michaelszymczak.sample.sockets.api.events.DataSent;
+import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
+import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.support.FreePort;
 import com.michaelszymczak.sample.sockets.support.SampleClients;
 import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
+import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.agrona.collections.MutableInteger;
 import org.junit.jupiter.api.AfterEach;
@@ -36,6 +41,8 @@ import static com.michaelszymczak.sample.sockets.support.StringFixtures.stringWi
 import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 import static com.michaelszymczak.sample.sockets.support.Worker.runUntil;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 class DataSendingTest
 {
@@ -52,29 +59,8 @@ class DataSendingTest
     @SafeVarargs
     private static <T> Set<?> distinct(final Function<T, Object> property, final T... items)
     {
-        final List<T> allItems = Arrays.asList(items);
+        final List<T> allItems = asList(items);
         return allItems.stream().map(property).collect(Collectors.toSet());
-    }
-
-    @Test
-    void shouldClaimAndSendData()
-    {
-        final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
-        final TransportDriver driver = new TransportDriver(transport);
-
-        // Given
-        final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
-
-        //When
-        final SendData command = transport.command(conn, SendData.class);
-        final byte[] content = bytes("foo");
-        command.set(content);
-        transport.handle(command);
-
-        // Then
-        transport.workUntil(completed(() -> clients.client(1).read(3, 10, dataConsumer)));
-        assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("foo");
-        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), content.length, content.length, content.length));
     }
 
     @Test
@@ -363,6 +349,30 @@ class DataSendingTest
         transport.workUntil(completed(() -> clients.client(1).read(totalBytesBuffered, totalBytesBuffered, DEV_NULL)));
         final DataSent lastEventAfterAllDataDelivered = transport.connectionEvents().last(DataSent.class, conn.connectionId());
         assertThat(lastEventAfterAllDataDelivered.totalBytesBuffered()).isEqualTo(eventAfterClientReadAllDataSentSoFar.totalBytesSent() + totalBytesBuffered);
+    }
+
+    @Test
+    void shouldNotifyAboutClosedConnectionAndDoNotSendAnythingWhenAskedToSendDataWhenClientIsAlreadyGone()
+    {
+        final TransportDriver driver = new TransportDriver(transport);
+
+        // Given
+        assertThat(transport.statusEvents().all()).isEmpty();
+        final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
+        List<TransportEvent> eventsBeforeClosed = transport.events().all();
+        assertEqual(transport.statusEvents().all(), singletonList(new NumberOfConnectionsChanged(1)));
+        clients.client(1).close();
+        Worker.runUntil(() -> clients.client(1).hasServerClosedConnection());
+
+        //When
+        transport.handle(transport.command(conn, SendData.class).set(bytes("foo"), 101));
+
+        // Then
+        assertEqual(transport.events().all(), eventsBeforeClosed, asList(
+                new ConnectionClosed(conn.port(), conn.connectionId(), CommandId.NO_COMMAND_ID),
+                new TransportCommandFailed(conn.port(), 101, "Connection id not found")
+        ));
+        assertEqual(transport.statusEvents().all(), asList(new NumberOfConnectionsChanged(1), new NumberOfConnectionsChanged(0)));
     }
 
     @AfterEach

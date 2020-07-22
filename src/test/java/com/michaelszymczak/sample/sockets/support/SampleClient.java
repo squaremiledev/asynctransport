@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.agrona.CloseHelper;
 
+import static org.agrona.LangUtil.rethrowUnchecked;
+
 public class SampleClient implements AutoCloseable
 {
 
@@ -65,9 +67,25 @@ public class SampleClient implements AutoCloseable
         socket.getOutputStream().write(content);
     }
 
-    public boolean hasServerClosedConnection() throws IOException
+    public boolean hasServerClosedConnection()
     {
-        return socket.getInputStream().read() == -1;
+        try
+        {
+            return socket.getInputStream().read() == -1;
+        }
+        catch (SocketException e)
+        {
+            if ("Socket is closed".equalsIgnoreCase(e.getMessage()))
+            {
+                return true;
+            }
+            rethrowUnchecked(e);
+        }
+        catch (IOException e)
+        {
+            rethrowUnchecked(e);
+        }
+        return false;
     }
 
     @Override

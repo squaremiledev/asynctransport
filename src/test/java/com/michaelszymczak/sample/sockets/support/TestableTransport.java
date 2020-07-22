@@ -65,6 +65,7 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
     @Override
     public void handle(final TransportCommand command)
     {
+        work();
         delegate.handle(command);
     }
 

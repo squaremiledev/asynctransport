@@ -120,7 +120,6 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         closeConnection(command.commandId(), false);
     }
 
-    // TODO: handle -1 as closed connection
     private void handle(final SendData command)
     {
         try

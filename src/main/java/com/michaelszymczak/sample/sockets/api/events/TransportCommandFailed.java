@@ -41,7 +41,7 @@ public class TransportCommandFailed implements CommandFailed
     @Override
     public String toString()
     {
-        return "CommandFailed{" +
+        return "TransportCommandFailed{" +
                "port=" + port +
                ", commandId=" + commandId +
                ", details='" + details + '\'' +
