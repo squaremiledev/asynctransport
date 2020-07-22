@@ -23,18 +23,26 @@ public class SampleClient implements AutoCloseable
         this.socket.setSoTimeout(timeoutMs);
     }
 
-    public SampleClient connectedTo(final int port) throws IOException
+    public SampleClient connectedTo(final int port)
     {
         return connectedTo(port, -1);
     }
 
-    public SampleClient connectedTo(final int port, final int localPort) throws IOException
+    public SampleClient connectedTo(final int port, final int localPort)
     {
-        if (localPort != -1)
+        try
         {
-            socket.bind(new InetSocketAddress("127.0.0.1", localPort));
+            if (localPort != -1)
+            {
+                socket.bind(new InetSocketAddress("127.0.0.1", localPort));
+            }
+            socket.connect(new InetSocketAddress("127.0.0.1", port), timeoutMs);
         }
-        socket.connect(new InetSocketAddress("127.0.0.1", port), timeoutMs);
+        catch (Exception e)
+        {
+            rethrowUnchecked(e);
+        }
+
         return this;
     }
 

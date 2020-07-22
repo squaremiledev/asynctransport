@@ -1,6 +1,5 @@
 package com.michaelszymczak.sample.sockets;
 
-import java.net.SocketException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -18,14 +17,11 @@ import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.support.FreePort;
-import com.michaelszymczak.sample.sockets.support.SampleClients;
 import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
-import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.agrona.collections.MutableInteger;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -39,23 +35,13 @@ import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherT
 import static com.michaelszymczak.sample.sockets.support.SampleClient.ReadDataConsumer.DEV_NULL;
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.byteArrayWith;
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.stringWith;
-import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 import static com.michaelszymczak.sample.sockets.support.Worker.runUntil;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
-class DataSendingTest
+class DataSendingTest extends TransportTestBase
 {
-
-    private final TransportUnderTest transport;
-    private final SampleClients clients;
-
-    DataSendingTest() throws SocketException
-    {
-        transport = new TransportUnderTest();
-        clients = new SampleClients();
-    }
 
     @SafeVarargs
     private static <T> Set<?> distinct(final Function<T, Object> property, final T... items)
@@ -378,12 +364,6 @@ class DataSendingTest
                 new TransportCommandFailed(conn.port(), 101, "Connection id not found")
         ));
         assertEqual(transport.statusEvents().all(), asList(new NumberOfConnectionsChanged(1), new NumberOfConnectionsChanged(0)));
-    }
-
-    @AfterEach
-    void tearDown()
-    {
-        closeCleanly(transport, clients, transport.statusEvents());
     }
 
     private byte[] bytes(final String foo)

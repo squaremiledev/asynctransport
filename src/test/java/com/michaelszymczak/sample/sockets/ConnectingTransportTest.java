@@ -16,11 +16,8 @@ import com.michaelszymczak.sample.sockets.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
-import com.michaelszymczak.sample.sockets.support.SampleClients;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
-import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -32,21 +29,11 @@ import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
 import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
-import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 
-class ConnectingTransportTest
+class ConnectingTransportTest extends TransportTestBase
 {
-    private final TransportUnderTest transport;
-    private final SampleClients clients;
-
-    ConnectingTransportTest() throws SocketException
-    {
-        transport = new TransportUnderTest();
-        clients = new SampleClients();
-    }
-
     @Test
     void shouldNotifyWhenConnected()
     {
@@ -306,11 +293,5 @@ class ConnectingTransportTest
         assertThat(transport.events().contains(DataReceived.class)).isFalse();
         assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSizeGreaterThanOrEqualTo(2);
         assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
-    }
-
-    @AfterEach
-    void tearDown()
-    {
-        closeCleanly(transport, clients, transport.statusEvents());
     }
 }

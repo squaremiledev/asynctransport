@@ -1,19 +1,16 @@
 package com.michaelszymczak.sample.sockets;
 
-import java.io.IOException;
 import java.net.ConnectException;
-import java.net.SocketException;
 
 import com.michaelszymczak.sample.sockets.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.api.commands.StopListening;
+import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
+import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
-import com.michaelszymczak.sample.sockets.support.SampleClients;
-import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -22,44 +19,44 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 import static com.michaelszymczak.sample.sockets.support.Assertions.assertEqual;
+import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
-import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 
-class ListeningTransportTest
+
+class ListeningTransportTest extends TransportTestBase
 {
-
-    private final TransportUnderTest transport;
-    private final SampleClients clients;
-
-    ListeningTransportTest() throws SocketException
-    {
-        transport = new TransportUnderTest();
-        clients = new SampleClients();
-    }
-
     @Test
-    void shouldAcceptConnections() throws IOException
+    void shouldAcceptConnections()
     {
         final int port = freePort();
 
-        // When
-        transport.handle(transport.command(Listen.class).set(7, port));
+        // Given
+        transport.handle(transport.command(Listen.class).set(102, port));
         transport.workUntil(() -> transport.events().contains(StartedListening.class));
+        transport.events().last(StartedListening.class);
+        assertEqual(transport.events().all(StartedListening.class), new StartedListening(port, 102));
+
+        // When
+        transport.workUntil(completed(() -> clients.client(1).connectedTo(port)));
 
         // Then
-        transport.events().last(StartedListening.class);
-        assertEqual(transport.events().all(StartedListening.class), new StartedListening(port, 7));
-        clients.client(1).connectedTo(port);
+        transport.workUntil(() -> !transport.connectionEvents().all(ConnectionAccepted.class).isEmpty());
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).isNotEmpty();
+        ConnectionAccepted event = transport.connectionEvents().last(ConnectionAccepted.class);
+        assertThat(event.port()).isEqualTo(port);
+        assertThat(event.commandId()).isEqualTo(102);
     }
 
     @Test
+    @Tag("tcperror")
     void shouldNotAcceptIfNotAsked()
     {
         assertThrows(ConnectException.class, () -> clients.client(1).connectedTo(freePort()));
     }
 
     @Test
+    @Tag("tcperror")
     void shouldStopListeningWhenAsked()
     {
         transport.handle(transport.command(Listen.class).set(0, freePort()));
@@ -76,7 +73,7 @@ class ListeningTransportTest
     }
 
     @Test
-    void shouldIgnoreStopListeningCommandForNonExistingRequest() throws IOException
+    void shouldIgnoreStopListeningCommandForNonExistingRequest()
     {
         // Given
         final int port = freePort();
@@ -96,7 +93,7 @@ class ListeningTransportTest
     }
 
     @Test
-    void shouldBeAbleToListenOnMoreThanOnePort() throws Exception
+    void shouldBeAbleToListenOnMoreThanOnePort()
     {
         // When
         final int port1 = freePort();
@@ -113,7 +110,7 @@ class ListeningTransportTest
 
     @Test
     @Tag("tcperror")
-    void shouldUseRequestIdToFindThePortItShouldStopListeningOn() throws IOException
+    void shouldUseRequestIdToFindThePortItShouldStopListeningOn()
     {
         // Given
         final int port1 = freePort();
@@ -139,11 +136,5 @@ class ListeningTransportTest
         clients.client(1).connectedTo(port1);
         assertThrows(ConnectException.class, () -> clients.client(2).connectedTo(port2));
         clients.client(3).connectedTo(port3);
-    }
-
-    @AfterEach
-    void tearDown()
-    {
-        closeCleanly(transport, clients, transport.statusEvents());
     }
 }

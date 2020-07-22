@@ -1,6 +1,5 @@
 package com.michaelszymczak.sample.sockets;
 
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -14,11 +13,8 @@ import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.ConnectionEventsSpy;
-import com.michaelszymczak.sample.sockets.support.SampleClients;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
-import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -26,22 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
-import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 
-class DataReceivingTest
+class DataReceivingTest extends TransportTestBase
 {
     private static final int _10_MB_IN_BYTES = 10 * 1024 * 1024;
-
-    private final TransportUnderTest transport;
-    private final SampleClients clients;
-
-    DataReceivingTest() throws SocketException
-    {
-        transport = new TransportUnderTest();
-        clients = new SampleClients();
-    }
 
     @SafeVarargs
     private static <T> Set<?> distinct(final Function<T, Object> property, final T... items)
@@ -186,13 +172,6 @@ class DataReceivingTest
             received.put(chunk);
         }
         return content;
-    }
-
-
-    @AfterEach
-    void tearDown()
-    {
-        closeCleanly(transport, clients, transport.statusEvents());
     }
 
     private byte[] bytes(final String foo)
