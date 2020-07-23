@@ -170,7 +170,8 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                 }
                 if (key.isAcceptable())
                 {
-                    final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
+                    int port = ((ListeningSocketConductor)key.attachment()).port();
+                    final ListeningSocket listeningSocket = listeningSocketsByPort.get(port);
                     final SocketChannel acceptedSocketChannel = listeningSocket.acceptChannel();
                     final Connection connection = connectionService.newConnection(listeningSocket.createConnection(acceptedSocketChannel));
                     selectionKeyByConnectionId.put(connection.connectionId(), acceptedSocketChannel.register(
@@ -216,7 +217,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             listeningSocket.listen();
             final ServerSocketChannel serverSocketChannel = listeningSocket.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-            selectionKey.attach(listeningSocket);
+            selectionKey.attach(new ListeningSocketConductor(listeningSocket.port()));
             listeningSocketsByPort.put(listeningSocket.port(), listeningSocket);
             eventListener.onEvent(new StartedListening(command.port(), command.commandId()));
         }
