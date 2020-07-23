@@ -7,12 +7,12 @@ import java.net.SocketException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import com.michaelszymczak.sample.sockets.api.ConnectionIdValue;
-import com.michaelszymczak.sample.sockets.api.commands.CommandFactory;
-import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
-import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
-import com.michaelszymczak.sample.sockets.connection.Connection;
-import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
+import com.michaelszymczak.sample.sockets.domain.api.ConnectionIdValue;
+import com.michaelszymczak.sample.sockets.domain.api.commands.CommandFactory;
+import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
+import com.michaelszymczak.sample.sockets.domain.api.events.EventListener;
+import com.michaelszymczak.sample.sockets.domain.connection.Connection;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionConfiguration;
 
 import org.agrona.CloseHelper;
 
@@ -21,7 +21,7 @@ public class ListeningSocket implements AutoCloseable
     private final int port;
     private final long commandIdThatTriggeredListening;
     private final ConnectionIdSource connectionIdSource;
-    private final TransportEventsListener transportEventsListener;
+    private final EventListener eventListener;
     private final CommandFactory commandFactory;
     private final ServerSocketChannel serverSocketChannel;
 
@@ -29,14 +29,14 @@ public class ListeningSocket implements AutoCloseable
             final int port,
             final long commandIdThatTriggeredListening,
             final ConnectionIdSource connectionIdSource,
-            final TransportEventsListener transportEventsListener,
+            final EventListener eventListener,
             final CommandFactory commandFactory
     ) throws IOException
     {
         this.port = port;
         this.commandIdThatTriggeredListening = commandIdThatTriggeredListening;
         this.connectionIdSource = connectionIdSource;
-        this.transportEventsListener = transportEventsListener;
+        this.eventListener = eventListener;
         this.commandFactory = commandFactory;
         this.serverSocketChannel = ServerSocketChannel.open();
         // non-blocking mode, but in case something was missed, it should fail fast
@@ -68,9 +68,9 @@ public class ListeningSocket implements AutoCloseable
         final Connection connection = new ConnectionImpl(
                 configuration,
                 new SocketBackedChannel(acceptedSocketChannel),
-                transportEventsListener::onEvent
+                eventListener::onEvent
         );
-        transportEventsListener.onEvent(new ConnectionAccepted(
+        eventListener.onEvent(new ConnectionAccepted(
                 connection,
                 commandIdThatTriggeredListening,
                 configuration.remotePort,
@@ -105,7 +105,7 @@ public class ListeningSocket implements AutoCloseable
                "port=" + port +
                ", commandIdThatTriggeredListening=" + commandIdThatTriggeredListening +
                ", connectionIdSource=" + connectionIdSource +
-               ", transportEventsListener=" + transportEventsListener +
+               ", eventListener=" + eventListener +
                ", commandFactory=" + commandFactory +
                ", serverSocketChannel=" + serverSocketChannel +
                '}';

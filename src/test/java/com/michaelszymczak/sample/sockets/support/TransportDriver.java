@@ -3,13 +3,13 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 
-import com.michaelszymczak.sample.sockets.api.ConnectionId;
-import com.michaelszymczak.sample.sockets.api.commands.Listen;
-import com.michaelszymczak.sample.sockets.api.commands.SendData;
-import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
-import com.michaelszymczak.sample.sockets.api.events.DataSent;
-import com.michaelszymczak.sample.sockets.api.events.StartedListening;
-import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
+import com.michaelszymczak.sample.sockets.domain.api.ConnectionId;
+import com.michaelszymczak.sample.sockets.domain.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
+import com.michaelszymczak.sample.sockets.domain.api.events.DataSent;
+import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
+import com.michaelszymczak.sample.sockets.domain.api.events.TransportEvent;
 
 import org.agrona.collections.MutableInteger;
 

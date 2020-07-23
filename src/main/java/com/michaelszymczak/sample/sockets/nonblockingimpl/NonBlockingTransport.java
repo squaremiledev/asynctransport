@@ -9,24 +9,23 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.michaelszymczak.sample.sockets.api.ConnectionId;
-import com.michaelszymczak.sample.sockets.api.Transport;
-import com.michaelszymczak.sample.sockets.api.commands.CommandFactory;
-import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
-import com.michaelszymczak.sample.sockets.api.commands.Listen;
-import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
-import com.michaelszymczak.sample.sockets.api.commands.ReadData;
-import com.michaelszymczak.sample.sockets.api.commands.SendData;
-import com.michaelszymczak.sample.sockets.api.commands.StopListening;
-import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
-import com.michaelszymczak.sample.sockets.api.events.StartedListening;
-import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
-import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
-import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
-import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
-import com.michaelszymczak.sample.sockets.connection.Connection;
-import com.michaelszymczak.sample.sockets.connection.ConnectionService;
-import com.michaelszymczak.sample.sockets.connection.ConnectionState;
+import com.michaelszymczak.sample.sockets.domain.api.ConnectionId;
+import com.michaelszymczak.sample.sockets.domain.api.Transport;
+import com.michaelszymczak.sample.sockets.domain.api.commands.CommandFactory;
+import com.michaelszymczak.sample.sockets.domain.api.commands.ConnectionCommand;
+import com.michaelszymczak.sample.sockets.domain.api.commands.Listen;
+import com.michaelszymczak.sample.sockets.domain.api.commands.NoOpCommand;
+import com.michaelszymczak.sample.sockets.domain.api.commands.ReadData;
+import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.domain.api.commands.StopListening;
+import com.michaelszymczak.sample.sockets.domain.api.commands.TransportCommand;
+import com.michaelszymczak.sample.sockets.domain.api.events.EventListener;
+import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
+import com.michaelszymczak.sample.sockets.domain.api.events.StoppedListening;
+import com.michaelszymczak.sample.sockets.domain.api.events.TransportCommandFailed;
+import com.michaelszymczak.sample.sockets.domain.connection.Connection;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionService;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionState;
 
 import org.agrona.CloseHelper;
 import org.agrona.collections.Long2ObjectHashMap;
@@ -35,7 +34,6 @@ import static org.agrona.LangUtil.rethrowUnchecked;
 
 public class NonBlockingTransport implements AutoCloseable, Transport
 {
-    private final TransportEventsListener transportEventsListener;
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
     private final List<ListeningSocket> listeningSockets;
     private final Selector acceptingSelector;
@@ -43,15 +41,16 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final ConnectionService connectionService;
     private final CommandFactory commandFactory;
     private final Long2ObjectHashMap<SelectionKey> selectionKeyByConnectionId = new Long2ObjectHashMap<>();
+    private final EventListener eventListener;
 
-    public NonBlockingTransport(final TransportEventsListener transportEventsListener, final StatusEventListener statusEventListener) throws IOException
+    public NonBlockingTransport(final EventListener eventListener) throws IOException
     {
-        this.transportEventsListener = transportEventsListener;
+        this.eventListener = eventListener;
         this.acceptingSelector = Selector.open();
         this.connectionsSelector = Selector.open();
         this.listeningSockets = new ArrayList<>(10);
-        this.connectionService = new ConnectionService(transportEventsListener, statusEventListener);
         this.commandFactory = new CommandFactory();
+        this.connectionService = new ConnectionService(eventListener);
     }
 
     private void handleConnectionCommand(final ConnectionCommand command)
@@ -121,7 +120,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         }
         catch (Exception e)
         {
-            transportEventsListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
+            eventListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
             rethrowUnchecked(e);
         }
     }
@@ -236,7 +235,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
 
     private void handle(final Listen command) throws IOException
     {
-        final ListeningSocket listeningSocket = new ListeningSocket(command.port(), command.commandId(), connectionIdSource, transportEventsListener, commandFactory);
+        final ListeningSocket listeningSocket = new ListeningSocket(command.port(), command.commandId(), connectionIdSource, eventListener, commandFactory);
         try
         {
             listeningSocket.listen();
@@ -247,11 +246,11 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         catch (IOException e)
         {
             CloseHelper.close(listeningSocket);
-            transportEventsListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
+            eventListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
             return;
         }
         listeningSockets.add(listeningSocket);
-        transportEventsListener.onEvent(new StartedListening(command.port(), command.commandId()));
+        eventListener.onEvent(new StartedListening(command.port(), command.commandId()));
     }
 
     private void handle(final StopListening command)
@@ -261,11 +260,11 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             if (listeningSockets.get(k).port() == command.port())
             {
                 CloseHelper.close(listeningSockets.get(k));
-                transportEventsListener.onEvent(new StoppedListening(command.port(), command.commandId()));
+                eventListener.onEvent(new StoppedListening(command.port(), command.commandId()));
                 return;
             }
         }
-        transportEventsListener.onEvent(new TransportCommandFailed(command, "No listening socket found on this port"));
+        eventListener.onEvent(new TransportCommandFailed(command, "No listening socket found on this port"));
     }
 
 }

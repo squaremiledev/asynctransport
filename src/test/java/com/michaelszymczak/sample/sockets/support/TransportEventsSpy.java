@@ -1,8 +1,8 @@
 package com.michaelszymczak.sample.sockets.support;
 
-import com.michaelszymczak.sample.sockets.api.events.TransportCorrelatedEvent;
-import com.michaelszymczak.sample.sockets.api.events.TransportEvent;
-import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.domain.api.events.TransportCorrelatedEvent;
+import com.michaelszymczak.sample.sockets.domain.api.events.TransportEvent;
+import com.michaelszymczak.sample.sockets.domain.api.events.TransportEventsListener;
 
 public final class TransportEventsSpy extends EventsSpy<TransportEvent> implements TransportEventsListener
 {

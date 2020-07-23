@@ -23,7 +23,7 @@ test {
 }
 
 application {
-    mainClassName = 'com.michaelszymczak.sample.sockets.SocketsMain'
+    mainClassName = 'com.michaelszymczak.sample.sockets.SampleTransport'
 }
 
 dependencies {

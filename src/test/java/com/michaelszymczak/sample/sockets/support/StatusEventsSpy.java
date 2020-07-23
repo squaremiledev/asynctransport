@@ -1,7 +1,7 @@
 package com.michaelszymczak.sample.sockets.support;
 
-import com.michaelszymczak.sample.sockets.api.events.StatusEvent;
-import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
+import com.michaelszymczak.sample.sockets.domain.api.events.StatusEvent;
+import com.michaelszymczak.sample.sockets.domain.api.events.StatusEventListener;
 
 public final class StatusEventsSpy extends EventsSpy<StatusEvent> implements StatusEventListener
 {

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import com.michaelszymczak.sample.sockets.connection.Channel;
+import com.michaelszymczak.sample.sockets.domain.connection.Channel;
 
 public class SocketBackedChannel implements Channel
 {

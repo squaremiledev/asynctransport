@@ -2,25 +2,26 @@ package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.io.IOException;
 
-import com.michaelszymczak.sample.sockets.api.CommandId;
-import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
-import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
-import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
-import com.michaelszymczak.sample.sockets.api.commands.ReadData;
-import com.michaelszymczak.sample.sockets.api.commands.SendData;
-import com.michaelszymczak.sample.sockets.api.events.DataReceived;
-import com.michaelszymczak.sample.sockets.connection.Channel;
-import com.michaelszymczak.sample.sockets.connection.Connection;
-import com.michaelszymczak.sample.sockets.connection.ConnectionCommands;
-import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
-import com.michaelszymczak.sample.sockets.connection.ConnectionState;
+import com.michaelszymczak.sample.sockets.domain.api.CommandId;
+import com.michaelszymczak.sample.sockets.domain.api.commands.CloseConnection;
+import com.michaelszymczak.sample.sockets.domain.api.commands.ConnectionCommand;
+import com.michaelszymczak.sample.sockets.domain.api.commands.NoOpCommand;
+import com.michaelszymczak.sample.sockets.domain.api.commands.ReadData;
+import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.domain.api.events.DataReceived;
+import com.michaelszymczak.sample.sockets.domain.connection.Channel;
+import com.michaelszymczak.sample.sockets.domain.connection.Connection;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionCommands;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionConfiguration;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionState;
+import com.michaelszymczak.sample.sockets.domain.connection.SingleConnectionEvents;
 
 import org.agrona.CloseHelper;
 
 import static org.agrona.LangUtil.rethrowUnchecked;
 
 
-import static com.michaelszymczak.sample.sockets.connection.ConnectionState.CLOSED;
+import static com.michaelszymczak.sample.sockets.domain.connection.ConnectionState.CLOSED;
 
 public class ChannelBackedConnection implements AutoCloseable, Connection
 {

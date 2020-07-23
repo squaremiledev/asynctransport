@@ -3,13 +3,14 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
-import com.michaelszymczak.sample.sockets.api.ConnectionId;
-import com.michaelszymczak.sample.sockets.api.Transport;
-import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
-import com.michaelszymczak.sample.sockets.api.commands.TransportCommand;
-import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
-import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
-import com.michaelszymczak.sample.sockets.nonblockingimpl.NonBlockingTransport;
+import com.michaelszymczak.sample.sockets.SampleTransport;
+import com.michaelszymczak.sample.sockets.domain.api.ConnectionId;
+import com.michaelszymczak.sample.sockets.domain.api.Transport;
+import com.michaelszymczak.sample.sockets.domain.api.commands.ConnectionCommand;
+import com.michaelszymczak.sample.sockets.domain.api.commands.TransportCommand;
+import com.michaelszymczak.sample.sockets.domain.api.events.DelegatingEventListener;
+import com.michaelszymczak.sample.sockets.domain.api.events.StatusEventListener;
+import com.michaelszymczak.sample.sockets.domain.api.events.TransportEventsListener;
 
 
 import static com.michaelszymczak.sample.sockets.support.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
@@ -17,15 +18,15 @@ import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 public class TestableTransport<E extends TransportEventsListener> implements Transport
 {
-    private final NonBlockingTransport delegate;
+    private final SampleTransport delegate;
     private final E events;
 
-    public TestableTransport(final E events, final StatusEventListener statusEventListener)
+    TestableTransport(final E events, final StatusEventListener statusEventListener)
     {
         this.events = events;
         try
         {
-            this.delegate = new NonBlockingTransport(events, statusEventListener);
+            this.delegate = new SampleTransport(new DelegatingEventListener(events, statusEventListener));
         }
         catch (Exception e)
         {

@@ -3,8 +3,8 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.michaelszymczak.sample.sockets.api.events.ConnectionEvent;
-import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
+import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionEvent;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionEventsListener;
 
 public final class ConnectionEventsSpy implements ConnectionEventsListener
 {

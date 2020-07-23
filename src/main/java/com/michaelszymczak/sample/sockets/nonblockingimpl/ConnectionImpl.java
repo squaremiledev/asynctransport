@@ -1,11 +1,13 @@
 package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
-import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
-import com.michaelszymczak.sample.sockets.connection.Channel;
-import com.michaelszymczak.sample.sockets.connection.Connection;
-import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
-import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
-import com.michaelszymczak.sample.sockets.connection.ConnectionState;
+import com.michaelszymczak.sample.sockets.domain.api.commands.ConnectionCommand;
+import com.michaelszymczak.sample.sockets.domain.connection.Channel;
+import com.michaelszymczak.sample.sockets.domain.connection.Connection;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionConfiguration;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionEventsListener;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionState;
+import com.michaelszymczak.sample.sockets.domain.connection.SingleConnectionEvents;
+import com.michaelszymczak.sample.sockets.domain.connection.ValidatedConnection;
 
 public class ConnectionImpl implements AutoCloseable, Connection
 {

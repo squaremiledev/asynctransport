@@ -1,11 +1,11 @@
 package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
-import com.michaelszymczak.sample.sockets.api.CommandId;
-import com.michaelszymczak.sample.sockets.api.ConnectionIdValue;
-import com.michaelszymczak.sample.sockets.api.commands.SendData;
-import com.michaelszymczak.sample.sockets.api.events.ConnectionEvent;
-import com.michaelszymczak.sample.sockets.api.events.DataSent;
-import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
+import com.michaelszymczak.sample.sockets.domain.api.CommandId;
+import com.michaelszymczak.sample.sockets.domain.api.ConnectionIdValue;
+import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionEvent;
+import com.michaelszymczak.sample.sockets.domain.api.events.DataSent;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionConfiguration;
 import com.michaelszymczak.sample.sockets.support.ConnectionEventsSpy;
 import com.michaelszymczak.sample.sockets.support.FakeChannel;
 

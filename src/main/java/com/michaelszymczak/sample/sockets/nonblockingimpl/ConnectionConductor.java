@@ -2,11 +2,11 @@ package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.nio.channels.SelectionKey;
 
-import com.michaelszymczak.sample.sockets.api.ConnectionId;
-import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
-import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
-import com.michaelszymczak.sample.sockets.api.commands.ReadData;
-import com.michaelszymczak.sample.sockets.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.domain.api.ConnectionId;
+import com.michaelszymczak.sample.sockets.domain.api.commands.ConnectionCommand;
+import com.michaelszymczak.sample.sockets.domain.api.commands.NoOpCommand;
+import com.michaelszymczak.sample.sockets.domain.api.commands.ReadData;
+import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
 
 public class ConnectionConductor implements ConnectionId
 {

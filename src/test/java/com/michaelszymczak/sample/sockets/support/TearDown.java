@@ -1,7 +1,7 @@
 package com.michaelszymczak.sample.sockets.support;
 
-import com.michaelszymczak.sample.sockets.api.events.NumberOfConnectionsChanged;
-import com.michaelszymczak.sample.sockets.api.events.StatusEvent;
+import com.michaelszymczak.sample.sockets.domain.api.events.NumberOfConnectionsChanged;
+import com.michaelszymczak.sample.sockets.domain.api.events.StatusEvent;
 
 public class TearDown
 {

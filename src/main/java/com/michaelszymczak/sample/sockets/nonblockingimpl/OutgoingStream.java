@@ -4,11 +4,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
-import com.michaelszymczak.sample.sockets.connection.ConnectionState;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionState;
+import com.michaelszymczak.sample.sockets.domain.connection.SingleConnectionEvents;
 
 
-import static com.michaelszymczak.sample.sockets.connection.ConnectionState.DATA_TO_SEND_BUFFERED;
-import static com.michaelszymczak.sample.sockets.connection.ConnectionState.NO_OUTSTANDING_DATA;
+import static com.michaelszymczak.sample.sockets.domain.connection.ConnectionState.DATA_TO_SEND_BUFFERED;
+import static com.michaelszymczak.sample.sockets.domain.connection.ConnectionState.NO_OUTSTANDING_DATA;
 
 public class OutgoingStream
 {

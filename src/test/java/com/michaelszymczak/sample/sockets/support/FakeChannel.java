@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.michaelszymczak.sample.sockets.connection.Channel;
+import com.michaelszymczak.sample.sockets.domain.connection.Channel;
 
 public class FakeChannel implements Channel
 {
