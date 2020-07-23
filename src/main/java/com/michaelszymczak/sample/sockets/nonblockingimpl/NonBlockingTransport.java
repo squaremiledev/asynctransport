@@ -5,9 +5,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import com.michaelszymczak.sample.sockets.domain.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.domain.api.Transport;
@@ -28,6 +26,7 @@ import com.michaelszymczak.sample.sockets.domain.connection.ConnectionService;
 import com.michaelszymczak.sample.sockets.domain.connection.ConnectionState;
 
 import org.agrona.CloseHelper;
+import org.agrona.collections.Int2ObjectHashMap;
 import org.agrona.collections.Long2ObjectHashMap;
 
 import static org.agrona.LangUtil.rethrowUnchecked;
@@ -35,19 +34,16 @@ import static org.agrona.LangUtil.rethrowUnchecked;
 public class NonBlockingTransport implements AutoCloseable, Transport
 {
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
-    private final List<ListeningSocket> listeningSockets;
-    private final Selector selector;
+    private final Int2ObjectHashMap<ListeningSocket> listeningSocketsByPort = new Int2ObjectHashMap<>();
+    private final Selector selector = Selector.open();
     private final ConnectionService connectionService;
-    private final CommandFactory commandFactory;
+    private final CommandFactory commandFactory = new CommandFactory();
     private final Long2ObjectHashMap<SelectionKey> selectionKeyByConnectionId = new Long2ObjectHashMap<>();
     private final EventListener eventListener;
 
     public NonBlockingTransport(final EventListener eventListener) throws IOException
     {
         this.eventListener = eventListener;
-        this.selector = Selector.open();
-        this.listeningSockets = new ArrayList<>(10);
-        this.commandFactory = new CommandFactory();
         this.connectionService = new ConnectionService(eventListener);
     }
 
@@ -207,7 +203,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         selectionKeyByConnectionId.values().forEach(SelectionKey::cancel);
         selectionKeyByConnectionId.clear();
 
-        CloseHelper.closeAll(listeningSockets);
+        CloseHelper.closeAll(listeningSocketsByPort.values());
         CloseHelper.close(selector);
         CloseHelper.close(connectionService);
     }
@@ -221,29 +217,26 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             final ServerSocketChannel serverSocketChannel = listeningSocket.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
             selectionKey.attach(listeningSocket);
+            listeningSocketsByPort.put(listeningSocket.port(), listeningSocket);
+            eventListener.onEvent(new StartedListening(command.port(), command.commandId()));
         }
         catch (IOException e)
         {
             CloseHelper.close(listeningSocket);
             eventListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
-            return;
         }
-        listeningSockets.add(listeningSocket);
-        eventListener.onEvent(new StartedListening(command.port(), command.commandId()));
     }
 
     private void handle(final StopListening command)
     {
-        for (int k = 0; k < listeningSockets.size(); k++)
+        if (!listeningSocketsByPort.containsKey(command.port()))
         {
-            if (listeningSockets.get(k).port() == command.port())
-            {
-                CloseHelper.close(listeningSockets.get(k));
-                eventListener.onEvent(new StoppedListening(command.port(), command.commandId()));
-                return;
-            }
+            eventListener.onEvent(new TransportCommandFailed(command, "No listening socket found on this port"));
+            return;
         }
-        eventListener.onEvent(new TransportCommandFailed(command, "No listening socket found on this port"));
+
+        CloseHelper.close(listeningSocketsByPort.remove(command.port()));
+        eventListener.onEvent(new StoppedListening(command.port(), command.commandId()));
     }
 
 }
