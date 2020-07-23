@@ -88,12 +88,6 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     }
 
     @Override
-    public boolean isClosed()
-    {
-        return isClosed;
-    }
-
-    @Override
     public <C extends ConnectionCommand> C command(final Class<C> commandType)
     {
         return connectionCommands.command(commandType);

@@ -56,12 +56,6 @@ public class ConnectionImpl implements AutoCloseable, Connection
     }
 
     @Override
-    public boolean isClosed()
-    {
-        return delegate.isClosed();
-    }
-
-    @Override
     public <C extends ConnectionCommand> C command(final Class<C> commandType)
     {
         return delegate.command(commandType);

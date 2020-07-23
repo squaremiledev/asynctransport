@@ -7,8 +7,6 @@ public interface Connection extends ConnectionId, AutoCloseable
 {
     boolean handle(ConnectionCommand command);
 
-    boolean isClosed();
-
     <C extends ConnectionCommand> C command(Class<C> commandType);
 
     ConnectionState state();

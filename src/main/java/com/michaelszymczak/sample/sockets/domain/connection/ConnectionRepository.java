@@ -56,7 +56,7 @@ public class ConnectionRepository implements AutoCloseable
             return;
         }
         final Connection connection = connectionsById.get(connectionId);
-        if (!connection.isClosed())
+        if (connection.state() != ConnectionState.CLOSED)
         {
             throw new IllegalStateException("Connection must be closed before it's removed");
         }

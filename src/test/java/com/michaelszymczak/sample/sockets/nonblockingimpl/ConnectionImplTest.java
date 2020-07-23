@@ -6,6 +6,7 @@ import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionEvent;
 import com.michaelszymczak.sample.sockets.domain.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.domain.connection.ConnectionConfiguration;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionState;
 import com.michaelszymczak.sample.sockets.support.ConnectionEventsSpy;
 import com.michaelszymczak.sample.sockets.support.FakeChannel;
 
@@ -33,7 +34,7 @@ class ConnectionImplTest
     @Test
     void shouldNotBeClosedInitially()
     {
-        assertThat(newConnection().isClosed()).isFalse();
+        assertThat(newConnection().state()).isNotEqualTo(ConnectionState.CLOSED);
         assertThat(events.all(ConnectionEvent.class)).isEmpty();
     }
 

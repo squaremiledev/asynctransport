@@ -123,9 +123,9 @@ class ConnectionRepositoryTest
         repository.add(connection1);
         repository.add(connection2);
         repository.add(connection3);
-        assertThat(connection1.isClosed()).isFalse();
-        assertThat(connection1.isClosed()).isFalse();
-        assertThat(connection1.isClosed()).isFalse();
+        assertThat(connection1.state()).isNotEqualTo(ConnectionState.CLOSED);
+        assertThat(connection2.state()).isNotEqualTo(ConnectionState.CLOSED);
+        assertThat(connection3.state()).isNotEqualTo(ConnectionState.CLOSED);
         assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 2, 3));
 
         // When
@@ -133,9 +133,9 @@ class ConnectionRepositoryTest
 
         // Then
         assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(asList(1, 2, 3, 0));
-        assertThat(connection1.isClosed()).isTrue();
-        assertThat(connection1.isClosed()).isTrue();
-        assertThat(connection1.isClosed()).isTrue();
+        assertThat(connection1.state()).isEqualTo(ConnectionState.CLOSED);
+        assertThat(connection2.state()).isEqualTo(ConnectionState.CLOSED);
+        assertThat(connection3.state()).isEqualTo(ConnectionState.CLOSED);
     }
 
     @Test
@@ -168,7 +168,7 @@ class ConnectionRepositoryTest
     {
         final ConnectionRepository repository = new ConnectionRepository(repositoryUpdates);
         final SampleConnection connection = new SampleConnection(5542, 2);
-        assertThat(connection.isClosed()).isFalse();
+        assertThat(connection.state()).isNotEqualTo(ConnectionState.CLOSED);
         repository.add(connection);
         assertThat(repository.contains(2)).isTrue();
         assertThat(repositoryUpdates.numberOfConnectionsChangedUpdates()).isEqualTo(singletonList(1));
@@ -203,17 +203,14 @@ class ConnectionRepositoryTest
         private final int port;
         private final long connectionId;
         private boolean closed;
+        private ConnectionState state;
 
         public SampleConnection(final int port, final long connectionId)
         {
-            this(port, connectionId, false);
-        }
-
-        public SampleConnection(final int port, final long connectionId, final boolean closed)
-        {
             this.port = port;
             this.connectionId = connectionId;
-            this.closed = closed;
+            this.closed = false;
+            this.state = ConnectionState.NO_OUTSTANDING_DATA;
         }
 
         @Override
@@ -235,12 +232,6 @@ class ConnectionRepositoryTest
         }
 
         @Override
-        public boolean isClosed()
-        {
-            return closed;
-        }
-
-        @Override
         public <C extends ConnectionCommand> C command(final Class<C> commandType)
         {
             throw new UnsupportedOperationException();
@@ -249,13 +240,14 @@ class ConnectionRepositoryTest
         @Override
         public ConnectionState state()
         {
-            return null;
+            return state;
         }
 
         @Override
         public void close()
         {
             closed = true;
+            state = ConnectionState.CLOSED;
         }
     }
 }
