@@ -53,7 +53,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         this.connectionService = new ConnectionService(eventListener);
     }
 
-    private void handleConnectionCommand(final ConnectionCommand command)
+    private void handle(final ConnectionCommand command)
     {
         ConnectionState state = connectionService.handle(command);
         // means error (connection not found or invalid command)
@@ -71,22 +71,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         if (state == ConnectionState.CLOSED)
         {
             selectionKeyByConnectionId.remove(command.connectionId());
-        }
-    }
-
-    private void handleTransportCommand(final TransportCommand command) throws Exception
-    {
-        if (command instanceof Listen)
-        {
-            handle((Listen)command);
-        }
-        else if (command instanceof StopListening)
-        {
-            handle((StopListening)command);
-        }
-        else
-        {
-            throw new UnsupportedOperationException(command.getClass().getCanonicalName());
         }
     }
 
@@ -109,14 +93,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     {
         try
         {
-            if (command instanceof ConnectionCommand)
-            {
-                handleConnectionCommand((ConnectionCommand)command);
-            }
-            else
-            {
-                handleTransportCommand(command);
-            }
+            tryHandle(command);
         }
         catch (Exception e)
         {
@@ -135,6 +112,26 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     public <C extends ConnectionCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
     {
         return connectionService.command(connectionId, commandType);
+    }
+
+    private void tryHandle(final TransportCommand command) throws IOException
+    {
+        if (command instanceof ConnectionCommand)
+        {
+            handle((ConnectionCommand)command);
+        }
+        else if (command instanceof Listen)
+        {
+            handle((Listen)command);
+        }
+        else if (command instanceof StopListening)
+        {
+            handle((StopListening)command);
+        }
+        else
+        {
+            throw new UnsupportedOperationException(command.getClass().getCanonicalName());
+        }
     }
 
     private void connectionsWork() throws IOException
