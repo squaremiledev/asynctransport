@@ -36,8 +36,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
 {
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
     private final List<ListeningSocket> listeningSockets;
-    private final Selector acceptingSelector;
-    private final Selector connectionsSelector;
+    private final Selector selector;
     private final ConnectionService connectionService;
     private final CommandFactory commandFactory;
     private final Long2ObjectHashMap<SelectionKey> selectionKeyByConnectionId = new Long2ObjectHashMap<>();
@@ -46,8 +45,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     public NonBlockingTransport(final EventListener eventListener) throws IOException
     {
         this.eventListener = eventListener;
-        this.acceptingSelector = Selector.open();
-        this.connectionsSelector = Selector.open();
+        this.selector = Selector.open();
         this.listeningSockets = new ArrayList<>(10);
         this.commandFactory = new CommandFactory();
         this.connectionService = new ConnectionService(eventListener);
@@ -80,7 +78,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         try
         {
             acceptingWork();
-            connectionsWork();
         }
         catch (IOException e)
         {
@@ -134,30 +131,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         }
     }
 
-    private void connectionsWork() throws IOException
-    {
-        final int availableCount;
-
-        availableCount = connectionsSelector.selectNow();
-
-        if (availableCount > 0)
-        {
-            final Iterator<SelectionKey> keyIterator = connectionsSelector.selectedKeys().iterator();
-            while (keyIterator.hasNext())
-            {
-                final SelectionKey key = keyIterator.next();
-                keyIterator.remove();
-                ConnectionCommand command = ((ConnectionConductor)key.attachment()).command(key);
-                ConnectionState state = connectionService.handle(command);
-                updateSelectionKeyInterest(state, key);
-                if (state == ConnectionState.CLOSED)
-                {
-                    selectionKeyByConnectionId.remove(command.connectionId());
-                }
-            }
-        }
-    }
-
     private void updateSelectionKeyInterest(final ConnectionState state, final SelectionKey key)
     {
         switch (state)
@@ -186,11 +159,11 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     {
         final int availableCount;
 
-        availableCount = acceptingSelector.selectNow();
+        availableCount = selector.selectNow();
 
         if (availableCount > 0)
         {
-            final Iterator<SelectionKey> keyIterator = acceptingSelector.selectedKeys().iterator();
+            final Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
             while (keyIterator.hasNext())
             {
                 final SelectionKey key = keyIterator.next();
@@ -205,7 +178,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                     final SocketChannel acceptedSocketChannel = listeningSocket.acceptChannel();
                     final Connection connection = connectionService.newConnection(listeningSocket.createConnection(acceptedSocketChannel));
                     selectionKeyByConnectionId.put(connection.connectionId(), acceptedSocketChannel.register(
-                            connectionsSelector,
+                            selector,
                             SelectionKey.OP_READ,
                             new ConnectionConductor(
                                     commandFactory.create(connection, ReadData.class),
@@ -213,6 +186,16 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                                     commandFactory.create(connection, NoOpCommand.class)
                             )
                     ));
+                }
+                else
+                {
+                    ConnectionCommand command = ((ConnectionConductor)key.attachment()).command(key);
+                    ConnectionState state = connectionService.handle(command);
+                    updateSelectionKeyInterest(state, key);
+                    if (state == ConnectionState.CLOSED)
+                    {
+                        selectionKeyByConnectionId.remove(command.connectionId());
+                    }
                 }
             }
         }
@@ -225,8 +208,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         selectionKeyByConnectionId.clear();
 
         CloseHelper.closeAll(listeningSockets);
-        CloseHelper.close(acceptingSelector);
-        CloseHelper.close(connectionsSelector);
+        CloseHelper.close(selector);
         CloseHelper.close(connectionService);
     }
 
@@ -237,7 +219,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         {
             listeningSocket.listen();
             final ServerSocketChannel serverSocketChannel = listeningSocket.serverSocketChannel();
-            final SelectionKey selectionKey = serverSocketChannel.register(acceptingSelector, SelectionKey.OP_ACCEPT);
+            final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
             selectionKey.attach(listeningSocket);
         }
         catch (IOException e)
