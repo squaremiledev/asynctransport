@@ -11,6 +11,7 @@ import com.michaelszymczak.sample.sockets.api.ConnectionIdValue;
 import com.michaelszymczak.sample.sockets.api.commands.CommandFactory;
 import com.michaelszymczak.sample.sockets.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.connection.Connection;
 import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
 
 import org.agrona.CloseHelper;
@@ -53,7 +54,7 @@ public class ListeningSocket implements AutoCloseable
         return serverSocketChannel;
     }
 
-    public ChannelBackedConnection createConnection(final SocketChannel acceptedSocketChannel) throws SocketException
+    public Connection createConnection(final SocketChannel acceptedSocketChannel) throws SocketException
     {
         final Socket acceptedSocket = acceptedSocketChannel.socket();
         final ConnectionConfiguration configuration = new ConnectionConfiguration(
@@ -64,11 +65,10 @@ public class ListeningSocket implements AutoCloseable
                 acceptedSocketChannel.socket().getSendBufferSize() * 5,
                 acceptedSocketChannel.socket().getReceiveBufferSize()
         );
-        final ChannelBackedConnection connection = new ChannelBackedConnection(
+        final Connection connection = new ConnectionImpl(
                 configuration,
                 new SocketBackedChannel(acceptedSocketChannel),
-                transportEventsListener::onEvent,
-                commandFactory
+                transportEventsListener::onEvent
         );
         transportEventsListener.onEvent(new ConnectionAccepted(
                 connection,

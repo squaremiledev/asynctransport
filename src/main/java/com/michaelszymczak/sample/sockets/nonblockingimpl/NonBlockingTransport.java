@@ -24,6 +24,7 @@ import com.michaelszymczak.sample.sockets.api.events.StatusEventListener;
 import com.michaelszymczak.sample.sockets.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.api.events.TransportEventsListener;
+import com.michaelszymczak.sample.sockets.connection.Connection;
 import com.michaelszymczak.sample.sockets.connection.ConnectionService;
 import com.michaelszymczak.sample.sockets.connection.ConnectionState;
 
@@ -206,7 +207,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                 {
                     final ListeningSocket listeningSocket = (ListeningSocket)key.attachment();
                     final SocketChannel acceptedSocketChannel = listeningSocket.acceptChannel();
-                    final ChannelBackedConnection connection = connectionService.newConnection(listeningSocket.createConnection(acceptedSocketChannel));
+                    final Connection connection = connectionService.newConnection(listeningSocket.createConnection(acceptedSocketChannel));
                     selectionKeyByConnectionId.put(connection.connectionId(), acceptedSocketChannel.register(
                             connectionsSelector,
                             SelectionKey.OP_READ,

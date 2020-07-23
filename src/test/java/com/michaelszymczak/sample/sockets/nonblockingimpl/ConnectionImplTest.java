@@ -20,7 +20,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
-class ChannelBackedConnectionTest
+class ConnectionImplTest
 {
 
     private ConnectionEventsSpy events = new ConnectionEventsSpy();
@@ -40,7 +40,7 @@ class ChannelBackedConnectionTest
     @Test
     void shouldReadConfiguration()
     {
-        final ChannelBackedConnection connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(8080, 51), 9090, 10, 20, 30));
+        final ConnectionImpl connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(8080, 51), 9090, 10, 20, 30));
 
         assertThat(connection.connectionId()).isEqualTo(51);
         assertThat(connection.port()).isEqualTo(8080);
@@ -50,7 +50,7 @@ class ChannelBackedConnectionTest
     @Test
     void shouldIncludeConnectionIdInTheEvent()
     {
-        final ChannelBackedConnection connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(1234, 3), 5678, 7, 7, 30));
+        final ConnectionImpl connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(1234, 3), 5678, 7, 7, 30));
 
         // When
         connection.handle(connection.command(SendData.class));
@@ -64,7 +64,7 @@ class ChannelBackedConnectionTest
     @Test
     void shouldIncludeCommandIdInTheEventIfMentioned()
     {
-        final ChannelBackedConnection connection = newConnection();
+        final ConnectionImpl connection = newConnection();
 
         // When
         connection.handle(connection.command(SendData.class).set(new byte[0], 52));
@@ -83,7 +83,7 @@ class ChannelBackedConnectionTest
     void shouldNotifyThatDidNotTryToSendAnyData()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(0);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         final SendData sendData = connection.command(SendData.class).set(new byte[0]);
 
         // When
@@ -99,7 +99,7 @@ class ChannelBackedConnectionTest
     void shouldNotifyThatBufferedTheDataIfUnableToSendAtAll()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(0);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         final SendData sendData = connection.command(SendData.class).set(bytes("foo"));
 
         // When
@@ -115,7 +115,7 @@ class ChannelBackedConnectionTest
     void shouldAttemptToSendAllDataInOneGo()
     {
         final FakeChannel channel = new FakeChannel().allBytesWrittenInOneGo();
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         final byte[] content = bytes("fooBAR");
         final SendData sendData = connection.command(SendData.class).set(content);
 
@@ -132,7 +132,7 @@ class ChannelBackedConnectionTest
     void shouldSendAsMuchAsPossibleInOneGoAndBufferTheRest()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         final byte[] content = bytes("fooBARba");
         final SendData sendData = connection.command(SendData.class).set(content);
 
@@ -149,7 +149,7 @@ class ChannelBackedConnectionTest
     void shouldSendAllBufferedDataIfPossible()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("fooBA")));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 5));
 
@@ -167,7 +167,7 @@ class ChannelBackedConnectionTest
     void shouldSendAsMuchOfBufferedDataAsPossible()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("fooBARba")));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8));
 
@@ -185,7 +185,7 @@ class ChannelBackedConnectionTest
     void shouldNotKeepSetDataWhenRetrievedAgain()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         final byte[] content = bytes("fooBAR");
         connection.command(SendData.class).set(content);
 
@@ -203,7 +203,7 @@ class ChannelBackedConnectionTest
     void shouldNotKeepUnsentDataWhenRetrievedAgain()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("fooBAR")));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 6));
 
@@ -220,7 +220,7 @@ class ChannelBackedConnectionTest
     void shouldCalculateTotalDataSent()
     {
         final FakeChannel channel = new FakeChannel().allBytesWrittenInOneGo();
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
 
         // When
         connection.handle(connection.command(SendData.class).set(bytes("foo")));
@@ -236,7 +236,7 @@ class ChannelBackedConnectionTest
     void shouldEventuallyDrainTheBuffer()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(2);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("0123456"), 100));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 2, 2, 7, 100));
 
@@ -263,7 +263,7 @@ class ChannelBackedConnectionTest
     void shouldSendAlsoDataFromTheCurrentCommandIfWholeBufferDrained()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(5);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("1234567"), 100));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 5, 5, 7, 100));
 
@@ -284,7 +284,7 @@ class ChannelBackedConnectionTest
     void shouldSendAsMuchDataAsPossibleAndBufferRestIfWholeBufferDrained()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(5);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("1234567"), 100));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 5, 5, 7, 100));
 
@@ -307,7 +307,7 @@ class ChannelBackedConnectionTest
     void shouldNotSendAnyNewDataUntilBufferedDataSent()
     {
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(2);
-        final ChannelBackedConnection connection = newConnection(channel);
+        final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("012345"), 100));
         assertEqual(events.all(DataSent.class), new DataSent(connection, 2, 2, 6, 100));
 
@@ -337,19 +337,19 @@ class ChannelBackedConnectionTest
         assertThat(events.all(ConnectionEvent.class)).hasSize(expected);
     }
 
-    private ChannelBackedConnection newConnection()
+    private ConnectionImpl newConnection()
     {
         return newConnection(config());
     }
 
-    private ChannelBackedConnection newConnection(final FakeChannel channel)
+    private ConnectionImpl newConnection(final FakeChannel channel)
     {
-        return new ChannelBackedConnection(config(), channel, events);
+        return new ConnectionImpl(config(), channel, events);
     }
 
-    private ChannelBackedConnection newConnection(final ConnectionConfiguration config)
+    private ConnectionImpl newConnection(final ConnectionConfiguration config)
     {
-        return new ChannelBackedConnection(config, new FakeChannel(), events);
+        return new ConnectionImpl(config, new FakeChannel(), events);
     }
 
     private ConnectionConfiguration config()

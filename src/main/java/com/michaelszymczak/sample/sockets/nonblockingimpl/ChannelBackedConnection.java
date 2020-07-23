@@ -1,11 +1,9 @@
 package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import com.michaelszymczak.sample.sockets.api.CommandId;
 import com.michaelszymczak.sample.sockets.api.commands.CloseConnection;
-import com.michaelszymczak.sample.sockets.api.commands.CommandFactory;
 import com.michaelszymczak.sample.sockets.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.api.commands.NoOpCommand;
 import com.michaelszymczak.sample.sockets.api.commands.ReadData;
@@ -15,7 +13,6 @@ import com.michaelszymczak.sample.sockets.connection.Channel;
 import com.michaelszymczak.sample.sockets.connection.Connection;
 import com.michaelszymczak.sample.sockets.connection.ConnectionCommands;
 import com.michaelszymczak.sample.sockets.connection.ConnectionConfiguration;
-import com.michaelszymczak.sample.sockets.connection.ConnectionEventsListener;
 import com.michaelszymczak.sample.sockets.connection.ConnectionState;
 
 import org.agrona.CloseHelper;
@@ -32,25 +29,22 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     private final ConnectionCommands connectionCommands;
     private final ConnectionConfiguration configuration;
     private final OutgoingStream outgoingStream;
-    private final ByteBuffer readBuffer;
     private long totalBytesReceived;
     private boolean isClosed = false;
     private ConnectionState connectionState;
 
-    ChannelBackedConnection(final ConnectionConfiguration configuration, final Channel channel, final ConnectionEventsListener eventsListener)
-    {
-        this(configuration, channel, eventsListener, new CommandFactory());
-    }
-
-    ChannelBackedConnection(final ConnectionConfiguration configuration, final Channel channel, final ConnectionEventsListener eventsListener, final CommandFactory commandFactory)
+    ChannelBackedConnection(
+            final ConnectionConfiguration configuration,
+            final Channel channel,
+            final SingleConnectionEvents singleConnectionEvents
+    )
     {
         this.configuration = configuration;
         this.channel = channel;
-        this.singleConnectionEvents = new SingleConnectionEvents(eventsListener, configuration.connectionId.port(), configuration.connectionId.connectionId(), configuration.maxInboundMessageSize);
-        this.connectionCommands = new ConnectionCommands(commandFactory, configuration.connectionId, configuration.maxOutboundMessageSize);
-        this.outgoingStream = new OutgoingStream(singleConnectionEvents, configuration.sendBufferSize);
+        this.singleConnectionEvents = singleConnectionEvents;
+        this.connectionCommands = new ConnectionCommands(configuration.connectionId, configuration.maxOutboundMessageSize);
+        this.outgoingStream = new OutgoingStream(this.singleConnectionEvents, configuration.sendBufferSize);
         this.connectionState = outgoingStream.state();
-        this.readBuffer = ByteBuffer.wrap(new byte[configuration.maxInboundMessageSize]);
     }
 
     @Override
@@ -68,11 +62,6 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     @Override
     public boolean handle(final ConnectionCommand command)
     {
-        if (!validate(command))
-        {
-            return false;
-        }
-
         if (command instanceof NoOpCommand)
         {
             return true;
