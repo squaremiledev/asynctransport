@@ -8,7 +8,6 @@ import com.michaelszymczak.sample.sockets.domain.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.domain.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
-import com.michaelszymczak.sample.sockets.domain.api.events.StatusEvent;
 import com.michaelszymczak.sample.sockets.domain.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.domain.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.support.SampleClient;
@@ -108,14 +107,82 @@ class ListeningTransportTest extends TransportTestBase
         transport.workUntil(() -> transport.events().all(StartedListening.class).size() == 2);
 
         // Then
-        assertThat(transport.statusEvents().all()).isEmpty();
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).isEmpty();
         clients.client(1).connectedTo(serverPort1);
         clients.client(2).connectedTo(serverPort2);
         transport.workUntil(() -> transport.statusEvents().all(NumberOfConnectionsChanged.class).size() == 2);
     }
 
     @Test
-    void shouldRejectWhenAskedToListenOnTheSamePortTwice()
+    void shouldBeAbleToListenOnTheSamePortAgain()
+    {
+        // When
+        final int serverPort1 = freePort();
+        transport.handle(transport.command(Listen.class).set(101, serverPort1));
+        transport.workUntil(() -> transport.events().all(StartedListening.class).size() == 1);
+        transport.handle(transport.command(StopListening.class).set(102, serverPort1));
+        transport.workUntil(() -> transport.events().all(StoppedListening.class).size() == 1);
+
+        // When
+        transport.handle(transport.command(Listen.class).set(103, serverPort1));
+        transport.workUntil(() -> transport.events().all(StartedListening.class).size() == 2);
+
+        // Then
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).isEmpty();
+        clients.client(1).connectedTo(serverPort1);
+        transport.workUntil(() -> transport.statusEvents().all(NumberOfConnectionsChanged.class).size() == 1);
+    }
+
+    @Test
+    void shouldBeAbleToListenOnTheSameAfterStoppedListeningWhileConnectionIsUp()
+    {
+        // When
+        final int serverPort1 = freePort();
+        transport.handle(transport.command(Listen.class).set(101, serverPort1));
+        transport.workUntil(() -> transport.events().all(StartedListening.class).size() == 1);
+        clients.client(1).connectedTo(serverPort1);
+        transport.workUntil(() -> transport.statusEvents().all(NumberOfConnectionsChanged.class).size() == 1);
+        transport.handle(transport.command(StopListening.class).set(102, serverPort1));
+        transport.workUntil(() -> transport.events().all(StoppedListening.class).size() == 1);
+
+        // When
+        transport.handle(transport.command(Listen.class).set(103, serverPort1));
+        transport.workUntil(() -> transport.events().all(StartedListening.class).size() == 2);
+
+        // Then
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSize(1);
+        clients.client(2).connectedTo(serverPort1);
+        transport.workUntil(() -> transport.statusEvents().all(NumberOfConnectionsChanged.class).size() == 2);
+    }
+
+    @Test
+    void shouldBeAbleToListenOnTheSameAfterStoppedListeningAndClosedConnection()
+    {
+        // When
+        final int serverPort1 = freePort();
+        transport.handle(transport.command(Listen.class).set(101, serverPort1));
+        transport.workUntil(() -> transport.events().all(StartedListening.class).size() == 1);
+        clients.client(1).connectedTo(serverPort1);
+        transport.workUntil(() -> transport.statusEvents().all(NumberOfConnectionsChanged.class).size() == 1);
+        transport.handle(transport.command(StopListening.class).set(102, serverPort1));
+        transport.workUntil(() -> transport.events().all(StoppedListening.class).size() == 1);
+        clients.client(1).close();
+        transport.workUntil(() -> transport.statusEvents().all(NumberOfConnectionsChanged.class).size() == 2);
+        assertThat(transport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
+
+        // When
+        transport.handle(transport.command(Listen.class).set(103, serverPort1));
+        transport.workUntil(() -> transport.events().all(StartedListening.class).size() == 2);
+
+        // Then
+        assertThat(transport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSize(2);
+        clients.client(2).connectedTo(serverPort1);
+        transport.workUntil(() -> transport.statusEvents().all(NumberOfConnectionsChanged.class).size() == 3);
+    }
+
+
+    @Test
+    void shouldRejectWhenAskedToListenOnTheSamePortAtTheSameTime()
     {
         // When
         final int serverPort1 = freePort();
@@ -135,7 +202,7 @@ class ListeningTransportTest extends TransportTestBase
     }
 
     @Test
-    void shouldRejectWhenAskedImmediatelyToListenOnTheSamePortTwice()
+    void shouldRejectWhenAskedImmediatelyToListenOnTheSamePort()
     {
         // When
         final int serverPort1 = freePort();
