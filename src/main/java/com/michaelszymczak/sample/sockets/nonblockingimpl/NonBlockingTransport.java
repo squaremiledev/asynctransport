@@ -25,21 +25,21 @@ import com.michaelszymczak.sample.sockets.domain.connection.Connection;
 import com.michaelszymczak.sample.sockets.domain.connection.ConnectionState;
 
 import org.agrona.CloseHelper;
-import org.agrona.collections.Int2ObjectHashMap;
 
 public class NonBlockingTransport implements AutoCloseable, Transport
 {
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
-    private final Int2ObjectHashMap<Server> listeningSocketsByPort = new Int2ObjectHashMap<>();
     private final Selector selector = Selector.open();
     private final CommandFactory commandFactory = new CommandFactory();
     private final EventListener eventListener;
     private final Connections connections;
+    private final Servers servers;
 
     public NonBlockingTransport(final EventListener eventListener) throws IOException
     {
-        this.eventListener = eventListener;
+        this.servers = new Servers();
         this.connections = new Connections(eventListener::onEvent);
+        this.eventListener = eventListener;
     }
 
     private void handle(final ConnectionCommand command)
@@ -51,8 +51,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             return;
         }
         connection.handle(command);
-        SelectionKey key = connections.getSelectionKey(command.connectionId());
-        updateSelectionKeyInterest(connection.state(), key);
+        updateSelectionKeyInterest(connection.state(), connections.getSelectionKey(command.connectionId()));
         if (connection.state() == ConnectionState.CLOSED)
         {
             connections.remove(command.connectionId());
@@ -64,7 +63,45 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     {
         try
         {
-            acceptingWork();
+            if (selector.selectNow() > 0)
+            {
+                final Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
+                while (keyIterator.hasNext())
+                {
+                    final SelectionKey key = keyIterator.next();
+                    keyIterator.remove();
+                    if (!key.isValid())
+                    {
+                        continue;
+                    }
+                    if (key.isAcceptable())
+                    {
+                        int port = ((ListeningSocketConductor)key.attachment()).port();
+                        final Server server = servers.serverListeningOn(port);
+                        final SocketChannel acceptedSocketChannel = server.acceptChannel();
+                        final Connection connection = server.createConnection(acceptedSocketChannel);
+                        connections.add(connection, acceptedSocketChannel.register(
+                                selector,
+                                SelectionKey.OP_READ,
+                                new ConnectionConductor(
+                                        commandFactory.create(connection, ReadData.class),
+                                        commandFactory.create(connection, SendData.class),
+                                        commandFactory.create(connection, NoOpCommand.class)
+                                )
+                        ));
+                    }
+                    else
+                    {
+                        ConnectionCommand command = ((ConnectionConductor)key.attachment()).command(key);
+                        Connection connection = connections.get(command.connectionId());
+                        connection.handle(command);
+                        if (connection.state() == ConnectionState.CLOSED)
+                        {
+                            connections.remove(command.connectionId());
+                        }
+                    }
+                }
+            }
         }
         catch (IOException e)
         {
@@ -142,85 +179,46 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         }
     }
 
-    private void acceptingWork() throws IOException
-    {
-        if (selector.selectNow() > 0)
-        {
-            final Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
-            while (keyIterator.hasNext())
-            {
-                final SelectionKey key = keyIterator.next();
-                keyIterator.remove();
-                if (!key.isValid())
-                {
-                    continue;
-                }
-                if (key.isAcceptable())
-                {
-                    int port = ((ListeningSocketConductor)key.attachment()).port();
-                    final Server server = listeningSocketsByPort.get(port);
-                    final SocketChannel acceptedSocketChannel = server.acceptChannel();
-                    final Connection connection = server.createConnection(acceptedSocketChannel);
-                    connections.add(connection, acceptedSocketChannel.register(
-                            selector,
-                            SelectionKey.OP_READ,
-                            new ConnectionConductor(
-                                    commandFactory.create(connection, ReadData.class),
-                                    commandFactory.create(connection, SendData.class),
-                                    commandFactory.create(connection, NoOpCommand.class)
-                            )
-                    ));
-                }
-                else
-                {
-                    ConnectionCommand command = ((ConnectionConductor)key.attachment()).command(key);
-                    Connection connection = connections.get(command.connectionId());
-                    connection.handle(command);
-                    if (connection.state() == ConnectionState.CLOSED)
-                    {
-                        connections.remove(command.connectionId());
-                    }
-                }
-            }
-        }
-    }
-
     @Override
     public void close()
     {
         CloseHelper.close(connections);
-        CloseHelper.closeAll(listeningSocketsByPort.values());
+        CloseHelper.closeAll(servers);
         CloseHelper.close(selector);
     }
 
-    private void handle(final Listen command) throws IOException
+    private void handle(final Listen command)
     {
-        final Server server = new Server(command.port(), command.commandId(), connectionIdSource, eventListener, commandFactory);
+        if (servers.isListeningOn(command.port()))
+        {
+            eventListener.onEvent(new TransportCommandFailed(command, "Address already in use"));
+            return;
+        }
         try
         {
-            server.listen();
+            servers.start(command.port(), command.commandId(), connectionIdSource, eventListener, commandFactory);
+            Server server = servers.serverListeningOn(command.port());
             final ServerSocketChannel serverSocketChannel = server.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
             selectionKey.attach(new ListeningSocketConductor(server.port()));
-            listeningSocketsByPort.put(server.port(), server);
             eventListener.onEvent(new StartedListening(command.port(), command.commandId()));
         }
         catch (IOException e)
         {
-            CloseHelper.close(server);
+            servers.stop(command.port());
             eventListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
         }
     }
 
     private void handle(final StopListening command)
     {
-        if (!listeningSocketsByPort.containsKey(command.port()))
+        if (!servers.isListeningOn(command.port()))
         {
             eventListener.onEvent(new TransportCommandFailed(command, "No listening socket found on this port"));
             return;
         }
 
-        CloseHelper.close(listeningSocketsByPort.remove(command.port()));
+        servers.stop(command.port());
         eventListener.onEvent(new StoppedListening(command.port(), command.commandId()));
     }
 
