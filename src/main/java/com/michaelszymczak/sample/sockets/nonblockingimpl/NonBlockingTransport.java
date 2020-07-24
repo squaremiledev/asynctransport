@@ -30,7 +30,7 @@ import org.agrona.collections.Int2ObjectHashMap;
 public class NonBlockingTransport implements AutoCloseable, Transport
 {
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
-    private final Int2ObjectHashMap<ListeningSocket> listeningSocketsByPort = new Int2ObjectHashMap<>();
+    private final Int2ObjectHashMap<Server> listeningSocketsByPort = new Int2ObjectHashMap<>();
     private final Selector selector = Selector.open();
     private final CommandFactory commandFactory = new CommandFactory();
     private final EventListener eventListener;
@@ -158,9 +158,9 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                 if (key.isAcceptable())
                 {
                     int port = ((ListeningSocketConductor)key.attachment()).port();
-                    final ListeningSocket listeningSocket = listeningSocketsByPort.get(port);
-                    final SocketChannel acceptedSocketChannel = listeningSocket.acceptChannel();
-                    final Connection connection = listeningSocket.createConnection(acceptedSocketChannel);
+                    final Server server = listeningSocketsByPort.get(port);
+                    final SocketChannel acceptedSocketChannel = server.acceptChannel();
+                    final Connection connection = server.createConnection(acceptedSocketChannel);
                     connections.add(connection, acceptedSocketChannel.register(
                             selector,
                             SelectionKey.OP_READ,
@@ -195,19 +195,19 @@ public class NonBlockingTransport implements AutoCloseable, Transport
 
     private void handle(final Listen command) throws IOException
     {
-        final ListeningSocket listeningSocket = new ListeningSocket(command.port(), command.commandId(), connectionIdSource, eventListener, commandFactory);
+        final Server server = new Server(command.port(), command.commandId(), connectionIdSource, eventListener, commandFactory);
         try
         {
-            listeningSocket.listen();
-            final ServerSocketChannel serverSocketChannel = listeningSocket.serverSocketChannel();
+            server.listen();
+            final ServerSocketChannel serverSocketChannel = server.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-            selectionKey.attach(new ListeningSocketConductor(listeningSocket.port()));
-            listeningSocketsByPort.put(listeningSocket.port(), listeningSocket);
+            selectionKey.attach(new ListeningSocketConductor(server.port()));
+            listeningSocketsByPort.put(server.port(), server);
             eventListener.onEvent(new StartedListening(command.port(), command.commandId()));
         }
         catch (IOException e)
         {
-            CloseHelper.close(listeningSocket);
+            CloseHelper.close(server);
             eventListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
         }
     }

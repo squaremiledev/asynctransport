@@ -16,7 +16,7 @@ import com.michaelszymczak.sample.sockets.domain.connection.ConnectionConfigurat
 
 import org.agrona.CloseHelper;
 
-public class ListeningSocket implements AutoCloseable
+public class Server implements AutoCloseable
 {
     private final int port;
     private final long commandIdThatTriggeredListening;
@@ -25,7 +25,7 @@ public class ListeningSocket implements AutoCloseable
     private final CommandFactory commandFactory;
     private final ServerSocketChannel serverSocketChannel;
 
-    ListeningSocket(
+    Server(
             final int port,
             final long commandIdThatTriggeredListening,
             final ConnectionIdSource connectionIdSource,
@@ -101,7 +101,7 @@ public class ListeningSocket implements AutoCloseable
     @Override
     public String toString()
     {
-        return "ListeningSocket{" +
+        return "Server{" +
                "port=" + port +
                ", commandIdThatTriggeredListening=" + commandIdThatTriggeredListening +
                ", connectionIdSource=" + connectionIdSource +
