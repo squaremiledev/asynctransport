@@ -31,6 +31,11 @@ public class Connections implements AutoCloseable
         connectionRepository.removeById(connectionId);
     }
 
+    public boolean contains(long connectionId)
+    {
+        return connectionRepository.contains(connectionId);
+    }
+
     public SelectionKey getSelectionKey(final long connectionId)
     {
         return selectionKeyByConnectionId.get(connectionId);
@@ -41,6 +46,7 @@ public class Connections implements AutoCloseable
     {
         selectionKeyByConnectionId.values().forEach(SelectionKey::cancel);
         selectionKeyByConnectionId.clear();
+        connectionRepository.close();
     }
 
     public Connection get(final long connectionId)

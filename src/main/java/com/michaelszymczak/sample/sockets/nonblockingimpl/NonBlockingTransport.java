@@ -22,20 +22,16 @@ import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.domain.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.domain.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.domain.connection.Connection;
-import com.michaelszymczak.sample.sockets.domain.connection.ConnectionService;
 import com.michaelszymczak.sample.sockets.domain.connection.ConnectionState;
 
 import org.agrona.CloseHelper;
 import org.agrona.collections.Int2ObjectHashMap;
-
-import static org.agrona.LangUtil.rethrowUnchecked;
 
 public class NonBlockingTransport implements AutoCloseable, Transport
 {
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
     private final Int2ObjectHashMap<ListeningSocket> listeningSocketsByPort = new Int2ObjectHashMap<>();
     private final Selector selector = Selector.open();
-    private final ConnectionService connectionService;
     private final CommandFactory commandFactory = new CommandFactory();
     private final EventListener eventListener;
     private final Connections connections;
@@ -44,25 +40,20 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     {
         this.eventListener = eventListener;
         this.connections = new Connections(eventListener::onEvent);
-        this.connectionService = new ConnectionService(eventListener, connections.connectionRepository);
     }
 
     private void handle(final ConnectionCommand command)
     {
-        ConnectionState state = connectionService.handle(command);
-        // means error (connection not found or invalid command)
-        if (state == null)
+        Connection connection = connections.get(command.connectionId());
+        if (connection == null)
         {
+            eventListener.onEvent(new TransportCommandFailed(command, "Connection id not found"));
             return;
         }
-
+        connection.handle(command);
         SelectionKey key = connections.getSelectionKey(command.connectionId());
-        if (key == null)
-        {
-            return;
-        }
-        updateSelectionKeyInterest(state, key);
-        if (state == ConnectionState.CLOSED)
+        updateSelectionKeyInterest(connection.state(), key);
+        if (connection.state() == ConnectionState.CLOSED)
         {
             connections.remove(command.connectionId());
         }
@@ -91,7 +82,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         catch (Exception e)
         {
             eventListener.onEvent(new TransportCommandFailed(command, e.getMessage()));
-            rethrowUnchecked(e);
         }
     }
 
@@ -154,11 +144,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
 
     private void acceptingWork() throws IOException
     {
-        final int availableCount;
-
-        availableCount = selector.selectNow();
-
-        if (availableCount > 0)
+        if (selector.selectNow() > 0)
         {
             final Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
             while (keyIterator.hasNext())
@@ -188,9 +174,9 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                 else
                 {
                     ConnectionCommand command = ((ConnectionConductor)key.attachment()).command(key);
-                    ConnectionState state = connectionService.handle(command);
-                    updateSelectionKeyInterest(state, key);
-                    if (state == ConnectionState.CLOSED)
+                    Connection connection = connections.get(command.connectionId());
+                    connection.handle(command);
+                    if (connection.state() == ConnectionState.CLOSED)
                     {
                         connections.remove(command.connectionId());
                     }
@@ -205,7 +191,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         CloseHelper.close(connections);
         CloseHelper.closeAll(listeningSocketsByPort.values());
         CloseHelper.close(selector);
-        CloseHelper.close(connectionService);
     }
 
     private void handle(final Listen command) throws IOException
