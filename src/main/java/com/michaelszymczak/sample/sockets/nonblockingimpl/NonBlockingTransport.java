@@ -105,7 +105,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                         {
                             Connection connection = connections.get(connectedNotification.connectionId);
                             connection.connected(connectedNotification.socketChannel.socket().getLocalPort(), connectedNotification.commandId);
-                            // TODO: re-register as above ?
+                            // TODO: re-register as above ? to be able to receive and send chunks of data exceeding the buffer size
                             connectedNotification.socketChannel.register(selector, 0);
                         }
                     }

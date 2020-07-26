@@ -7,10 +7,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.michaelszymczak.sample.sockets.domain.api.CommandId;
+import com.michaelszymczak.sample.sockets.domain.api.commands.Connect;
 import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.domain.api.events.CommandFailed;
+import com.michaelszymczak.sample.sockets.domain.api.events.Connected;
 import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionClosed;
+import com.michaelszymczak.sample.sockets.domain.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.domain.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.domain.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
@@ -19,6 +22,7 @@ import com.michaelszymczak.sample.sockets.domain.api.events.TransportEvent;
 import com.michaelszymczak.sample.sockets.support.FreePort;
 import com.michaelszymczak.sample.sockets.support.ThreadSafeReadDataSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
+import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
 import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.agrona.collections.MutableInteger;
@@ -369,7 +373,35 @@ class DataSendingTest extends TransportTestBase
     @Disabled
     void shouldSendDataAfterConnecting()
     {
+        final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
+        final TransportDriver driver = new TransportDriver(transport);
+        StartedListening startedListening = driver.startListening();
+        TransportUnderTest client = new TransportUnderTest();
+        client.handle(new Connect().set(startedListening.port(), 100));
+        Worker.runUntil(() ->
+                        {
+                            transport.work();
+                            client.work();
+                            return !client.connectionEvents().all(Connected.class).isEmpty();
+                        });
+        Connected connected = client.connectionEvents().last(Connected.class);
 
+        //When
+        client.handle(client.command(connected, SendData.class).set(bytes("foo")));
+
+        // Then
+        Worker.runUntil(() ->
+                        {
+                            transport.work();
+                            client.work();
+                            return !transport.connectionEvents().all(DataReceived.class).isEmpty();
+                        });
+        assertThat(transport.connectionEvents().all(DataReceived.class)).hasSize(1);
+        DataReceived dataReceived = transport.connectionEvents().last(DataReceived.class);
+        assertThat(dataReceived.length()).isEqualTo(3);
+        byte[] content = new byte[dataReceived.length()];
+        dataReceived.copyDataTo(content);
+        assertThat(content).isEqualTo(bytes("foo"));
     }
 
     private byte[] bytes(final String foo)
