@@ -22,6 +22,7 @@ import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.agrona.collections.MutableInteger;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -65,9 +66,7 @@ class DataSendingTest extends TransportTestBase
         // Then
         transport.workUntil(completed(() -> clients.client(1).read(3, 10, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("foo");
-        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), 3, 3,
-                                                                         3
-        ));
+        assertEqual(transport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), 3, 3, 3));
     }
 
     @Test
@@ -364,6 +363,13 @@ class DataSendingTest extends TransportTestBase
                 new TransportCommandFailed(conn.port(), 101, "Connection id not found")
         ));
         assertEqual(transport.statusEvents().all(), asList(new NumberOfConnectionsChanged(1), new NumberOfConnectionsChanged(0)));
+    }
+
+    @Test
+    @Disabled
+    void shouldSendDataAfterConnecting()
+    {
+
     }
 
     private byte[] bytes(final String foo)

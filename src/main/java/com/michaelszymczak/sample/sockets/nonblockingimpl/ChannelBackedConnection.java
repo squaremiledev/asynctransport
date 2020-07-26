@@ -125,7 +125,9 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
                 this.port,
                 commandId,
                 configuration.remotePort,
-                configuration.connectionId.connectionId()
+                configuration.connectionId.connectionId(),
+                configuration.maxInboundMessageSize,
+                configuration.maxOutboundMessageSize
         ));
     }
 

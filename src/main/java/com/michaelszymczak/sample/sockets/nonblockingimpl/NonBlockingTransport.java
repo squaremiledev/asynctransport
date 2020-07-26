@@ -259,9 +259,10 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             final ConnectionConfiguration configuration = new ConnectionConfiguration(
                     new ConnectionIdValue(TransportId.NO_PORT, connectionId),
                     socket.getPort(),
-                    10,
-                    10,
-                    10
+                    socket.getSendBufferSize(),
+                    // TODO: decide how to select buffer size (prod and test performance)
+                    socket.getSendBufferSize() * 5,
+                    socket.getReceiveBufferSize()
             );
             final Connection connection = new ConnectionImpl(configuration, new SocketBackedChannel(socketChannel), eventListener::onEvent);
             // TODO: think of better mechanism than the notification object

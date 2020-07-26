@@ -48,9 +48,18 @@ class ConnectingTransportTest
         // Then
         ConnectionAccepted connectionAcceptedByServer = serverTransport.connectionEvents().last(ConnectionAccepted.class);
         assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
-        assertEqual(clientTransport.events().all(Connected.class), new Connected(
-                connectionAcceptedByServer.remotePort(), 101, serverStartedListening.port(), 0
-        ));
+        Connected connected = clientTransport.events().last(Connected.class);
+        assertEqual(
+                clientTransport.events().all(Connected.class),
+                new Connected(
+                        connectionAcceptedByServer.remotePort(),
+                        101,
+                        serverStartedListening.port(),
+                        connected.connectionId(),
+                        connected.maxInboundMessageSize(),
+                        connected.maxOutboundMessageSize()
+                )
+        );
         assertEqual(clientTransport.statusEvents().all(), singletonList(new NumberOfConnectionsChanged(1)));
         assertEqual(serverTransport.statusEvents().all(), singletonList(new NumberOfConnectionsChanged(1)));
         assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
