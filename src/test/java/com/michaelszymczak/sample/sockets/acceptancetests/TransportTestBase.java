@@ -12,14 +12,9 @@ import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 
 abstract class TransportTestBase
 {
-    final TransportUnderTest transport;
-    final SampleClients clients;
-
-    TransportTestBase()
-    {
-        transport = new TransportUnderTest();
-        clients = createSampleClient();
-    }
+    final TransportUnderTest serverTransport = new TransportUnderTest();
+    final SampleClients clients = createSampleClient();
+    final TransportUnderTest clientTransport = new TransportUnderTest();
 
     private static SampleClients createSampleClient()
     {
@@ -37,6 +32,7 @@ abstract class TransportTestBase
     void tearDown()
     {
         clients.close();
-        closeCleanly(transport);
+        closeCleanly(serverTransport);
+        closeCleanly(clientTransport);
     }
 }

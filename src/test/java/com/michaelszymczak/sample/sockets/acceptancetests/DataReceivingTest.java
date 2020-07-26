@@ -39,27 +39,27 @@ class DataReceivingTest extends TransportTestBase
     @Test
     void shouldReceiveData()
     {
-        final TransportDriver driver = new TransportDriver(transport);
+        final TransportDriver driver = new TransportDriver(serverTransport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
 
         // When
-        transport.workUntil(completed(() -> clients.client(1).write("foo".getBytes(US_ASCII))));
-        transport.workUntil(bytesReceived(transport.connectionEvents(), conn.connectionId(), 3));
+        serverTransport.workUntil(completed(() -> clients.client(1).write("foo".getBytes(US_ASCII))));
+        serverTransport.workUntil(bytesReceived(serverTransport.connectionEvents(), conn.connectionId(), 3));
 
         // Then
-        assertThat(transport.events().all(DataReceived.class)).isNotEmpty();
-        final DataReceived dataReceivedEvent = transport.events().last(DataReceived.class);
+        assertThat(serverTransport.events().all(DataReceived.class)).isNotEmpty();
+        final DataReceived dataReceivedEvent = serverTransport.events().last(DataReceived.class);
         assertThat(dataReceivedEvent.port()).isEqualTo(conn.port());
         assertThat(dataReceivedEvent.connectionId()).isEqualTo(conn.connectionId());
-        assertThat(dataAsString(transport.events().all(DataReceived.class), US_ASCII)).isEqualTo("foo");
+        assertThat(dataAsString(serverTransport.events().all(DataReceived.class), US_ASCII)).isEqualTo("foo");
     }
 
     @Test
     void shouldEventuallyReceiveAllData()
     {
-        final TransportDriver driver = new TransportDriver(transport);
+        final TransportDriver driver = new TransportDriver(serverTransport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
@@ -71,27 +71,27 @@ class DataReceivingTest extends TransportTestBase
         byte[] wholeDataToSend = concatenatedData(dataChunksToSend);
 
         // When
-        transport.workUntil(completed(() ->
+        serverTransport.workUntil(completed(() ->
                                       {
                                           for (byte[] dataChunk : dataChunksToSend)
                                           {
                                               clients.client(1).write(dataChunk);
                                           }
                                       }));
-        transport.workUntil(bytesReceived(transport.connectionEvents(), conn.connectionId(), wholeDataToSend.length));
+        serverTransport.workUntil(bytesReceived(serverTransport.connectionEvents(), conn.connectionId(), wholeDataToSend.length));
 
         // Then
-        assertThat(transport.connectionEvents().all(DataReceived.class, conn.connectionId())).isNotEmpty();
-        assertThat(transport.connectionEvents().last(DataReceived.class, conn.connectionId()).totalBytesReceived()).isEqualTo(wholeDataToSend.length);
-        assertThat(transport.connectionEvents().all(DataReceived.class, conn.connectionId()).stream().mapToLong(DataReceived::length).sum()).isEqualTo(wholeDataToSend.length);
-        assertThat(dataReceived(transport.connectionEvents().all(DataReceived.class, conn.connectionId()))).isEqualTo(wholeDataToSend);
+        assertThat(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId())).isNotEmpty();
+        assertThat(serverTransport.connectionEvents().last(DataReceived.class, conn.connectionId()).totalBytesReceived()).isEqualTo(wholeDataToSend.length);
+        assertThat(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId()).stream().mapToLong(DataReceived::length).sum()).isEqualTo(wholeDataToSend.length);
+        assertThat(dataReceived(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId()))).isEqualTo(wholeDataToSend);
     }
 
     @Test
     @Tag("tcperror")
     void shouldEventuallyReceiveAllTheDataSentAsOneLargeChunk()
     {
-        final TransportDriver driver = new TransportDriver(transport);
+        final TransportDriver driver = new TransportDriver(serverTransport);
 
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
@@ -104,14 +104,14 @@ class DataReceivingTest extends TransportTestBase
         assertThat(wholeDataToSend.length).isGreaterThan(_10_MB_IN_BYTES);
 
         // When
-        transport.workUntil(completed(() -> clients.client(1).write(wholeDataToSend)));
-        transport.workUntil(bytesReceived(transport.connectionEvents(), conn.connectionId(), wholeDataToSend.length));
+        serverTransport.workUntil(completed(() -> clients.client(1).write(wholeDataToSend)));
+        serverTransport.workUntil(bytesReceived(serverTransport.connectionEvents(), conn.connectionId(), wholeDataToSend.length));
 
         // Then
-        assertThat(transport.connectionEvents().all(DataReceived.class, conn.connectionId())).isNotEmpty();
-        assertThat(transport.connectionEvents().last(DataReceived.class, conn.connectionId()).totalBytesReceived()).isEqualTo(wholeDataToSend.length);
-        assertThat(transport.connectionEvents().all(DataReceived.class, conn.connectionId()).stream().mapToLong(DataReceived::length).sum()).isEqualTo(wholeDataToSend.length);
-        byte[] actualReceivedData = dataReceived(transport.connectionEvents().all(DataReceived.class, conn.connectionId()));
+        assertThat(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId())).isNotEmpty();
+        assertThat(serverTransport.connectionEvents().last(DataReceived.class, conn.connectionId()).totalBytesReceived()).isEqualTo(wholeDataToSend.length);
+        assertThat(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId()).stream().mapToLong(DataReceived::length).sum()).isEqualTo(wholeDataToSend.length);
+        byte[] actualReceivedData = dataReceived(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId()));
         assertThat(actualReceivedData).isEqualTo(wholeDataToSend);
         assertThat(actualReceivedData.length).isGreaterThan(_10_MB_IN_BYTES);
     }
@@ -119,7 +119,7 @@ class DataReceivingTest extends TransportTestBase
     @Test
     void shouldReceivedDataFromMultipleConnections()
     {
-        final TransportDriver driver = new TransportDriver(transport);
+        final TransportDriver driver = new TransportDriver(serverTransport);
 
         // Given
         final StartedListening startedListeningEvent1 = driver.startListening();
@@ -132,23 +132,23 @@ class DataReceivingTest extends TransportTestBase
         assertThat(distinct(ConnectionAccepted::connectionId, connS1C1, connS2C2, connS1C3, connS2C4)).hasSize(4);
 
         // When
-        transport.workUntil(completed(() -> clients.client(1).write(fixedLengthStringStartingWith("S1 -> C1 ", 10).getBytes(US_ASCII))));
-        transport.workUntil(completed(() -> clients.client(2).write(fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII))));
-        transport.workUntil(completed(() -> clients.client(3).write(fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII))));
-        transport.workUntil(completed(() -> clients.client(4).write(fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII))));
-        transport.workUntil(bytesReceived(transport.connectionEvents(), connS1C1.connectionId(), 10));
-        transport.workUntil(bytesReceived(transport.connectionEvents(), connS2C2.connectionId(), 20));
-        transport.workUntil(bytesReceived(transport.connectionEvents(), connS1C3.connectionId(), 30));
-        transport.workUntil(bytesReceived(transport.connectionEvents(), connS2C4.connectionId(), 40));
+        serverTransport.workUntil(completed(() -> clients.client(1).write(fixedLengthStringStartingWith("S1 -> C1 ", 10).getBytes(US_ASCII))));
+        serverTransport.workUntil(completed(() -> clients.client(2).write(fixedLengthStringStartingWith("S2 -> C2 ", 20).getBytes(US_ASCII))));
+        serverTransport.workUntil(completed(() -> clients.client(3).write(fixedLengthStringStartingWith("S1 -> C3 ", 30).getBytes(US_ASCII))));
+        serverTransport.workUntil(completed(() -> clients.client(4).write(fixedLengthStringStartingWith("S2 -> C4 ", 40).getBytes(US_ASCII))));
+        serverTransport.workUntil(bytesReceived(serverTransport.connectionEvents(), connS1C1.connectionId(), 10));
+        serverTransport.workUntil(bytesReceived(serverTransport.connectionEvents(), connS2C2.connectionId(), 20));
+        serverTransport.workUntil(bytesReceived(serverTransport.connectionEvents(), connS1C3.connectionId(), 30));
+        serverTransport.workUntil(bytesReceived(serverTransport.connectionEvents(), connS2C4.connectionId(), 40));
 
         // Then
-        assertThat(dataAsString(transport.connectionEvents().all(DataReceived.class, connS1C1.connectionId()), US_ASCII))
+        assertThat(dataAsString(serverTransport.connectionEvents().all(DataReceived.class, connS1C1.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S1 -> C1 ", 10));
-        assertThat(dataAsString(transport.connectionEvents().all(DataReceived.class, connS2C2.connectionId()), US_ASCII))
+        assertThat(dataAsString(serverTransport.connectionEvents().all(DataReceived.class, connS2C2.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S2 -> C2 ", 20));
-        assertThat(dataAsString(transport.connectionEvents().all(DataReceived.class, connS1C3.connectionId()), US_ASCII))
+        assertThat(dataAsString(serverTransport.connectionEvents().all(DataReceived.class, connS1C3.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S1 -> C3 ", 30));
-        assertThat(dataAsString(transport.connectionEvents().all(DataReceived.class, connS2C4.connectionId()), US_ASCII))
+        assertThat(dataAsString(serverTransport.connectionEvents().all(DataReceived.class, connS2C4.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
     }
 
