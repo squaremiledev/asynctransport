@@ -3,6 +3,7 @@ package com.michaelszymczak.sample.sockets.nonblockingimpl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -12,7 +13,6 @@ import java.util.Iterator;
 import com.michaelszymczak.sample.sockets.domain.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.domain.api.ConnectionIdValue;
 import com.michaelszymczak.sample.sockets.domain.api.Transport;
-import com.michaelszymczak.sample.sockets.domain.api.TransportId;
 import com.michaelszymczak.sample.sockets.domain.api.commands.CommandFactory;
 import com.michaelszymczak.sample.sockets.domain.api.commands.Connect;
 import com.michaelszymczak.sample.sockets.domain.api.commands.ConnectionCommand;
@@ -86,27 +86,29 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                         int port = ((ListeningSocketConductor)key.attachment()).port();
                         final Server server = servers.serverListeningOn(port);
                         final SocketChannel acceptedSocketChannel = server.acceptChannel();
-                        final Connection connection = server.createConnection(acceptedSocketChannel);
-                        connections.add(connection, acceptedSocketChannel.register(
-                                selector,
-                                SelectionKey.OP_READ,
-                                new ConnectionConductor(
-                                        commandFactory.create(connection, ReadData.class),
-                                        commandFactory.create(connection, SendData.class),
-                                        commandFactory.create(connection, NoOpCommand.class)
-                                )
-                        ));
+                        long connectionId = registerConnection(acceptedSocketChannel, server.createConnection(acceptedSocketChannel));
+                        connections.get(connectionId).accepted(server.commandIdThatTriggeredListening());
                     }
                     else if (key.isConnectable())
                     {
+                        // TODO: think of better mechanism than the notification object
                         ConnectedNotification connectedNotification = (ConnectedNotification)key.attachment();
-                        connectedNotification.socketChannel.finishConnect();
-                        if (connectedNotification.socketChannel.isConnected())
+                        SocketChannel socketChannel = connectedNotification.socketChannel;
+                        socketChannel.finishConnect();
+                        if (socketChannel.isConnected())
                         {
-                            Connection connection = connections.get(connectedNotification.connectionId);
-                            connection.connected(connectedNotification.socketChannel.socket().getLocalPort(), connectedNotification.commandId);
-                            // TODO: re-register as above ? to be able to receive and send chunks of data exceeding the buffer size
-                            connectedNotification.socketChannel.register(selector, 0);
+                            Socket socket = socketChannel.socket();
+                            // TODO: size buffers correctly
+                            final ConnectionConfiguration configuration = new ConnectionConfiguration(
+                                    new ConnectionIdValue(socket.getLocalPort(), connectionIdSource.newId()),
+                                    socket.getPort(),
+                                    socket.getSendBufferSize(),
+                                    // TODO: decide how to select buffer size (prod and test performance)
+                                    socket.getSendBufferSize() * 5,
+                                    socket.getReceiveBufferSize()
+                            );
+                            long connectionId = registerConnection(socketChannel, new ConnectionImpl(configuration, new SocketBackedChannel(socketChannel), eventListener::onEvent));
+                            connections.get(connectionId).connected(connectedNotification.commandId);
                         }
                     }
                     else
@@ -178,6 +180,28 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         }
     }
 
+    @Override
+    public void close()
+    {
+        CloseHelper.close(connections);
+        CloseHelper.closeAll(servers);
+        CloseHelper.close(selector);
+    }
+
+    private long registerConnection(final SocketChannel socketChannel, final Connection connection) throws ClosedChannelException
+    {
+        connections.add(connection, socketChannel.register(
+                selector,
+                SelectionKey.OP_READ,
+                new ConnectionConductor(
+                        commandFactory.create(connection, ReadData.class),
+                        commandFactory.create(connection, SendData.class),
+                        commandFactory.create(connection, NoOpCommand.class)
+                )
+        ));
+        return connection.connectionId();
+    }
+
     private void updateSelectionKeyInterest(final ConnectionState state, final SelectionKey key)
     {
         switch (state)
@@ -200,14 +224,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                 key.attach(null);
                 break;
         }
-    }
-
-    @Override
-    public void close()
-    {
-        CloseHelper.close(connections);
-        CloseHelper.closeAll(servers);
-        CloseHelper.close(selector);
     }
 
     private void handle(final Listen command)
@@ -254,20 +270,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             long connectionId = connectionIdSource.newId();
             // TODO: retrieve a host from the command
             socketChannel.connect(new InetSocketAddress("localhost", command.port()));
-            Socket socket = socketChannel.socket();
-            // TODO: size buffers correctly
-            final ConnectionConfiguration configuration = new ConnectionConfiguration(
-                    new ConnectionIdValue(TransportId.NO_PORT, connectionId),
-                    socket.getPort(),
-                    socket.getSendBufferSize(),
-                    // TODO: decide how to select buffer size (prod and test performance)
-                    socket.getSendBufferSize() * 5,
-                    socket.getReceiveBufferSize()
-            );
-            final Connection connection = new ConnectionImpl(configuration, new SocketBackedChannel(socketChannel), eventListener::onEvent);
-            // TODO: think of better mechanism than the notification object
-            SelectionKey selectionKey = socketChannel.register(selector, SelectionKey.OP_CONNECT, new ConnectedNotification(connectionId, socketChannel, command.commandId()));
-            connections.add(connection, selectionKey);
+            socketChannel.register(selector, SelectionKey.OP_CONNECT, new ConnectedNotification(connectionId, socketChannel, command.commandId()));
         }
         catch (IOException e)
         {

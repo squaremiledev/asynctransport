@@ -3,9 +3,12 @@ package com.michaelszymczak.sample.sockets.support;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 
+import com.michaelszymczak.sample.sockets.domain.api.CommandId;
 import com.michaelszymczak.sample.sockets.domain.api.ConnectionId;
+import com.michaelszymczak.sample.sockets.domain.api.commands.Connect;
 import com.michaelszymczak.sample.sockets.domain.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.domain.api.events.Connected;
 import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.domain.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
@@ -66,6 +69,23 @@ public class TransportDriver
     {
         final int serverPort = freePort();
         return listenAndConnect(client, serverPort, freePortOtherThan(serverPort));
+    }
+
+    public ConnectionAccepted listenAndConnect(final TransportUnderTest client)
+    {
+        final int serverPort = freePort();
+        final StartedListening startedListeningEvent = startListening(serverPort);
+        int acceptedEventsBefore = transport.connectionEvents().all(ConnectionAccepted.class).size();
+        int connectedEventsBefore = client.connectionEvents().all(Connected.class).size();
+        client.handle(new Connect().set(startedListeningEvent.port(), CommandId.NO_COMMAND_ID));
+        Worker.runUntil(() ->
+                        {
+                            transport.work();
+                            client.work();
+                            return client.connectionEvents().all(Connected.class).size() > connectedEventsBefore &&
+                                   transport.connectionEvents().all(ConnectionAccepted.class).size() > acceptedEventsBefore;
+                        });
+        return transport.events().last(ConnectionAccepted.class);
     }
 
     public ConnectionAccepted listenAndConnect(final SampleClient client, final int serverPort, final int clientPort)

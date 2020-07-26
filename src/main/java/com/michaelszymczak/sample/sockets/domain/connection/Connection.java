@@ -11,7 +11,7 @@ public interface Connection extends ConnectionId, AutoCloseable
 
     ConnectionState state();
 
-    void accepted(int localPort, long commandIdThatTriggeredListening);
+    void accepted(long commandIdThatTriggeredListening);
 
-    void connected(int localPort, long commandId);
+    void connected(long commandId);
 }

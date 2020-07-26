@@ -291,13 +291,13 @@ class DataSendingTest extends TransportTestBase
         //When
         MutableInteger commandsCount = new MutableInteger(0);
         serverTransport.workUntil(() ->
-                            {
-                                serverTransport.handle(serverTransport.command(conn, SendData.class).set(singleMessageData, commandsCount.incrementAndGet()));
-                                dataConsumerForTheTest.consume(singleMessageData, singleMessageData.length);
-                                // stop when unable to send more data
-                                return !serverTransport.connectionEvents().all(DataSent.class, conn.connectionId()).isEmpty() &&
-                                       serverTransport.connectionEvents().last(DataSent.class, conn.connectionId()).bytesSent() == 0;
-                            });
+                                  {
+                                      serverTransport.handle(serverTransport.command(conn, SendData.class).set(singleMessageData, commandsCount.incrementAndGet()));
+                                      dataConsumerForTheTest.consume(singleMessageData, singleMessageData.length);
+                                      // stop when unable to send more data
+                                      return !serverTransport.connectionEvents().all(DataSent.class, conn.connectionId()).isEmpty() &&
+                                             serverTransport.connectionEvents().last(DataSent.class, conn.connectionId()).bytesSent() == 0;
+                                  });
         final int commandsSentCount = commandsCount.get();
 
         // Then
@@ -334,10 +334,10 @@ class DataSendingTest extends TransportTestBase
 
         // When
         serverTransport.workUntil(() ->
-                            {
-                                DataSent lastEvent = serverTransport.connectionEvents().last(DataSent.class, conn.connectionId());
-                                return lastEvent.totalBytesSent() == lastEvent.totalBytesBuffered();
-                            });
+                                  {
+                                      DataSent lastEvent = serverTransport.connectionEvents().last(DataSent.class, conn.connectionId());
+                                      return lastEvent.totalBytesSent() == lastEvent.totalBytesBuffered();
+                                  });
         serverTransport.workUntil(completed(() -> clients.client(1).read(totalBytesBuffered, totalBytesBuffered, DEV_NULL)));
         final DataSent lastEventAfterAllDataDelivered = serverTransport.connectionEvents().last(DataSent.class, conn.connectionId());
         assertThat(lastEventAfterAllDataDelivered.totalBytesBuffered()).isEqualTo(eventAfterClientReadAllDataSentSoFar.totalBytesSent() + totalBytesBuffered);
@@ -383,12 +383,16 @@ class DataSendingTest extends TransportTestBase
 
         //When
         clientTransport.handle(clientTransport.command(connected, SendData.class).set(bytes("foo")));
+        assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
+        assertThat(serverTransport.events().all(CommandFailed.class)).isEmpty();
 
         // Then
         Worker.runUntil(() ->
                         {
                             serverTransport.work();
                             clientTransport.work();
+                            assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
+                            assertThat(serverTransport.events().all(CommandFailed.class)).isEmpty();
                             return !serverTransport.connectionEvents().all(DataReceived.class).isEmpty();
                         });
         assertThat(serverTransport.connectionEvents().all(DataReceived.class)).hasSize(1);

@@ -43,6 +43,11 @@ public class Server implements AutoCloseable
         serverSocketChannel.configureBlocking(false);
     }
 
+    public long commandIdThatTriggeredListening()
+    {
+        return commandIdThatTriggeredListening;
+    }
+
     void listen() throws IOException
     {
         serverSocketChannel.bind(new InetSocketAddress(port));
@@ -69,7 +74,6 @@ public class Server implements AutoCloseable
                 new SocketBackedChannel(acceptedSocketChannel),
                 eventListener::onEvent
         );
-        connection.accepted(acceptedSocket.getLocalPort(), commandIdThatTriggeredListening);
         return connection;
     }
 

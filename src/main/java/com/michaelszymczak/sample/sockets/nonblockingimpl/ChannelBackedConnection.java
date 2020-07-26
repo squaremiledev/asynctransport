@@ -104,9 +104,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     }
 
     @Override
-    public void accepted(final int localPort, final long commandIdThatTriggeredListening)
+    public void accepted(final long commandIdThatTriggeredListening)
     {
-        this.port = localPort;
         singleConnectionEvents.onEvent(new ConnectionAccepted(
                 this.port,
                 commandIdThatTriggeredListening,
@@ -118,9 +117,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     }
 
     @Override
-    public void connected(final int localPort, final long commandId)
+    public void connected(final long commandId)
     {
-        this.port = localPort;
         singleConnectionEvents.onEvent(new Connected(
                 this.port,
                 commandId,
@@ -208,10 +206,10 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     public String toString()
     {
         return "ChannelBackedConnection{" +
-               "channel=" + channel +
+               "configuration=" + configuration +
+               ", channel=" + channel +
                ", singleConnectionEvents=" + singleConnectionEvents +
                ", connectionCommands=" + connectionCommands +
-               ", configuration=" + configuration +
                ", outgoingStream=" + outgoingStream +
                ", totalBytesReceived=" + totalBytesReceived +
                ", isClosed=" + isClosed +

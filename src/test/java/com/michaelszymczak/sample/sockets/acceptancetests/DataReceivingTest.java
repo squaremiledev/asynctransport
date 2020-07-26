@@ -9,11 +9,14 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.domain.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.domain.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.ConnectionEventsSpy;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
+import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -72,12 +75,12 @@ class DataReceivingTest extends TransportTestBase
 
         // When
         serverTransport.workUntil(completed(() ->
-                                      {
-                                          for (byte[] dataChunk : dataChunksToSend)
-                                          {
-                                              clients.client(1).write(dataChunk);
-                                          }
-                                      }));
+                                            {
+                                                for (byte[] dataChunk : dataChunksToSend)
+                                                {
+                                                    clients.client(1).write(dataChunk);
+                                                }
+                                            }));
         serverTransport.workUntil(bytesReceived(serverTransport.connectionEvents(), conn.connectionId(), wholeDataToSend.length));
 
         // Then
@@ -151,6 +154,36 @@ class DataReceivingTest extends TransportTestBase
         assertThat(dataAsString(serverTransport.connectionEvents().all(DataReceived.class, connS2C4.connectionId()), US_ASCII))
                 .isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
     }
+
+    @Test
+    void shouldReceiveDataAfterConnecting()
+    {
+        final TransportDriver driver = new TransportDriver(serverTransport);
+
+        // Given
+        final ConnectionAccepted conn = driver.listenAndConnect(clientTransport);
+
+//        // When
+        serverTransport.handle(new SendData(conn.port(), conn.connectionId(), 3).set(bytes("foo"), 101));
+        Worker.runUntil(() ->
+                        {
+                            serverTransport.work();
+                            clientTransport.work();
+                            assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
+                            assertThat(serverTransport.events().all(CommandFailed.class)).isEmpty();
+                            return !clientTransport.connectionEvents().all(DataReceived.class).isEmpty();
+                        });
+//        serverTransport.workUntil(completed(() -> clients.client(1).write("foo".getBytes(US_ASCII))));
+//        serverTransport.workUntil(bytesReceived(serverTransport.connectionEvents(), conn.connectionId(), 3));
+//
+//        // Then
+//        assertThat(serverTransport.events().all(DataReceived.class)).isNotEmpty();
+//        final DataReceived dataReceivedEvent = serverTransport.events().last(DataReceived.class);
+//        assertThat(dataReceivedEvent.port()).isEqualTo(conn.port());
+//        assertThat(dataReceivedEvent.connectionId()).isEqualTo(conn.connectionId());
+//        assertThat(dataAsString(serverTransport.events().all(DataReceived.class), US_ASCII)).isEqualTo("foo");
+    }
+
 
     private byte[] dataReceived(final List<DataReceived> events)
     {

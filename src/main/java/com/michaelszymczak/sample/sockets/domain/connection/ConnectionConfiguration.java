@@ -18,4 +18,16 @@ public class ConnectionConfiguration
         this.sendBufferSize = sendBufferSize;
         this.maxInboundMessageSize = maxInboundMessageSize;
     }
+
+    @Override
+    public String toString()
+    {
+        return "ConnectionConfiguration{" +
+               "connectionId=" + connectionId +
+               ", remotePort=" + remotePort +
+               ", maxOutboundMessageSize=" + maxOutboundMessageSize +
+               ", sendBufferSize=" + sendBufferSize +
+               ", maxInboundMessageSize=" + maxInboundMessageSize +
+               '}';
+    }
 }

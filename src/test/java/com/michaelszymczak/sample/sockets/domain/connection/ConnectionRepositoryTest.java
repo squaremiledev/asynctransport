@@ -244,13 +244,13 @@ class ConnectionRepositoryTest
         }
 
         @Override
-        public void accepted(final int localPort, final long commandIdThatTriggeredListening)
+        public void accepted(final long commandIdThatTriggeredListening)
         {
 
         }
 
         @Override
-        public void connected(final int localPort, final long commandId)
+        public void connected(final long commandId)
         {
 
         }

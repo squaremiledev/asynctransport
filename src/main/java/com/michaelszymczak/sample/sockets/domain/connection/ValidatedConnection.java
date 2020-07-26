@@ -5,9 +5,9 @@ import com.michaelszymczak.sample.sockets.domain.api.commands.ConnectionCommand;
 
 public class ValidatedConnection implements AutoCloseable, Connection
 {
-    private final ConnectionIdValue connectionId;
     private final SingleConnectionEvents events;
-    private Connection delegate;
+    private final ConnectionIdValue connectionId;
+    private final Connection delegate;
 
     public ValidatedConnection(
             final ConnectionIdValue connectionId,
@@ -51,15 +51,15 @@ public class ValidatedConnection implements AutoCloseable, Connection
     }
 
     @Override
-    public void accepted(final int localPort, final long commandIdThatTriggeredListening)
+    public void accepted(final long commandIdThatTriggeredListening)
     {
-        delegate.accepted(localPort, commandIdThatTriggeredListening);
+        delegate.accepted(commandIdThatTriggeredListening);
     }
 
     @Override
-    public void connected(final int localPort, final long commandId)
+    public void connected(final long commandId)
     {
-        delegate.connected(localPort, commandId);
+        delegate.connected(commandId);
     }
 
     private boolean validate(final ConnectionCommand command)
