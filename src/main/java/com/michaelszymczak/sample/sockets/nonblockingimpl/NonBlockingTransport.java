@@ -33,6 +33,7 @@ import com.michaelszymczak.sample.sockets.domain.connection.ConnectionState;
 import org.agrona.CloseHelper;
 import org.agrona.LangUtil;
 
+// TODO: make sure all commands and events can be used without generating garbage
 public class NonBlockingTransport implements AutoCloseable, Transport
 {
     private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
@@ -72,6 +73,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         {
             if (selector.selectNow() > 0)
             {
+                // TODO: replace this iteration with a zero allocation solution
                 final Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
                 while (keyIterator.hasNext())
                 {
