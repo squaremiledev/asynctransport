@@ -50,6 +50,18 @@ public class ValidatedConnection implements AutoCloseable, Connection
         return delegate.state();
     }
 
+    @Override
+    public void accepted(final int localPort, final long commandIdThatTriggeredListening)
+    {
+        delegate.accepted(localPort, commandIdThatTriggeredListening);
+    }
+
+    @Override
+    public void connected(final int localPort, final long commandId)
+    {
+        delegate.connected(localPort, commandId);
+    }
+
     private boolean validate(final ConnectionCommand command)
     {
         final String result = connectionId.validate(command);

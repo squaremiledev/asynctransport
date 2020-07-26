@@ -1,18 +1,18 @@
 package com.michaelszymczak.sample.sockets.support;
 
 import com.michaelszymczak.sample.sockets.domain.api.events.NumberOfConnectionsChanged;
-import com.michaelszymczak.sample.sockets.domain.api.events.StatusEvent;
 
 public class TearDown
 {
 
-    public static void closeCleanly(final TestableTransport<?> transport, final SampleClients clients, final EventsSpy<StatusEvent> statusEventsSpy)
+    public static void closeCleanly(final TransportUnderTest transport)
     {
-        clients.close();
+        transport.close();
+        StatusEventsSpy statusEventsSpy = transport.statusEvents();
         if (statusEventsSpy.contains(NumberOfConnectionsChanged.class) && statusEventsSpy.last(NumberOfConnectionsChanged.class).newNumberOfConnections() > 0)
         {
+            System.out.println("statusEventsSpy.all() = " + statusEventsSpy.all());
             transport.workUntil(() -> statusEventsSpy.last(NumberOfConnectionsChanged.class).newNumberOfConnections() == 0);
         }
-        transport.close();
     }
 }

@@ -68,6 +68,18 @@ public class ConnectionImpl implements AutoCloseable, Connection
     }
 
     @Override
+    public void accepted(final int localPort, final long commandIdThatTriggeredListening)
+    {
+        delegate.accepted(localPort, commandIdThatTriggeredListening);
+    }
+
+    @Override
+    public void connected(final int localPort, final long commandId)
+    {
+        delegate.connected(localPort, commandId);
+    }
+
+    @Override
     public void close() throws Exception
     {
         delegate.close();

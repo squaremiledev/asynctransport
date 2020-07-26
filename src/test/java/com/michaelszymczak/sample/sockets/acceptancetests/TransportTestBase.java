@@ -36,6 +36,7 @@ abstract class TransportTestBase
     @AfterEach
     void tearDown()
     {
-        closeCleanly(transport, clients, transport.statusEvents());
+        clients.close();
+        closeCleanly(transport);
     }
 }

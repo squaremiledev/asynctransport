@@ -10,4 +10,8 @@ public interface Connection extends ConnectionId, AutoCloseable
     <C extends ConnectionCommand> C command(Class<C> commandType);
 
     ConnectionState state();
+
+    void accepted(int localPort, long commandIdThatTriggeredListening);
+
+    void connected(int localPort, long commandId);
 }

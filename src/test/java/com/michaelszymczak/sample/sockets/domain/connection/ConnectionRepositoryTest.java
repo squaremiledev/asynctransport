@@ -244,6 +244,18 @@ class ConnectionRepositoryTest
         }
 
         @Override
+        public void accepted(final int localPort, final long commandIdThatTriggeredListening)
+        {
+
+        }
+
+        @Override
+        public void connected(final int localPort, final long commandId)
+        {
+
+        }
+
+        @Override
         public void close()
         {
             closed = true;

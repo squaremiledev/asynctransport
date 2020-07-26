@@ -1,6 +1,8 @@
 package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -8,8 +10,10 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 import com.michaelszymczak.sample.sockets.domain.api.ConnectionId;
+import com.michaelszymczak.sample.sockets.domain.api.ConnectionIdValue;
 import com.michaelszymczak.sample.sockets.domain.api.Transport;
 import com.michaelszymczak.sample.sockets.domain.api.commands.CommandFactory;
+import com.michaelszymczak.sample.sockets.domain.api.commands.Connect;
 import com.michaelszymczak.sample.sockets.domain.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.domain.api.commands.Listen;
 import com.michaelszymczak.sample.sockets.domain.api.commands.NoOpCommand;
@@ -22,9 +26,11 @@ import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.domain.api.events.StoppedListening;
 import com.michaelszymczak.sample.sockets.domain.api.events.TransportCommandFailed;
 import com.michaelszymczak.sample.sockets.domain.connection.Connection;
+import com.michaelszymczak.sample.sockets.domain.connection.ConnectionConfiguration;
 import com.michaelszymczak.sample.sockets.domain.connection.ConnectionState;
 
 import org.agrona.CloseHelper;
+import org.agrona.LangUtil;
 
 public class NonBlockingTransport implements AutoCloseable, Transport
 {
@@ -90,6 +96,13 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                                 )
                         ));
                     }
+                    else if (key.isConnectable())
+                    {
+                        ConnectedNotification connectedNotification = (ConnectedNotification)key.attachment();
+                        Connection connection = connections.get(connectedNotification.connectionId);
+                        connection.connected(connectedNotification.localPort, connectedNotification.commandId);
+                        // TODO: re-register as above
+                    }
                     else
                     {
                         ConnectionCommand command = ((ConnectionConductor)key.attachment()).command(key);
@@ -135,7 +148,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         return connection != null ? connection.command(commandType) : null;
     }
 
-    private void tryHandle(final TransportCommand command) throws IOException
+    private void tryHandle(final TransportCommand command)
     {
         if (command instanceof ConnectionCommand)
         {
@@ -148,6 +161,10 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         else if (command instanceof StopListening)
         {
             handle((StopListening)command);
+        }
+        else if (command instanceof Connect)
+        {
+            handle((Connect)command);
         }
         else
         {
@@ -220,6 +237,35 @@ public class NonBlockingTransport implements AutoCloseable, Transport
 
         servers.stop(command.port());
         eventListener.onEvent(new StoppedListening(command.port(), command.commandId()));
+    }
+
+    private void handle(final Connect command)
+    {
+        // TODO: non blocking, provide a host, do not assume connected immediately, use selector instead, size buffers correctly
+        try
+        {
+            SocketChannel socketChannel = SocketChannel.open();
+            socketChannel.configureBlocking(false);
+            long connectionId = connectionIdSource.newId();
+            // TODO: do not hardcode the port
+            socketChannel.bind(new InetSocketAddress("localhost", 9999));
+            socketChannel.connect(new InetSocketAddress("localhost", command.port()));
+            Socket socket = socketChannel.socket();
+            final ConnectionConfiguration configuration = new ConnectionConfiguration(
+                    new ConnectionIdValue(socket.getLocalPort(), connectionId),
+                    socket.getPort(),
+                    10,
+                    10,
+                    10
+            );
+            final Connection connection = new ConnectionImpl(configuration, new SocketBackedChannel(socketChannel), eventListener::onEvent);
+            SelectionKey selectionKey = socketChannel.register(selector, SelectionKey.OP_CONNECT, new ConnectedNotification(connectionId, socket.getLocalPort(), command.commandId()));
+            connections.add(connection, selectionKey);
+        }
+        catch (IOException e)
+        {
+            LangUtil.rethrowUnchecked(e);
+        }
     }
 
 }

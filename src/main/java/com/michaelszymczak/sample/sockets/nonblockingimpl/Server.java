@@ -9,7 +9,6 @@ import java.nio.channels.SocketChannel;
 
 import com.michaelszymczak.sample.sockets.domain.api.ConnectionIdValue;
 import com.michaelszymczak.sample.sockets.domain.api.commands.CommandFactory;
-import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.domain.api.events.EventListener;
 import com.michaelszymczak.sample.sockets.domain.connection.Connection;
 import com.michaelszymczak.sample.sockets.domain.connection.ConnectionConfiguration;
@@ -70,13 +69,7 @@ public class Server implements AutoCloseable
                 new SocketBackedChannel(acceptedSocketChannel),
                 eventListener::onEvent
         );
-        eventListener.onEvent(new ConnectionAccepted(
-                connection,
-                commandIdThatTriggeredListening,
-                configuration.remotePort,
-                configuration.maxInboundMessageSize,
-                configuration.maxOutboundMessageSize
-        ));
+        connection.accepted(acceptedSocket.getLocalPort(), commandIdThatTriggeredListening);
         return connection;
     }
 

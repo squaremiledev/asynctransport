@@ -8,6 +8,8 @@ import com.michaelszymczak.sample.sockets.domain.api.commands.ConnectionCommand;
 import com.michaelszymczak.sample.sockets.domain.api.commands.NoOpCommand;
 import com.michaelszymczak.sample.sockets.domain.api.commands.ReadData;
 import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
+import com.michaelszymczak.sample.sockets.domain.api.events.Connected;
+import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.domain.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.domain.connection.Channel;
 import com.michaelszymczak.sample.sockets.domain.connection.Connection;
@@ -33,6 +35,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     private long totalBytesReceived;
     private boolean isClosed = false;
     private ConnectionState connectionState;
+    private int port;
 
     ChannelBackedConnection(
             final ConnectionConfiguration configuration,
@@ -46,12 +49,13 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.connectionCommands = new ConnectionCommands(configuration.connectionId, configuration.maxOutboundMessageSize);
         this.outgoingStream = new OutgoingStream(this.singleConnectionEvents, configuration.sendBufferSize);
         this.connectionState = outgoingStream.state();
+        this.port = configuration.connectionId.port();
     }
 
     @Override
     public int port()
     {
-        return configuration.connectionId.port();
+        return port;
     }
 
     @Override
@@ -97,6 +101,32 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     public ConnectionState state()
     {
         return isClosed ? CLOSED : connectionState;
+    }
+
+    @Override
+    public void accepted(final int localPort, final long commandIdThatTriggeredListening)
+    {
+        this.port = localPort;
+        singleConnectionEvents.onEvent(new ConnectionAccepted(
+                this.port,
+                commandIdThatTriggeredListening,
+                configuration.remotePort,
+                configuration.connectionId.connectionId(),
+                configuration.maxInboundMessageSize,
+                configuration.maxOutboundMessageSize
+        ));
+    }
+
+    @Override
+    public void connected(final int localPort, final long commandId)
+    {
+        this.port = localPort;
+        singleConnectionEvents.onEvent(new Connected(
+                this.port,
+                commandId,
+                configuration.remotePort,
+                configuration.connectionId.connectionId()
+        ));
     }
 
     private void handle(final CloseConnection command)
@@ -146,17 +176,6 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         {
             rethrowUnchecked(e);
         }
-    }
-
-    private boolean validate(final ConnectionCommand command)
-    {
-        final String result = configuration.connectionId.validate(command);
-        if (result != null)
-        {
-            singleConnectionEvents.commandFailed(command, result);
-            return false;
-        }
-        return true;
     }
 
     @Override
