@@ -8,6 +8,7 @@ import com.michaelszymczak.sample.sockets.domain.api.events.NumberOfConnectionsC
 import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
 import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
+import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -36,9 +37,13 @@ class ConnectingTransportTest
 
         // When
         clientTransport.handle(new Connect().set(serverStartedListening.port(), 101));
-        assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
-        clientTransport.workUntil(() -> !clientTransport.connectionEvents().all(Connected.class).isEmpty());
-        serverTransport.workUntil(() -> !serverTransport.connectionEvents().all(ConnectionAccepted.class).isEmpty());
+        Worker.runUntil(() ->
+                        {
+                            clientTransport.work();
+                            serverTransport.work();
+                            return !serverTransport.connectionEvents().all(ConnectionAccepted.class).isEmpty() &&
+                                   !clientTransport.connectionEvents().all(Connected.class).isEmpty();
+                        });
 
         // Then
         ConnectionAccepted connectionAcceptedByServer = serverTransport.connectionEvents().last(ConnectionAccepted.class);
@@ -48,6 +53,7 @@ class ConnectingTransportTest
         ));
         assertEqual(clientTransport.statusEvents().all(), singletonList(new NumberOfConnectionsChanged(1)));
         assertEqual(serverTransport.statusEvents().all(), singletonList(new NumberOfConnectionsChanged(1)));
+        assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
     }
 
     @AfterEach

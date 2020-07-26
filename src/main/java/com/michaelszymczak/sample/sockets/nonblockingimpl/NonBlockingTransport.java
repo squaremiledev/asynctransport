@@ -12,6 +12,7 @@ import java.util.Iterator;
 import com.michaelszymczak.sample.sockets.domain.api.ConnectionId;
 import com.michaelszymczak.sample.sockets.domain.api.ConnectionIdValue;
 import com.michaelszymczak.sample.sockets.domain.api.Transport;
+import com.michaelszymczak.sample.sockets.domain.api.TransportId;
 import com.michaelszymczak.sample.sockets.domain.api.commands.CommandFactory;
 import com.michaelszymczak.sample.sockets.domain.api.commands.Connect;
 import com.michaelszymczak.sample.sockets.domain.api.commands.ConnectionCommand;
@@ -99,9 +100,14 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                     else if (key.isConnectable())
                     {
                         ConnectedNotification connectedNotification = (ConnectedNotification)key.attachment();
-                        Connection connection = connections.get(connectedNotification.connectionId);
-                        connection.connected(connectedNotification.localPort, connectedNotification.commandId);
-                        // TODO: re-register as above
+                        connectedNotification.socketChannel.finishConnect();
+                        if (connectedNotification.socketChannel.isConnected())
+                        {
+                            Connection connection = connections.get(connectedNotification.connectionId);
+                            connection.connected(connectedNotification.socketChannel.socket().getLocalPort(), connectedNotification.commandId);
+                            // TODO: re-register as above ?
+                            connectedNotification.socketChannel.register(selector, 0);
+                        }
                     }
                     else
                     {
@@ -241,25 +247,25 @@ public class NonBlockingTransport implements AutoCloseable, Transport
 
     private void handle(final Connect command)
     {
-        // TODO: non blocking, provide a host, do not assume connected immediately, use selector instead, size buffers correctly
         try
         {
             SocketChannel socketChannel = SocketChannel.open();
             socketChannel.configureBlocking(false);
             long connectionId = connectionIdSource.newId();
-            // TODO: do not hardcode the port
-            socketChannel.bind(new InetSocketAddress("localhost", 9999));
+            // TODO: retrieve a host from the command
             socketChannel.connect(new InetSocketAddress("localhost", command.port()));
             Socket socket = socketChannel.socket();
+            // TODO: size buffers correctly
             final ConnectionConfiguration configuration = new ConnectionConfiguration(
-                    new ConnectionIdValue(socket.getLocalPort(), connectionId),
+                    new ConnectionIdValue(TransportId.NO_PORT, connectionId),
                     socket.getPort(),
                     10,
                     10,
                     10
             );
             final Connection connection = new ConnectionImpl(configuration, new SocketBackedChannel(socketChannel), eventListener::onEvent);
-            SelectionKey selectionKey = socketChannel.register(selector, SelectionKey.OP_CONNECT, new ConnectedNotification(connectionId, socket.getLocalPort(), command.commandId()));
+            // TODO: think of better mechanism than the notification object
+            SelectionKey selectionKey = socketChannel.register(selector, SelectionKey.OP_CONNECT, new ConnectedNotification(connectionId, socketChannel, command.commandId()));
             connections.add(connection, selectionKey);
         }
         catch (IOException e)

@@ -1,15 +1,17 @@
 package com.michaelszymczak.sample.sockets.nonblockingimpl;
 
+import java.nio.channels.SocketChannel;
+
 public class ConnectedNotification
 {
     final long connectionId;
-    final int localPort;
+    final SocketChannel socketChannel;
     final long commandId;
 
-    public ConnectedNotification(long connectionId, int localPort, long commandId)
+    public ConnectedNotification(long connectionId, SocketChannel socketChannel, long commandId)
     {
         this.connectionId = connectionId;
-        this.localPort = localPort;
+        this.socketChannel = socketChannel;
         this.commandId = commandId;
     }
 }
