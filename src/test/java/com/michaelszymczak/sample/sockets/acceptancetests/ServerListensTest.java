@@ -196,7 +196,7 @@ class ServerListensTest extends TransportTestBase
         // Then
         serverTransport.workUntil(() -> serverTransport.events().all(CommandFailed.class).size() == 1);
         assertThat(serverTransport.events().all(StartedListening.class)).hasSize(1);
-        assertEqual(serverTransport.events().all(CommandFailed.class), new TransportCommandFailed(serverPort1, 102, "Address already in use"));
+        assertEqual(serverTransport.events().all(CommandFailed.class), new TransportCommandFailed(serverPort1, 102, "Address already in use", Listen.class));
         clients.client(1).connectedTo(serverPort1);
         serverTransport.workUntil(() -> serverTransport.statusEvents().all(NumberOfConnectionsChanged.class).size() == 1);
     }
@@ -213,7 +213,7 @@ class ServerListensTest extends TransportTestBase
         // Then
         serverTransport.workUntil(() -> serverTransport.events().all(CommandFailed.class).size() == 1);
         assertThat(serverTransport.events().all(StartedListening.class)).hasSize(1);
-        assertEqual(serverTransport.events().all(CommandFailed.class), new TransportCommandFailed(serverPort1, 102, "Address already in use"));
+        assertEqual(serverTransport.events().all(CommandFailed.class), new TransportCommandFailed(serverPort1, 102, "Address already in use", Listen.class));
     }
 
 

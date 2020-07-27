@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
 import static com.michaelszymczak.sample.sockets.support.DataFixtures.concatenatedData;
+import static com.michaelszymczak.sample.sockets.support.StringFixtures.byteArrayWith;
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.fixedLengthStringStartingWith;
 import static com.michaelszymczak.sample.sockets.support.StringFixtures.stringWith;
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -66,9 +67,9 @@ class ServerReceivesDataTest extends TransportTestBase
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
         final List<byte[]> dataChunksToSend = Arrays.asList(
-                bytes(fixedLengthStringStartingWith("\nfoo", conn.inboundPduLimit())),
-                bytes(fixedLengthStringStartingWith("\nbar", conn.inboundPduLimit())),
-                bytes(fixedLengthStringStartingWith("\nbazqux", conn.inboundPduLimit()))
+                byteArrayWith(fixedLengthStringStartingWith("\nfoo", conn.inboundPduLimit())),
+                byteArrayWith(fixedLengthStringStartingWith("\nbar", conn.inboundPduLimit())),
+                byteArrayWith(fixedLengthStringStartingWith("\nbazqux", conn.inboundPduLimit()))
         );
         byte[] wholeDataToSend = concatenatedData(dataChunksToSend);
 
@@ -98,9 +99,9 @@ class ServerReceivesDataTest extends TransportTestBase
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
         final List<byte[]> dataChunksToSend = Arrays.asList(
-                bytes(fixedLengthStringStartingWith("\nfoo", _10_MB_IN_BYTES / 2)),
-                bytes(fixedLengthStringStartingWith("\nbar", _10_MB_IN_BYTES / 4)),
-                bytes(fixedLengthStringStartingWith("\nbazqux", _10_MB_IN_BYTES / 2))
+                byteArrayWith(fixedLengthStringStartingWith("\nfoo", _10_MB_IN_BYTES / 2)),
+                byteArrayWith(fixedLengthStringStartingWith("\nbar", _10_MB_IN_BYTES / 4)),
+                byteArrayWith(fixedLengthStringStartingWith("\nbazqux", _10_MB_IN_BYTES / 2))
         );
         byte[] wholeDataToSend = concatenatedData(dataChunksToSend);
         assertThat(wholeDataToSend.length).isGreaterThan(_10_MB_IN_BYTES);
@@ -160,11 +161,6 @@ class ServerReceivesDataTest extends TransportTestBase
         ByteBuffer actualContent = ByteBuffer.allocate((int)receivedEvents.get(receivedEvents.size() - 1).totalBytesReceived());
         receivedEvents.forEach(event -> event.copyDataTo(actualContent));
         return actualContent.array();
-    }
-
-    private byte[] bytes(final String foo)
-    {
-        return foo.getBytes(US_ASCII);
     }
 
     private BooleanSupplier bytesReceived(final ConnectionEventsSpy events, final long connectionId, final int size)

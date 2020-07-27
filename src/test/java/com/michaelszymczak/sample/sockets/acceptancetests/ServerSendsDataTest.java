@@ -359,7 +359,7 @@ class ServerSendsDataTest extends TransportTestBase
         // Then
         assertEqual(serverTransport.events().all(), eventsBeforeClosed, asList(
                 new ConnectionClosed(conn.port(), conn.connectionId(), CommandId.NO_COMMAND_ID),
-                new TransportCommandFailed(conn.port(), 101, "Connection id not found")
+                new TransportCommandFailed(conn.port(), 101, "Connection id not found", SendData.class)
         ));
         assertEqual(serverTransport.statusEvents().all(), asList(new NumberOfConnectionsChanged(1), new NumberOfConnectionsChanged(0)));
     }
