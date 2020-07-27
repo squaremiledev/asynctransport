@@ -34,36 +34,37 @@ public class OutgoingStream
 
     ConnectionState sendData(final WritableByteChannel channel, final ByteBuffer newDataToSend, final long commandId) throws IOException
     {
-        if (state == NO_OUTSTANDING_DATA)
+        switch (state)
         {
-            final int bytesSent = sendNewData(0, newDataToSend, channel);
-            events.onEvent(events.dataSentEvent().set(bytesSent, totalBytesSent, totalBytesBuffered, commandId));
-        }
-        else if (state == DATA_TO_SEND_BUFFERED)
-        {
-            buffer.flip();
-            final int bufferedDataSentResult = channel.write(buffer);
-            final int bufferedBytesSent = bufferedDataSentResult >= 0 ? bufferedDataSentResult : 0;
-            final boolean hasSentAllBufferedData = buffer.remaining() == 0;
-            buffer.compact();
+            case NO_OUTSTANDING_DATA:
+                events.onEvent(events.dataSentEvent().set(sendNewData(0, newDataToSend, channel), totalBytesSent, totalBytesBuffered, commandId));
+                break;
+            case DATA_TO_SEND_BUFFERED:
+                buffer.flip();
+                final int bufferedDataSentResult = channel.write(buffer);
+                final int bufferedBytesSent = bufferedDataSentResult >= 0 ? bufferedDataSentResult : 0;
+                final boolean hasSentAllBufferedData = buffer.remaining() == 0;
+                buffer.compact();
 
-            if (hasSentAllBufferedData)
-            {
-                final int bytesSent = sendNewData(bufferedBytesSent, newDataToSend, channel);
-                events.onEvent(events.dataSentEvent().set(bytesSent, totalBytesSent, totalBytesBuffered, commandId));
-            }
-            else
-            {
-                final int newBytesUnsent = newDataToSend.remaining();
-                if (newBytesUnsent > 0)
+                if (hasSentAllBufferedData)
                 {
-                    buffer.put(newDataToSend);
+                    events.onEvent(events.dataSentEvent().set(sendNewData(bufferedBytesSent, newDataToSend, channel), totalBytesSent, totalBytesBuffered, commandId));
                 }
+                else
+                {
+                    final int newBytesUnsent = newDataToSend.remaining();
+                    if (newBytesUnsent > 0)
+                    {
+                        buffer.put(newDataToSend);
+                    }
 
-                totalBytesBuffered += newBytesUnsent;
-                totalBytesSent += bufferedBytesSent;
-                events.onEvent(events.dataSentEvent().set(bufferedBytesSent, totalBytesSent, totalBytesBuffered, commandId));
-            }
+                    totalBytesBuffered += newBytesUnsent;
+                    totalBytesSent += bufferedBytesSent;
+                    events.onEvent(events.dataSentEvent().set(bufferedBytesSent, totalBytesSent, totalBytesBuffered, commandId));
+                }
+                break;
+            case CLOSED:
+                break;
         }
         return state;
     }

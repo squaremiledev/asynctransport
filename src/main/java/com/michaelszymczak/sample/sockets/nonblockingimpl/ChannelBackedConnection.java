@@ -33,7 +33,6 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     private final ConnectionConfiguration configuration;
     private final OutgoingStream outgoingStream;
     private long totalBytesReceived;
-    private boolean isClosed = false;
     private ConnectionState connectionState;
     private int port;
 
@@ -100,7 +99,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     @Override
     public ConnectionState state()
     {
-        return isClosed ? CLOSED : connectionState;
+        return connectionState;
     }
 
     @Override
@@ -187,7 +186,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     private void closeConnection(final long commandId, final boolean resetByPeer)
     {
         CloseHelper.close(channel);
-        if (!isClosed)
+        if (connectionState != CLOSED)
         {
             if (resetByPeer)
             {
@@ -197,7 +196,6 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
             {
                 singleConnectionEvents.connectionClosed(commandId);
             }
-            isClosed = true;
             connectionState = CLOSED;
         }
     }
@@ -212,7 +210,6 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
                ", connectionCommands=" + connectionCommands +
                ", outgoingStream=" + outgoingStream +
                ", totalBytesReceived=" + totalBytesReceived +
-               ", isClosed=" + isClosed +
                '}';
     }
 }
