@@ -1,7 +1,6 @@
 package com.michaelszymczak.sample.sockets.acceptancetests;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import static com.michaelszymczak.sample.sockets.support.BackgroundRunner.completed;
+import static com.michaelszymczak.sample.sockets.support.DataFixtures.concatenatedData;
+import static com.michaelszymczak.sample.sockets.support.StringFixtures.fixedLengthStringStartingWith;
+import static com.michaelszymczak.sample.sockets.support.StringFixtures.stringWith;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 
@@ -53,7 +55,7 @@ class ServerReceivesDataTest extends TransportTestBase
         final DataReceived dataReceivedEvent = serverTransport.events().last(DataReceived.class);
         assertThat(dataReceivedEvent.port()).isEqualTo(conn.port());
         assertThat(dataReceivedEvent.connectionId()).isEqualTo(conn.connectionId());
-        assertThat(dataAsString(serverTransport.events().all(DataReceived.class), US_ASCII)).isEqualTo("foo");
+        assertThat(stringWith(extractedContent(serverTransport.events().all(DataReceived.class)))).isEqualTo("foo");
     }
 
     @Test
@@ -84,7 +86,7 @@ class ServerReceivesDataTest extends TransportTestBase
         assertThat(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId())).isNotEmpty();
         assertThat(serverTransport.connectionEvents().last(DataReceived.class, conn.connectionId()).totalBytesReceived()).isEqualTo(wholeDataToSend.length);
         assertThat(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId()).stream().mapToLong(DataReceived::length).sum()).isEqualTo(wholeDataToSend.length);
-        assertThat(dataReceived(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId()))).isEqualTo(wholeDataToSend);
+        assertThat(extractedContent(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId()))).isEqualTo(wholeDataToSend);
     }
 
     @Test
@@ -111,7 +113,7 @@ class ServerReceivesDataTest extends TransportTestBase
         assertThat(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId())).isNotEmpty();
         assertThat(serverTransport.connectionEvents().last(DataReceived.class, conn.connectionId()).totalBytesReceived()).isEqualTo(wholeDataToSend.length);
         assertThat(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId()).stream().mapToLong(DataReceived::length).sum()).isEqualTo(wholeDataToSend.length);
-        byte[] actualReceivedData = dataReceived(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId()));
+        byte[] actualReceivedData = extractedContent(serverTransport.connectionEvents().all(DataReceived.class, conn.connectionId()));
         assertThat(actualReceivedData).isEqualTo(wholeDataToSend);
         assertThat(actualReceivedData.length).isGreaterThan(_10_MB_IN_BYTES);
     }
@@ -142,37 +144,22 @@ class ServerReceivesDataTest extends TransportTestBase
         serverTransport.workUntil(bytesReceived(serverTransport.connectionEvents(), connS2C4.connectionId(), 40));
 
         // Then
-        assertThat(dataAsString(serverTransport.connectionEvents().all(DataReceived.class, connS1C1.connectionId()), US_ASCII))
+        assertThat(stringWith(extractedContent(serverTransport.connectionEvents().all(DataReceived.class, connS1C1.connectionId()))))
                 .isEqualTo(fixedLengthStringStartingWith("S1 -> C1 ", 10));
-        assertThat(dataAsString(serverTransport.connectionEvents().all(DataReceived.class, connS2C2.connectionId()), US_ASCII))
+        assertThat(stringWith(extractedContent(serverTransport.connectionEvents().all(DataReceived.class, connS2C2.connectionId()))))
                 .isEqualTo(fixedLengthStringStartingWith("S2 -> C2 ", 20));
-        assertThat(dataAsString(serverTransport.connectionEvents().all(DataReceived.class, connS1C3.connectionId()), US_ASCII))
+        assertThat(stringWith(extractedContent(serverTransport.connectionEvents().all(DataReceived.class, connS1C3.connectionId()))))
                 .isEqualTo(fixedLengthStringStartingWith("S1 -> C3 ", 30));
-        assertThat(dataAsString(serverTransport.connectionEvents().all(DataReceived.class, connS2C4.connectionId()), US_ASCII))
+        assertThat(stringWith(extractedContent(serverTransport.connectionEvents().all(DataReceived.class, connS2C4.connectionId()))))
                 .isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
     }
 
 
-    private byte[] dataReceived(final List<DataReceived> events)
+    private byte[] extractedContent(final List<DataReceived> receivedEvents)
     {
-        return concatenatedData(events.stream().map(event ->
-                                                    {
-                                                        byte[] target = new byte[event.length()];
-                                                        event.copyDataTo(target);
-                                                        return target;
-                                                    }).collect(Collectors.toList()));
-    }
-
-    private byte[] concatenatedData(final List<byte[]> allChunks)
-    {
-        int totalSize = allChunks.stream().mapToInt(chunk -> chunk.length).sum();
-        byte[] content = new byte[totalSize];
-        ByteBuffer received = ByteBuffer.wrap(content);
-        for (final byte[] chunk : allChunks)
-        {
-            received.put(chunk);
-        }
-        return content;
+        ByteBuffer actualContent = ByteBuffer.allocate((int)receivedEvents.get(receivedEvents.size() - 1).totalBytesReceived());
+        receivedEvents.forEach(event -> event.copyDataTo(actualContent));
+        return actualContent.array();
     }
 
     private byte[] bytes(final String foo)
@@ -185,27 +172,4 @@ class ServerReceivesDataTest extends TransportTestBase
         return () -> !events.all(DataReceived.class, connectionId, event -> event.totalBytesReceived() >= size).isEmpty();
     }
 
-    private String dataAsString(final List<DataReceived> all, final Charset charset)
-    {
-        return all.stream()
-                .map(dataReceived ->
-                     {
-                         byte[] target = new byte[dataReceived.length()];
-                         dataReceived.copyDataTo(target);
-                         return target;
-                     })
-                .map(data -> new String(data, charset))
-                .collect(Collectors.joining(""));
-    }
-
-    private String fixedLengthStringStartingWith(final String content, final int minLength)
-    {
-        final StringBuilder sb = new StringBuilder(10);
-        sb.append(content);
-        for (int i = 0; i < minLength - content.length(); i++)
-        {
-            sb.append(i % 10);
-        }
-        return sb.toString();
-    }
 }

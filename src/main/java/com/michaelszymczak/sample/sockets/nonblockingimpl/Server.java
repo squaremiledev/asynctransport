@@ -66,7 +66,7 @@ public class Server implements AutoCloseable
                 acceptedSocket.getPort(),
                 acceptedSocketChannel.socket().getSendBufferSize(),
                 // TODO: decide how to select buffer size (prod and test performance)
-                acceptedSocketChannel.socket().getSendBufferSize() * 5,
+                acceptedSocketChannel.socket().getSendBufferSize() * 2,
                 acceptedSocketChannel.socket().getReceiveBufferSize()
         );
         final Connection connection = new ConnectionImpl(

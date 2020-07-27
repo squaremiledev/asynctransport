@@ -43,4 +43,15 @@ public class StringFixtures
     {
         return content.getBytes(US_ASCII);
     }
+
+    public static String fixedLengthStringStartingWith(final String content, final int minLength)
+    {
+        final StringBuilder sb = new StringBuilder(10);
+        sb.append(content);
+        for (int i = 0; i < minLength - content.length(); i++)
+        {
+            sb.append(i % 10);
+        }
+        return sb.toString();
+    }
 }

@@ -1,7 +1,5 @@
 package com.michaelszymczak.sample.sockets.domain.api.events;
 
-import com.michaelszymczak.sample.sockets.domain.api.ConnectionId;
-
 public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedEvent
 {
     private final int port;
@@ -10,17 +8,6 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     private final long connectionId;
     private final int maxInboundMessageSize;
     private final int maxOutboundMessageSize;
-
-    public ConnectionAccepted(
-            final ConnectionId connectionId,
-            final long commandId,
-            final int remotePort,
-            final int maxInboundMessageSize,
-            final int maxOutboundMessageSize
-    )
-    {
-        this(connectionId.port(), commandId, remotePort, connectionId.connectionId(), maxInboundMessageSize, maxOutboundMessageSize);
-    }
 
     public ConnectionAccepted(
             final int port,

@@ -106,7 +106,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                                     socket.getPort(),
                                     socket.getSendBufferSize(),
                                     // TODO: decide how to select buffer size (prod and test performance)
-                                    socket.getSendBufferSize() * 5,
+                                    socket.getSendBufferSize() * 2,
                                     socket.getReceiveBufferSize()
                             );
                             long connectionId = registerConnection(socketChannel, new ConnectionImpl(configuration, new SocketBackedChannel(socketChannel), eventListener::onEvent));
