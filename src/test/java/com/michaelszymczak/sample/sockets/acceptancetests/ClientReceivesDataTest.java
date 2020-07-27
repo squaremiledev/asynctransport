@@ -1,15 +1,11 @@
 package com.michaelszymczak.sample.sockets.acceptancetests;
 
 import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
-import com.michaelszymczak.sample.sockets.domain.api.events.CommandFailed;
 import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.domain.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
-import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -27,16 +23,13 @@ class ClientReceivesDataTest extends TransportTestBase
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(clientTransport);
 
-//        // When
+        // When
         serverTransport.handle(new SendData(conn.port(), conn.connectionId(), 3).set(bytes("foo"), 101));
-        Worker.runUntil(() ->
-                        {
-                            serverTransport.work();
-                            clientTransport.work();
-                            assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
-                            assertThat(serverTransport.events().all(CommandFailed.class)).isEmpty();
-                            return !clientTransport.connectionEvents().all(DataReceived.class).isEmpty();
-                        });
+        spinUntil(() -> !clientTransport.connectionEvents().all(DataReceived.class).isEmpty());
+
+        // Then
+
+
     }
 
 

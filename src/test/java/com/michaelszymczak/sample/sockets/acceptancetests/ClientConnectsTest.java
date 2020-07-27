@@ -7,8 +7,6 @@ import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.domain.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
 import com.michaelszymczak.sample.sockets.support.TransportDriver;
-import com.michaelszymczak.sample.sockets.support.TransportUnderTest;
-import com.michaelszymczak.sample.sockets.support.Worker;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -21,13 +19,8 @@ import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 import static java.util.Collections.singletonList;
 
 
-class ClientConnectsTest
+class ClientConnectsTest extends TransportTestBase
 {
-
-    private final TransportUnderTest serverTransport = new TransportUnderTest();
-    private final TransportUnderTest clientTransport = new TransportUnderTest();
-
-
     @Test
     void shouldConnect()
     {
@@ -37,13 +30,8 @@ class ClientConnectsTest
 
         // When
         clientTransport.handle(new Connect().set(serverStartedListening.port(), 101));
-        Worker.runUntil(() ->
-                        {
-                            clientTransport.work();
-                            serverTransport.work();
-                            return !serverTransport.connectionEvents().all(ConnectionAccepted.class).isEmpty() &&
-                                   !clientTransport.connectionEvents().all(Connected.class).isEmpty();
-                        });
+        spinUntil(() -> !serverTransport.connectionEvents().all(ConnectionAccepted.class).isEmpty() &&
+                        !clientTransport.connectionEvents().all(Connected.class).isEmpty());
 
         // Then
         ConnectionAccepted connectionAcceptedByServer = serverTransport.connectionEvents().last(ConnectionAccepted.class);
