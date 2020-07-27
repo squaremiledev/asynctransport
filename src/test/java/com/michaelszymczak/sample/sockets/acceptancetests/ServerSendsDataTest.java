@@ -7,13 +7,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.michaelszymczak.sample.sockets.domain.api.CommandId;
-import com.michaelszymczak.sample.sockets.domain.api.commands.Connect;
 import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.domain.api.events.CommandFailed;
-import com.michaelszymczak.sample.sockets.domain.api.events.Connected;
 import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionClosed;
-import com.michaelszymczak.sample.sockets.domain.api.events.DataReceived;
 import com.michaelszymczak.sample.sockets.domain.api.events.DataSent;
 import com.michaelszymczak.sample.sockets.domain.api.events.NumberOfConnectionsChanged;
 import com.michaelszymczak.sample.sockets.domain.api.events.StartedListening;
@@ -43,7 +40,7 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
-class DataSendingTest extends TransportTestBase
+class ServerSendsDataTest extends TransportTestBase
 {
 
     @SafeVarargs
@@ -365,42 +362,6 @@ class DataSendingTest extends TransportTestBase
                 new TransportCommandFailed(conn.port(), 101, "Connection id not found")
         ));
         assertEqual(serverTransport.statusEvents().all(), asList(new NumberOfConnectionsChanged(1), new NumberOfConnectionsChanged(0)));
-    }
-
-    @Test
-    void shouldSendDataAfterConnecting()
-    {
-        final TransportDriver driver = new TransportDriver(serverTransport);
-        StartedListening startedListening = driver.startListening();
-        clientTransport.handle(new Connect().set(startedListening.port(), 100));
-        Worker.runUntil(() ->
-                        {
-                            serverTransport.work();
-                            clientTransport.work();
-                            return !clientTransport.connectionEvents().all(Connected.class).isEmpty();
-                        });
-        Connected connected = clientTransport.connectionEvents().last(Connected.class);
-
-        //When
-        clientTransport.handle(clientTransport.command(connected, SendData.class).set(bytes("foo")));
-        assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
-        assertThat(serverTransport.events().all(CommandFailed.class)).isEmpty();
-
-        // Then
-        Worker.runUntil(() ->
-                        {
-                            serverTransport.work();
-                            clientTransport.work();
-                            assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
-                            assertThat(serverTransport.events().all(CommandFailed.class)).isEmpty();
-                            return !serverTransport.connectionEvents().all(DataReceived.class).isEmpty();
-                        });
-        assertThat(serverTransport.connectionEvents().all(DataReceived.class)).hasSize(1);
-        DataReceived dataReceived = serverTransport.connectionEvents().last(DataReceived.class);
-        assertThat(dataReceived.length()).isEqualTo(3);
-        byte[] content = new byte[dataReceived.length()];
-        dataReceived.copyDataTo(content);
-        assertThat(content).isEqualTo(bytes("foo"));
     }
 
     private byte[] bytes(final String foo)

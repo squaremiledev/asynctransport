@@ -25,7 +25,7 @@ import static com.michaelszymczak.sample.sockets.support.FreePort.freePort;
 import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherThan;
 
 
-class ListeningTransportTest extends TransportTestBase
+class ServerListensTest extends TransportTestBase
 {
     @Test
     void shouldAcceptConnections()

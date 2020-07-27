@@ -32,7 +32,7 @@ import static com.michaelszymczak.sample.sockets.support.FreePort.freePortOtherT
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 
-class ReceivingConnectionTransportTest extends TransportTestBase
+class ServerReceivesConnectionsTest extends TransportTestBase
 {
     @Test
     void shouldNotifyWhenConnected()

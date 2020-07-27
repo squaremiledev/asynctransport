@@ -21,7 +21,7 @@ import static com.michaelszymczak.sample.sockets.support.TearDown.closeCleanly;
 import static java.util.Collections.singletonList;
 
 
-class ConnectingTransportTest
+class ClientConnectsTest
 {
 
     private final TransportUnderTest serverTransport = new TransportUnderTest();
