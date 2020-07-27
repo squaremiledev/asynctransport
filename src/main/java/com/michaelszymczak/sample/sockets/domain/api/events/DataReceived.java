@@ -60,6 +60,12 @@ public class DataReceived implements ConnectionEvent
         System.arraycopy(data.array(), 0, dst, 0, length);
     }
 
+    public void copyDataTo(final ByteBuffer dst)
+    {
+        data.clear().limit(length);
+        dst.put(data);
+    }
+
     public int length()
     {
         return length;

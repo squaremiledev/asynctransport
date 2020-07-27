@@ -1,5 +1,8 @@
 package com.michaelszymczak.sample.sockets.acceptancetests;
 
+import java.nio.ByteBuffer;
+import java.util.List;
+
 import com.michaelszymczak.sample.sockets.domain.api.commands.SendData;
 import com.michaelszymczak.sample.sockets.domain.api.events.ConnectionAccepted;
 import com.michaelszymczak.sample.sockets.domain.api.events.DataReceived;
@@ -7,14 +10,15 @@ import com.michaelszymczak.sample.sockets.support.TransportDriver;
 
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
-import static java.nio.charset.StandardCharsets.US_ASCII;
+
+import static com.michaelszymczak.sample.sockets.support.StringFixtures.byteArrayWith;
+import static com.michaelszymczak.sample.sockets.support.StringFixtures.stringWith;
 
 
 class ClientReceivesDataTest extends TransportTestBase
 {
-
-
     @Test
     void shouldReceiveData()
     {
@@ -24,18 +28,18 @@ class ClientReceivesDataTest extends TransportTestBase
         final ConnectionAccepted conn = driver.listenAndConnect(clientTransport);
 
         // When
-        serverTransport.handle(new SendData(conn.port(), conn.connectionId(), 3).set(bytes("foo"), 101));
+        serverTransport.handle(new SendData(conn.port(), conn.connectionId(), 3).set(byteArrayWith("foo"), 101));
         spinUntil(() -> !clientTransport.connectionEvents().all(DataReceived.class).isEmpty());
 
         // Then
-
-
+        assertThat(stringWith(extractedContent(clientTransport.connectionEvents().all(DataReceived.class)))).isEqualTo("foo");
     }
 
-
-    private byte[] bytes(final String content)
+    private byte[] extractedContent(final List<DataReceived> receivedEvents)
     {
-        return content.getBytes(US_ASCII);
+        ByteBuffer actualContent = ByteBuffer.allocate((int)receivedEvents.get(receivedEvents.size() - 1).totalBytesReceived());
+        receivedEvents.forEach(event -> event.copyDataTo(actualContent));
+        return actualContent.array();
     }
 
 }
