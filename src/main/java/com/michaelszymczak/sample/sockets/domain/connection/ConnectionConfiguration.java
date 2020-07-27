@@ -6,17 +6,17 @@ public class ConnectionConfiguration
 {
     public final ConnectionIdValue connectionId;
     public final int remotePort;
-    public final int maxOutboundMessageSize;
+    public final int outboundPduLimit;
     public final int sendBufferSize;
-    public final int maxInboundMessageSize;
+    public final int inboundPduLimit;
 
-    public ConnectionConfiguration(final ConnectionIdValue connectionId, final int remotePort, final int maxOutboundMessageSize, final int sendBufferSize, final int maxInboundMessageSize)
+    public ConnectionConfiguration(final ConnectionIdValue connectionId, final int remotePort, final int outboundPduLimit, final int sendBufferSize, final int inboundPduLimit)
     {
         this.connectionId = connectionId;
         this.remotePort = remotePort;
-        this.maxOutboundMessageSize = maxOutboundMessageSize;
+        this.outboundPduLimit = outboundPduLimit;
         this.sendBufferSize = sendBufferSize;
-        this.maxInboundMessageSize = maxInboundMessageSize;
+        this.inboundPduLimit = inboundPduLimit;
     }
 
     @Override
@@ -25,9 +25,9 @@ public class ConnectionConfiguration
         return "ConnectionConfiguration{" +
                "connectionId=" + connectionId +
                ", remotePort=" + remotePort +
-               ", maxOutboundMessageSize=" + maxOutboundMessageSize +
+               ", outboundPduLimit=" + outboundPduLimit +
                ", sendBufferSize=" + sendBufferSize +
-               ", maxInboundMessageSize=" + maxInboundMessageSize +
+               ", inboundPduLimit=" + inboundPduLimit +
                '}';
     }
 }

@@ -58,8 +58,8 @@ class ServerReceivesConnectionsTest extends TransportTestBase
                         1,
                         clientPort,
                         connectionAcceptedEvent.connectionId(),
-                        connectionAcceptedEvent.maxInboundMessageSize(),
-                        connectionAcceptedEvent.maxOutboundMessageSize()
+                        connectionAcceptedEvent.inboundPduLimit(),
+                        connectionAcceptedEvent.outboundPduLimit()
                 ));
     }
 

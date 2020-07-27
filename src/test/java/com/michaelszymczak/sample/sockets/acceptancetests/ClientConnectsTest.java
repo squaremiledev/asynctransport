@@ -44,8 +44,8 @@ class ClientConnectsTest extends TransportTestBase
                         101,
                         serverStartedListening.port(),
                         connected.connectionId(),
-                        connected.maxInboundMessageSize(),
-                        connected.maxOutboundMessageSize()
+                        connected.inboundPduLimit(),
+                        connected.outboundPduLimit()
                 )
         );
         assertEqual(clientTransport.statusEvents().all(), singletonList(new NumberOfConnectionsChanged(1)));

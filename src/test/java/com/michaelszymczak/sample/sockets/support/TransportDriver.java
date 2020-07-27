@@ -36,11 +36,11 @@ public class TransportDriver
         this.transport = transport;
     }
 
-    public DataSent fillTheSendingWindow(final ConnectionId connectionId, final int maxMessageSize)
+    public DataSent fillTheSendingWindow(final ConnectionId connectionId, final int pduLimit)
     {
         final int totalNumberOfEventsBefore = transport.events().all(TransportEvent.class).size();
-        final byte[] singleMessageData = byteArrayWith(pos -> String.format("%9d%n", pos), maxMessageSize / 10);
-        assertThat(singleMessageData.length).isEqualTo(maxMessageSize);
+        final byte[] singleMessageData = byteArrayWith(pos -> String.format("%9d%n", pos), pduLimit / 10);
+        assertThat(singleMessageData.length).isEqualTo(pduLimit);
 
         //When
         MutableInteger commandsCount = new MutableInteger(0);

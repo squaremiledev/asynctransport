@@ -22,7 +22,7 @@ public class ConnectionImpl implements AutoCloseable, Connection
                         eventsListener,
                         configuration.connectionId.port(),
                         configuration.connectionId.connectionId(),
-                        configuration.maxInboundMessageSize
+                        configuration.inboundPduLimit
                 ),
                 new ChannelBackedConnection(
                         configuration,
@@ -31,7 +31,7 @@ public class ConnectionImpl implements AutoCloseable, Connection
                                 eventsListener,
                                 configuration.connectionId.port(),
                                 configuration.connectionId.connectionId(),
-                                configuration.maxInboundMessageSize
+                                configuration.inboundPduLimit
                         )
                 )
         );

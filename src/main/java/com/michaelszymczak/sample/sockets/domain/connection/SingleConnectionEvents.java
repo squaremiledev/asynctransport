@@ -17,12 +17,12 @@ public class SingleConnectionEvents implements ConnectionEventsListener
     private final DataReceived dataReceivedEvent;
     private final DataSent dataSentEvent;
 
-    public SingleConnectionEvents(final ConnectionEventsListener eventsListener, final int port, final long connectionId, final int maxInboundMessageSize)
+    public SingleConnectionEvents(final ConnectionEventsListener eventsListener, final int port, final long connectionId, final int inboundPduLimit)
     {
         this.eventsListener = eventsListener;
         this.port = port;
         this.connectionId = connectionId;
-        this.dataReceivedEvent = new DataReceived(port, connectionId, maxInboundMessageSize);
+        this.dataReceivedEvent = new DataReceived(port, connectionId, inboundPduLimit);
         this.dataSentEvent = new DataSent(this.port, this.connectionId);
     }
 

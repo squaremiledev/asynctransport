@@ -46,7 +46,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.configuration = configuration;
         this.channel = channel;
         this.singleConnectionEvents = singleConnectionEvents;
-        this.connectionCommands = new ConnectionCommands(configuration.connectionId, configuration.maxOutboundMessageSize);
+        this.connectionCommands = new ConnectionCommands(configuration.connectionId, configuration.outboundPduLimit);
         this.outgoingStream = new OutgoingStream(this.singleConnectionEvents, configuration.sendBufferSize);
         this.connectionState = outgoingStream.state();
         this.port = configuration.connectionId.port();
@@ -111,8 +111,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
                 commandIdThatTriggeredListening,
                 configuration.remotePort,
                 configuration.connectionId.connectionId(),
-                configuration.maxInboundMessageSize,
-                configuration.maxOutboundMessageSize
+                configuration.inboundPduLimit,
+                configuration.outboundPduLimit
         ));
     }
 
@@ -124,8 +124,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
                 commandId,
                 configuration.remotePort,
                 configuration.connectionId.connectionId(),
-                configuration.maxInboundMessageSize,
-                configuration.maxOutboundMessageSize
+                configuration.inboundPduLimit,
+                configuration.outboundPduLimit
         ));
     }
 

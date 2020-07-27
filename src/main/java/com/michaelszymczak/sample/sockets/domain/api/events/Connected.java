@@ -6,24 +6,24 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
     private final long commandId;
     private final int remotePort;
     private final long connectionId;
-    private final int maxInboundMessageSize;
-    private final int maxOutboundMessageSize;
+    private final int inboundPduLimit;
+    private final int outboundPduLimit;
 
     public Connected(
             final int port,
             final long commandId,
             final int remotePort,
             final long connectionId,
-            final int maxInboundMessageSize,
-            final int maxOutboundMessageSize
+            final int inboundPduLimit,
+            final int outboundPduLimit
     )
     {
         this.port = port;
         this.commandId = commandId;
         this.remotePort = remotePort;
         this.connectionId = connectionId;
-        this.maxInboundMessageSize = maxInboundMessageSize;
-        this.maxOutboundMessageSize = maxOutboundMessageSize;
+        this.inboundPduLimit = inboundPduLimit;
+        this.outboundPduLimit = outboundPduLimit;
     }
 
     @Override
@@ -49,14 +49,14 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
         return connectionId;
     }
 
-    public int maxInboundMessageSize()
+    public int inboundPduLimit()
     {
-        return maxInboundMessageSize;
+        return inboundPduLimit;
     }
 
-    public int maxOutboundMessageSize()
+    public int outboundPduLimit()
     {
-        return maxOutboundMessageSize;
+        return outboundPduLimit;
     }
 
     @Override
@@ -67,14 +67,14 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
                ", commandId=" + commandId +
                ", remotePort=" + remotePort +
                ", connectionId=" + connectionId +
-               ", maxInboundMessageSize=" + maxInboundMessageSize +
-               ", maxOutboundMessageSize=" + maxOutboundMessageSize +
+               ", inboundPduLimit=" + inboundPduLimit +
+               ", outboundPduLimit=" + outboundPduLimit +
                '}';
     }
 
     @Override
     public TransportEvent copy()
     {
-        return new Connected(port, commandId, remotePort, connectionId, maxInboundMessageSize, maxOutboundMessageSize);
+        return new Connected(port, commandId, remotePort, connectionId, inboundPduLimit, outboundPduLimit);
     }
 }

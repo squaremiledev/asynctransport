@@ -251,7 +251,7 @@ class ServerSendsDataTest extends TransportTestBase
         final int serverPort = freePort();
         final int clientPort = freePortOtherThan(serverPort);
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1), serverPort, clientPort);
-        final byte[] dataThatFitsTheBuffer = generateData(conn.maxOutboundMessageSize(), 2);
+        final byte[] dataThatFitsTheBuffer = generateData(conn.outboundPduLimit(), 2);
 
         //When
         runUntil(() ->
@@ -265,7 +265,7 @@ class ServerSendsDataTest extends TransportTestBase
         final long totalBytesSentUntilFilledTheSendQueue = serverTransport.connectionEvents()
                 .last(DataSent.class, conn.connectionId(), event -> event.bytesSent() == 0).totalBytesSent();
         assertThat(totalBytesSentUntilFilledTheSendQueue).isEqualTo((int)totalBytesSentUntilFilledTheSendQueue);
-        assertThat(totalBytesSentUntilFilledTheSendQueue).isGreaterThanOrEqualTo(conn.maxOutboundMessageSize());
+        assertThat(totalBytesSentUntilFilledTheSendQueue).isGreaterThanOrEqualTo(conn.outboundPduLimit());
         serverTransport.workUntil(completed(
                 () -> clients.client(1).read((int)totalBytesSentUntilFilledTheSendQueue, (int)totalBytesSentUntilFilledTheSendQueue, dataConsumer)));
 
@@ -282,8 +282,8 @@ class ServerSendsDataTest extends TransportTestBase
         final int clientPort = freePortOtherThan(serverPort);
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1), serverPort, clientPort);
         final int totalNumberOfEventsBefore = serverTransport.events().all(TransportEvent.class).size();
-        final byte[] singleMessageData = byteArrayWith(pos -> String.format("%9d%n", pos), conn.maxOutboundMessageSize() / 10);
-        assertThat(singleMessageData.length).isEqualTo(conn.maxOutboundMessageSize());
+        final byte[] singleMessageData = byteArrayWith(pos -> String.format("%9d%n", pos), conn.outboundPduLimit() / 10);
+        assertThat(singleMessageData.length).isEqualTo(conn.outboundPduLimit());
 
         //When
         MutableInteger commandsCount = new MutableInteger(0);
@@ -320,7 +320,7 @@ class ServerSendsDataTest extends TransportTestBase
         final int serverPort = freePort();
         final int clientPort = freePortOtherThan(serverPort);
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1), serverPort, clientPort);
-        final DataSent eventAfterWindowFilled = driver.fillTheSendingWindow(conn, conn.maxOutboundMessageSize());
+        final DataSent eventAfterWindowFilled = driver.fillTheSendingWindow(conn, conn.outboundPduLimit());
         assertThat(eventAfterWindowFilled.bytesSent()).isEqualTo(0);
         int totalBytesBuffered = (int)(eventAfterWindowFilled.totalBytesBuffered() - eventAfterWindowFilled.totalBytesSent());
         assertThat(totalBytesBuffered).isGreaterThan(0);

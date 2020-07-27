@@ -50,9 +50,9 @@ class ClientReceivesDataTest extends TransportTestBase
         final ConnectionAccepted conn = driver.listenAndConnect(clientTransport);
         final Connected connected = clientTransport.connectionEvents().last(Connected.class);
         final List<byte[]> dataChunksToSend = Arrays.asList(
-                byteArrayWith(fixedLengthStringStartingWith("\nfoo", conn.maxInboundMessageSize())),
-                byteArrayWith(fixedLengthStringStartingWith("\nbar", conn.maxInboundMessageSize())),
-                byteArrayWith(fixedLengthStringStartingWith("\nbazqux", conn.maxInboundMessageSize()))
+                byteArrayWith(fixedLengthStringStartingWith("\nfoo", conn.inboundPduLimit())),
+                byteArrayWith(fixedLengthStringStartingWith("\nbar", conn.inboundPduLimit())),
+                byteArrayWith(fixedLengthStringStartingWith("\nbazqux", conn.inboundPduLimit()))
         );
         byte[] wholeDataToSend = concatenatedData(dataChunksToSend);
 

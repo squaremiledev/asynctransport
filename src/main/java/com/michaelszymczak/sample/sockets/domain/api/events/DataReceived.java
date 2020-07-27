@@ -10,20 +10,20 @@ public class DataReceived implements ConnectionEvent
     private final ByteBuffer data;
     private long totalBytesReceived;
     private int length;
-    private int maxInboundMessageSize;
+    private int inboundPduLimit;
 
-    public DataReceived(final int port, final long connectionId, final int maxInboundMessageSize)
+    public DataReceived(final int port, final long connectionId, final int inboundPduLimit)
     {
-        this(port, connectionId, 0, 0, maxInboundMessageSize, ByteBuffer.wrap(new byte[maxInboundMessageSize]));
+        this(port, connectionId, 0, 0, inboundPduLimit, ByteBuffer.wrap(new byte[inboundPduLimit]));
     }
 
-    private DataReceived(final int port, final long connectionId, final long totalBytesReceived, final int length, final int maxInboundMessageSize, final ByteBuffer data)
+    private DataReceived(final int port, final long connectionId, final long totalBytesReceived, final int length, final int inboundPduLimit, final ByteBuffer data)
     {
         this.port = port;
         this.connectionId = connectionId;
 
         this.totalBytesReceived = totalBytesReceived;
-        this.maxInboundMessageSize = maxInboundMessageSize;
+        this.inboundPduLimit = inboundPduLimit;
         this.data = data;
         this.length = length;
     }
@@ -91,6 +91,6 @@ public class DataReceived implements ConnectionEvent
     @Override
     public DataReceived copy()
     {
-        return new DataReceived(port, connectionId, totalBytesReceived, length, maxInboundMessageSize, ByteBuffer.wrap(Arrays.copyOf(data.array(), data.array().length)));
+        return new DataReceived(port, connectionId, totalBytesReceived, length, inboundPduLimit, ByteBuffer.wrap(Arrays.copyOf(data.array(), data.array().length)));
     }
 }
