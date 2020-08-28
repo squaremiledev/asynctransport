@@ -1,5 +1,5 @@
 run:
-	@./gradlew clean test distZip && unzip -q build/distributions/sockets.zip -d build/distributions
-	@echo "run with ./build/distributions/sockets/bin/sockets"
+	@./gradlew clean test distZip && unzip -q asynctcpapp/build/distributions/asynctcpapp.zip -d asynctcpapp/build/distributions
+	@echo "run with ./asynctcpapp/build/distributions/asynctcpapp/bin/asynctcpapp"
 	@echo "--------------------------"
-	@./build/distributions/sockets/bin/sockets
+	@./asynctcpapp/build/distributions/asynctcpapp/bin/asynctcpapp

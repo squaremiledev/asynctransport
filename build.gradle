@@ -1,33 +1,15 @@
 plugins {
     id 'java'
-    id 'application'
     id 'idea'
 }
 
-repositories {
-    jcenter()
-}
-
-compileJava {
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
-}
-
-test {
-    useJUnitPlatform {
-//        excludeTags 'tcperror' // uncomment not to run tests that produce tcp errors (expected)
+allprojects {
+    repositories {
+        jcenter()
     }
-    testLogging {
-        events "passed", "skipped", "failed"
+    compileJava {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
     }
-}
-
-application {
-    mainClassName = 'com.michaelszymczak.sample.sockets.SampleTransport'
-}
-
-dependencies {
-    implementation 'org.agrona:agrona:1.6.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
-    testImplementation 'org.assertj:assertj-core:3.16.1'
+    group 'dev.squaremile'
 }

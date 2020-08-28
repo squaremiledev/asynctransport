@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'idea'
+}
+
+application {
+    mainClassName = 'dev.squaremile.asynctcpapp.SampleTransport'
+}
+
+dependencies {
+    implementation project(':asynctcp')
+}
