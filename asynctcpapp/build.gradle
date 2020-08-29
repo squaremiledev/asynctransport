@@ -8,6 +8,10 @@ application {
     mainClassName = 'dev.squaremile.asynctcpapp.SampleTransport'
 }
 
+distZip {
+    archiveFileName = 'asynctcpapp.zip'
+}
+
 dependencies {
     implementation project(':asynctcp')
 }

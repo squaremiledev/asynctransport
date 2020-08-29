@@ -11,7 +11,8 @@ allprojects {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'
     }
-    group 'dev.squaremile'
+    group property('dev.squaremile.asynctransport.group')
+    version property('dev.squaremile.asynctransport.version')
 }
 
 subprojects {

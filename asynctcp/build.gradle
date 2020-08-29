@@ -1,6 +1,12 @@
 plugins {
     id 'java-library'
     id 'java-library-distribution'
+    id 'maven-publish'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 test {
@@ -27,5 +33,33 @@ jar {
 distributions {
     main {
         distributionBaseName = 'asynctcp'
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            def releasesRepoUrl = "$buildDir/repos/releases"
+            def snapshotsRepoUrl = "$buildDir/repos/snapshots"
+            url = version.contains('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+        }
+        if (System.getenv("GITHUB_ACTOR") != null)
+        {
+            maven {
+                println "Configuring GitHub packages for ${System.getenv("GITHUB_ACTOR")}"
+                name = "GitHubPackages"
+                url = "https://maven.pkg.github.com/squaremiledev/asynctransport"
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
     }
 }
