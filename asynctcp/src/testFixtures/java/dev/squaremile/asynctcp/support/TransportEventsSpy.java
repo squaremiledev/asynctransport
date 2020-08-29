@@ -8,7 +8,7 @@ public final class TransportEventsSpy extends EventsSpy<TransportEvent> implemen
 {
     private final CapturedItems<TransportEvent> items;
 
-    TransportEventsSpy()
+    public TransportEventsSpy()
     {
         this(new CapturedItems<>());
     }
