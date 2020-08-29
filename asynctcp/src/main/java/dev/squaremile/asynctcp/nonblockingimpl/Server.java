@@ -7,13 +7,14 @@ import java.net.SocketException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+import org.agrona.CloseHelper;
+
+
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.commands.CommandFactory;
 import dev.squaremile.asynctcp.domain.api.events.EventListener;
 import dev.squaremile.asynctcp.domain.connection.Connection;
 import dev.squaremile.asynctcp.domain.connection.ConnectionConfiguration;
-
-import org.agrona.CloseHelper;
 
 public class Server implements AutoCloseable
 {
@@ -69,12 +70,11 @@ public class Server implements AutoCloseable
                 acceptedSocketChannel.socket().getSendBufferSize() * 2,
                 acceptedSocketChannel.socket().getReceiveBufferSize()
         );
-        final Connection connection = new ConnectionImpl(
+        return new ConnectionImpl(
                 configuration,
                 new SocketBackedChannel(acceptedSocketChannel),
                 eventListener::onEvent
         );
-        return connection;
     }
 
     public SocketChannel acceptChannel() throws IOException

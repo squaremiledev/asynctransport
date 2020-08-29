@@ -143,6 +143,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         {
             eventListener.onEvent(new TransportCommandFailed(command, e.getMessage() == null || e.getMessage().isEmpty() ? e.getClass().getSimpleName() : e.getMessage()));
         }
+        work();
     }
 
     @Override

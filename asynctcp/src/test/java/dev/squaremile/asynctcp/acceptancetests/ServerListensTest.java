@@ -242,8 +242,8 @@ class ServerListensTest extends TransportTestBase
         // Then
         assertThat(serverTransport.events().last(StoppedListening.class).commandId()).isEqualTo(9);
         assertThat(serverTransport.events().last(StoppedListening.class).port()).isEqualTo(port2);
-        clients.client(1).connectedTo(port1);
-        assertThrows(ConnectException.class, () -> clients.client(2).connectedTo(port2));
-        clients.client(3).connectedTo(port3);
+        new SampleClient().connectedTo(port1);
+        assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port2));
+        new SampleClient().connectedTo(port3);
     }
 }

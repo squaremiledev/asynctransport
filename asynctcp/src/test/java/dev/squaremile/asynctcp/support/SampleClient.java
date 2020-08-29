@@ -16,11 +16,18 @@ public class SampleClient implements AutoCloseable
     private final Socket socket;
     private final int timeoutMs;
 
-    public SampleClient() throws SocketException
+    public SampleClient()
     {
         this.timeoutMs = 1000;
         this.socket = new Socket();
-        this.socket.setSoTimeout(timeoutMs);
+        try
+        {
+            this.socket.setSoTimeout(timeoutMs);
+        }
+        catch (final SocketException e)
+        {
+            rethrowUnchecked(e);
+        }
     }
 
     public SampleClient connectedTo(final int port)
