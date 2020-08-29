@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'java-library-distribution'
 }
 
 test {
@@ -17,8 +18,14 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.16.1'
 }
 
-task hello {
-    doLast { Task task ->
-        println "I'm $task.project.name"
+jar {
+    manifest {
+        attributes('Automatic-Module-Name': 'dev.squaremile.asynctcp')
+    }
+}
+
+distributions {
+    main {
+        distributionBaseName = 'asynctcp'
     }
 }

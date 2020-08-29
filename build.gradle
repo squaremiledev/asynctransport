@@ -13,3 +13,9 @@ allprojects {
     }
     group 'dev.squaremile'
 }
+
+subprojects {
+    java {
+        modularity.inferModulePath = true
+    }
+}
