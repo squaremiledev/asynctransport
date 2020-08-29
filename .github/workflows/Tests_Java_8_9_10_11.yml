@@ -1,4 +1,4 @@
-name: Tests_Java_8_9_10_11
+name: Tests_Java_8_11
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ 8, 9, 10, 11 ]
+        java: [ 8, 11 ]
     name: Test against JDK ${{ matrix.java }}
     steps:
       - uses: actions/checkout@v2
