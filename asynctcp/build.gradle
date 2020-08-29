@@ -36,6 +36,10 @@ distributions {
     }
 }
 
+repositories {
+    mavenLocal()
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
