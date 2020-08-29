@@ -52,7 +52,7 @@ publishing {
         if (System.getenv("GITHUB_ACTOR") != null)
         {
             maven {
-                println "Configuring GitHub packages for ${System.getenv("GITHUB_ACTOR")}"
+                println "Configuring GitHub packages for ${System.getenv("GITHUB_ACTOR")} and version ${version}"
                 name = "GitHubPackages"
                 url = "https://maven.pkg.github.com/squaremiledev/asynctransport"
                 credentials {
