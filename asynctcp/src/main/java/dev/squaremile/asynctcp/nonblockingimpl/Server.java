@@ -3,6 +3,7 @@ package dev.squaremile.asynctcp.nonblockingimpl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -44,6 +45,16 @@ public class Server implements AutoCloseable
         serverSocketChannel.configureBlocking(false);
     }
 
+    private static String hostname(final SocketAddress remoteSocketAddress)
+    {
+        if (remoteSocketAddress instanceof InetSocketAddress)
+        {
+            InetSocketAddress remoteInetSocketAddress = (InetSocketAddress)remoteSocketAddress;
+            return remoteInetSocketAddress.getHostName();
+        }
+        return remoteSocketAddress.toString();
+    }
+
     public long commandIdThatTriggeredListening()
     {
         return commandIdThatTriggeredListening;
@@ -51,7 +62,8 @@ public class Server implements AutoCloseable
 
     void listen() throws IOException
     {
-        serverSocketChannel.bind(new InetSocketAddress(port));
+        final InetSocketAddress inetSocketAddress = new InetSocketAddress(port);
+        serverSocketChannel.bind(inetSocketAddress);
     }
 
     public ServerSocketChannel serverSocketChannel()
@@ -62,8 +74,11 @@ public class Server implements AutoCloseable
     public Connection createConnection(final SocketChannel acceptedSocketChannel) throws SocketException
     {
         final Socket acceptedSocket = acceptedSocketChannel.socket();
+
+        SocketAddress remoteSocketAddress = acceptedSocket.getRemoteSocketAddress();
         final ConnectionConfiguration configuration = new ConnectionConfiguration(
                 new ConnectionIdValue(acceptedSocket.getLocalPort(), connectionIdSource.newId()),
+                hostname(remoteSocketAddress),
                 acceptedSocket.getPort(),
                 acceptedSocketChannel.socket().getSendBufferSize(),
                 // TODO: decide how to select buffer size (prod and test performance)

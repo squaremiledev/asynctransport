@@ -7,9 +7,11 @@ public class Connect implements TransportCommand
 {
     private int remotePort = TransportId.NO_PORT;
     private long commandId = CommandId.NO_COMMAND_ID;
+    private String remoteHost;
 
-    public Connect set(final int remotePort, final long commandId)
+    public Connect set(final String remoteHost, final int remotePort, final long commandId)
     {
+        this.remoteHost = remoteHost;
         this.remotePort = remotePort;
         this.commandId = commandId;
         return this;
@@ -30,5 +32,10 @@ public class Connect implements TransportCommand
     public int remotePort()
     {
         return remotePort;
+    }
+
+    public String remoteHost()
+    {
+        return remoteHost;
     }
 }

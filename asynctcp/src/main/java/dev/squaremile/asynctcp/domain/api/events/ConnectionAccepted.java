@@ -2,8 +2,10 @@ package dev.squaremile.asynctcp.domain.api.events;
 
 public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedEvent
 {
+    // TODO: add a remote host string
     private final int port;
     private final long commandId;
+    private final String remoteHost;
     private final int remotePort;
     private final long connectionId;
     private final int inboundPduLimit;
@@ -12,6 +14,7 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     public ConnectionAccepted(
             final int port,
             final long commandId,
+            final String remoteHost,
             final int remotePort,
             final long connectionId,
             final int inboundPduLimit,
@@ -20,6 +23,7 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     {
         this.port = port;
         this.commandId = commandId;
+        this.remoteHost = remoteHost;
         this.remotePort = remotePort;
         this.connectionId = connectionId;
         this.inboundPduLimit = inboundPduLimit;
@@ -36,6 +40,11 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     public long commandId()
     {
         return commandId;
+    }
+
+    public String remoteHost()
+    {
+        return remoteHost;
     }
 
     public int remotePort()
@@ -65,6 +74,7 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
         return "ConnectionAccepted{" +
                "port=" + port +
                ", commandId=" + commandId +
+               ", remoteHost='" + remoteHost + '\'' +
                ", remotePort=" + remotePort +
                ", connectionId=" + connectionId +
                ", inboundPduLimit=" + inboundPduLimit +
@@ -75,6 +85,6 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     @Override
     public TransportEvent copy()
     {
-        return new ConnectionAccepted(port, commandId, remotePort, connectionId, inboundPduLimit, outboundPduLimit);
+        return new ConnectionAccepted(port, commandId, remoteHost, remotePort, connectionId, inboundPduLimit, outboundPduLimit);
     }
 }

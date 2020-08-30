@@ -55,6 +55,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
                 new ConnectionAccepted(
                         serverPort,
                         1,
+                        "localhost",
                         clientPort,
                         connectionAcceptedEvent.connectionId(),
                         connectionAcceptedEvent.inboundPduLimit(),

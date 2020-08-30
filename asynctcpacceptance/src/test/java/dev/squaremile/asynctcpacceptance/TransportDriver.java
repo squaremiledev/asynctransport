@@ -79,7 +79,7 @@ public class TransportDriver
         final StartedListening startedListeningEvent = startListening(serverPort);
         int acceptedEventsBefore = transport.connectionEvents().all(ConnectionAccepted.class).size();
         int connectedEventsBefore = client.connectionEvents().all(Connected.class).size();
-        client.handle(client.command(Connect.class).set(startedListeningEvent.port(), CommandId.NO_COMMAND_ID));
+        client.handle(client.command(Connect.class).set("localhost", startedListeningEvent.port(), CommandId.NO_COMMAND_ID));
         Worker.runUntil(() ->
                         {
                             transport.work();

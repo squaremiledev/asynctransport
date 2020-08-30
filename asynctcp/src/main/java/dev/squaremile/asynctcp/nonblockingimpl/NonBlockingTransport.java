@@ -114,6 +114,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                             // TODO: size buffers correctly
                             final ConnectionConfiguration configuration = new ConnectionConfiguration(
                                     new ConnectionIdValue(socket.getLocalPort(), connectionIdSource.newId()),
+                                    connectedNotification.remoteHost,
                                     socket.getPort(),
                                     socket.getSendBufferSize(),
                                     // TODO: decide how to select buffer size (prod and test performance)
@@ -282,8 +283,8 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             SocketChannel socketChannel = SocketChannel.open();
             socketChannel.configureBlocking(false);
             long connectionId = connectionIdSource.newId();
-            // TODO: retrieve a host from the command
-            socketChannel.connect(new InetSocketAddress("localhost", command.remotePort()));
+            socketChannel.connect(new InetSocketAddress(command.remoteHost(), command.remotePort()));
+            // TODO: implement timeout
             socketChannel.register(selector, SelectionKey.OP_CONNECT, new ConnectedNotification(connectionId, socketChannel, command));
         }
         catch (IOException e)

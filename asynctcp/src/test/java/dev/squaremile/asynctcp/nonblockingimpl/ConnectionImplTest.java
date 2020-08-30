@@ -1,5 +1,10 @@
 package dev.squaremile.asynctcp.nonblockingimpl;
 
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+
 import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
@@ -8,12 +13,6 @@ import dev.squaremile.asynctcp.domain.api.events.DataSent;
 import dev.squaremile.asynctcp.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.domain.connection.ConnectionState;
 import dev.squaremile.asynctcp.testfitures.ConnectionEventsSpy;
-
-
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 
 import static dev.squaremile.asynctcp.testfitures.Assertions.assertEqual;
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -41,7 +40,7 @@ class ConnectionImplTest
     @Test
     void shouldReadConfiguration()
     {
-        final ConnectionImpl connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(8080, 51), 9090, 10, 20, 30));
+        final ConnectionImpl connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(8080, 51), "localhost", 9090, 10, 20, 30));
 
         assertThat(connection.connectionId()).isEqualTo(51);
         assertThat(connection.port()).isEqualTo(8080);
@@ -51,7 +50,7 @@ class ConnectionImplTest
     @Test
     void shouldIncludeConnectionIdInTheEvent()
     {
-        final ConnectionImpl connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(1234, 3), 5678, 7, 7, 30));
+        final ConnectionImpl connection = newConnection(new ConnectionConfiguration(new ConnectionIdValue(1234, 3), "localhost", 5678, 7, 7, 30));
 
         // When
         connection.handle(connection.command(SendData.class));
@@ -355,6 +354,6 @@ class ConnectionImplTest
 
     private ConnectionConfiguration config()
     {
-        return new ConnectionConfiguration(new ConnectionIdValue(8080, 51), 9090, 10, 20, 30);
+        return new ConnectionConfiguration(new ConnectionIdValue(8080, 51), "localhost", 9090, 10, 20, 30);
     }
 }

@@ -1,7 +1,10 @@
 package dev.squaremile.asynctcpacceptance;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,15 +26,16 @@ import static java.util.Collections.singletonList;
 
 class ClientConnectsTest extends TransportTestBase
 {
-    @Test
-    void shouldConnect()
+    @ParameterizedTest
+    @ValueSource(strings = {"localhost", "127.0.0.1"})
+    void shouldConnect(final String remoteHost)
     {
         // Given
         TransportDriver serverDriver = new TransportDriver(serverTransport);
         StartedListening serverStartedListening = serverDriver.startListening();
 
         // When
-        clientTransport.handle(clientTransport.command(Connect.class).set(serverStartedListening.port(), 101));
+        clientTransport.handle(clientTransport.command(Connect.class).set(remoteHost, serverStartedListening.port(), 101));
         spinUntil(() -> !serverTransport.connectionEvents().all(ConnectionAccepted.class).isEmpty() &&
                         !clientTransport.connectionEvents().all(Connected.class).isEmpty());
 
@@ -44,6 +48,7 @@ class ClientConnectsTest extends TransportTestBase
                 new Connected(
                         connectionAcceptedByServer.remotePort(),
                         101,
+                        remoteHost,
                         serverStartedListening.port(),
                         connected.connectionId(),
                         connected.inboundPduLimit(),
@@ -56,12 +61,37 @@ class ClientConnectsTest extends TransportTestBase
     }
 
     @Test
-    void shouldInformAboutFailedConnectionAttempt()
+    void shouldInformAboutFailedConnectionAttemptWhenConnectingToPortNothingListensOn()
     {
         int portNothingListensOn = freePort();
 
         // When
-        clientTransport.handle(clientTransport.command(Connect.class).set(portNothingListensOn, 101));
+        clientTransport.handle(clientTransport.command(Connect.class).set("localhost", portNothingListensOn, 102));
+        spinUntilFailure();
+
+        // Then
+        assertEqual(
+                clientTransport.events().all(CommandFailed.class),
+                new TransportCommandFailed(
+                        TransportId.NO_PORT,
+                        102,
+                        "Connection refused",
+                        Connect.class
+                )
+        );
+    }
+
+    @Test
+    @Disabled
+        // TODO: enable once the connection timeout implemented
+    void shouldInformAboutFailedConnectionAttemptWhenConnectingToNonExistingHost()
+    {
+        // Given
+        TransportDriver serverDriver = new TransportDriver(serverTransport);
+        StartedListening serverStartedListening = serverDriver.startListening();
+
+        // When
+        clientTransport.handle(clientTransport.command(Connect.class).set("240.0.0.0", serverStartedListening.port(), 101));
         spinUntilFailure();
 
         // Then
@@ -70,7 +100,7 @@ class ClientConnectsTest extends TransportTestBase
                 new TransportCommandFailed(
                         TransportId.NO_PORT,
                         101,
-                        "Connection refused",
+                        "Connection timed out",
                         Connect.class
                 )
         );

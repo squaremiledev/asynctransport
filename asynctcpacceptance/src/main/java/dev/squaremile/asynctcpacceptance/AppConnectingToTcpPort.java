@@ -39,7 +39,7 @@ public class AppConnectingToTcpPort implements Application
     public void onStart()
     {
         System.out.println("START");
-        transport.handle(transport.command(Connect.class).set(port, 1));
+        transport.handle(transport.command(Connect.class).set("localhost", port, 1));
     }
 
     @Override

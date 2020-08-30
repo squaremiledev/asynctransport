@@ -2,6 +2,11 @@ package dev.squaremile.asynctcp.nonblockingimpl;
 
 import java.io.IOException;
 
+import org.agrona.CloseHelper;
+
+import static org.agrona.LangUtil.rethrowUnchecked;
+
+
 import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
@@ -17,11 +22,6 @@ import dev.squaremile.asynctcp.domain.connection.ConnectionCommands;
 import dev.squaremile.asynctcp.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.domain.connection.ConnectionState;
 import dev.squaremile.asynctcp.domain.connection.SingleConnectionEvents;
-
-import org.agrona.CloseHelper;
-
-import static org.agrona.LangUtil.rethrowUnchecked;
-
 
 import static dev.squaremile.asynctcp.domain.connection.ConnectionState.CLOSED;
 
@@ -108,6 +108,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         singleConnectionEvents.onEvent(new ConnectionAccepted(
                 this.port,
                 commandIdThatTriggeredListening,
+                configuration.remoteHost,
                 configuration.remotePort,
                 configuration.connectionId.connectionId(),
                 configuration.inboundPduLimit,
@@ -121,6 +122,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         singleConnectionEvents.onEvent(new Connected(
                 this.port,
                 commandId,
+                configuration.remoteHost,
                 configuration.remotePort,
                 configuration.connectionId.connectionId(),
                 configuration.inboundPduLimit,
