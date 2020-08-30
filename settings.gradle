@@ -1,2 +1,2 @@
 rootProject.name = 'asynctransport'
-include 'asynctcp', 'asynctcpapp'
+include 'asynctcp', 'asynctcpacceptance'

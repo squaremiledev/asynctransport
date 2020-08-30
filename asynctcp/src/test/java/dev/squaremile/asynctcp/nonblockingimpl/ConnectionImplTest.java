@@ -7,15 +7,15 @@ import dev.squaremile.asynctcp.domain.api.events.ConnectionEvent;
 import dev.squaremile.asynctcp.domain.api.events.DataSent;
 import dev.squaremile.asynctcp.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.domain.connection.ConnectionState;
-import dev.squaremile.asynctcp.support.ConnectionEventsSpy;
-import dev.squaremile.asynctcp.support.FakeChannel;
+import dev.squaremile.asynctcp.testfitures.ConnectionEventsSpy;
+
 
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import static dev.squaremile.asynctcp.support.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.testfitures.Assertions.assertEqual;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;

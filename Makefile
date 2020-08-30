@@ -1,5 +1,5 @@
 run:
-	@./gradlew clean test distZip && unzip -q asynctcpapp/build/distributions/asynctcpapp.zip -d asynctcpapp/build/distributions
-	@echo "run with ./asynctcpapp/build/distributions/asynctcpapp/bin/asynctcpapp"
+	@./gradlew clean test distZip && unzip -q asynctcpacceptance/build/distributions/asynctcpacceptance.zip -d asynctcpacceptance/build/distributions
+	@echo "run with ./asynctcpacceptance/build/distributions/asynctcpacceptance/bin/asynctcpacceptance"
 	@echo "--------------------------"
-	@./asynctcpapp/build/distributions/asynctcpapp/bin/asynctcpapp
+	@./asynctcpacceptance/build/distributions/asynctcpacceptance/bin/asynctcpacceptance
