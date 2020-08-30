@@ -11,6 +11,7 @@ public class ConnectedNotification
     final SocketChannel socketChannel;
     final long commandId;
     final int port;
+    final int remotePort;
 
     public ConnectedNotification(long connectionId, SocketChannel socketChannel, Connect command)
     {
@@ -18,5 +19,6 @@ public class ConnectedNotification
         this.socketChannel = socketChannel;
         this.commandId = command.commandId();
         this.port = command.port();
+        this.remotePort = command.remotePort();
     }
 }

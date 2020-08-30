@@ -5,12 +5,12 @@ import dev.squaremile.asynctcp.domain.api.TransportId;
 
 public class Connect implements TransportCommand
 {
-    private int port = TransportId.NO_PORT;
+    private int remotePort = TransportId.NO_PORT;
     private long commandId = CommandId.NO_COMMAND_ID;
 
-    public Connect set(final int port, final long commandId)
+    public Connect set(final int remotePort, final long commandId)
     {
-        this.port = port;
+        this.remotePort = remotePort;
         this.commandId = commandId;
         return this;
     }
@@ -24,6 +24,11 @@ public class Connect implements TransportCommand
     @Override
     public int port()
     {
-        return port;
+        return NO_PORT;
+    }
+
+    public int remotePort()
+    {
+        return remotePort;
     }
 }

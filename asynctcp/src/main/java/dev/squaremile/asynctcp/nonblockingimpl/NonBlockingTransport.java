@@ -18,7 +18,6 @@ import org.agrona.LangUtil;
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.Transport;
-import dev.squaremile.asynctcp.domain.api.TransportId;
 import dev.squaremile.asynctcp.domain.api.commands.CommandFactory;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
@@ -106,7 +105,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                         catch (ConnectException e)
                         {
                             eventListener.onEvent(new TransportCommandFailed(
-                                    TransportId.NO_PORT, connectedNotification.commandId, e.getMessage(), Connect.class
+                                    connectedNotification.port, connectedNotification.commandId, e.getMessage(), Connect.class
                             ));
                         }
                         if (socketChannel.isConnected())
@@ -284,7 +283,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             socketChannel.configureBlocking(false);
             long connectionId = connectionIdSource.newId();
             // TODO: retrieve a host from the command
-            socketChannel.connect(new InetSocketAddress("localhost", command.port()));
+            socketChannel.connect(new InetSocketAddress("localhost", command.remotePort()));
             socketChannel.register(selector, SelectionKey.OP_CONNECT, new ConnectedNotification(connectionId, socketChannel, command));
         }
         catch (IOException e)
