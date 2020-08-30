@@ -8,12 +8,14 @@ public class Connect implements TransportCommand
     private int remotePort = TransportId.NO_PORT;
     private long commandId = CommandId.NO_COMMAND_ID;
     private String remoteHost;
+    private int timeoutMs = 1_000;
 
-    public Connect set(final String remoteHost, final int remotePort, final long commandId)
+    public Connect set(final String remoteHost, final int remotePort, final long commandId, final int timeoutMs)
     {
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
         this.commandId = commandId;
+        this.timeoutMs = timeoutMs;
         return this;
     }
 
@@ -37,5 +39,10 @@ public class Connect implements TransportCommand
     public String remoteHost()
     {
         return remoteHost;
+    }
+
+    public int timeoutMs()
+    {
+        return timeoutMs;
     }
 }

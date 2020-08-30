@@ -21,7 +21,7 @@ class ClientSendsDataTest extends TransportTestBase
     {
         final TransportDriver driver = new TransportDriver(serverTransport);
         StartedListening startedListening = driver.startListening();
-        clientTransport.handle(clientTransport.command(Connect.class).set("localhost", startedListening.port(), 100));
+        clientTransport.handle(clientTransport.command(Connect.class).set("localhost", startedListening.port(), 100, 1_000));
         spinUntil(() -> !clientTransport.connectionEvents().all(Connected.class).isEmpty());
         Connected connected = clientTransport.connectionEvents().last(Connected.class);
 

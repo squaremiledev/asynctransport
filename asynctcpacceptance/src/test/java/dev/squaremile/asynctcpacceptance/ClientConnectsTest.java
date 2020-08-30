@@ -1,7 +1,6 @@
 package dev.squaremile.asynctcpacceptance;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -35,7 +34,7 @@ class ClientConnectsTest extends TransportTestBase
         StartedListening serverStartedListening = serverDriver.startListening();
 
         // When
-        clientTransport.handle(clientTransport.command(Connect.class).set(remoteHost, serverStartedListening.port(), 101));
+        clientTransport.handle(clientTransport.command(Connect.class).set(remoteHost, serverStartedListening.port(), 101, 1_000));
         spinUntil(() -> !serverTransport.connectionEvents().all(ConnectionAccepted.class).isEmpty() &&
                         !clientTransport.connectionEvents().all(Connected.class).isEmpty());
 
@@ -66,7 +65,7 @@ class ClientConnectsTest extends TransportTestBase
         int portNothingListensOn = freePort();
 
         // When
-        clientTransport.handle(clientTransport.command(Connect.class).set("localhost", portNothingListensOn, 102));
+        clientTransport.handle(clientTransport.command(Connect.class).set("localhost", portNothingListensOn, 102, 1_000));
         spinUntilFailure();
 
         // Then
@@ -82,8 +81,6 @@ class ClientConnectsTest extends TransportTestBase
     }
 
     @Test
-    @Disabled
-        // TODO: enable once the connection timeout implemented
     void shouldInformAboutFailedConnectionAttemptWhenConnectingToNonExistingHost()
     {
         // Given
@@ -91,7 +88,7 @@ class ClientConnectsTest extends TransportTestBase
         StartedListening serverStartedListening = serverDriver.startListening();
 
         // When
-        clientTransport.handle(clientTransport.command(Connect.class).set("240.0.0.0", serverStartedListening.port(), 101));
+        clientTransport.handle(clientTransport.command(Connect.class).set("240.0.0.0", serverStartedListening.port(), 101, 50));
         spinUntilFailure();
 
         // Then
@@ -100,7 +97,7 @@ class ClientConnectsTest extends TransportTestBase
                 new TransportCommandFailed(
                         TransportId.NO_PORT,
                         101,
-                        "Connection timed out",
+                        "Timed out",
                         Connect.class
                 )
         );

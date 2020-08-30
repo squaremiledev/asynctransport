@@ -14,7 +14,7 @@ public class TransportAppLauncher
     public TransportApplication launch(ApplicationFactory applicationFactory) throws IOException
     {
         MutableReference<EventListener> listener = new MutableReference<>();
-        Transport transport = new NonBlockingTransport(event -> listener.get().onEvent(event));
+        Transport transport = new NonBlockingTransport(event -> listener.get().onEvent(event), System::currentTimeMillis);
         Application app = applicationFactory.create(transport);
         listener.set(app);
         return new TransportApplication(transport, app);

@@ -28,7 +28,6 @@ abstract class TransportTestBase
     {
         runUntil(() ->
                  {
-                     System.out.println("clientTransport.events() = " + clientTransport.events());
                      serverTransport.work();
                      clientTransport.work();
                      return clientTransport.events().contains(CommandFailed.class) ||

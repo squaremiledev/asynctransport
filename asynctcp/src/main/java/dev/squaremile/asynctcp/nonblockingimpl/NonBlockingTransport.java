@@ -13,6 +13,7 @@ import java.util.Iterator;
 
 import org.agrona.CloseHelper;
 import org.agrona.LangUtil;
+import org.agrona.concurrent.EpochClock;
 
 
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
@@ -44,12 +45,16 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final EventListener eventListener;
     private final Connections connections;
     private final Servers servers;
+    private final PendingConnections pendingConnections;
+    private final EpochClock clock;
 
-    public NonBlockingTransport(final EventListener eventListener) throws IOException
+    public NonBlockingTransport(final EventListener eventListener, final EpochClock clock) throws IOException
     {
+        this.clock = clock;
         this.servers = new Servers();
         this.connections = new Connections(eventListener::onEvent);
         this.eventListener = eventListener;
+        this.pendingConnections = new PendingConnections(clock, eventListener);
     }
 
     private void handle(final ConnectionCommand command)
@@ -71,6 +76,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     @Override
     public void work()
     {
+        pendingConnections.work();
         try
         {
             if (selector.selectNow() > 0)
@@ -95,8 +101,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                     }
                     else if (key.isConnectable())
                     {
-                        // TODO: think of better mechanism than the notification object
-                        ConnectedNotification connectedNotification = (ConnectedNotification)key.attachment();
+                        ConnectedNotification connectedNotification = pendingConnections.pendingConnection(key);
                         SocketChannel socketChannel = connectedNotification.socketChannel;
                         try
                         {
@@ -107,6 +112,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                             eventListener.onEvent(new TransportCommandFailed(
                                     connectedNotification.port, connectedNotification.commandId, e.getMessage(), Connect.class
                             ));
+                            pendingConnections.removePendingConnection(key);
                         }
                         if (socketChannel.isConnected())
                         {
@@ -123,6 +129,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                             );
                             long connectionId = registerConnection(socketChannel, new ConnectionImpl(configuration, new SocketBackedChannel(socketChannel), eventListener::onEvent));
                             connections.get(connectionId).connected(connectedNotification.commandId);
+                            pendingConnections.removePendingConnection(key);
                         }
                     }
                     else
@@ -284,8 +291,8 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             socketChannel.configureBlocking(false);
             long connectionId = connectionIdSource.newId();
             socketChannel.connect(new InetSocketAddress(command.remoteHost(), command.remotePort()));
-            // TODO: implement timeout
-            socketChannel.register(selector, SelectionKey.OP_CONNECT, new ConnectedNotification(connectionId, socketChannel, command));
+            final SelectionKey selectionKey = socketChannel.register(selector, SelectionKey.OP_CONNECT);
+            pendingConnections.add(new ConnectedNotification(connectionId, socketChannel, command, clock.time() + command.timeoutMs(), selectionKey));
         }
         catch (IOException e)
         {
