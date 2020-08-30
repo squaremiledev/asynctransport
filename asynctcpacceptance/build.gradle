@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClassName = 'dev.squaremile.asynctcpacceptance.SampleTransport'
+    mainClassName = 'dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort'
 }
 
 distZip {
@@ -14,8 +14,8 @@ distZip {
 
 dependencies {
     implementation project(':asynctcp')
+    implementation 'org.agrona:agrona:1.6.0'
     testImplementation testFixtures(project(':asynctcp'))
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     testImplementation 'org.assertj:assertj-core:3.16.1'
-    testImplementation 'org.agrona:agrona:1.6.0'
 }
