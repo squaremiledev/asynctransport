@@ -113,6 +113,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                                     connectedNotification.port, connectedNotification.commandId, e.getMessage(), Connect.class
                             ));
                             pendingConnections.removePendingConnection(key);
+                            key.cancel();
                         }
                         if (socketChannel.isConnected())
                         {
