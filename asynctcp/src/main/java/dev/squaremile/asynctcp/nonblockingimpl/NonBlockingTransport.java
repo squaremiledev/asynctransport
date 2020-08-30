@@ -1,6 +1,7 @@
 package dev.squaremile.asynctcp.nonblockingimpl;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.ClosedChannelException;
@@ -10,9 +11,14 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
+import org.agrona.CloseHelper;
+import org.agrona.LangUtil;
+
+
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.Transport;
+import dev.squaremile.asynctcp.domain.api.TransportId;
 import dev.squaremile.asynctcp.domain.api.commands.CommandFactory;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
@@ -29,9 +35,6 @@ import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.domain.connection.Connection;
 import dev.squaremile.asynctcp.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.domain.connection.ConnectionState;
-
-import org.agrona.CloseHelper;
-import org.agrona.LangUtil;
 
 // TODO: make sure all commands and events can be used without generating garbage
 public class NonBlockingTransport implements AutoCloseable, Transport
@@ -96,7 +99,16 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                         // TODO: think of better mechanism than the notification object
                         ConnectedNotification connectedNotification = (ConnectedNotification)key.attachment();
                         SocketChannel socketChannel = connectedNotification.socketChannel;
-                        socketChannel.finishConnect();
+                        try
+                        {
+                            socketChannel.finishConnect();
+                        }
+                        catch (ConnectException e)
+                        {
+                            eventListener.onEvent(new TransportCommandFailed(
+                                    TransportId.NO_PORT, connectedNotification.commandId, e.getMessage(), Connect.class
+                            ));
+                        }
                         if (socketChannel.isConnected())
                         {
                             Socket socket = socketChannel.socket();
@@ -273,7 +285,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             long connectionId = connectionIdSource.newId();
             // TODO: retrieve a host from the command
             socketChannel.connect(new InetSocketAddress("localhost", command.port()));
-            socketChannel.register(selector, SelectionKey.OP_CONNECT, new ConnectedNotification(connectionId, socketChannel, command.commandId()));
+            socketChannel.register(selector, SelectionKey.OP_CONNECT, new ConnectedNotification(connectionId, socketChannel, command));
         }
         catch (IOException e)
         {

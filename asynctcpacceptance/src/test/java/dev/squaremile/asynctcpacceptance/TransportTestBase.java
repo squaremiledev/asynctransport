@@ -24,6 +24,17 @@ abstract class TransportTestBase
         runUntil(makeSureNoFailuresAndWorkUntil(booleanSupplier));
     }
 
+    void spinUntilFailure()
+    {
+        runUntil(() ->
+                 {
+                     serverTransport.work();
+                     clientTransport.work();
+                     return clientTransport.events().contains(CommandFailed.class) ||
+                            serverTransport.events().contains(CommandFailed.class);
+                 });
+    }
+
     private BooleanSupplier makeSureNoFailuresAndWorkUntil(final BooleanSupplier terminationCriterion)
     {
         return () ->
