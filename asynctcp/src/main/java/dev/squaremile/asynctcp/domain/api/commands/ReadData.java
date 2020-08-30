@@ -9,13 +9,8 @@ public class ReadData implements ConnectionCommand
 
     public ReadData(final ConnectionId connectionId)
     {
-        this(connectionId.port(), connectionId.connectionId());
-    }
-
-    public ReadData(final int port, final long connectionId)
-    {
-        this.port = port;
-        this.connectionId = connectionId;
+        this.port = connectionId.port();
+        this.connectionId = connectionId.connectionId();
     }
 
     @Override

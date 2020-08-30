@@ -6,6 +6,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
+import org.agrona.collections.MutableInteger;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
@@ -13,13 +20,6 @@ import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.DataSent;
 import dev.squaremile.asynctcp.support.ConnectionEventsSpy;
 import dev.squaremile.asynctcp.support.TransportDriver;
-
-import org.agrona.collections.MutableInteger;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 
 import static dev.squaremile.asynctcp.support.DataFixtures.concatenatedData;
 import static dev.squaremile.asynctcp.support.StringFixtures.byteArrayWith;
@@ -89,7 +89,7 @@ class ClientReceivesDataTest extends TransportTestBase
         // When
         dataChunksToSend.forEach(dataChunkToSend ->
                                  {
-                                     serverTransport.handle(new SendData(conn, dataChunkToSend.length).set(dataChunkToSend));
+                                     serverTransport.handle(serverTransport.command(conn, SendData.class).set(dataChunkToSend));
                                      // Make sure all buffered data has been sent before sending more to avoid buffer overflow
                                      while (true)
                                      {

@@ -1,5 +1,10 @@
 package dev.squaremile.asynctcp.acceptancetests;
 
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
@@ -7,11 +12,6 @@ import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.support.TransportDriver;
-
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
@@ -22,7 +22,7 @@ class ClientSendsDataTest extends TransportTestBase
     {
         final TransportDriver driver = new TransportDriver(serverTransport);
         StartedListening startedListening = driver.startListening();
-        clientTransport.handle(new Connect().set(startedListening.port(), 100));
+        clientTransport.handle(clientTransport.command(Connect.class).set(startedListening.port(), 100));
         spinUntil(() -> !clientTransport.connectionEvents().all(Connected.class).isEmpty());
         Connected connected = clientTransport.connectionEvents().last(Connected.class);
 

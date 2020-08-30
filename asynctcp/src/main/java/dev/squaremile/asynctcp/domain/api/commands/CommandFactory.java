@@ -27,6 +27,10 @@ public class CommandFactory
         {
             return commandType.cast(new Listen());
         }
+        if (commandType.equals(Connect.class))
+        {
+            return commandType.cast(new Connect());
+        }
         if (commandType.equals(CloseConnection.class))
         {
             return commandType.cast(new CloseConnection());

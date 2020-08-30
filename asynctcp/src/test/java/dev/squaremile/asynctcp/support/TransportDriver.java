@@ -3,6 +3,11 @@ package dev.squaremile.asynctcp.support;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 
+import org.agrona.collections.MutableInteger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+
 import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
@@ -13,11 +18,6 @@ import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.DataSent;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportEvent;
-
-import org.agrona.collections.MutableInteger;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 
 import static dev.squaremile.asynctcp.support.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.support.FreePort.freePort;
@@ -77,7 +77,7 @@ public class TransportDriver
         final StartedListening startedListeningEvent = startListening(serverPort);
         int acceptedEventsBefore = transport.connectionEvents().all(ConnectionAccepted.class).size();
         int connectedEventsBefore = client.connectionEvents().all(Connected.class).size();
-        client.handle(new Connect().set(startedListeningEvent.port(), CommandId.NO_COMMAND_ID));
+        client.handle(client.command(Connect.class).set(startedListeningEvent.port(), CommandId.NO_COMMAND_ID));
         Worker.runUntil(() ->
                         {
                             transport.work();
