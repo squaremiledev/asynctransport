@@ -38,10 +38,10 @@ class StreamEchoApplicationTest
                 {
                     whiteboxApplication = new WhiteboxApplication(transport);
                     return whiteboxApplication;
-                });
+                }, "");
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(transport, port, IGNORE_EVENTS));
+        transportApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(transport, port, IGNORE_EVENTS), "");
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         transportApplication.onStart();
     }

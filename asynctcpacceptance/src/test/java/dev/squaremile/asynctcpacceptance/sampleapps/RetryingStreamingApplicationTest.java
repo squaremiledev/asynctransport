@@ -1,12 +1,12 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
 import dev.squaremile.asynctcp.application.TransportAppLauncher;
 import dev.squaremile.asynctcp.application.TransportApplication;
+import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
@@ -35,12 +35,12 @@ public class RetryingStreamingApplicationTest
                 port,
                 dataToSend,
                 new TransportEventsRedirect(eventsReceivedByStreamingApplication)
-        ));
+        ), "streamingApplication");
         echoApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(
                 transport,
                 port,
                 new TransportEventsRedirect(eventsReceivedByEchoApplication)
-        ));
+        ), "echoApplication");
         spin = new Spin(streamingApplication, echoApplication);
     }
 
@@ -62,17 +62,17 @@ public class RetryingStreamingApplicationTest
     }
 
     @Test
-    @Disabled
     void shouldKeepTryingToConnect()
     {
+        // Given
         streamingApplication.onStart();
+        spin.spinUntil(() -> eventsReceivedByStreamingApplication.contains(CommandFailed.class));
+
+        // When
         echoApplication.onStart();
-        spin.spinUntil(() ->
-                       {
-//                           System.out.println("eventsReceivedByStreamingApplication = " + eventsReceivedByStreamingApplication.all());
-//                           System.out.println("eventsReceivedByEchoApplication = " + eventsReceivedByEchoApplication.all());
-                           return eventsReceivedByEchoApplication.contains(Connected.class);
-                       });
+
+        // Then
+        spin.spinUntil(() -> eventsReceivedByStreamingApplication.contains(Connected.class));
     }
 
     @AfterEach

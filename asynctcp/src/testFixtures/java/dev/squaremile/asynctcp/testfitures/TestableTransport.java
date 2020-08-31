@@ -26,7 +26,7 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
         this.events = events;
         try
         {
-            this.delegate = new NonBlockingTransport(new DelegatingEventListener(events, statusEventListener), System::currentTimeMillis);
+            this.delegate = new NonBlockingTransport(new DelegatingEventListener(events, statusEventListener), System::currentTimeMillis, "");
         }
         catch (Exception e)
         {

@@ -26,6 +26,7 @@ public class StreamApplication implements Application
     private ConnectionIdValue connectionId;
     private long nextCommandId = 1;
     private long inFLightConnectCommandId = Long.MIN_VALUE;
+    private boolean tryToConnect = false;
 
     public StreamApplication(
             final Transport transport,
@@ -45,7 +46,7 @@ public class StreamApplication implements Application
     @Override
     public void onStart()
     {
-        connect();
+        tryToConnect = true;
     }
 
     @Override
@@ -53,8 +54,18 @@ public class StreamApplication implements Application
     {
         if (connectionId != null)
         {
-            transport.handle(transport.command(connectionId, CloseConnection.class));
+            transport.handle(transport.command(connectionId, CloseConnection.class).set(nextCommandId++));
         }
+    }
+
+    @Override
+    public void work()
+    {
+        if (tryToConnect)
+        {
+            connect();
+        }
+
     }
 
     @Override
@@ -79,7 +90,7 @@ public class StreamApplication implements Application
             CommandFailed commandFailedEvent = (CommandFailed)event;
             if (connectionId == null && commandFailedEvent.commandId() == inFLightConnectCommandId)
             {
-                connect();
+                tryToConnect = true;
             }
         }
     }
@@ -87,6 +98,8 @@ public class StreamApplication implements Application
     private void connect()
     {
         inFLightConnectCommandId = nextCommandId++;
+        tryToConnect = false;
         transport.handle(transport.command(Connect.class).set(remoteHost, remotePort, inFLightConnectCommandId, 50));
+
     }
 }

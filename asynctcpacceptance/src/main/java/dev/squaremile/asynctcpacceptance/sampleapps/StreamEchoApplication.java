@@ -20,6 +20,7 @@ public class StreamEchoApplication implements Application
     private final int listeningPort;
     private boolean listening = false;
     private final EventListener eventListener;
+    private int nextCommandId = 101;
 
     public StreamEchoApplication(final Transport transport, final int listeningPort, final EventListener eventListener)
     {
@@ -31,7 +32,7 @@ public class StreamEchoApplication implements Application
     @Override
     public void onStart()
     {
-        transport.handle(transport.command(Listen.class).set(1, listeningPort));
+        transport.handle(transport.command(Listen.class).set(nextCommandId++, listeningPort));
     }
 
     @Override
@@ -39,7 +40,7 @@ public class StreamEchoApplication implements Application
     {
         if (listening)
         {
-            transport.handle(transport.command(StopListening.class).set(2, listeningPort));
+            transport.handle(transport.command(StopListening.class).set(nextCommandId++, listeningPort));
         }
     }
 

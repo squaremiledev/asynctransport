@@ -42,4 +42,13 @@ public class ConnectionIdValue implements ConnectionId
         }
         return null;
     }
+
+    @Override
+    public String toString()
+    {
+        return "ConnectionIdValue{" +
+               "port=" + port +
+               ", connectionId=" + connectionId +
+               '}';
+    }
 }

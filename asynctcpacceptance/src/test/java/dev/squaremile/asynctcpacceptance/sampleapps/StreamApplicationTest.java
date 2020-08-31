@@ -34,10 +34,10 @@ class StreamApplicationTest
                 {
                     whiteboxApplication = new WhiteboxApplication(transport);
                     return whiteboxApplication;
-                });
+                }, "");
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppLauncher().launch(transport -> new StreamApplication(transport, host, port, dataToSend, IGNORE_EVENTS));
+        transportApplication = new TransportAppLauncher().launch(transport -> new StreamApplication(transport, host, port, dataToSend, IGNORE_EVENTS), "");
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Listen.class).set(1, port));
         transportApplication.onStart();

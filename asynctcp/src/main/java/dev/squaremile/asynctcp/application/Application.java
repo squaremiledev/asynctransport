@@ -13,4 +13,9 @@ public interface Application extends EventListener
     {
 
     }
+
+    default void work()
+    {
+
+    }
 }

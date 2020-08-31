@@ -15,6 +15,7 @@ public class TransportApplication
 
     public void work()
     {
+        app.work();
         transport.work();
     }
 

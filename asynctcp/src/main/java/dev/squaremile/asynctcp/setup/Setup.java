@@ -14,6 +14,6 @@ public class Setup
     public static void launchAsNaiveRoundRobinSingleThreadedApp(final ApplicationFactory... applicationFactories)
     {
         TransportAppLauncher transportAppLauncher = new TransportAppLauncher();
-        new NaiveRoundRobinSingleThreadRunner().run(stream(applicationFactories).map(transportAppLauncher::launch).collect(Collectors.toList()));
+        new NaiveRoundRobinSingleThreadRunner().run(stream(applicationFactories).map(applicationFactory -> transportAppLauncher.launch(applicationFactory, "")).collect(Collectors.toList()));
     }
 }

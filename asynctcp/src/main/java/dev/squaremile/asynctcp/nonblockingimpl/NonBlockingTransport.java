@@ -39,7 +39,7 @@ import dev.squaremile.asynctcp.domain.connection.ConnectionState;
 // TODO: make sure all commands and events can be used without generating garbage
 public class NonBlockingTransport implements AutoCloseable, Transport
 {
-    private final ConnectionIdSource connectionIdSource = new ConnectionIdSource();
+    private final ConnectionIdSource connectionIdSource;
     private final Selector selector = Selector.open();
     private final CommandFactory commandFactory = new CommandFactory();
     private final EventListener eventListener;
@@ -47,14 +47,17 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final Servers servers;
     private final PendingConnections pendingConnections;
     private final EpochClock clock;
+    private final String role;
 
-    public NonBlockingTransport(final EventListener eventListener, final EpochClock clock) throws IOException
+    public NonBlockingTransport(final EventListener eventListener, final EpochClock clock, final String role) throws IOException
     {
+        this.role = role;
         this.clock = clock;
         this.servers = new Servers();
         this.connections = new Connections(eventListener::onEvent);
         this.eventListener = eventListener;
         this.pendingConnections = new PendingConnections(clock, eventListener);
+        connectionIdSource = new ConnectionIdSource();
     }
 
     private void handle(final ConnectionCommand command)
@@ -302,4 +305,11 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         }
     }
 
+    @Override
+    public String toString()
+    {
+        return "NonBlockingTransport{" +
+               "role='" + role + '\'' +
+               '}';
+    }
 }

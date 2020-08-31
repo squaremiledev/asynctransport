@@ -38,4 +38,14 @@ public class CloseConnection implements ConnectionCommand
     {
         return connectionId;
     }
+
+    @Override
+    public String toString()
+    {
+        return "CloseConnection{" +
+               "port=" + port +
+               ", connectionId=" + connectionId +
+               ", commandId=" + commandId +
+               '}';
+    }
 }

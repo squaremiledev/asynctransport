@@ -91,4 +91,16 @@ public class SendData implements ConnectionCommand
         this.commandId = commandId;
         return this;
     }
+
+    @Override
+    public String toString()
+    {
+        return "SendData{" +
+               "port=" + port +
+               ", connectionId=" + connectionId +
+               ", buffer=" + buffer +
+               ", length=" + length +
+               ", commandId=" + commandId +
+               '}';
+    }
 }

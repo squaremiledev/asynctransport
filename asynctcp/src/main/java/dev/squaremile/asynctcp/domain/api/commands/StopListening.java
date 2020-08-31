@@ -26,4 +26,13 @@ public class StopListening implements TransportCommand
         this.port = port;
         return this;
     }
+
+    @Override
+    public String toString()
+    {
+        return "StopListening{" +
+               "commandId=" + commandId +
+               ", port=" + port +
+               '}';
+    }
 }

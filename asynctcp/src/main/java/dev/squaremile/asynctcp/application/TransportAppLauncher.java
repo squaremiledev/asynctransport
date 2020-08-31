@@ -11,12 +11,12 @@ import dev.squaremile.asynctcp.nonblockingimpl.NonBlockingTransport;
 
 public class TransportAppLauncher
 {
-    public TransportApplication launch(ApplicationFactory applicationFactory)
+    public TransportApplication launch(ApplicationFactory applicationFactory, final String role)
     {
         MutableReference<EventListener> listener = new MutableReference<>();
         try
         {
-            Transport transport = new NonBlockingTransport(event -> listener.get().onEvent(event), System::currentTimeMillis);
+            Transport transport = new NonBlockingTransport(event -> listener.get().onEvent(event), System::currentTimeMillis, role);
             Application app = applicationFactory.create(transport);
             listener.set(app);
             return new TransportApplication(transport, app);
