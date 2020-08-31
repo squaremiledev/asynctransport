@@ -2,7 +2,6 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -22,12 +21,12 @@ import dev.squaremile.asynctcp.testfitures.app.WhiteboxApplication;
 import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
 import static dev.squaremile.asynctcp.testfitures.StringFixtures.byteArrayWith;
 import static dev.squaremile.asynctcp.testfitures.StringFixtures.stringWith;
-import static dev.squaremile.asynctcp.testfitures.Worker.runUntil;
 
 class StreamEchoApplicationTest
 {
     private final TransportApplication drivingApplication;
     private final TransportApplication transportApplication;
+    private final Spin spin;
     private int port;
     private WhiteboxApplication whiteboxApplication;
 
@@ -42,6 +41,7 @@ class StreamEchoApplicationTest
         drivingApplication.onStart();
         port = freePort();
         transportApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(transport, port));
+        spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         transportApplication.onStart();
     }
 
@@ -50,7 +50,7 @@ class StreamEchoApplicationTest
     {
         // When
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 1, 50));
-        spinUntil(() -> whiteboxApplication.events().contains(Connected.class));
+        spin.spinUntil(() -> whiteboxApplication.events().contains(Connected.class));
 
         // Then
         assertThat(whiteboxApplication.events().all(Connected.class)).hasSize(1);
@@ -58,7 +58,7 @@ class StreamEchoApplicationTest
         // When
         transportApplication.onStop();
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 2, 50));
-        spinUntilAllowingFailures(() -> whiteboxApplication.events().contains(CommandFailed.class));
+        spin.spinUntilAllowingFailures(() -> whiteboxApplication.events().contains(CommandFailed.class));
 
         // Then
         assertThat(whiteboxApplication.events().last(CommandFailed.class).commandId()).isEqualTo(2);
@@ -73,11 +73,10 @@ class StreamEchoApplicationTest
         assertThat(connected).isNotNull();
 
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(connected, SendData.class).set(_100_bytes, 101));
-        spinUntil(() -> whiteboxApplication.events().contains(DataReceived.class) && whiteboxApplication.events().last(DataReceived.class).totalBytesReceived() == 100);
+        spin.spinUntil(() -> whiteboxApplication.events().contains(DataReceived.class) && whiteboxApplication.events().last(DataReceived.class).totalBytesReceived() == 100);
         assertThat(stringWith(extractedContent(whiteboxApplication.events().all(DataReceived.class))))
                 .isEqualTo(stringWith(_100_bytes));
     }
-
 
     @AfterEach
     void tearDown()
@@ -89,41 +88,8 @@ class StreamEchoApplicationTest
     private Connected connect()
     {
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 1, 50));
-        spinUntil(() -> whiteboxApplication.events().contains(Connected.class));
+        spin.spinUntil(() -> whiteboxApplication.events().contains(Connected.class));
         return whiteboxApplication.events().lastResponse(Connected.class, 1);
-    }
-
-    void spinUntil(final BooleanSupplier endCondition)
-    {
-        spinUntil(false, endCondition);
-    }
-
-    void spinUntilAllowingFailures(final BooleanSupplier endCondition)
-    {
-        spinUntil(true, endCondition);
-    }
-
-    void spinUntil(final boolean allowFailures, final BooleanSupplier endCondition)
-    {
-        runUntil(() ->
-                 {
-                     drivingApplication.work();
-                     transportApplication.work();
-                     if (!allowFailures)
-                     {
-                         throwOnFailures();
-                     }
-                     return endCondition.getAsBoolean();
-                 });
-    }
-
-    private void throwOnFailures()
-    {
-        List<CommandFailed> failures = whiteboxApplication.events().all(CommandFailed.class);
-        if (!failures.isEmpty())
-        {
-            throw new IllegalStateException("Failure occurred: " + failures);
-        }
     }
 
     private byte[] extractedContent(final List<DataReceived> receivedEvents)

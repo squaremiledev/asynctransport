@@ -14,6 +14,10 @@ public class CommandFactory
         {
             return commandType.cast(new SendData(connectionId, 0));
         }
+        if (commandType.equals(CloseConnection.class))
+        {
+            return commandType.cast(new CloseConnection(connectionId));
+        }
         if (commandType.equals(NoOpCommand.class))
         {
             return commandType.cast(new NoOpCommand(connectionId));
@@ -30,10 +34,6 @@ public class CommandFactory
         if (commandType.equals(Connect.class))
         {
             return commandType.cast(new Connect());
-        }
-        if (commandType.equals(CloseConnection.class))
-        {
-            return commandType.cast(new CloseConnection());
         }
         if (commandType.equals(StopListening.class))
         {

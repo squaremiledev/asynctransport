@@ -7,6 +7,11 @@ public class ConnectionIdValue implements ConnectionId
     private final int port;
     private final long connectionId;
 
+    public ConnectionIdValue(final ConnectionId connectionId)
+    {
+        this(connectionId.port(), connectionId.connectionId());
+    }
+
     public ConnectionIdValue(final int port, final long connectionId)
     {
         this.port = port;

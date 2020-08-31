@@ -1,6 +1,7 @@
 package dev.squaremile.asynctcp.domain.connection;
 
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
+import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.domain.api.commands.CommandFactory;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
 import dev.squaremile.asynctcp.domain.api.commands.NoOpCommand;
@@ -11,6 +12,7 @@ public class ConnectionCommands
 {
     private final SendData sendDataCommand;
     private final ReadData readDataCommand;
+    private final CloseConnection closeConnection;
     private final NoOpCommand noOpCommand;
 
     public ConnectionCommands(final ConnectionIdValue connectionId, final int initialSenderBufferSize)
@@ -18,6 +20,7 @@ public class ConnectionCommands
         CommandFactory commandFactory = new CommandFactory();
         this.sendDataCommand = new SendData(connectionId, initialSenderBufferSize);
         this.readDataCommand = commandFactory.create(connectionId, ReadData.class);
+        this.closeConnection = commandFactory.create(connectionId, CloseConnection.class);
         this.noOpCommand = commandFactory.create(connectionId, NoOpCommand.class);
     }
 
@@ -30,6 +33,10 @@ public class ConnectionCommands
         if (commandType.equals(ReadData.class))
         {
             return commandType.cast(readDataCommand);
+        }
+        if (commandType.equals(CloseConnection.class))
+        {
+            return commandType.cast(closeConnection);
         }
         if (commandType.equals(NoOpCommand.class))
         {

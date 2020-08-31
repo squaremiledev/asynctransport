@@ -2,23 +2,21 @@ package dev.squaremile.asynctcp.domain.api.commands;
 
 import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
-import dev.squaremile.asynctcp.domain.api.TransportId;
 
 public class CloseConnection implements ConnectionCommand
 {
-    private int port = TransportId.NO_PORT;
-    private long connectionId = ConnectionId.NO_CONNECTION;
+    private final int port;
+    private final long connectionId;
     private long commandId = CommandId.NO_COMMAND_ID;
 
-    public CloseConnection set(final ConnectionId connectionId, final long commandId)
+    public CloseConnection(final ConnectionId connectionId)
     {
-        return set(connectionId.port(), connectionId.connectionId(), commandId);
+        this.port = connectionId.port();
+        this.connectionId = connectionId.connectionId();
     }
 
-    public CloseConnection set(final int port, final long connectionId, final long commandId)
+    public CloseConnection set(final long commandId)
     {
-        this.port = port;
-        this.connectionId = connectionId;
         this.commandId = commandId;
         return this;
     }

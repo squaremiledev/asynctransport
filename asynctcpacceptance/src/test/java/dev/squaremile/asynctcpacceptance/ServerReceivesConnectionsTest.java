@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
@@ -99,7 +100,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         assertThat(serverTransport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
 
         // When
-        serverTransport.handle(serverTransport.command(CloseConnection.class).set(connectionAccepted, 10));
+        serverTransport.handle(serverTransport.command(connectionAccepted, CloseConnection.class).set(10));
 
         // Then
         assertThat(clients.client(1).hasServerClosedConnection()).isTrue();
@@ -117,7 +118,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
         assertThat(serverTransport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
-        serverTransport.handle(serverTransport.command(CloseConnection.class).set(conn, 15));
+        serverTransport.handle(serverTransport.command(conn, CloseConnection.class).set(15));
         assertThat(serverTransport.events().last(ConnectionClosed.class)).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), 15));
         assertThat(serverTransport.events().all(ConnectionClosed.class)).hasSize(1);
@@ -127,7 +128,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         assertThat(serverTransport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSize(2);
 
         // When
-        serverTransport.handle(serverTransport.command(CloseConnection.class).set(conn, 16));
+        serverTransport.handle(serverTransport.command(conn, CloseConnection.class).set(16));
 
         // Then
         assertThat(serverTransport.events().last(TransportCommandFailed.class).commandId()).isEqualTo(16);
@@ -142,7 +143,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         assertThat(serverTransport.statusEvents().all(NumberOfConnectionsChanged.class)).isEmpty();
 
         // When
-        serverTransport.handle(serverTransport.command(CloseConnection.class).set(1234, 11111, 15));
+        serverTransport.handle(new CloseConnection(new ConnectionIdValue(1234, 11111)).set(15));
 
         // Then
         assertThat(serverTransport.events().last(TransportCommandFailed.class, event -> event.commandId() == 15).details()).containsIgnoringCase("connection id");
