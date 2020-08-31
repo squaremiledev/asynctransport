@@ -2,6 +2,7 @@ package dev.squaremile.asynctcp.domain.api.commands;
 
 import java.nio.ByteBuffer;
 
+
 import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
 
@@ -50,6 +51,19 @@ public class SendData implements ConnectionCommand
         return buffer;
     }
 
+    public ByteBuffer prepareForWriting()
+    {
+        length = 0;
+        buffer.position(0).limit(buffer.capacity());
+        return buffer;
+    }
+
+    public SendData commitWriting(int length)
+    {
+        this.length = length;
+        return this;
+    }
+
     public SendData reset()
     {
         commandId = CommandId.NO_COMMAND_ID;
@@ -61,6 +75,12 @@ public class SendData implements ConnectionCommand
     public SendData set(final byte[] content)
     {
         return set(content, CommandId.NO_COMMAND_ID);
+    }
+
+    public SendData length(int length)
+    {
+        this.length = length;
+        return this;
     }
 
     public SendData set(final byte[] content, final long commandId)

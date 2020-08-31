@@ -1,10 +1,10 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,11 +13,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.application.TransportAppLauncher;
 import dev.squaremile.asynctcp.application.TransportApplication;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
+import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
+import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.testfitures.app.WhiteboxApplication;
 
 import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
+import static dev.squaremile.asynctcp.testfitures.StringFixtures.byteArrayWith;
+import static dev.squaremile.asynctcp.testfitures.StringFixtures.stringWith;
 import static dev.squaremile.asynctcp.testfitures.Worker.runUntil;
 
 class StreamEchoApplicationTest
@@ -61,11 +65,17 @@ class StreamEchoApplicationTest
     }
 
     @Test
-    @Disabled
     void shouldEchoBackTheStream()
     {
+        final byte[] _100_bytes = byteArrayWith(pos -> String.format("%9d%n", pos), 10);
+        assertThat(_100_bytes).hasSize(100);
         Connected connected = connect();
         assertThat(connected).isNotNull();
+
+        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(connected, SendData.class).set(_100_bytes, 101));
+        spinUntil(() -> whiteboxApplication.events().contains(DataReceived.class) && whiteboxApplication.events().last(DataReceived.class).totalBytesReceived() == 100);
+        assertThat(stringWith(extractedContent(whiteboxApplication.events().all(DataReceived.class))))
+                .isEqualTo(stringWith(_100_bytes));
     }
 
 
@@ -114,5 +124,12 @@ class StreamEchoApplicationTest
         {
             throw new IllegalStateException("Failure occurred: " + failures);
         }
+    }
+
+    private byte[] extractedContent(final List<DataReceived> receivedEvents)
+    {
+        ByteBuffer actualContent = ByteBuffer.allocate((int)receivedEvents.get(receivedEvents.size() - 1).totalBytesReceived());
+        receivedEvents.forEach(event -> event.copyDataTo(actualContent));
+        return actualContent.array();
     }
 }
