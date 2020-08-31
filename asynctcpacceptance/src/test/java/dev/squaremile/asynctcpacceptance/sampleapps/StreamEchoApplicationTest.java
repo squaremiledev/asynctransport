@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,9 +23,11 @@ import static dev.squaremile.asynctcp.testfitures.Worker.runUntil;
 class StreamEchoApplicationTest
 {
     private final TransportApplication drivingApplication;
+    private final TransportApplication transportApplication;
+    private int port;
     private WhiteboxApplication whiteboxApplication;
 
-    public StreamEchoApplicationTest()
+    StreamEchoApplicationTest()
     {
         drivingApplication = new TransportAppLauncher().launch(
                 transport ->
@@ -33,18 +36,17 @@ class StreamEchoApplicationTest
                     return whiteboxApplication;
                 });
         drivingApplication.onStart();
+        port = freePort();
+        transportApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(transport, port));
+        transportApplication.onStart();
     }
 
     @Test
     void shouldListenUponStartAndStopListeningWhenStopped()
     {
-        int port = freePort();
-        TransportApplication transportApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(transport, port));
-        transportApplication.onStart();
-
         // When
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 1, 50));
-        spinUntil(transportApplication, () -> whiteboxApplication.events().contains(Connected.class));
+        spinUntil(() -> whiteboxApplication.events().contains(Connected.class));
 
         // Then
         assertThat(whiteboxApplication.events().all(Connected.class)).hasSize(1);
@@ -52,29 +54,46 @@ class StreamEchoApplicationTest
         // When
         transportApplication.onStop();
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 2, 50));
-        spinUntilAllowingFailures(transportApplication, () -> whiteboxApplication.events().contains(CommandFailed.class));
+        spinUntilAllowingFailures(() -> whiteboxApplication.events().contains(CommandFailed.class));
 
         // Then
         assertThat(whiteboxApplication.events().last(CommandFailed.class).commandId()).isEqualTo(2);
     }
 
+    @Test
+    @Disabled
+    void shouldEchoBackTheStream()
+    {
+        Connected connected = connect();
+        assertThat(connected).isNotNull();
+    }
+
+
     @AfterEach
     void tearDown()
     {
         drivingApplication.onStop();
+        transportApplication.onStop();
     }
 
-    void spinUntil(final TransportApplication transportApplication, final BooleanSupplier endCondition)
+    private Connected connect()
     {
-        spinUntil(transportApplication, false, endCondition);
+        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 1, 50));
+        spinUntil(() -> whiteboxApplication.events().contains(Connected.class));
+        return whiteboxApplication.events().lastResponse(Connected.class, 1);
     }
 
-    void spinUntilAllowingFailures(final TransportApplication transportApplication, final BooleanSupplier endCondition)
+    void spinUntil(final BooleanSupplier endCondition)
     {
-        spinUntil(transportApplication, true, endCondition);
+        spinUntil(false, endCondition);
     }
 
-    void spinUntil(final TransportApplication transportApplication, final boolean allowFailures, final BooleanSupplier endCondition)
+    void spinUntilAllowingFailures(final BooleanSupplier endCondition)
+    {
+        spinUntil(true, endCondition);
+    }
+
+    void spinUntil(final boolean allowFailures, final BooleanSupplier endCondition)
     {
         runUntil(() ->
                  {
