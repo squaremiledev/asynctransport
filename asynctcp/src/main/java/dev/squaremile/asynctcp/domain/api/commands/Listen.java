@@ -8,7 +8,7 @@ public class Listen implements TransportCommand
     private int port = TransportId.NO_PORT;
     private long commandId = CommandId.NO_COMMAND_ID;
 
-    public Listen set(final int commandId, final int port)
+    public Listen set(final long commandId, final int port)
     {
         this.port = port;
         this.commandId = commandId;
@@ -34,5 +34,11 @@ public class Listen implements TransportCommand
                "port=" + port +
                ", commandId=" + commandId +
                '}';
+    }
+
+    @Override
+    public Listen copy()
+    {
+        return new Listen().set(commandId, port);
     }
 }

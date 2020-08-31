@@ -5,4 +5,5 @@ import dev.squaremile.asynctcp.domain.api.TransportId;
 
 public interface TransportCommand extends CommandId, TransportId
 {
+    TransportCommand copy();
 }

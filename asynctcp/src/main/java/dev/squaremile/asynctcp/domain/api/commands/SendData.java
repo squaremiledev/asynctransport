@@ -5,14 +5,15 @@ import java.nio.ByteBuffer;
 
 import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 
 public class SendData implements ConnectionCommand
 {
-    private final int port;
-    private final long connectionId;
+    private final ConnectionId connectionId;
     private final ByteBuffer buffer;
+    private final int capacity;
     private int length;
-    private long commandId = CommandId.NO_COMMAND_ID;
+    private long commandId;
 
     public SendData(final ConnectionId connectionId, final int capacity)
     {
@@ -21,16 +22,23 @@ public class SendData implements ConnectionCommand
 
     public SendData(final int port, final long connectionId, final int capacity)
     {
-        this.port = port;
+        this(new ConnectionIdValue(port, connectionId), ByteBuffer.allocate(capacity), capacity, 0, CommandId.NO_COMMAND_ID);
+    }
+
+    public SendData(final ConnectionId connectionId, final ByteBuffer buffer, final int capacity, final int length, final long commandId)
+    {
+
         this.connectionId = connectionId;
-        this.buffer = ByteBuffer.allocate(capacity);
-        this.length = 0;
+        this.buffer = buffer;
+        this.capacity = capacity;
+        this.length = length;
+        this.commandId = commandId;
     }
 
     @Override
     public int port()
     {
-        return port;
+        return connectionId.port();
     }
 
     @Override
@@ -42,7 +50,7 @@ public class SendData implements ConnectionCommand
     @Override
     public long connectionId()
     {
-        return connectionId;
+        return connectionId.connectionId();
     }
 
     public ByteBuffer byteBuffer()
@@ -96,11 +104,16 @@ public class SendData implements ConnectionCommand
     public String toString()
     {
         return "SendData{" +
-               "port=" + port +
                ", connectionId=" + connectionId +
                ", buffer=" + buffer +
                ", length=" + length +
                ", commandId=" + commandId +
                '}';
+    }
+
+    @Override
+    public SendData copy()
+    {
+        return new SendData(connectionId, buffer, capacity, length, commandId);
     }
 }

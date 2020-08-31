@@ -44,6 +44,7 @@ class StreamEchoApplicationTest
         transportApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(transport, port, IGNORE_EVENTS), "");
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         transportApplication.onStart();
+        transportApplication.work();
     }
 
     @Test
@@ -58,6 +59,7 @@ class StreamEchoApplicationTest
 
         // When
         transportApplication.onStop();
+        transportApplication.work();
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 2, 50));
         spin.spinUntilAllowingFailures(() -> whiteboxApplication.events().contains(CommandFailed.class));
 
@@ -83,12 +85,15 @@ class StreamEchoApplicationTest
     void tearDown()
     {
         drivingApplication.onStop();
+        drivingApplication.work();
         transportApplication.onStop();
+        transportApplication.work();
     }
 
     private Connected connect()
     {
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 1, 50));
+        whiteboxApplication.underlyingtTansport().work();
         spin.spinUntil(() -> whiteboxApplication.events().contains(Connected.class));
         return whiteboxApplication.events().lastResponse(Connected.class, 1);
     }

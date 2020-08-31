@@ -2,17 +2,16 @@ package dev.squaremile.asynctcp.domain.api.commands;
 
 import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 
 public class CloseConnection implements ConnectionCommand
 {
-    private final int port;
-    private final long connectionId;
     private long commandId = CommandId.NO_COMMAND_ID;
+    private final ConnectionId connectionId;
 
     public CloseConnection(final ConnectionId connectionId)
     {
-        this.port = connectionId.port();
-        this.connectionId = connectionId.connectionId();
+        this.connectionId = new ConnectionIdValue(connectionId);
     }
 
     public CloseConnection set(final long commandId)
@@ -24,7 +23,7 @@ public class CloseConnection implements ConnectionCommand
     @Override
     public int port()
     {
-        return port;
+        return connectionId.port();
     }
 
     @Override
@@ -36,16 +35,21 @@ public class CloseConnection implements ConnectionCommand
     @Override
     public long connectionId()
     {
-        return connectionId;
+        return connectionId.connectionId();
     }
 
     @Override
     public String toString()
     {
         return "CloseConnection{" +
-               "port=" + port +
                ", connectionId=" + connectionId +
                ", commandId=" + commandId +
                '}';
+    }
+
+    @Override
+    public CloseConnection copy()
+    {
+        return new CloseConnection(connectionId).set(commandId);
     }
 }

@@ -118,6 +118,7 @@ public class TransportDriver
     {
         final int commandId = nextCommandId++;
         transport.handle(transport.command(Listen.class).set(commandId, port));
+        transport.work();
         return transport.events().last(StartedListening.class, event -> event.commandId() == commandId);
     }
 

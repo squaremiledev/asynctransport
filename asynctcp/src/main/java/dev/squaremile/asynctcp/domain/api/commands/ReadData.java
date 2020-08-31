@@ -1,22 +1,21 @@
 package dev.squaremile.asynctcp.domain.api.commands;
 
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 
 public class ReadData implements ConnectionCommand
 {
-    private final int port;
-    private final long connectionId;
+    private final ConnectionId connectionId;
 
     public ReadData(final ConnectionId connectionId)
     {
-        this.port = connectionId.port();
-        this.connectionId = connectionId.connectionId();
+        this.connectionId = new ConnectionIdValue(connectionId);
     }
 
     @Override
     public int port()
     {
-        return port;
+        return connectionId.port();
     }
 
     @Override
@@ -28,15 +27,20 @@ public class ReadData implements ConnectionCommand
     @Override
     public long connectionId()
     {
-        return connectionId;
+        return connectionId.connectionId();
     }
 
     @Override
     public String toString()
     {
         return "ReadData{" +
-               "port=" + port +
                ", connectionId=" + connectionId +
                '}';
+    }
+
+    @Override
+    public ReadData copy()
+    {
+        return new ReadData(connectionId);
     }
 }

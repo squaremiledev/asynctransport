@@ -35,4 +35,10 @@ public class StopListening implements TransportCommand
                ", port=" + port +
                '}';
     }
+
+    @Override
+    public StopListening copy()
+    {
+        return new StopListening().set(commandId, port);
+    }
 }

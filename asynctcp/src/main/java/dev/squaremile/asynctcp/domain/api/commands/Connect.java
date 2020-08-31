@@ -56,4 +56,10 @@ public class Connect implements TransportCommand
                ", timeoutMs=" + timeoutMs +
                '}';
     }
+
+    @Override
+    public Connect copy()
+    {
+        return new Connect().set(remoteHost, remotePort, commandId, timeoutMs);
+    }
 }

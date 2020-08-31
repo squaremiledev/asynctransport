@@ -35,4 +35,10 @@ public class NoOpCommand implements ConnectionCommand
     {
         return connectionId;
     }
+
+    @Override
+    public NoOpCommand copy()
+    {
+        return new NoOpCommand(port, connectionId);
+    }
 }
