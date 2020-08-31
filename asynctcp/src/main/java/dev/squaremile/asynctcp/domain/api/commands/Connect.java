@@ -45,4 +45,15 @@ public class Connect implements TransportCommand
     {
         return timeoutMs;
     }
+
+    @Override
+    public String toString()
+    {
+        return "Connect{" +
+               "remotePort=" + remotePort +
+               ", commandId=" + commandId +
+               ", remoteHost='" + remoteHost + '\'' +
+               ", timeoutMs=" + timeoutMs +
+               '}';
+    }
 }

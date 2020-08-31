@@ -14,6 +14,7 @@ import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.testfitures.app.WhiteboxApplication;
 
+import static dev.squaremile.asynctcp.domain.api.events.EventListener.IGNORE_EVENTS;
 import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
 
 class StreamApplicationTest
@@ -36,7 +37,7 @@ class StreamApplicationTest
                 });
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppLauncher().launch(transport -> new StreamApplication(transport, host, port, dataToSend));
+        transportApplication = new TransportAppLauncher().launch(transport -> new StreamApplication(transport, host, port, dataToSend, IGNORE_EVENTS));
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Listen.class).set(1, port));
         transportApplication.onStart();

@@ -18,6 +18,7 @@ import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.testfitures.app.WhiteboxApplication;
 
+import static dev.squaremile.asynctcp.domain.api.events.EventListener.IGNORE_EVENTS;
 import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
 import static dev.squaremile.asynctcp.testfitures.StringFixtures.byteArrayWith;
 import static dev.squaremile.asynctcp.testfitures.StringFixtures.stringWith;
@@ -40,7 +41,7 @@ class StreamEchoApplicationTest
                 });
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(transport, port));
+        transportApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(transport, port, IGNORE_EVENTS));
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         transportApplication.onStart();
     }

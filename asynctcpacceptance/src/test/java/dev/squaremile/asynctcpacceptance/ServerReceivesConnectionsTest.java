@@ -128,7 +128,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         assertThat(serverTransport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSize(2);
 
         // When
-        serverTransport.handle(serverTransport.command(conn, CloseConnection.class).set(16));
+        serverTransport.handle(new CloseConnection(conn).set(16));
 
         // Then
         assertThat(serverTransport.events().last(TransportCommandFailed.class).commandId()).isEqualTo(16);

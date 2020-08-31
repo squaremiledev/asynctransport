@@ -22,6 +22,11 @@ class Spin
         this.applications = Arrays.asList(applications);
     }
 
+    Spin(final TransportApplication... applications)
+    {
+        this(null, applications);
+    }
+
     void spinUntil(final BooleanSupplier endCondition)
     {
         spinUntil(false, endCondition);
@@ -40,7 +45,7 @@ class Spin
                      {
                          application.work();
                      }
-                     if (!allowFailures)
+                     if (!allowFailures && whiteboxApplication != null)
                      {
                          throwOnFailures();
                      }

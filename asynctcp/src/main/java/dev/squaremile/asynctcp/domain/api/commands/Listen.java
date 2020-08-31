@@ -26,4 +26,13 @@ public class Listen implements TransportCommand
     {
         return commandId;
     }
+
+    @Override
+    public String toString()
+    {
+        return "Listen{" +
+               "port=" + port +
+               ", commandId=" + commandId +
+               '}';
+    }
 }

@@ -5,11 +5,11 @@ import dev.squaremile.asynctcp.domain.api.events.EventListener;
 import dev.squaremile.asynctcp.domain.api.events.TransportEvent;
 import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
 
-class TransportEventsRedirect implements EventListener
+public class TransportEventsRedirect implements EventListener
 {
     private TransportEventsListener listener;
 
-    TransportEventsRedirect(final TransportEventsListener serverEvents)
+    public TransportEventsRedirect(final TransportEventsListener serverEvents)
     {
         listener = serverEvents;
     }
