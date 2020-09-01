@@ -15,7 +15,7 @@ import dev.squaremile.asynctcp.domain.api.events.StoppedListening;
 
 import static java.util.Objects.requireNonNull;
 
-public class StreamEchoApplication implements Application
+public class EchoApplication implements Application
 {
     private final Transport transport;
     private final int listeningPort;
@@ -23,7 +23,7 @@ public class StreamEchoApplication implements Application
     private boolean listening = false;
     private int nextCommandId = 101;
 
-    public StreamEchoApplication(final Transport transport, final int listeningPort, final EventListener eventListener)
+    public EchoApplication(final Transport transport, final int listeningPort, final EventListener eventListener)
     {
         this.transport = requireNonNull(transport);
         this.listeningPort = listeningPort;

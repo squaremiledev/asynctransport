@@ -35,7 +35,7 @@ public class TwoAppsInteractionTest
                 dataToSend,
                 new TransportEventsRedirect(eventsReceivedByStreamingApplication)
         ), "streamingApplication");
-        echoApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(
+        echoApplication = new TransportAppLauncher().launch(transport -> new EchoApplication(
                 transport,
                 port,
                 new TransportEventsRedirect(eventsReceivedByEchoApplication)

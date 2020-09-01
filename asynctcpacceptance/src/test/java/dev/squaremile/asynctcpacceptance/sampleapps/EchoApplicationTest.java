@@ -23,7 +23,7 @@ import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
 import static dev.squaremile.asynctcp.testfitures.StringFixtures.byteArrayWith;
 import static dev.squaremile.asynctcp.testfitures.StringFixtures.stringWith;
 
-class StreamEchoApplicationTest
+class EchoApplicationTest
 {
     private final TransportApplication drivingApplication;
     private final TransportApplication transportApplication;
@@ -31,7 +31,7 @@ class StreamEchoApplicationTest
     private int port;
     private WhiteboxApplication whiteboxApplication;
 
-    StreamEchoApplicationTest()
+    EchoApplicationTest()
     {
         drivingApplication = new TransportAppLauncher().launch(
                 transport ->
@@ -41,7 +41,7 @@ class StreamEchoApplicationTest
                 }, "");
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppLauncher().launch(transport -> new StreamEchoApplication(transport, port, IGNORE_EVENTS), "");
+        transportApplication = new TransportAppLauncher().launch(transport -> new EchoApplication(transport, port, IGNORE_EVENTS), "");
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         transportApplication.onStart();
         transportApplication.work();
