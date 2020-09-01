@@ -139,7 +139,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     {
         try
         {
-            connectionState = outgoingStream.sendData(channel, command.byteBuffer(), command.commandId());
+            connectionState = outgoingStream.sendData(channel, command.data(), command.commandId());
         }
         catch (IOException e)
         {

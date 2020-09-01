@@ -66,7 +66,7 @@ public class StreamEchoApplication implements Application
     private SendData sendDataCommandWithDataFrom(final DataReceived dataReceivedEvent)
     {
         SendData sendData = transport.command(dataReceivedEvent, SendData.class);
-        dataReceivedEvent.copyDataTo(sendData.prepareForWriting());
-        return sendData.commitWriting(dataReceivedEvent.length());
+        dataReceivedEvent.copyDataTo(sendData.prepare());
+        return sendData.commit(dataReceivedEvent.length());
     }
 }

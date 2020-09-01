@@ -10,7 +10,7 @@ import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 public class SendData implements ConnectionCommand
 {
     private final ConnectionId connectionId;
-    private final ByteBuffer buffer;
+    private final ByteBuffer data;
     private final int capacity;
     private int length;
     private long commandId;
@@ -29,7 +29,7 @@ public class SendData implements ConnectionCommand
     {
 
         this.connectionId = connectionId;
-        this.buffer = buffer;
+        this.data = buffer;
         this.capacity = capacity;
         this.length = length;
         this.commandId = commandId;
@@ -53,20 +53,20 @@ public class SendData implements ConnectionCommand
         return connectionId.connectionId();
     }
 
-    public ByteBuffer byteBuffer()
+    public ByteBuffer data()
     {
-        buffer.position(0).limit(length);
-        return buffer;
+        data.position(0).limit(length);
+        return data;
     }
 
-    public ByteBuffer prepareForWriting()
+    public ByteBuffer prepare()
     {
-        length = 0;
-        buffer.position(0).limit(buffer.capacity());
-        return buffer;
+        length = -1;
+        data.clear();
+        return data;
     }
 
-    public SendData commitWriting(int length)
+    public SendData commit(int length)
     {
         this.length = length;
         return this;
@@ -76,7 +76,7 @@ public class SendData implements ConnectionCommand
     {
         commandId = CommandId.NO_COMMAND_ID;
         length = 0;
-        buffer.clear();
+        data.clear();
         return this;
     }
 
@@ -93,8 +93,8 @@ public class SendData implements ConnectionCommand
 
     public SendData set(final byte[] content, final long commandId)
     {
-        this.buffer.clear();
-        this.buffer.put(content);
+        this.data.clear();
+        this.data.put(content);
         this.length = content.length;
         this.commandId = commandId;
         return this;
@@ -105,7 +105,7 @@ public class SendData implements ConnectionCommand
     {
         return "SendData{" +
                ", connectionId=" + connectionId +
-               ", buffer=" + buffer +
+               ", data=" + data +
                ", length=" + length +
                ", commandId=" + commandId +
                '}';
@@ -114,6 +114,6 @@ public class SendData implements ConnectionCommand
     @Override
     public SendData copy()
     {
-        return new SendData(connectionId, buffer, capacity, length, commandId);
+        return new SendData(connectionId, data, capacity, length, commandId);
     }
 }
