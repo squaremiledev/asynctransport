@@ -11,6 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 
+import static dev.squaremile.asynctcp.testfitures.Assertions.assertEqual;
+
 class SingleByteDataHandlerTest
 {
     private MessageReceivedSpy messageReceivedSpy = new MessageReceivedSpy();
@@ -58,7 +60,7 @@ class SingleByteDataHandlerTest
     @Test
     void shouldNotifyAllUpdates()
     {
-        SingleByteDataHandler handler = new SingleByteDataHandler(1, messageReceivedSpy);
+        SingleByteDataHandler handler = new SingleByteDataHandler(5, messageReceivedSpy);
 
         // When
         dataReceived.prepare().put((byte)'x');
@@ -81,5 +83,10 @@ class SingleByteDataHandlerTest
         assertThat(lastMessage.port()).isEqualTo(8888);
         assertThat(lastMessage.length()).isEqualTo(1);
         assertThat(lastMessage.data().get(0)).isEqualTo((byte)'y');
+        assertEqual(
+                messageReceivedSpy.asPdus(),
+                new byte[]{'x'},
+                new byte[]{'y'}
+        );
     }
 }

@@ -1,5 +1,10 @@
 package dev.squaremile.asynctcp.encodings;
 
+import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.stream.Collectors;
+
+
 import dev.squaremile.asynctcp.domain.api.events.MessageListener;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 import dev.squaremile.asynctcp.testfitures.CapturedItems;
@@ -9,7 +14,7 @@ public final class MessageReceivedSpy extends EventsSpy<MessageReceived> impleme
 {
     private final CapturedItems<MessageReceived> items;
 
-    public MessageReceivedSpy()
+    MessageReceivedSpy()
     {
         this(new CapturedItems<>());
     }
@@ -24,5 +29,17 @@ public final class MessageReceivedSpy extends EventsSpy<MessageReceived> impleme
     public void onMessage(final MessageReceived messageReceived)
     {
         items.add(messageReceived.copy());
+    }
+
+    List<byte[]> asPdus()
+    {
+        return items.all().stream().map(
+                msg ->
+                {
+                    byte[] data = new byte[msg.length()];
+                    ByteBuffer target = ByteBuffer.wrap(data);
+                    msg.copyDataTo(target);
+                    return data;
+                }).collect(Collectors.toList());
     }
 }
