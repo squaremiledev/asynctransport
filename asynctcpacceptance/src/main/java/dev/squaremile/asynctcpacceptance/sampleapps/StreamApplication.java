@@ -24,8 +24,6 @@ public class StreamApplication implements Application
     private String remoteHost;
     private ConnectionIdValue connectionId;
     private long nextCommandId = 1;
-    private long inFLightConnectCommandId = Long.MIN_VALUE;
-    private boolean tryToConnect = false;
 
     public StreamApplication(
             final Transport transport,
@@ -45,7 +43,7 @@ public class StreamApplication implements Application
     @Override
     public void onStart()
     {
-        transport.handle(transport.command(Connect.class).set(remoteHost, remotePort, inFLightConnectCommandId, 50));
+        transport.handle(transport.command(Connect.class).set(remoteHost, remotePort, nextCommandId++, 50));
     }
 
     @Override

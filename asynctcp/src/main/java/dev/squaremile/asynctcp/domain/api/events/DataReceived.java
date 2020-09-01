@@ -28,6 +28,12 @@ public class DataReceived implements ConnectionEvent
         this.length = length;
     }
 
+    public ByteBuffer data()
+    {
+        data.position(0).limit(length);
+        return data;
+    }
+
     public ByteBuffer prepare()
     {
         length = -1;
