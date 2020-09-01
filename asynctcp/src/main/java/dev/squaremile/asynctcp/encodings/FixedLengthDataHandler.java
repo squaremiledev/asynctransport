@@ -9,16 +9,17 @@ import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 
 class FixedLengthDataHandler implements ReceivedDataHandler
 {
-    private static final int ENCODED_INTEGER_LENGTH = 4;
-    private final MessageReceived messageReceived = new MessageReceived();
-    private final long connectionId; // to show that it's single connection scoped
+    private final MessageReceived messageReceived;
     private final MessageListener messageListener;
-    private final ByteBuffer integerByteBuffer = ByteBuffer.wrap(new byte[4]);
+    private final ByteBuffer messageBuffer;
+    private int messageLength;
 
-    FixedLengthDataHandler(final long connectionId, final MessageListener messageListener)
+    FixedLengthDataHandler(final MessageListener messageListener, final int messageLength)
     {
-        this.connectionId = connectionId;
         this.messageListener = messageListener;
+        this.messageLength = messageLength;
+        this.messageBuffer = ByteBuffer.wrap(new byte[messageLength]);
+        this.messageReceived = new MessageReceived();
     }
 
     @Override
@@ -28,11 +29,11 @@ class FixedLengthDataHandler implements ReceivedDataHandler
         int sourceLength = event.length();
         for (int i = 0; i < sourceLength; i++)
         {
-            integerByteBuffer.put(sourceBuffer.get());
-            if (integerByteBuffer.position() == ENCODED_INTEGER_LENGTH)
+            messageBuffer.put(sourceBuffer.get());
+            if (messageBuffer.position() == messageLength)
             {
-                messageListener.onMessage(messageReceived.set(event, integerByteBuffer, ENCODED_INTEGER_LENGTH));
-                integerByteBuffer.clear();
+                messageListener.onMessage(messageReceived.set(event, messageBuffer, messageLength));
+                messageBuffer.clear();
             }
         }
     }
@@ -40,8 +41,11 @@ class FixedLengthDataHandler implements ReceivedDataHandler
     @Override
     public String toString()
     {
-        return "IntegerDataHandler{" +
-               ", connectionId=" + connectionId +
+        return "FixedLengthDataHandler{" +
+               "messageReceived=" + messageReceived +
+               ", messageListener=" + messageListener +
+               ", messageBuffer=" + messageBuffer +
+               ", messageLength=" + messageLength +
                '}';
     }
 }

@@ -3,15 +3,15 @@ package dev.squaremile.asynctcp.encodings;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.MessageListener;
 
-class IntegerDataHandler implements ReceivedDataHandler
+class LongDataHandler implements ReceivedDataHandler
 {
     private final FixedLengthDataHandler fixedLengthDataHandler;
     private final long connectionId;
 
-    IntegerDataHandler(final long connectionId, final MessageListener messageListener)
+    LongDataHandler(final long connectionId, final MessageListener messageListener)
     {
         this.connectionId = connectionId;
-        this.fixedLengthDataHandler = new FixedLengthDataHandler(messageListener, 4);
+        this.fixedLengthDataHandler = new FixedLengthDataHandler(messageListener, 8);
     }
 
     @Override
