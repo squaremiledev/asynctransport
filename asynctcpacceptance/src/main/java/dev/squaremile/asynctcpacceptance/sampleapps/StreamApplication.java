@@ -7,7 +7,6 @@ import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
-import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
@@ -46,7 +45,7 @@ public class StreamApplication implements Application
     @Override
     public void onStart()
     {
-        tryToConnect = true;
+        transport.handle(transport.command(Connect.class).set(remoteHost, remotePort, inFLightConnectCommandId, 50));
     }
 
     @Override
@@ -59,23 +58,12 @@ public class StreamApplication implements Application
     }
 
     @Override
-    public void work()
-    {
-        if (tryToConnect)
-        {
-            connect();
-        }
-
-    }
-
-    @Override
     public void onEvent(final Event event)
     {
 //        System.out.println("S@" + event);
         eventListener.onEvent(event);
         if (event instanceof Connected)
         {
-            inFLightConnectCommandId = Long.MIN_VALUE;
             Connected connectedEvent = (Connected)event;
             transport.handle(transport.command(connectedEvent, SendData.class).set(dataToSend));
             connectionId = new ConnectionIdValue(connectedEvent);
@@ -85,21 +73,5 @@ public class StreamApplication implements Application
         {
             connectionId = null;
         }
-        else if (event instanceof CommandFailed)
-        {
-            CommandFailed commandFailedEvent = (CommandFailed)event;
-            if (connectionId == null && commandFailedEvent.commandId() == inFLightConnectCommandId)
-            {
-                tryToConnect = true;
-            }
-        }
-    }
-
-    private void connect()
-    {
-        inFLightConnectCommandId = nextCommandId++;
-        tryToConnect = false;
-        transport.handle(transport.command(Connect.class).set(remoteHost, remotePort, inFLightConnectCommandId, 50));
-
     }
 }

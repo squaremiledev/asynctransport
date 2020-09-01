@@ -11,7 +11,6 @@ import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
 import dev.squaremile.asynctcp.domain.api.events.DelegatingEventListener;
 import dev.squaremile.asynctcp.domain.api.events.StatusEventListener;
 import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
-import dev.squaremile.asynctcp.nonblockingimpl.CommandsQueueTransport;
 import dev.squaremile.asynctcp.nonblockingimpl.NonBlockingTransport;
 
 import static dev.squaremile.asynctcp.testfitures.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
@@ -27,7 +26,7 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
         this.events = events;
         try
         {
-            this.delegate = new CommandsQueueTransport(new NonBlockingTransport(new DelegatingEventListener(events, statusEventListener), System::currentTimeMillis, ""));
+            this.delegate = new NonBlockingTransport(new DelegatingEventListener(events, statusEventListener), System::currentTimeMillis, "");
         }
         catch (Exception e)
         {
@@ -69,7 +68,6 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
     {
         work();
         delegate.handle(command);
-        work();
     }
 
     @Override

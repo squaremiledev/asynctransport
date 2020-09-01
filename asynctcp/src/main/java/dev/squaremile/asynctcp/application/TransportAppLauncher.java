@@ -7,7 +7,6 @@ import org.agrona.collections.MutableReference;
 
 import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.events.EventListener;
-import dev.squaremile.asynctcp.nonblockingimpl.CommandsQueueTransport;
 import dev.squaremile.asynctcp.nonblockingimpl.NonBlockingTransport;
 
 public class TransportAppLauncher
@@ -17,7 +16,7 @@ public class TransportAppLauncher
         MutableReference<EventListener> listener = new MutableReference<>();
         try
         {
-            Transport transport = new CommandsQueueTransport(new NonBlockingTransport(event -> listener.get().onEvent(event), System::currentTimeMillis, role));
+            Transport transport = new NonBlockingTransport(event -> listener.get().onEvent(event), System::currentTimeMillis, role);
             Application app = applicationFactory.create(transport);
             listener.set(app);
             return new TransportApplication(transport, app);
@@ -26,6 +25,5 @@ public class TransportAppLauncher
         {
             throw new RuntimeException(e);
         }
-
     }
 }

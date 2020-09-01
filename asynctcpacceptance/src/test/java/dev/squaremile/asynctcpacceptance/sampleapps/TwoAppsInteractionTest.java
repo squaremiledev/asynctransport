@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import dev.squaremile.asynctcp.application.TransportAppLauncher;
 import dev.squaremile.asynctcp.application.TransportApplication;
-import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
@@ -15,7 +14,7 @@ import dev.squaremile.asynctcp.testfitures.app.TransportEventsRedirect;
 
 import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
 
-public class RetryingStreamingApplicationTest
+public class TwoAppsInteractionTest
 {
     private final TransportApplication streamingApplication;
     private final TransportApplication echoApplication;
@@ -26,7 +25,7 @@ public class RetryingStreamingApplicationTest
     private final Spin spin;
     private int port;
 
-    RetryingStreamingApplicationTest()
+    TwoAppsInteractionTest()
     {
         port = freePort();
         streamingApplication = new TransportAppLauncher().launch(transport -> new StreamApplication(
@@ -58,20 +57,6 @@ public class RetryingStreamingApplicationTest
 
         // Then
         spin.spinUntil(() -> eventsReceivedByEchoApplication.contains(ConnectionAccepted.class));
-        spin.spinUntil(() -> eventsReceivedByStreamingApplication.contains(Connected.class));
-    }
-
-    @Test
-    void shouldKeepTryingToConnect()
-    {
-        // Given
-        streamingApplication.onStart();
-        spin.spinUntil(() -> eventsReceivedByStreamingApplication.contains(CommandFailed.class));
-
-        // When
-        echoApplication.onStart();
-
-        // Then
         spin.spinUntil(() -> eventsReceivedByStreamingApplication.contains(Connected.class));
     }
 
