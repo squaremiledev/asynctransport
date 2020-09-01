@@ -17,8 +17,9 @@ public class ConnectedNotification
     final long deadlineMs;
     final SelectionKey selectionKey;
     final Connect command;
+    public String protocolName;
 
-    public ConnectedNotification(long connectionId, SocketChannel socketChannel, Connect command, final long deadlineMs, final SelectionKey selectionKey)
+    public ConnectedNotification(long connectionId, SocketChannel socketChannel, Connect command, final long deadlineMs, final SelectionKey selectionKey, final String protocolName)
     {
         this.command = new Connect().set(command.remoteHost(), command.remotePort(), command.commandId(), 1_000);
         this.connectionId = connectionId;
@@ -29,5 +30,6 @@ public class ConnectedNotification
         this.remoteHost = command.remoteHost();
         this.deadlineMs = deadlineMs;
         this.selectionKey = selectionKey;
+        this.protocolName = protocolName;
     }
 }

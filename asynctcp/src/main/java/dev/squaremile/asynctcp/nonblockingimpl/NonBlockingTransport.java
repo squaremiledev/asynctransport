@@ -48,12 +48,13 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final PendingConnections pendingConnections;
     private final EpochClock clock;
     private final String role;
+    private final StandardProtocolAwareConnectionEventDelegates connectionEventDelegates = new StandardProtocolAwareConnectionEventDelegates();
 
     public NonBlockingTransport(final EventListener eventListener, final EpochClock clock, final String role) throws IOException
     {
         this.role = role;
         this.clock = clock;
-        this.servers = new Servers();
+        this.servers = new Servers(connectionEventDelegates);
         this.connections = new Connections(eventListener::onEvent);
         this.eventListener = eventListener;
         this.pendingConnections = new PendingConnections(clock, eventListener);
@@ -131,7 +132,17 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                                     socket.getSendBufferSize() * 2,
                                     socket.getReceiveBufferSize()
                             );
-                            long connectionId = registerConnection(socketChannel, new ConnectionImpl(configuration, new SocketBackedChannel(socketChannel), eventListener::onEvent));
+                            long connectionId = registerConnection(
+                                    socketChannel,
+                                    new ConnectionImpl(
+                                            configuration,
+                                            new SocketBackedChannel(socketChannel),
+                                            connectionEventDelegates.createFor(
+                                                    connectedNotification.protocolName,
+                                                    eventListener
+                                            )
+                                    )
+                            );
                             connections.get(connectionId).connected(connectedNotification.commandId);
                             pendingConnections.removePendingConnection(key);
                         }
@@ -262,7 +273,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         }
         try
         {
-            servers.start(command.port(), command.commandId(), connectionIdSource, eventListener, commandFactory);
+            servers.start(command.port(), command.commandId(), command.protocolName(), connectionIdSource, eventListener, commandFactory);
             Server server = servers.serverListeningOn(command.port());
             final ServerSocketChannel serverSocketChannel = server.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
@@ -297,7 +308,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             long connectionId = connectionIdSource.newId();
             socketChannel.connect(new InetSocketAddress(command.remoteHost(), command.remotePort()));
             final SelectionKey selectionKey = socketChannel.register(selector, SelectionKey.OP_CONNECT);
-            pendingConnections.add(new ConnectedNotification(connectionId, socketChannel, command, clock.time() + command.timeoutMs(), selectionKey));
+            pendingConnections.add(new ConnectedNotification(connectionId, socketChannel, command, clock.time() + command.timeoutMs(), selectionKey, command.protocolName()));
         }
         catch (IOException e)
         {

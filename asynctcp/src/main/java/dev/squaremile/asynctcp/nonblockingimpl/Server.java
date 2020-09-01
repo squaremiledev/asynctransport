@@ -20,21 +20,27 @@ import dev.squaremile.asynctcp.domain.connection.ConnectionConfiguration;
 public class Server implements AutoCloseable
 {
     private final int port;
+    private final String protocolName;
     private final long commandIdThatTriggeredListening;
     private final ConnectionIdSource connectionIdSource;
     private final EventListener eventListener;
     private final CommandFactory commandFactory;
     private final ServerSocketChannel serverSocketChannel;
+    private final StandardProtocolAwareConnectionEventDelegates connectionEventDelegates;
 
     Server(
+            final StandardProtocolAwareConnectionEventDelegates connectionEventDelegates,
             final int port,
+            final String protocolName,
             final long commandIdThatTriggeredListening,
             final ConnectionIdSource connectionIdSource,
             final EventListener eventListener,
             final CommandFactory commandFactory
     ) throws IOException
     {
+        this.connectionEventDelegates = connectionEventDelegates;
         this.port = port;
+        this.protocolName = protocolName;
         this.commandIdThatTriggeredListening = commandIdThatTriggeredListening;
         this.connectionIdSource = connectionIdSource;
         this.eventListener = eventListener;
@@ -88,7 +94,7 @@ public class Server implements AutoCloseable
         return new ConnectionImpl(
                 configuration,
                 new SocketBackedChannel(acceptedSocketChannel),
-                eventListener::onEvent
+                connectionEventDelegates.createFor(protocolName, eventListener)
         );
     }
 
