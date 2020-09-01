@@ -2,7 +2,6 @@ package dev.squaremile.asynctcp.domain.api.events;
 
 public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedEvent
 {
-    // TODO: add a remote host string
     private final int port;
     private final long commandId;
     private final String remoteHost;

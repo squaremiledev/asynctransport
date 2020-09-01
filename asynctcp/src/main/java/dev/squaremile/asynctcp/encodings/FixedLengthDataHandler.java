@@ -29,6 +29,7 @@ class FixedLengthDataHandler implements ReceivedDataHandler
         int sourceLength = event.length();
         for (int i = 0; i < sourceLength; i++)
         {
+            // TODO: think about a zero copy alternative (source buffer with offset based)
             messageBuffer.put(sourceBuffer.get());
             if (messageBuffer.position() == messageLength)
             {
