@@ -1,5 +1,8 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
+import java.nio.ByteBuffer;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +19,9 @@ import dev.squaremile.asynctcp.testfitures.app.WhiteboxApplication;
 
 import static dev.squaremile.asynctcp.domain.api.events.EventListener.IGNORE_EVENTS;
 import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
+import static dev.squaremile.asynctcp.testfitures.StringFixtures.byteArrayWith;
+import static dev.squaremile.asynctcp.testfitures.StringFixtures.fixedLengthStringStartingWith;
+import static dev.squaremile.asynctcp.testfitures.StringFixtures.stringWith;
 
 class StreamApplicationTest
 {
@@ -23,7 +29,7 @@ class StreamApplicationTest
     private final TransportApplication transportApplication;
     private final String host = "localhost";
     private final Spin spin;
-    private final byte[] dataToSend = new byte[100];
+    private final byte[] dataToSend = byteArrayWith(fixedLengthStringStartingWith("", 100));
     private int port;
     private WhiteboxApplication whiteboxApplication;
 
@@ -68,6 +74,8 @@ class StreamApplicationTest
     {
         spin.spinUntil(() -> whiteboxApplication.events().contains(ConnectionAccepted.class));
         spin.spinUntil(() -> whiteboxApplication.events().contains(DataReceived.class) && whiteboxApplication.events().last(DataReceived.class).totalBytesReceived() == dataToSend.length);
+        assertThat(stringWith(extractedContent(whiteboxApplication.events().all(DataReceived.class))))
+                .isEqualTo(stringWith(dataToSend));
     }
 
     @AfterEach
@@ -75,5 +83,12 @@ class StreamApplicationTest
     {
         drivingApplication.onStop();
         transportApplication.onStop();
+    }
+
+    private byte[] extractedContent(final List<DataReceived> receivedEvents)
+    {
+        ByteBuffer actualContent = ByteBuffer.allocate((int)receivedEvents.get(receivedEvents.size() - 1).totalBytesReceived());
+        receivedEvents.forEach(event -> event.copyDataTo(actualContent));
+        return actualContent.array();
     }
 }
