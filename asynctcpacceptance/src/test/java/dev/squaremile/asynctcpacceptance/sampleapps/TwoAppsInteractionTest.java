@@ -28,7 +28,7 @@ public class TwoAppsInteractionTest
     TwoAppsInteractionTest()
     {
         port = freePort();
-        streamingApplication = new TransportAppLauncher().launch(transport -> new StreamApplication(
+        streamingApplication = new TransportAppLauncher().launch(transport -> new ByteMessageSendingApplication(
                 transport,
                 host,
                 port,

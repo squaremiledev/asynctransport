@@ -15,17 +15,18 @@ import dev.squaremile.asynctcp.domain.api.events.EventListener;
 
 import static java.util.Objects.requireNonNull;
 
-public class StreamApplication implements Application
+public class ByteMessageSendingApplication implements Application
 {
     private final Transport transport;
     private final int remotePort;
     private final byte[] dataToSend;
     private final EventListener eventListener;
+    private final byte[] messageContent = new byte[1];
     private String remoteHost;
     private ConnectionIdValue connectionId;
     private long nextCommandId = 1;
 
-    public StreamApplication(
+    public ByteMessageSendingApplication(
             final Transport transport,
             final String remoteHost,
             final int remotePort,
@@ -63,7 +64,13 @@ public class StreamApplication implements Application
         if (event instanceof Connected)
         {
             Connected connectedEvent = (Connected)event;
-            transport.handle(transport.command(connectedEvent, SendData.class).set(dataToSend));
+            SendData sendDataCommand = transport.command(connectedEvent, SendData.class);
+            for (int i = 0; i < dataToSend.length; i++)
+            {
+                messageContent[0] = dataToSend[i];
+                transport.handle(sendDataCommand.set(messageContent));
+            }
+
             connectionId = new ConnectionIdValue(connectedEvent);
 
         }
