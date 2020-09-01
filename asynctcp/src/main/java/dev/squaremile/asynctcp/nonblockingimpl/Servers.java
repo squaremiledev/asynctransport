@@ -10,13 +10,14 @@ import static org.agrona.CloseHelper.closeAll;
 
 import dev.squaremile.asynctcp.domain.api.commands.CommandFactory;
 import dev.squaremile.asynctcp.domain.api.events.EventListener;
+import dev.squaremile.asynctcp.encodings.StandardEncodingsAwareConnectionEventDelegates;
 
 public class Servers implements AutoCloseable
 {
     private final Int2ObjectHashMap<Server> listeningSocketsByPort = new Int2ObjectHashMap<>();
-    private final StandardProtocolAwareConnectionEventDelegates connectionEventDelegates;
+    private final StandardEncodingsAwareConnectionEventDelegates connectionEventDelegates;
 
-    public Servers(final StandardProtocolAwareConnectionEventDelegates connectionEventDelegates)
+    public Servers(final StandardEncodingsAwareConnectionEventDelegates connectionEventDelegates)
     {
         this.connectionEventDelegates = connectionEventDelegates;
     }

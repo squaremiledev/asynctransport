@@ -35,6 +35,7 @@ import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.domain.connection.Connection;
 import dev.squaremile.asynctcp.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.domain.connection.ConnectionState;
+import dev.squaremile.asynctcp.encodings.StandardEncodingsAwareConnectionEventDelegates;
 
 // TODO: make sure all commands and events can be used without generating garbage
 public class NonBlockingTransport implements AutoCloseable, Transport
@@ -48,7 +49,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final PendingConnections pendingConnections;
     private final EpochClock clock;
     private final String role;
-    private final StandardProtocolAwareConnectionEventDelegates connectionEventDelegates = new StandardProtocolAwareConnectionEventDelegates();
+    private final StandardEncodingsAwareConnectionEventDelegates connectionEventDelegates = new StandardEncodingsAwareConnectionEventDelegates();
 
     public NonBlockingTransport(final EventListener eventListener, final EpochClock clock, final String role) throws IOException
     {
@@ -273,7 +274,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         }
         try
         {
-            servers.start(command.port(), command.commandId(), command.protocolName(), connectionIdSource, eventListener, commandFactory);
+            servers.start(command.port(), command.commandId(), command.encodingName(), connectionIdSource, eventListener, commandFactory);
             Server server = servers.serverListeningOn(command.port());
             final ServerSocketChannel serverSocketChannel = server.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
@@ -308,7 +309,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             long connectionId = connectionIdSource.newId();
             socketChannel.connect(new InetSocketAddress(command.remoteHost(), command.remotePort()));
             final SelectionKey selectionKey = socketChannel.register(selector, SelectionKey.OP_CONNECT);
-            pendingConnections.add(new ConnectedNotification(connectionId, socketChannel, command, clock.time() + command.timeoutMs(), selectionKey, command.protocolName()));
+            pendingConnections.add(new ConnectedNotification(connectionId, socketChannel, command, clock.time() + command.timeoutMs(), selectionKey, command.encodingName()));
         }
         catch (IOException e)
         {

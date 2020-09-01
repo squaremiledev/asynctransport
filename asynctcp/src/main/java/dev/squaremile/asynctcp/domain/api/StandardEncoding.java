@@ -1,6 +1,6 @@
 package dev.squaremile.asynctcp.domain.api;
 
-public enum StandardProtocol
+public enum StandardEncoding
 {
     RAW_STREAMING,
     SINGLE_BYTE

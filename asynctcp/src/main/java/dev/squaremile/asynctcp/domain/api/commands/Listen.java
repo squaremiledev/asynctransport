@@ -1,25 +1,25 @@
 package dev.squaremile.asynctcp.domain.api.commands;
 
 import dev.squaremile.asynctcp.domain.api.CommandId;
-import dev.squaremile.asynctcp.domain.api.StandardProtocol;
+import dev.squaremile.asynctcp.domain.api.StandardEncoding;
 import dev.squaremile.asynctcp.domain.api.TransportId;
 
 public class Listen implements TransportCommand
 {
     private int port = TransportId.NO_PORT;
     private long commandId = CommandId.NO_COMMAND_ID;
-    private StandardProtocol protocol;
+    private StandardEncoding encoding;
 
     public Listen set(final long commandId, final int port)
     {
-        return set(commandId, port, StandardProtocol.RAW_STREAMING);
+        return set(commandId, port, StandardEncoding.RAW_STREAMING);
     }
 
-    public Listen set(final long commandId, final int port, final StandardProtocol protocol)
+    public Listen set(final long commandId, final int port, final StandardEncoding encoding)
     {
         this.port = port;
         this.commandId = commandId;
-        this.protocol = protocol;
+        this.encoding = encoding;
         return this;
     }
 
@@ -35,9 +35,9 @@ public class Listen implements TransportCommand
         return commandId;
     }
 
-    public String protocolName()
+    public String encodingName()
     {
-        return protocol.name();
+        return encoding.name();
     }
 
     @Override
@@ -46,13 +46,13 @@ public class Listen implements TransportCommand
         return "Listen{" +
                "port=" + port +
                ", commandId=" + commandId +
-               ", protocol=" + protocol +
+               ", encoding=" + encoding +
                '}';
     }
 
     @Override
     public Listen copy()
     {
-        return new Listen().set(commandId, port, protocol);
+        return new Listen().set(commandId, port, encoding);
     }
 }

@@ -13,6 +13,7 @@ import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.domain.api.events.Event;
 import dev.squaremile.asynctcp.domain.api.events.EventListener;
 
+import static dev.squaremile.asynctcp.domain.api.StandardEncoding.SINGLE_BYTE;
 import static java.util.Objects.requireNonNull;
 
 public class ByteMessageSendingApplication implements Application
@@ -44,7 +45,7 @@ public class ByteMessageSendingApplication implements Application
     @Override
     public void onStart()
     {
-        transport.handle(transport.command(Connect.class).set(remoteHost, remotePort, nextCommandId++, 50));
+        transport.handle(transport.command(Connect.class).set(remoteHost, remotePort, nextCommandId++, 50, SINGLE_BYTE));
     }
 
     @Override
