@@ -82,7 +82,7 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
     }
 
     @Override
-    public TransportEvent copy()
+    public Connected copy()
     {
         return new Connected(port, commandId, remoteHost, remotePort, connectionId, inboundPduLimit, outboundPduLimit);
     }

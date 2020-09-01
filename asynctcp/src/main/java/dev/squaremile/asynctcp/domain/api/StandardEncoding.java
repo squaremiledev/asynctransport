@@ -4,6 +4,6 @@ public enum StandardEncoding
 {
     RAW_STREAMING,
     SINGLE_BYTE,
-    INTEGERS,
-    LONGS
+    LONGS,
+    FOUR_KB,
 }

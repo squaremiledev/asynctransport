@@ -3,22 +3,25 @@ package dev.squaremile.asynctcp.testfitures.app;
 import dev.squaremile.asynctcp.application.Application;
 import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.events.Event;
-import dev.squaremile.asynctcp.testfitures.TransportEventsSpy;
+import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
 
 /**
  * A standard app should by autonomous and reactive.
  * It should not require external control apart from the injection of dependencies via a constructor.
  * This is not a standard app. All the logic lives outside it to show the transport API in the tests.
  */
-public class WhiteboxApplication implements Application
+public class WhiteboxApplication<L extends TransportEventsListener> implements Application
 {
-    private final TransportEventsSpy events = new TransportEventsSpy();
-    private final TransportEventsRedirect eventsRedirect = new TransportEventsRedirect(events);
+    private final L events;
+    private final TransportEventsRedirect eventsRedirect;
     private final Transport transport;
 
-    public WhiteboxApplication(final Transport transport)
+
+    public WhiteboxApplication(final Transport transport, final L transportEventsListener)
     {
         this.transport = transport;
+        this.events = transportEventsListener;
+        this.eventsRedirect = new TransportEventsRedirect(events);
     }
 
     @Override
@@ -32,7 +35,7 @@ public class WhiteboxApplication implements Application
         return transport;
     }
 
-    public TransportEventsSpy events()
+    public L events()
     {
         return events;
     }

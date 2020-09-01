@@ -15,6 +15,7 @@ import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
+import dev.squaremile.asynctcp.testfitures.TransportEventsSpy;
 import dev.squaremile.asynctcp.testfitures.app.WhiteboxApplication;
 
 import static dev.squaremile.asynctcp.domain.api.events.EventListener.IGNORE_EVENTS;
@@ -31,14 +32,14 @@ class ByteMessageSendingApplicationTest
     private final Spin spin;
     private final byte[] dataToSend = byteArrayWith(fixedLengthStringStartingWith("", 100));
     private int port;
-    private WhiteboxApplication whiteboxApplication;
+    private WhiteboxApplication<TransportEventsSpy> whiteboxApplication;
 
     ByteMessageSendingApplicationTest()
     {
         drivingApplication = new TransportAppLauncher().launch(
                 transport ->
                 {
-                    whiteboxApplication = new WhiteboxApplication(transport);
+                    whiteboxApplication = new WhiteboxApplication<>(transport, new TransportEventsSpy());
                     return whiteboxApplication;
                 }, "");
         drivingApplication.onStart();

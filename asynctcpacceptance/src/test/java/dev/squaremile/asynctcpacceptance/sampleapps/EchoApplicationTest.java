@@ -17,6 +17,7 @@ import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
+import dev.squaremile.asynctcp.testfitures.TransportEventsSpy;
 import dev.squaremile.asynctcp.testfitures.app.WhiteboxApplication;
 
 import static dev.squaremile.asynctcp.domain.api.events.EventListener.IGNORE_EVENTS;
@@ -28,14 +29,14 @@ class EchoApplicationTest
     private final TransportApplication transportApplication;
     private final Spin spin;
     private int port;
-    private WhiteboxApplication whiteboxApplication;
+    private WhiteboxApplication<TransportEventsSpy> whiteboxApplication;
 
     EchoApplicationTest()
     {
         drivingApplication = new TransportAppLauncher().launch(
                 transport ->
                 {
-                    whiteboxApplication = new WhiteboxApplication(transport);
+                    whiteboxApplication = new WhiteboxApplication<>(transport, new TransportEventsSpy());
                     return whiteboxApplication;
                 }, "");
         drivingApplication.onStart();

@@ -19,10 +19,10 @@ public class StandardEncodingsAwareConnectionEventDelegates
                 return new Delegation(eventListener, new RawStreamingEncoding(eventListener));
             case SINGLE_BYTE:
                 return new Delegation(eventListener, new SingleByteDataHandler(connectionId, eventListener::onEvent));
-            case INTEGERS:
-                return new Delegation(eventListener, new IntegerDataHandler(connectionId, eventListener::onEvent));
             case LONGS:
                 return new Delegation(eventListener, new LongDataHandler(connectionId, eventListener::onEvent));
+            case FOUR_KB:
+                return new Delegation(eventListener, new FixedLengthDataHandler(eventListener::onEvent, 4 * 1024));
             default:
                 throw new IllegalStateException("Unexpected encoding value: " + encoding);
         }
