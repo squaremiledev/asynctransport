@@ -20,20 +20,22 @@ public class EchoApplication implements Application
     private final Transport transport;
     private final int listeningPort;
     private final EventListener eventListener;
+    private final StandardEncoding encoding;
     private boolean listening = false;
     private int nextCommandId = 101;
 
-    public EchoApplication(final Transport transport, final int listeningPort, final EventListener eventListener)
+    public EchoApplication(final Transport transport, final int listeningPort, final EventListener eventListener, final StandardEncoding encoding)
     {
         this.transport = requireNonNull(transport);
         this.listeningPort = listeningPort;
         this.eventListener = eventListener;
+        this.encoding = encoding;
     }
 
     @Override
     public void onStart()
     {
-        transport.handle(transport.command(Listen.class).set(nextCommandId++, listeningPort, StandardEncoding.SINGLE_BYTE));
+        transport.handle(transport.command(Listen.class).set(nextCommandId++, listeningPort, encoding));
     }
 
     @Override

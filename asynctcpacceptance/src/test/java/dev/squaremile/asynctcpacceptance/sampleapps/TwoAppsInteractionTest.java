@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import dev.squaremile.asynctcp.application.TransportAppLauncher;
 import dev.squaremile.asynctcp.application.TransportApplication;
+import dev.squaremile.asynctcp.domain.api.StandardEncoding;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
@@ -38,7 +39,7 @@ public class TwoAppsInteractionTest
         echoApplication = new TransportAppLauncher().launch(transport -> new EchoApplication(
                 transport,
                 port,
-                new TransportEventsRedirect(eventsReceivedByEchoApplication)
+                new TransportEventsRedirect(eventsReceivedByEchoApplication), StandardEncoding.SINGLE_BYTE
         ), "echoApplication");
         spin = new Spin(streamingApplication, echoApplication);
     }

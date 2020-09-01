@@ -3,5 +3,7 @@ package dev.squaremile.asynctcp.domain.api;
 public enum StandardEncoding
 {
     RAW_STREAMING,
-    SINGLE_BYTE
+    SINGLE_BYTE,
+    INTEGERS,
+    LONGS
 }
