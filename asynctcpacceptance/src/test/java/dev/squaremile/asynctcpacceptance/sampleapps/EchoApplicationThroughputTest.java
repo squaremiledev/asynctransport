@@ -19,6 +19,7 @@ import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
+import dev.squaremile.asynctcp.encodings.FixedLengthDataHandler;
 import dev.squaremile.asynctcp.testfitures.Worker;
 import dev.squaremile.asynctcp.testfitures.app.WhiteboxApplication;
 
@@ -31,7 +32,9 @@ class EchoApplicationThroughputTest
     private final TransportApplication transportApplication;
     private final MutableReference<Connected> connectedEventHolder = new MutableReference<>();
     private final MutableLong totalBytesReceived = new MutableLong(0);
+    private final MutableLong totalMessagesReceived = new MutableLong(0);
     private final int messageSize = 4 * 1024;
+    private final FixedLengthDataHandler messageCounter = new FixedLengthDataHandler(messageReceived -> totalMessagesReceived.increment(), messageSize);
     private int port;
     private WhiteboxApplication<TransportEventsListener> whiteboxApplication;
 
@@ -49,7 +52,9 @@ class EchoApplicationThroughputTest
                         }
                         else if (event instanceof DataReceived)
                         {
-                            totalBytesReceived.set(((DataReceived)event).totalBytesReceived());
+                            DataReceived dataReceivedEvent = (DataReceived)event;
+                            totalBytesReceived.set(dataReceivedEvent.totalBytesReceived());
+                            messageCounter.onDataReceived(dataReceivedEvent);
                         }
                     });
                     return whiteboxApplication;
@@ -91,10 +96,12 @@ class EchoApplicationThroughputTest
                                       });
         long endTimeMs = System.currentTimeMillis();
         long bitsPerSecond = (totalBytesReceived.get() * TimeUnit.SECONDS.toMillis(1)) / (endTimeMs - startTimeMs);
-        long messagesPerSecond = ((totalBytesReceived.get() / messageSize) * TimeUnit.SECONDS.toMillis(1)) / (endTimeMs - startTimeMs);
+        long messagesPerSecond = ((totalMessagesReceived.get()) * TimeUnit.SECONDS.toMillis(1)) / (endTimeMs - startTimeMs);
         long megabytesPerSecond = bitsPerSecond / 1024 / 1024;
         assertThat(megabytesPerSecond).isGreaterThan(1);
         assertThat(messagesPerSecond).isGreaterThan(4_000);
+//        System.out.println(megabytesPerSecond);
+//        System.out.println(messagesPerSecond);
     }
 
     @AfterEach

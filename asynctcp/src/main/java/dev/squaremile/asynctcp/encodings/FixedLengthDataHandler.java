@@ -7,14 +7,14 @@ import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.MessageListener;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 
-class FixedLengthDataHandler implements ReceivedDataHandler
+public class FixedLengthDataHandler implements ReceivedDataHandler
 {
     private final MessageReceived messageReceived;
     private final MessageListener messageListener;
     private final ByteBuffer messageBuffer;
     private int messageLength;
 
-    FixedLengthDataHandler(final MessageListener messageListener, final int messageLength)
+    public FixedLengthDataHandler(final MessageListener messageListener, final int messageLength)
     {
         this.messageListener = messageListener;
         this.messageLength = messageLength;
