@@ -7,7 +7,7 @@ public abstract class EventsSpy<E>
 {
     private final CapturedItems<E> items;
 
-    EventsSpy(final CapturedItems<E> items)
+    public EventsSpy(final CapturedItems<E> items)
     {
         this.items = items;
     }

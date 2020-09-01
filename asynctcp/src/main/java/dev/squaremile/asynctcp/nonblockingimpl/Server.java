@@ -83,8 +83,9 @@ public class Server implements AutoCloseable
         final Socket acceptedSocket = acceptedSocketChannel.socket();
 
         SocketAddress remoteSocketAddress = acceptedSocket.getRemoteSocketAddress();
+        long connectionId = connectionIdSource.newId();
         final ConnectionConfiguration configuration = new ConnectionConfiguration(
-                new ConnectionIdValue(acceptedSocket.getLocalPort(), connectionIdSource.newId()),
+                new ConnectionIdValue(acceptedSocket.getLocalPort(), connectionId),
                 hostname(remoteSocketAddress),
                 acceptedSocket.getPort(),
                 acceptedSocketChannel.socket().getSendBufferSize(),
@@ -95,7 +96,7 @@ public class Server implements AutoCloseable
         return new ConnectionImpl(
                 configuration,
                 new SocketBackedChannel(acceptedSocketChannel),
-                connectionEventDelegates.createFor(protocolName, eventListener)
+                connectionEventDelegates.createFor(connectionId, protocolName, eventListener)
         );
     }
 

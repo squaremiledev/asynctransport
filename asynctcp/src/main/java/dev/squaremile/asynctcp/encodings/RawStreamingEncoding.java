@@ -1,10 +1,9 @@
 package dev.squaremile.asynctcp.encodings;
 
-import dev.squaremile.asynctcp.domain.api.events.ConnectionEvent;
+import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.EventListener;
-import dev.squaremile.asynctcp.domain.connection.ConnectionEventsListener;
 
-public class RawStreamingEncoding implements ConnectionEventsListener
+public class RawStreamingEncoding implements ReceivedDataHandler
 {
     private final EventListener eventListener;
 
@@ -14,7 +13,7 @@ public class RawStreamingEncoding implements ConnectionEventsListener
     }
 
     @Override
-    public void onEvent(final ConnectionEvent event)
+    public void onDataReceived(final DataReceived event)
     {
         eventListener.onEvent(event);
     }

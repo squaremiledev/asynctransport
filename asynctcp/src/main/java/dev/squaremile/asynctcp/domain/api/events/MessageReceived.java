@@ -1,6 +1,7 @@
 package dev.squaremile.asynctcp.domain.api.events;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
@@ -52,9 +53,15 @@ public class MessageReceived implements ConnectionEvent
         return length;
     }
 
+    public ByteBuffer data()
+    {
+        data.position(0).limit(length);
+        return data;
+    }
+
     @Override
     public MessageReceived copy()
     {
-        return new MessageReceived().set(connectionId, data, length);
+        return new MessageReceived().set(connectionId, ByteBuffer.wrap(Arrays.copyOf(data.array(), data.array().length)), length);
     }
 }
