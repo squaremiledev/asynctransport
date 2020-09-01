@@ -17,7 +17,7 @@ public class DataReceived implements ConnectionEvent
         this(port, connectionId, 0, 0, inboundPduLimit, ByteBuffer.wrap(new byte[inboundPduLimit]));
     }
 
-    private DataReceived(final int port, final long connectionId, final long totalBytesReceived, final int length, final int inboundPduLimit, final ByteBuffer data)
+    public DataReceived(final int port, final long connectionId, final long totalBytesReceived, final int length, final int inboundPduLimit, final ByteBuffer data)
     {
         this.port = port;
         this.connectionId = connectionId;

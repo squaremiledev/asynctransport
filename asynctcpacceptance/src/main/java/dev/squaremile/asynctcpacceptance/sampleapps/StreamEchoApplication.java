@@ -7,7 +7,6 @@ import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.commands.StopListening;
-import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.Event;
 import dev.squaremile.asynctcp.domain.api.events.EventListener;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
@@ -53,12 +52,7 @@ public class StreamEchoApplication implements Application
         eventListener.onEvent(event);
         if (event instanceof MessageReceived)
         {
-            MessageReceived messageReceived = (MessageReceived)event;
-            transport.handle(sendDataCommandWithDataFrom(messageReceived.dataReceived()));
-        }
-        if (event instanceof DataReceived)
-        {
-            transport.handle(sendDataCommandWithDataFrom((DataReceived)event));
+            transport.handle(sendDataCommandWithDataFrom((MessageReceived)event));
         }
         if (event instanceof StartedListening)
         {
@@ -70,10 +64,10 @@ public class StreamEchoApplication implements Application
         }
     }
 
-    private SendData sendDataCommandWithDataFrom(final DataReceived dataReceivedEvent)
+    private SendData sendDataCommandWithDataFrom(final MessageReceived messageReceivedEvent)
     {
-        SendData sendData = transport.command(dataReceivedEvent, SendData.class);
-        dataReceivedEvent.copyDataTo(sendData.prepare());
-        return sendData.commit(dataReceivedEvent.length());
+        SendData sendData = transport.command(messageReceivedEvent, SendData.class);
+        messageReceivedEvent.copyDataTo(sendData.prepare());
+        return sendData.commit(messageReceivedEvent.length());
     }
 }

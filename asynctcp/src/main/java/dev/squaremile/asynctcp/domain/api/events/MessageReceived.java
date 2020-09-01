@@ -1,44 +1,60 @@
 package dev.squaremile.asynctcp.domain.api.events;
 
+import java.nio.ByteBuffer;
+
+
+import dev.squaremile.asynctcp.domain.api.ConnectionId;
+
 public class MessageReceived implements ConnectionEvent
 {
-    private DataReceived dataReceived;
-
-    public DataReceived dataReceived()
-    {
-        return dataReceived;
-    }
+    private ConnectionId connectionId;
+    private ByteBuffer data;
+    private int length;
 
     @Override
     public int port()
     {
-        return dataReceived.port();
+        return connectionId.port();
     }
 
     @Override
     public long connectionId()
     {
-        return dataReceived.connectionId();
+        return connectionId.connectionId();
     }
 
-
-    public MessageReceived set(final DataReceived dataReceived)
+    public MessageReceived set(final ConnectionId dataReceived, final ByteBuffer data, final int length)
     {
-        this.dataReceived = dataReceived;
+        this.connectionId = dataReceived;
+        this.data = data;
+        this.length = length;
         return this;
+    }
+
+    public void copyDataTo(final ByteBuffer dst)
+    {
+        data.clear().limit(length);
+        dst.put(data);
     }
 
     @Override
     public String toString()
     {
         return "MessageReceived{" +
-               "dataReceived=" + dataReceived +
+               "connectionId=" + connectionId +
+               ", data=" + data +
+               ", length=" + length +
                '}';
+    }
+
+    public int length()
+    {
+        return length;
     }
 
     @Override
     public MessageReceived copy()
     {
-        return new MessageReceived().set(dataReceived);
+        return new MessageReceived().set(connectionId, data, length);
     }
 }

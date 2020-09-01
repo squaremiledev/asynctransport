@@ -14,7 +14,7 @@ public class StandardEncodingsAwareConnectionEventDelegates
         switch (standardEncoding)
         {
             case RAW_STREAMING:
-                return eventListener::onEvent;
+                return new RawStreamingEncoding(eventListener);
             case SINGLE_BYTE:
                 return new SingleByteEncoding(eventListener);
             default:
