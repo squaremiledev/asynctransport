@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+}
+
+java {
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+
+}
