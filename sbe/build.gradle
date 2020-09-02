@@ -1,14 +1,27 @@
 plugins {
+    id "vontikov.sbe-generator-plugin" version "0.0.3"
     id 'java-library'
 }
 
-java {
-}
+sbeGenerator {
+    src {
+        dir = 'src/main/resources/xml'
+        includes = []
+        excludes = []
+    }
 
-test {
-    useJUnitPlatform()
+    javaCodecsDir = 'src/main/java'
+//    javaClassesDir = 'build/generated/classes'
+
+//    cppCodecsDir = 'build/generated/src/main/cpp1'
+//    cppCmakeDir = 'build/generated/cmake-project'
+//
+//    archivesDir = 'build/archives'
+//
+//    javaOptions = [:]
+//    cppOptions = [:]
 }
 
 dependencies {
-
+    api 'org.agrona:agrona:1.6.0'
 }

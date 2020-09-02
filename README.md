@@ -50,3 +50,10 @@ The remaining concerns, such as running the app are kept separate and can be com
 
 
 
+## Maintenance
+
+To re-generate sbe codecs
+
+```
+./gradlew :sbe:sbeGenerateJavaCodecs
+```
