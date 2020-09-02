@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-import static dev.squaremile.asynctcp.testfitures.StringFixtures.byteArrayWith;
-import static dev.squaremile.asynctcp.testfitures.StringFixtures.stringWith;
+import static dev.squaremile.asynctcp.testfixtures.StringFixtures.byteArrayWith;
+import static dev.squaremile.asynctcp.testfixtures.StringFixtures.stringWith;
 
 class StringFixturesTest
 {

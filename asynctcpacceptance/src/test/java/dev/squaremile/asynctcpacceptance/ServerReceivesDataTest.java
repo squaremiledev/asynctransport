@@ -17,13 +17,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
-import dev.squaremile.asynctcp.testfitures.ConnectionEventsSpy;
+import dev.squaremile.asynctcp.testfixtures.ConnectionEventsSpy;
 
-import static dev.squaremile.asynctcp.testfitures.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.testfitures.DataFixtures.concatenatedData;
-import static dev.squaremile.asynctcp.testfitures.StringFixtures.byteArrayWith;
-import static dev.squaremile.asynctcp.testfitures.StringFixtures.fixedLengthStringStartingWith;
-import static dev.squaremile.asynctcp.testfitures.StringFixtures.stringWith;
+import static dev.squaremile.asynctcp.testfixtures.BackgroundRunner.completed;
+import static dev.squaremile.asynctcp.testfixtures.DataFixtures.concatenatedData;
+import static dev.squaremile.asynctcp.testfixtures.StringFixtures.byteArrayWith;
+import static dev.squaremile.asynctcp.testfixtures.StringFixtures.fixedLengthStringStartingWith;
+import static dev.squaremile.asynctcp.testfixtures.StringFixtures.stringWith;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 

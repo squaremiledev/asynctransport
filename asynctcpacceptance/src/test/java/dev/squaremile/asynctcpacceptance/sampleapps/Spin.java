@@ -7,10 +7,10 @@ import java.util.function.BooleanSupplier;
 
 import dev.squaremile.asynctcp.application.TransportApplication;
 import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
-import dev.squaremile.asynctcp.testfitures.TransportEventsSpy;
-import dev.squaremile.asynctcp.testfitures.app.WhiteboxApplication;
+import dev.squaremile.asynctcp.testfixtures.TransportEventsSpy;
+import dev.squaremile.asynctcp.testfixtures.app.WhiteboxApplication;
 
-import static dev.squaremile.asynctcp.testfitures.Worker.runUntil;
+import static dev.squaremile.asynctcp.testfixtures.Worker.runUntil;
 
 class Spin
 {

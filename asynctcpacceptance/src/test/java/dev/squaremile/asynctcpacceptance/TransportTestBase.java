@@ -8,10 +8,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
-import dev.squaremile.asynctcp.testfitures.TearDown;
-import dev.squaremile.asynctcp.testfitures.TransportUnderTest;
+import dev.squaremile.asynctcp.testfixtures.TearDown;
+import dev.squaremile.asynctcp.testfixtures.TransportUnderTest;
 
-import static dev.squaremile.asynctcp.testfitures.Worker.runUntil;
+import static dev.squaremile.asynctcp.testfixtures.Worker.runUntil;
 
 abstract class TransportTestBase
 {

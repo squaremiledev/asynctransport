@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 
-import static dev.squaremile.asynctcp.testfitures.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
 
 class SingleByteDataHandlerTest
 {

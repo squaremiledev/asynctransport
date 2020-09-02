@@ -18,13 +18,13 @@ import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.DataSent;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportEvent;
-import dev.squaremile.asynctcp.testfitures.TransportUnderTest;
-import dev.squaremile.asynctcp.testfitures.Worker;
+import dev.squaremile.asynctcp.testfixtures.TransportUnderTest;
+import dev.squaremile.asynctcp.testfixtures.Worker;
 
-import static dev.squaremile.asynctcp.testfitures.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
-import static dev.squaremile.asynctcp.testfitures.FreePort.freePortOtherThan;
-import static dev.squaremile.asynctcp.testfitures.StringFixtures.byteArrayWith;
+import static dev.squaremile.asynctcp.testfixtures.BackgroundRunner.completed;
+import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.testfixtures.FreePort.freePortOtherThan;
+import static dev.squaremile.asynctcp.testfixtures.StringFixtures.byteArrayWith;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 public class TransportDriver

@@ -25,10 +25,10 @@ import dev.squaremile.asynctcp.domain.api.events.NumberOfConnectionsChanged;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 
-import static dev.squaremile.asynctcp.testfitures.Assertions.assertEqual;
-import static dev.squaremile.asynctcp.testfitures.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
-import static dev.squaremile.asynctcp.testfitures.FreePort.freePortOtherThan;
+import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.testfixtures.BackgroundRunner.completed;
+import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.testfixtures.FreePort.freePortOtherThan;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 

@@ -10,10 +10,10 @@ import dev.squaremile.asynctcp.domain.api.StandardEncoding;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
-import dev.squaremile.asynctcp.testfitures.TransportEventsSpy;
-import dev.squaremile.asynctcp.testfitures.app.TransportEventsRedirect;
+import dev.squaremile.asynctcp.testfixtures.TransportEventsSpy;
+import dev.squaremile.asynctcp.testfixtures.app.TransportEventsRedirect;
 
-import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
+import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
 
 public class TwoAppsInteractionTest
 {

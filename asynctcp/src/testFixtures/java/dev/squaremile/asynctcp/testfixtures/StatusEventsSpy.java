@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.testfitures;
+package dev.squaremile.asynctcp.testfixtures;
 
 import dev.squaremile.asynctcp.domain.api.events.StatusEvent;
 import dev.squaremile.asynctcp.domain.api.events.StatusEventListener;

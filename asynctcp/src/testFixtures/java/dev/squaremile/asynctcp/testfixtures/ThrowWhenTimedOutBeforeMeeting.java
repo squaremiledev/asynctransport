@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.testfitures;
+package dev.squaremile.asynctcp.testfixtures;
 
 import java.util.function.BooleanSupplier;
 

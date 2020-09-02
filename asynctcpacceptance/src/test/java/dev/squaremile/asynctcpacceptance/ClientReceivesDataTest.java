@@ -18,12 +18,12 @@ import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.DataSent;
-import dev.squaremile.asynctcp.testfitures.ConnectionEventsSpy;
+import dev.squaremile.asynctcp.testfixtures.ConnectionEventsSpy;
 
-import static dev.squaremile.asynctcp.testfitures.DataFixtures.concatenatedData;
-import static dev.squaremile.asynctcp.testfitures.StringFixtures.byteArrayWith;
-import static dev.squaremile.asynctcp.testfitures.StringFixtures.fixedLengthStringStartingWith;
-import static dev.squaremile.asynctcp.testfitures.StringFixtures.stringWith;
+import static dev.squaremile.asynctcp.testfixtures.DataFixtures.concatenatedData;
+import static dev.squaremile.asynctcp.testfixtures.StringFixtures.byteArrayWith;
+import static dev.squaremile.asynctcp.testfixtures.StringFixtures.fixedLengthStringStartingWith;
+import static dev.squaremile.asynctcp.testfixtures.StringFixtures.stringWith;
 
 
 class ClientReceivesDataTest extends TransportTestBase

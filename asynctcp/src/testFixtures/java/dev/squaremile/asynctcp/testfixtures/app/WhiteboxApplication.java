@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.testfitures.app;
+package dev.squaremile.asynctcp.testfixtures.app;
 
 import dev.squaremile.asynctcp.application.Application;
 import dev.squaremile.asynctcp.domain.api.Transport;

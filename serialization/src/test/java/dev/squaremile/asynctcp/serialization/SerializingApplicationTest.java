@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 import dev.squaremile.asynctcp.sbe.StartedListeningDecoder;
-import dev.squaremile.asynctcp.testfitures.Assertions;
-import dev.squaremile.asynctcp.testfitures.TransportEventsSpy;
+import dev.squaremile.asynctcp.testfixtures.Assertions;
+import dev.squaremile.asynctcp.testfixtures.TransportEventsSpy;
 
 class SerializingApplicationTest
 {

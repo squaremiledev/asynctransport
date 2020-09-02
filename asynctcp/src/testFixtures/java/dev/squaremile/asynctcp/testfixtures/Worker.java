@@ -1,10 +1,10 @@
-package dev.squaremile.asynctcp.testfitures;
+package dev.squaremile.asynctcp.testfixtures;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 
-import static dev.squaremile.asynctcp.testfitures.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
+import static dev.squaremile.asynctcp.testfixtures.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
 import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 public class Worker

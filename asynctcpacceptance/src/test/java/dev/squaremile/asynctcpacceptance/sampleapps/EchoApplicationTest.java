@@ -17,11 +17,11 @@ import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
-import dev.squaremile.asynctcp.testfitures.TransportEventsSpy;
-import dev.squaremile.asynctcp.testfitures.app.WhiteboxApplication;
+import dev.squaremile.asynctcp.testfixtures.TransportEventsSpy;
+import dev.squaremile.asynctcp.testfixtures.app.WhiteboxApplication;
 
 import static dev.squaremile.asynctcp.domain.api.events.EventListener.IGNORE_EVENTS;
-import static dev.squaremile.asynctcp.testfitures.FreePort.freePort;
+import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
 
 class EchoApplicationTest
 {
