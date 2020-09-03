@@ -42,8 +42,8 @@ public class CloseConnection implements ConnectionCommand
     public String toString()
     {
         return "CloseConnection{" +
+               "commandId=" + commandId +
                ", connectionId=" + connectionId +
-               ", commandId=" + commandId +
                '}';
     }
 
