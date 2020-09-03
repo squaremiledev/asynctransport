@@ -8,6 +8,7 @@ import dev.squaremile.asynctcp.domain.api.ConnectionId;
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
+import dev.squaremile.asynctcp.domain.api.commands.Connect;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
 import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
@@ -18,6 +19,7 @@ import dev.squaremile.asynctcp.domain.api.events.TransportEvent;
 import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
 import dev.squaremile.asynctcp.domain.connection.ConnectionCommands;
 import dev.squaremile.asynctcp.sbe.CloseConnectionEncoder;
+import dev.squaremile.asynctcp.sbe.ConnectEncoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
 
 public class SerializingTransport implements Transport, TransportEventsListener
@@ -27,6 +29,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
     private final SerializedCommandListener serializedCommandListener;
     private final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
     private final CloseConnectionEncoder closeConnectionEncoder = new CloseConnectionEncoder();
+    private final ConnectEncoder connectEncoder = new ConnectEncoder();
     private final Long2ObjectHashMap<ConnectionCommands> connectionCommandsByConnectionId = new Long2ObjectHashMap<>();
 
     public SerializingTransport(final MutableDirectBuffer buffer, final int offset, final SerializedCommandListener serializedCommandListener)
@@ -74,6 +77,17 @@ public class SerializingTransport implements Transport, TransportEventsListener
                     .port(command.port())
                     .connectionId(command.connectionId())
                     .commandId(command.commandId());
+            serializedCommandListener.onSerializedCommand(buffer, offset);
+        }
+        if (unknownCommand instanceof Connect)
+        {
+            Connect command = (Connect)unknownCommand;
+            connectEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
+                    .remotePort(command.remotePort())
+                    .commandId(command.commandId())
+                    .timeoutMs(command.timeoutMs())
+                    .encoding(command.encodingName())
+                    .remoteHost(command.remoteHost());
             serializedCommandListener.onSerializedCommand(buffer, offset);
         }
 

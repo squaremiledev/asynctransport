@@ -13,8 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
+import dev.squaremile.asynctcp.domain.api.StandardEncoding;
 import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
+import dev.squaremile.asynctcp.domain.api.commands.Connect;
 import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
@@ -34,7 +36,8 @@ class SerializingTransportTest
     static Stream<Function<Transport, TransportCommand>> commands()
     {
         return Stream.of(
-                transport -> transport.command(CONNECTED_EVENT, CloseConnection.class).set(201)
+                transport -> transport.command(CONNECTED_EVENT, CloseConnection.class).set(201),
+                transport -> new Connect().set("remoteHost", 8899, 202, 10, StandardEncoding.SINGLE_BYTE)
         );
     }
 
