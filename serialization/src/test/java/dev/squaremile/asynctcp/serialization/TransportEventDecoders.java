@@ -55,7 +55,7 @@ public class TransportEventDecoders
                     return new TransportCommandFailed(
                             decoder.port(),
                             decoder.commandId(),
-                            "some details", // TODO
+                            decoder.details(),
                             Listen.class // TODO
                     );
                 }

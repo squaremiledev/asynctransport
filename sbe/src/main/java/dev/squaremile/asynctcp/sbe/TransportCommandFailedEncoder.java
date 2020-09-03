@@ -7,7 +7,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public class TransportCommandFailedEncoder
 {
-    public static final int BLOCK_LENGTH = 20;
+    public static final int BLOCK_LENGTH = 12;
     public static final int TEMPLATE_ID = 2;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
@@ -203,73 +203,22 @@ public class TransportCommandFailedEncoder
     }
 
 
-    public static int commandTypeId()
-    {
-        return 3;
-    }
-
-    public static int commandTypeSinceVersion()
-    {
-        return 0;
-    }
-
-    public static int commandTypeEncodingOffset()
-    {
-        return 12;
-    }
-
-    public static int commandTypeEncodingLength()
-    {
-        return 4;
-    }
-
-    public static String commandTypeMetaAttribute(final MetaAttribute metaAttribute)
-    {
-        switch (metaAttribute)
-        {
-            case EPOCH: return "";
-            case TIME_UNIT: return "";
-            case SEMANTIC_TYPE: return "";
-            case PRESENCE: return "required";
-        }
-
-        return "";
-    }
-
-    private final VarAsciiEncodingEncoder commandType = new VarAsciiEncodingEncoder();
-
-    public VarAsciiEncodingEncoder commandType()
-    {
-        commandType.wrap(buffer, offset + 12);
-        return commandType;
-    }
-
     public static int detailsId()
     {
-        return 4;
+        return 18;
     }
 
-    public static int detailsSinceVersion()
+    public static String detailsCharacterEncoding()
     {
-        return 0;
-    }
-
-    public static int detailsEncodingOffset()
-    {
-        return 16;
-    }
-
-    public static int detailsEncodingLength()
-    {
-        return 4;
+        return "ASCII";
     }
 
     public static String detailsMetaAttribute(final MetaAttribute metaAttribute)
     {
         switch (metaAttribute)
         {
-            case EPOCH: return "";
-            case TIME_UNIT: return "";
+            case EPOCH: return "unix";
+            case TIME_UNIT: return "nanosecond";
             case SEMANTIC_TYPE: return "";
             case PRESENCE: return "required";
         }
@@ -277,12 +226,179 @@ public class TransportCommandFailedEncoder
         return "";
     }
 
-    private final VarAsciiEncodingEncoder details = new VarAsciiEncodingEncoder();
-
-    public VarAsciiEncodingEncoder details()
+    public static int detailsHeaderLength()
     {
-        details.wrap(buffer, offset + 16);
-        return details;
+        return 4;
+    }
+
+    public TransportCommandFailedEncoder putDetails(final DirectBuffer src, final int srcOffset, final int length)
+    {
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+
+        return this;
+    }
+
+    public TransportCommandFailedEncoder putDetails(final byte[] src, final int srcOffset, final int length)
+    {
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+
+        return this;
+    }
+
+    public TransportCommandFailedEncoder details(final String value)
+    {
+        final int length = null == value ? 0 : value.length();
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putStringWithoutLengthAscii(limit + headerLength, value);
+
+        return this;
+    }
+
+    public TransportCommandFailedEncoder details(final CharSequence value)
+    {
+        final int length = null == value ? 0 : value.length();
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        for (int i = 0; i < length; ++i)
+        {
+            final char charValue = value.charAt(i);
+            final byte byteValue = charValue > 127 ? (byte)'?' : (byte)charValue;
+            buffer.putByte(limit + headerLength + i, byteValue);
+        }
+
+        return this;
+    }
+
+    public static int commandTypeId()
+    {
+        return 3;
+    }
+
+    public static String commandTypeCharacterEncoding()
+    {
+        return "ASCII";
+    }
+
+    public static String commandTypeMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "unix";
+            case TIME_UNIT: return "nanosecond";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public static int commandTypeHeaderLength()
+    {
+        return 4;
+    }
+
+    public TransportCommandFailedEncoder putCommandType(final DirectBuffer src, final int srcOffset, final int length)
+    {
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+
+        return this;
+    }
+
+    public TransportCommandFailedEncoder putCommandType(final byte[] src, final int srcOffset, final int length)
+    {
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+
+        return this;
+    }
+
+    public TransportCommandFailedEncoder commandType(final String value)
+    {
+        final int length = null == value ? 0 : value.length();
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putStringWithoutLengthAscii(limit + headerLength, value);
+
+        return this;
+    }
+
+    public TransportCommandFailedEncoder commandType(final CharSequence value)
+    {
+        final int length = null == value ? 0 : value.length();
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        for (int i = 0; i < length; ++i)
+        {
+            final char charValue = value.charAt(i);
+            final byte byteValue = charValue > 127 ? (byte)'?' : (byte)charValue;
+            buffer.putByte(limit + headerLength + i, byteValue);
+        }
+
+        return this;
     }
 
 

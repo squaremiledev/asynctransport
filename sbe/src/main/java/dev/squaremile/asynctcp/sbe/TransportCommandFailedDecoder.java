@@ -7,7 +7,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public class TransportCommandFailedDecoder
 {
-    public static final int BLOCK_LENGTH = 20;
+    public static final int BLOCK_LENGTH = 12;
     public static final int TEMPLATE_ID = 2;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
@@ -196,6 +196,131 @@ public class TransportCommandFailedDecoder
     }
 
 
+    public static int detailsId()
+    {
+        return 18;
+    }
+
+    public static int detailsSinceVersion()
+    {
+        return 0;
+    }
+
+    public static String detailsCharacterEncoding()
+    {
+        return "ASCII";
+    }
+
+    public static String detailsMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "unix";
+            case TIME_UNIT: return "nanosecond";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public static int detailsHeaderLength()
+    {
+        return 4;
+    }
+
+    public int detailsLength()
+    {
+        final int limit = parentMessage.limit();
+        return (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+    }
+
+    public int skipDetails()
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int dataOffset = limit + headerLength;
+
+        parentMessage.limit(dataOffset + dataLength);
+
+        return dataLength;
+    }
+
+    public int getDetails(final MutableDirectBuffer dst, final int dstOffset, final int length)
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int bytesCopied = Math.min(length, dataLength);
+        parentMessage.limit(limit + headerLength + dataLength);
+        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
+
+        return bytesCopied;
+    }
+
+    public int getDetails(final byte[] dst, final int dstOffset, final int length)
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int bytesCopied = Math.min(length, dataLength);
+        parentMessage.limit(limit + headerLength + dataLength);
+        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
+
+        return bytesCopied;
+    }
+
+    public void wrapDetails(final DirectBuffer wrapBuffer)
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        parentMessage.limit(limit + headerLength + dataLength);
+        wrapBuffer.wrap(buffer, limit + headerLength, dataLength);
+    }
+
+    public String details()
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        parentMessage.limit(limit + headerLength + dataLength);
+
+        if (0 == dataLength)
+        {
+            return "";
+        }
+
+        final byte[] tmp = new byte[dataLength];
+        buffer.getBytes(limit + headerLength, tmp, 0, dataLength);
+
+        final String value;
+        try
+        {
+            value = new String(tmp, "ASCII");
+        }
+        catch (final java.io.UnsupportedEncodingException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+
+        return value;
+    }
+
+    public int getDetails(final Appendable appendable)
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int dataOffset = limit + headerLength;
+
+        parentMessage.limit(dataOffset + dataLength);
+        buffer.getStringWithoutLengthAscii(dataOffset, dataLength, appendable);
+
+        return dataLength;
+    }
+
     public static int commandTypeId()
     {
         return 3;
@@ -206,22 +331,17 @@ public class TransportCommandFailedDecoder
         return 0;
     }
 
-    public static int commandTypeEncodingOffset()
+    public static String commandTypeCharacterEncoding()
     {
-        return 12;
-    }
-
-    public static int commandTypeEncodingLength()
-    {
-        return 4;
+        return "ASCII";
     }
 
     public static String commandTypeMetaAttribute(final MetaAttribute metaAttribute)
     {
         switch (metaAttribute)
         {
-            case EPOCH: return "";
-            case TIME_UNIT: return "";
+            case EPOCH: return "unix";
+            case TIME_UNIT: return "nanosecond";
             case SEMANTIC_TYPE: return "";
             case PRESENCE: return "required";
         }
@@ -229,53 +349,101 @@ public class TransportCommandFailedDecoder
         return "";
     }
 
-    private final VarAsciiEncodingDecoder commandType = new VarAsciiEncodingDecoder();
-
-    public VarAsciiEncodingDecoder commandType()
-    {
-        commandType.wrap(buffer, offset + 12);
-        return commandType;
-    }
-
-    public static int detailsId()
+    public static int commandTypeHeaderLength()
     {
         return 4;
     }
 
-    public static int detailsSinceVersion()
+    public int commandTypeLength()
     {
-        return 0;
+        final int limit = parentMessage.limit();
+        return (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
     }
 
-    public static int detailsEncodingOffset()
+    public int skipCommandType()
     {
-        return 16;
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int dataOffset = limit + headerLength;
+
+        parentMessage.limit(dataOffset + dataLength);
+
+        return dataLength;
     }
 
-    public static int detailsEncodingLength()
+    public int getCommandType(final MutableDirectBuffer dst, final int dstOffset, final int length)
     {
-        return 4;
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int bytesCopied = Math.min(length, dataLength);
+        parentMessage.limit(limit + headerLength + dataLength);
+        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
+
+        return bytesCopied;
     }
 
-    public static String detailsMetaAttribute(final MetaAttribute metaAttribute)
+    public int getCommandType(final byte[] dst, final int dstOffset, final int length)
     {
-        switch (metaAttribute)
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int bytesCopied = Math.min(length, dataLength);
+        parentMessage.limit(limit + headerLength + dataLength);
+        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
+
+        return bytesCopied;
+    }
+
+    public void wrapCommandType(final DirectBuffer wrapBuffer)
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        parentMessage.limit(limit + headerLength + dataLength);
+        wrapBuffer.wrap(buffer, limit + headerLength, dataLength);
+    }
+
+    public String commandType()
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        parentMessage.limit(limit + headerLength + dataLength);
+
+        if (0 == dataLength)
         {
-            case EPOCH: return "";
-            case TIME_UNIT: return "";
-            case SEMANTIC_TYPE: return "";
-            case PRESENCE: return "required";
+            return "";
         }
 
-        return "";
+        final byte[] tmp = new byte[dataLength];
+        buffer.getBytes(limit + headerLength, tmp, 0, dataLength);
+
+        final String value;
+        try
+        {
+            value = new String(tmp, "ASCII");
+        }
+        catch (final java.io.UnsupportedEncodingException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+
+        return value;
     }
 
-    private final VarAsciiEncodingDecoder details = new VarAsciiEncodingDecoder();
-
-    public VarAsciiEncodingDecoder details()
+    public int getCommandType(final Appendable appendable)
     {
-        details.wrap(buffer, offset + 16);
-        return details;
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int dataOffset = limit + headerLength;
+
+        parentMessage.limit(dataOffset + dataLength);
+        buffer.getStringWithoutLengthAscii(dataOffset, dataLength, appendable);
+
+        return dataLength;
     }
 
 
@@ -313,27 +481,15 @@ public class TransportCommandFailedDecoder
         builder.append("commandId=");
         builder.append(commandId());
         builder.append('|');
-        builder.append("commandType=");
-        final VarAsciiEncodingDecoder commandType = commandType();
-        if (commandType != null)
-        {
-            commandType.appendTo(builder);
-        }
-        else
-        {
-            builder.append("null");
-        }
-        builder.append('|');
         builder.append("details=");
-        final VarAsciiEncodingDecoder details = details();
-        if (details != null)
-        {
-            details.appendTo(builder);
-        }
-        else
-        {
-            builder.append("null");
-        }
+        builder.append('\'');
+        getDetails(builder);
+        builder.append('\'');
+        builder.append('|');
+        builder.append("commandType=");
+        builder.append('\'');
+        getCommandType(builder);
+        builder.append('\'');
 
         limit(originalLimit);
 

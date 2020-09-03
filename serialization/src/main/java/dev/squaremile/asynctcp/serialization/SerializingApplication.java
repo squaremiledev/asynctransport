@@ -44,7 +44,9 @@ public class SerializingApplication implements Application
             TransportCommandFailed event = (TransportCommandFailed)unknownEvent;
             transportCommandFailedEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(event.port())
-                    .commandId(event.commandId());
+                    .commandId(event.commandId())
+                    .details(event.details())
+                    .commandType("??");
             serializedEventListener.onSerializedEvent(buffer, offset);
         }
     }
