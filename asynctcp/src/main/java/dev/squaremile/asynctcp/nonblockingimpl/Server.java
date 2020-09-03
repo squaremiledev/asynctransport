@@ -89,7 +89,7 @@ public class Server implements AutoCloseable
                 hostname(remoteSocketAddress),
                 acceptedSocket.getPort(),
                 acceptedSocketChannel.socket().getSendBufferSize(),
-                // TODO: decide how to select buffer size (prod and test performance)
+                // TODO [perf]: decide how to select buffer size (prod and test performance)
                 acceptedSocketChannel.socket().getSendBufferSize() * 2,
                 acceptedSocketChannel.socket().getReceiveBufferSize()
         );

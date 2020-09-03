@@ -37,7 +37,7 @@ import dev.squaremile.asynctcp.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.domain.connection.ConnectionState;
 import dev.squaremile.asynctcp.encodings.StandardEncodingsAwareConnectionEventDelegates;
 
-// TODO: make sure all commands and events can be used without generating garbage
+// TODO [perf]: make sure all commands and events can be used without generating garbage
 public class NonBlockingTransport implements AutoCloseable, Transport
 {
     private final ConnectionIdSource connectionIdSource;
@@ -86,7 +86,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         {
             if (selector.selectNow() > 0)
             {
-                // TODO: replace this iteration with a zero allocation solution
+                // TODO [perf]: replace this iteration with a zero allocation solution
                 final Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
                 while (keyIterator.hasNext())
                 {
@@ -123,14 +123,14 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                         if (socketChannel.isConnected())
                         {
                             Socket socket = socketChannel.socket();
-                            // TODO: size buffers correctly
+                            // TODO [perf]: size buffers correctly
                             long connectionId = connectionIdSource.newId();
                             final ConnectionConfiguration configuration = new ConnectionConfiguration(
                                     new ConnectionIdValue(socket.getLocalPort(), connectionId),
                                     connectedNotification.remoteHost,
                                     socket.getPort(),
                                     socket.getSendBufferSize(),
-                                    // TODO: decide how to select buffer size (prod and test performance)
+                                    // TODO [perf]: decide how to select buffer size (prod and test performance)
                                     socket.getSendBufferSize() * 2,
                                     socket.getReceiveBufferSize()
                             );
