@@ -73,4 +73,12 @@
         <field name="commandId" id="2" type="commandId"/>
         <field name="connectionId" id="3" type="connectionId"/>
     </sbe:message>
+    <sbe:message name="DataSent" id="7">
+        <field name="port" id="1" type="port"/>
+        <field name="commandId" id="2" type="commandId"/>
+        <field name="connectionId" id="3" type="connectionId"/>
+        <field name="bytesSent" id="4" type="int32"/>
+        <field name="totalBytesSent" id="5" type="int64"/>
+        <field name="totalBytesBuffered" id="6" type="int64"/>
+    </sbe:message>
 </sbe:messageSchema>

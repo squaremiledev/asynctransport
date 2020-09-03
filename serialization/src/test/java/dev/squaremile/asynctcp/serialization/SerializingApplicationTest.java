@@ -12,6 +12,7 @@ import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
+import dev.squaremile.asynctcp.domain.api.events.DataSent;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.TransportEvent;
@@ -36,7 +37,8 @@ class SerializingApplicationTest
                 new ConnectionClosed(7888, 1, 2),
                 new StartedListening(8888, 5),
                 new TransportCommandFailed(8001, 101L, "some details", Listen.class),
-                new ConnectionResetByPeer(5888, 4, 6)
+                new ConnectionResetByPeer(5888, 4, 6),
+                new DataSent(5888, 4, 1, 9, 18, 104)
         );
     }
 
