@@ -1,8 +1,8 @@
 /* Generated SBE (Simple Binary Encoding) message codec */
 package dev.squaremile.asynctcp.sbe;
 
-import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
+import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
 public class ConnectedDecoder
@@ -56,11 +56,10 @@ public class ConnectedDecoder
     }
 
     public ConnectedDecoder wrap(
-            final DirectBuffer buffer,
-            final int offset,
-            final int actingBlockLength,
-            final int actingVersion
-    )
+        final DirectBuffer buffer,
+        final int offset,
+        final int actingBlockLength,
+        final int actingVersion)
     {
         if (buffer != this.buffer)
         {
@@ -113,14 +112,10 @@ public class ConnectedDecoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "";
-            case TIME_UNIT:
-                return "";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";
@@ -171,14 +166,10 @@ public class ConnectedDecoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "";
-            case TIME_UNIT:
-                return "";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";
@@ -229,14 +220,10 @@ public class ConnectedDecoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "";
-            case TIME_UNIT:
-                return "";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";
@@ -287,14 +274,10 @@ public class ConnectedDecoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "";
-            case TIME_UNIT:
-                return "";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";
@@ -345,14 +328,10 @@ public class ConnectedDecoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "";
-            case TIME_UNIT:
-                return "";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";
@@ -403,14 +382,10 @@ public class ConnectedDecoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "";
-            case TIME_UNIT:
-                return "";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";
@@ -456,14 +431,10 @@ public class ConnectedDecoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "unix";
-            case TIME_UNIT:
-                return "nanosecond";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "unix";
+            case TIME_UNIT: return "nanosecond";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";

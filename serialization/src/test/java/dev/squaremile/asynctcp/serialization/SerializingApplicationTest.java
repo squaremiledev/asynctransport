@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
+import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.TransportEvent;
@@ -29,6 +30,7 @@ class SerializingApplicationTest
     {
         return Stream.of(
                 new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000),
+                new ConnectionAccepted(9881, 4, "remote", 9882, 5, 46000, 30000),
                 new StartedListening(8888, 5),
                 new TransportCommandFailed(8001, 101L, "some details", Listen.class)
         );

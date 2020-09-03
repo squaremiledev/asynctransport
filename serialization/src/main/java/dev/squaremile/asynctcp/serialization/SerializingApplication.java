@@ -5,10 +5,12 @@ import org.agrona.MutableDirectBuffer;
 
 import dev.squaremile.asynctcp.application.Application;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
+import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.Event;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.sbe.ConnectedEncoder;
+import dev.squaremile.asynctcp.sbe.ConnectionAcceptedEncoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
 import dev.squaremile.asynctcp.sbe.StartedListeningEncoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedEncoder;
@@ -22,6 +24,7 @@ public class SerializingApplication implements Application
     private final StartedListeningEncoder startedListeningEncoder = new StartedListeningEncoder();
     private final TransportCommandFailedEncoder transportCommandFailedEncoder = new TransportCommandFailedEncoder();
     private final ConnectedEncoder connectedEncoder = new ConnectedEncoder();
+    private final ConnectionAcceptedEncoder connectionAcceptedEncoder = new ConnectionAcceptedEncoder();
 
 
     public SerializingApplication(final MutableDirectBuffer buffer, final int offset, final SerializedEventListener serializedEventListener)
@@ -56,6 +59,19 @@ public class SerializingApplication implements Application
         {
             Connected event = (Connected)unknownEvent;
             connectedEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
+                    .port(event.port())
+                    .commandId(event.commandId())
+                    .connectionId(event.connectionId())
+                    .remotePort(event.remotePort())
+                    .inboundPduLimit(event.inboundPduLimit())
+                    .outboundPduLimit(event.outboundPduLimit())
+                    .remoteHost(event.remoteHost());
+            serializedEventListener.onSerializedEvent(buffer, offset);
+        }
+        else if (unknownEvent instanceof ConnectionAccepted)
+        {
+            ConnectionAccepted event = (ConnectionAccepted)unknownEvent;
+            connectionAcceptedEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(event.port())
                     .commandId(event.commandId())
                     .connectionId(event.connectionId())

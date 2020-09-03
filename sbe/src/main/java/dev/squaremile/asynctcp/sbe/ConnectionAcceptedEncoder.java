@@ -5,15 +5,15 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
-public class ConnectedEncoder
+public class ConnectionAcceptedEncoder
 {
     public static final int BLOCK_LENGTH = 32;
-    public static final int TEMPLATE_ID = 3;
+    public static final int TEMPLATE_ID = 4;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
     public static final java.nio.ByteOrder BYTE_ORDER = java.nio.ByteOrder.LITTLE_ENDIAN;
 
-    private final ConnectedEncoder parentMessage = this;
+    private final ConnectionAcceptedEncoder parentMessage = this;
     private MutableDirectBuffer buffer;
     protected int offset;
     protected int limit;
@@ -53,7 +53,7 @@ public class ConnectedEncoder
         return offset;
     }
 
-    public ConnectedEncoder wrap(final MutableDirectBuffer buffer, final int offset)
+    public ConnectionAcceptedEncoder wrap(final MutableDirectBuffer buffer, final int offset)
     {
         if (buffer != this.buffer)
         {
@@ -65,7 +65,7 @@ public class ConnectedEncoder
         return this;
     }
 
-    public ConnectedEncoder wrapAndApplyHeader(
+    public ConnectionAcceptedEncoder wrapAndApplyHeader(
         final MutableDirectBuffer buffer, final int offset, final MessageHeaderEncoder headerEncoder)
     {
         headerEncoder
@@ -141,7 +141,7 @@ public class ConnectedEncoder
         return 2147483647;
     }
 
-    public ConnectedEncoder port(final int value)
+    public ConnectionAcceptedEncoder port(final int value)
     {
         buffer.putInt(offset + 0, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
@@ -196,7 +196,7 @@ public class ConnectedEncoder
         return 9223372036854775807L;
     }
 
-    public ConnectedEncoder commandId(final long value)
+    public ConnectionAcceptedEncoder commandId(final long value)
     {
         buffer.putLong(offset + 4, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
@@ -251,7 +251,7 @@ public class ConnectedEncoder
         return 9223372036854775807L;
     }
 
-    public ConnectedEncoder connectionId(final long value)
+    public ConnectionAcceptedEncoder connectionId(final long value)
     {
         buffer.putLong(offset + 12, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
@@ -306,7 +306,7 @@ public class ConnectedEncoder
         return 2147483647;
     }
 
-    public ConnectedEncoder remotePort(final int value)
+    public ConnectionAcceptedEncoder remotePort(final int value)
     {
         buffer.putInt(offset + 20, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
@@ -361,7 +361,7 @@ public class ConnectedEncoder
         return 2147483647;
     }
 
-    public ConnectedEncoder inboundPduLimit(final int value)
+    public ConnectionAcceptedEncoder inboundPduLimit(final int value)
     {
         buffer.putInt(offset + 24, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
@@ -416,7 +416,7 @@ public class ConnectedEncoder
         return 2147483647;
     }
 
-    public ConnectedEncoder outboundPduLimit(final int value)
+    public ConnectionAcceptedEncoder outboundPduLimit(final int value)
     {
         buffer.putInt(offset + 28, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
@@ -451,7 +451,7 @@ public class ConnectedEncoder
         return 4;
     }
 
-    public ConnectedEncoder putRemoteHost(final DirectBuffer src, final int srcOffset, final int length)
+    public ConnectionAcceptedEncoder putRemoteHost(final DirectBuffer src, final int srcOffset, final int length)
     {
         if (length > 1073741824)
         {
@@ -467,7 +467,7 @@ public class ConnectedEncoder
         return this;
     }
 
-    public ConnectedEncoder putRemoteHost(final byte[] src, final int srcOffset, final int length)
+    public ConnectionAcceptedEncoder putRemoteHost(final byte[] src, final int srcOffset, final int length)
     {
         if (length > 1073741824)
         {
@@ -483,7 +483,7 @@ public class ConnectedEncoder
         return this;
     }
 
-    public ConnectedEncoder remoteHost(final String value)
+    public ConnectionAcceptedEncoder remoteHost(final String value)
     {
         final byte[] bytes;
         try
@@ -518,7 +518,7 @@ public class ConnectedEncoder
 
     public StringBuilder appendTo(final StringBuilder builder)
     {
-        ConnectedDecoder writer = new ConnectedDecoder();
+        ConnectionAcceptedDecoder writer = new ConnectionAcceptedDecoder();
         writer.wrap(buffer, offset, BLOCK_LENGTH, SCHEMA_VERSION);
 
         return writer.appendTo(builder);

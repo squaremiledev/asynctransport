@@ -5,18 +5,20 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
-public class ConnectedEncoder
+public class ConnectionAcceptedDecoder
 {
     public static final int BLOCK_LENGTH = 32;
-    public static final int TEMPLATE_ID = 3;
+    public static final int TEMPLATE_ID = 4;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
     public static final java.nio.ByteOrder BYTE_ORDER = java.nio.ByteOrder.LITTLE_ENDIAN;
 
-    private final ConnectedEncoder parentMessage = this;
-    private MutableDirectBuffer buffer;
+    private final ConnectionAcceptedDecoder parentMessage = this;
+    private DirectBuffer buffer;
     protected int offset;
     protected int limit;
+    protected int actingBlockLength;
+    protected int actingVersion;
 
     public int sbeBlockLength()
     {
@@ -43,7 +45,7 @@ public class ConnectedEncoder
         return "";
     }
 
-    public MutableDirectBuffer buffer()
+    public DirectBuffer buffer()
     {
         return buffer;
     }
@@ -53,29 +55,22 @@ public class ConnectedEncoder
         return offset;
     }
 
-    public ConnectedEncoder wrap(final MutableDirectBuffer buffer, final int offset)
+    public ConnectionAcceptedDecoder wrap(
+        final DirectBuffer buffer,
+        final int offset,
+        final int actingBlockLength,
+        final int actingVersion)
     {
         if (buffer != this.buffer)
         {
             this.buffer = buffer;
         }
         this.offset = offset;
-        limit(offset + BLOCK_LENGTH);
+        this.actingBlockLength = actingBlockLength;
+        this.actingVersion = actingVersion;
+        limit(offset + actingBlockLength);
 
         return this;
-    }
-
-    public ConnectedEncoder wrapAndApplyHeader(
-        final MutableDirectBuffer buffer, final int offset, final MessageHeaderEncoder headerEncoder)
-    {
-        headerEncoder
-            .wrap(buffer, offset)
-            .blockLength(BLOCK_LENGTH)
-            .templateId(TEMPLATE_ID)
-            .schemaId(SCHEMA_ID)
-            .version(SCHEMA_VERSION);
-
-        return wrap(buffer, offset + MessageHeaderEncoder.ENCODED_LENGTH);
     }
 
     public int encodedLength()
@@ -141,10 +136,9 @@ public class ConnectedEncoder
         return 2147483647;
     }
 
-    public ConnectedEncoder port(final int value)
+    public int port()
     {
-        buffer.putInt(offset + 0, value, java.nio.ByteOrder.LITTLE_ENDIAN);
-        return this;
+        return buffer.getInt(offset + 0, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
 
@@ -196,10 +190,9 @@ public class ConnectedEncoder
         return 9223372036854775807L;
     }
 
-    public ConnectedEncoder commandId(final long value)
+    public long commandId()
     {
-        buffer.putLong(offset + 4, value, java.nio.ByteOrder.LITTLE_ENDIAN);
-        return this;
+        return buffer.getLong(offset + 4, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
 
@@ -251,10 +244,9 @@ public class ConnectedEncoder
         return 9223372036854775807L;
     }
 
-    public ConnectedEncoder connectionId(final long value)
+    public long connectionId()
     {
-        buffer.putLong(offset + 12, value, java.nio.ByteOrder.LITTLE_ENDIAN);
-        return this;
+        return buffer.getLong(offset + 12, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
 
@@ -306,10 +298,9 @@ public class ConnectedEncoder
         return 2147483647;
     }
 
-    public ConnectedEncoder remotePort(final int value)
+    public int remotePort()
     {
-        buffer.putInt(offset + 20, value, java.nio.ByteOrder.LITTLE_ENDIAN);
-        return this;
+        return buffer.getInt(offset + 20, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
 
@@ -361,10 +352,9 @@ public class ConnectedEncoder
         return 2147483647;
     }
 
-    public ConnectedEncoder inboundPduLimit(final int value)
+    public int inboundPduLimit()
     {
-        buffer.putInt(offset + 24, value, java.nio.ByteOrder.LITTLE_ENDIAN);
-        return this;
+        return buffer.getInt(offset + 24, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
 
@@ -416,16 +406,20 @@ public class ConnectedEncoder
         return 2147483647;
     }
 
-    public ConnectedEncoder outboundPduLimit(final int value)
+    public int outboundPduLimit()
     {
-        buffer.putInt(offset + 28, value, java.nio.ByteOrder.LITTLE_ENDIAN);
-        return this;
+        return buffer.getInt(offset + 28, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
 
     public static int remoteHostId()
     {
         return 7;
+    }
+
+    public static int remoteHostSinceVersion()
+    {
+        return 0;
     }
 
     public static String remoteHostCharacterEncoding()
@@ -451,63 +445,83 @@ public class ConnectedEncoder
         return 4;
     }
 
-    public ConnectedEncoder putRemoteHost(final DirectBuffer src, final int srcOffset, final int length)
+    public int remoteHostLength()
     {
-        if (length > 1073741824)
-        {
-            throw new IllegalStateException("length > maxValue for type: " + length);
-        }
-
-        final int headerLength = 4;
         final int limit = parentMessage.limit();
-        parentMessage.limit(limit + headerLength + length);
-        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
-        buffer.putBytes(limit + headerLength, src, srcOffset, length);
-
-        return this;
+        return (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
     }
 
-    public ConnectedEncoder putRemoteHost(final byte[] src, final int srcOffset, final int length)
+    public int skipRemoteHost()
     {
-        if (length > 1073741824)
-        {
-            throw new IllegalStateException("length > maxValue for type: " + length);
-        }
-
         final int headerLength = 4;
         final int limit = parentMessage.limit();
-        parentMessage.limit(limit + headerLength + length);
-        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
-        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int dataOffset = limit + headerLength;
 
-        return this;
+        parentMessage.limit(dataOffset + dataLength);
+
+        return dataLength;
     }
 
-    public ConnectedEncoder remoteHost(final String value)
+    public int getRemoteHost(final MutableDirectBuffer dst, final int dstOffset, final int length)
     {
-        final byte[] bytes;
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int bytesCopied = Math.min(length, dataLength);
+        parentMessage.limit(limit + headerLength + dataLength);
+        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
+
+        return bytesCopied;
+    }
+
+    public int getRemoteHost(final byte[] dst, final int dstOffset, final int length)
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int bytesCopied = Math.min(length, dataLength);
+        parentMessage.limit(limit + headerLength + dataLength);
+        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
+
+        return bytesCopied;
+    }
+
+    public void wrapRemoteHost(final DirectBuffer wrapBuffer)
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        parentMessage.limit(limit + headerLength + dataLength);
+        wrapBuffer.wrap(buffer, limit + headerLength, dataLength);
+    }
+
+    public String remoteHost()
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        parentMessage.limit(limit + headerLength + dataLength);
+
+        if (0 == dataLength)
+        {
+            return "";
+        }
+
+        final byte[] tmp = new byte[dataLength];
+        buffer.getBytes(limit + headerLength, tmp, 0, dataLength);
+
+        final String value;
         try
         {
-            bytes = null == value || value.isEmpty() ? org.agrona.collections.ArrayUtil.EMPTY_BYTE_ARRAY : value.getBytes("UTF-8");
+            value = new String(tmp, "UTF-8");
         }
         catch (final java.io.UnsupportedEncodingException ex)
         {
             throw new RuntimeException(ex);
         }
 
-        final int length = bytes.length;
-        if (length > 1073741824)
-        {
-            throw new IllegalStateException("length > maxValue for type: " + length);
-        }
-
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        parentMessage.limit(limit + headerLength + length);
-        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
-        buffer.putBytes(limit + headerLength, bytes, 0, length);
-
-        return this;
+        return value;
     }
 
 
@@ -518,9 +532,50 @@ public class ConnectedEncoder
 
     public StringBuilder appendTo(final StringBuilder builder)
     {
-        ConnectedDecoder writer = new ConnectedDecoder();
-        writer.wrap(buffer, offset, BLOCK_LENGTH, SCHEMA_VERSION);
+        final int originalLimit = limit();
+        limit(offset + actingBlockLength);
+        builder.append("[ConnectionAccepted](sbeTemplateId=");
+        builder.append(TEMPLATE_ID);
+        builder.append("|sbeSchemaId=");
+        builder.append(SCHEMA_ID);
+        builder.append("|sbeSchemaVersion=");
+        if (parentMessage.actingVersion != SCHEMA_VERSION)
+        {
+            builder.append(parentMessage.actingVersion);
+            builder.append('/');
+        }
+        builder.append(SCHEMA_VERSION);
+        builder.append("|sbeBlockLength=");
+        if (actingBlockLength != BLOCK_LENGTH)
+        {
+            builder.append(actingBlockLength);
+            builder.append('/');
+        }
+        builder.append(BLOCK_LENGTH);
+        builder.append("):");
+        builder.append("port=");
+        builder.append(port());
+        builder.append('|');
+        builder.append("commandId=");
+        builder.append(commandId());
+        builder.append('|');
+        builder.append("connectionId=");
+        builder.append(connectionId());
+        builder.append('|');
+        builder.append("remotePort=");
+        builder.append(remotePort());
+        builder.append('|');
+        builder.append("inboundPduLimit=");
+        builder.append(inboundPduLimit());
+        builder.append('|');
+        builder.append("outboundPduLimit=");
+        builder.append(outboundPduLimit());
+        builder.append('|');
+        builder.append("remoteHost=");
+        builder.append('\'').append(remoteHost()).append('\'');
 
-        return writer.appendTo(builder);
+        limit(originalLimit);
+
+        return builder;
     }
 }
