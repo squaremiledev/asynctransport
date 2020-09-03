@@ -103,6 +103,11 @@
         <data name="encoding" id="4" type="varAsciiEncoding"/>
         <data name="remoteHost" id="5" type="varStringEncoding"/>
     </sbe:message>
+    <sbe:message name="Listen" id="103">
+        <field name="port" id="1" type="port"/>
+        <field name="commandId" id="2" type="commandId"/>
+        <data name="encoding" id="4" type="varAsciiEncoding"/>
+    </sbe:message>
 
 
 </sbe:messageSchema>

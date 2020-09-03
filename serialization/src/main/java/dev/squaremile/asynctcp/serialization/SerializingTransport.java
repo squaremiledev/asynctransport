@@ -10,6 +10,7 @@ import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
+import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
@@ -20,6 +21,7 @@ import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
 import dev.squaremile.asynctcp.domain.connection.ConnectionCommands;
 import dev.squaremile.asynctcp.sbe.CloseConnectionEncoder;
 import dev.squaremile.asynctcp.sbe.ConnectEncoder;
+import dev.squaremile.asynctcp.sbe.ListenEncoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
 
 public class SerializingTransport implements Transport, TransportEventsListener
@@ -29,6 +31,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
     private final SerializedCommandListener serializedCommandListener;
     private final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
     private final CloseConnectionEncoder closeConnectionEncoder = new CloseConnectionEncoder();
+    private final ListenEncoder listenEncoder = new ListenEncoder();
     private final ConnectEncoder connectEncoder = new ConnectEncoder();
     private final Long2ObjectHashMap<ConnectionCommands> connectionCommandsByConnectionId = new Long2ObjectHashMap<>();
 
@@ -88,6 +91,15 @@ public class SerializingTransport implements Transport, TransportEventsListener
                     .timeoutMs(command.timeoutMs())
                     .encoding(command.encodingName())
                     .remoteHost(command.remoteHost());
+            serializedCommandListener.onSerializedCommand(buffer, offset);
+        }
+        if (unknownCommand instanceof Listen)
+        {
+            Listen command = (Listen)unknownCommand;
+            listenEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
+                    .port(command.port())
+                    .commandId(command.commandId())
+                    .encoding(command.encodingName());
             serializedCommandListener.onSerializedCommand(buffer, offset);
         }
 

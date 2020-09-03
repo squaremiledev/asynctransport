@@ -7,8 +7,10 @@ import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.StandardEncoding;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
+import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.sbe.CloseConnectionDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectDecoder;
+import dev.squaremile.asynctcp.sbe.ListenDecoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 
 public class TransportCommandDecoders
@@ -20,6 +22,7 @@ public class TransportCommandDecoders
         final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
         registerCloseConnection(commandDecoders, headerDecoder);
         registerConnect(commandDecoders, headerDecoder);
+        registerListen(commandDecoders, headerDecoder);
     }
 
     private void registerCloseConnection(final Int2ObjectHashMap<TransportCommandDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
@@ -56,6 +59,26 @@ public class TransportCommandDecoders
                     StandardEncoding standardEncoding = StandardEncoding.valueOf(decoder.encoding());
                     String remoteHost = decoder.remoteHost();
                     return new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), standardEncoding);
+                }
+        );
+    }
+
+
+    private void registerListen(final Int2ObjectHashMap<TransportCommandDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
+    {
+        final ListenDecoder decoder = new ListenDecoder();
+        eventDecoders.put(
+                decoder.sbeTemplateId(), (buffer, offset) ->
+                {
+                    headerDecoder.wrap(buffer, offset);
+                    decoder.wrap(
+                            buffer,
+                            headerDecoder.encodedLength() + headerDecoder.offset(),
+                            headerDecoder.blockLength(),
+                            headerDecoder.version()
+                    );
+                    StandardEncoding standardEncoding = StandardEncoding.valueOf(decoder.encoding());
+                    return new Listen().set(decoder.commandId(), decoder.port(), standardEncoding);
                 }
         );
     }
