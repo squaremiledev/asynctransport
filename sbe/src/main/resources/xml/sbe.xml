@@ -63,4 +63,9 @@
         <field name="outboundPduLimit" id="6" type="int32"/>
         <data name="remoteHost" id="7" type="varStringEncoding"/>
     </sbe:message>
+    <sbe:message name="ConnectionClosed" id="5">
+        <field name="port" id="1" type="port"/>
+        <field name="commandId" id="2" type="commandId"/>
+        <field name="connectionId" id="3" type="connectionId"/>
+    </sbe:message>
 </sbe:messageSchema>
