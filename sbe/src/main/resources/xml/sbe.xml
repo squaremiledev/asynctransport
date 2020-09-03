@@ -81,4 +81,9 @@
         <field name="totalBytesSent" id="5" type="int64"/>
         <field name="totalBytesBuffered" id="6" type="int64"/>
     </sbe:message>
+    <sbe:message name="MessageReceived" id="8">
+        <field name="port" id="1" type="port"/>
+        <field name="connectionId" id="2" type="connectionId"/>
+        <field name="data" id="3" type="varDataEncoding"/>
+    </sbe:message>
 </sbe:messageSchema>

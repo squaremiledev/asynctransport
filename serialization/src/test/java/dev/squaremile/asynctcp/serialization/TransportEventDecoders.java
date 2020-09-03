@@ -1,13 +1,17 @@
 package dev.squaremile.asynctcp.serialization;
 
+import java.nio.ByteBuffer;
+
 import org.agrona.collections.Int2ObjectHashMap;
 
 
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.domain.api.events.DataSent;
+import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.sbe.ConnectedDecoder;
@@ -16,8 +20,10 @@ import dev.squaremile.asynctcp.sbe.ConnectionClosedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionResetByPeerDecoder;
 import dev.squaremile.asynctcp.sbe.DataSentDecoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
+import dev.squaremile.asynctcp.sbe.MessageReceivedDecoder;
 import dev.squaremile.asynctcp.sbe.StartedListeningDecoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedDecoder;
+import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
 
 public class TransportEventDecoders
 {
@@ -33,6 +39,7 @@ public class TransportEventDecoders
         registerConnectionClosed(eventDecoders, headerDecoder);
         registerConnectionResetByPeer(eventDecoders, headerDecoder);
         registerDataSent(eventDecoders, headerDecoder);
+        registerMessageReceived(eventDecoders, headerDecoder);
     }
 
     private void registerStartedListening(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
@@ -182,6 +189,27 @@ public class TransportEventDecoders
                             headerDecoder.version()
                     );
                     return new DataSent(decoder.port(), decoder.connectionId(), decoder.bytesSent(), decoder.totalBytesSent(), decoder.totalBytesBuffered(), decoder.commandId());
+                }
+        );
+    }
+
+    private void registerMessageReceived(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
+    {
+        final MessageReceivedDecoder decoder = new MessageReceivedDecoder();
+        eventDecoders.put(
+                decoder.sbeTemplateId(), (buffer, offset) ->
+                {
+                    headerDecoder.wrap(buffer, offset);
+                    decoder.wrap(
+                            buffer,
+                            headerDecoder.encodedLength() + headerDecoder.offset(),
+                            headerDecoder.blockLength(),
+                            headerDecoder.version()
+                    );
+                    VarDataEncodingDecoder srcData = decoder.data();
+                    byte[] dstArray = new byte[(int)srcData.length()];
+                    srcData.buffer().getBytes(srcData.offset() + srcData.encodedLength(), dstArray);
+                    return new MessageReceived(new ConnectionIdValue(decoder.port(), decoder.connectionId())).set(ByteBuffer.wrap(dstArray), dstArray.length);
                 }
         );
     }

@@ -1,5 +1,6 @@
 package dev.squaremile.asynctcp.serialization;
 
+import java.nio.ByteBuffer;
 import java.util.stream.Stream;
 
 import org.agrona.concurrent.UnsafeBuffer;
@@ -7,12 +8,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.domain.api.events.DataSent;
+import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.TransportEvent;
@@ -38,8 +41,8 @@ class SerializingApplicationTest
                 new StartedListening(8888, 5),
                 new TransportCommandFailed(8001, 101L, "some details", Listen.class),
                 new ConnectionResetByPeer(5888, 4, 6),
-                new DataSent(5888, 4, 1, 9, 18, 104)
-//                new MessageReceived(new ConnectionIdValue(8899, 4)).set(ByteBuffer.wrap(new byte[]{1, 2, 3, 4}), 3)
+                new DataSent(5888, 4, 1, 9, 18, 104),
+                new MessageReceived(new ConnectionIdValue(8899, 4)).set(ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7}), 5)
         );
     }
 
