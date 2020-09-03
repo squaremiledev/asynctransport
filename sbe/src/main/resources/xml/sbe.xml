@@ -108,6 +108,10 @@
         <field name="commandId" id="2" type="commandId"/>
         <data name="encoding" id="4" type="varAsciiEncoding"/>
     </sbe:message>
+    <sbe:message name="StopListening" id="105">
+        <field name="port" id="1" type="port"/>
+        <field name="commandId" id="2" type="commandId"/>
+    </sbe:message>
 
 
 </sbe:messageSchema>

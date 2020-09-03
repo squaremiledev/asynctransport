@@ -18,6 +18,7 @@ import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
 import dev.squaremile.asynctcp.domain.api.commands.Listen;
+import dev.squaremile.asynctcp.domain.api.commands.StopListening;
 import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
@@ -39,7 +40,8 @@ class SerializingTransportTest
         return Stream.of(
                 transport -> transport.command(CONNECTED_EVENT, CloseConnection.class).set(201),
                 transport -> new Connect().set("remoteHost", 8899, 202, 10, StandardEncoding.SINGLE_BYTE),
-                transport -> new Listen().set(203, 6688, StandardEncoding.LONGS)
+                transport -> new Listen().set(203, 6688, StandardEncoding.LONGS),
+                transport -> new StopListening().set(204, 7788)
         );
     }
 

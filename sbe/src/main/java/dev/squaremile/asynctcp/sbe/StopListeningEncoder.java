@@ -5,15 +5,15 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
-public class ListenEncoder
+public class StopListeningEncoder
 {
     public static final int BLOCK_LENGTH = 12;
-    public static final int TEMPLATE_ID = 103;
+    public static final int TEMPLATE_ID = 105;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
     public static final java.nio.ByteOrder BYTE_ORDER = java.nio.ByteOrder.LITTLE_ENDIAN;
 
-    private final ListenEncoder parentMessage = this;
+    private final StopListeningEncoder parentMessage = this;
     private MutableDirectBuffer buffer;
     protected int offset;
     protected int limit;
@@ -53,7 +53,7 @@ public class ListenEncoder
         return offset;
     }
 
-    public ListenEncoder wrap(final MutableDirectBuffer buffer, final int offset)
+    public StopListeningEncoder wrap(final MutableDirectBuffer buffer, final int offset)
     {
         if (buffer != this.buffer)
         {
@@ -65,7 +65,7 @@ public class ListenEncoder
         return this;
     }
 
-    public ListenEncoder wrapAndApplyHeader(
+    public StopListeningEncoder wrapAndApplyHeader(
         final MutableDirectBuffer buffer, final int offset, final MessageHeaderEncoder headerEncoder)
     {
         headerEncoder
@@ -141,7 +141,7 @@ public class ListenEncoder
         return 2147483647;
     }
 
-    public ListenEncoder port(final int value)
+    public StopListeningEncoder port(final int value)
     {
         buffer.putInt(offset + 0, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
@@ -196,111 +196,12 @@ public class ListenEncoder
         return 9223372036854775807L;
     }
 
-    public ListenEncoder commandId(final long value)
+    public StopListeningEncoder commandId(final long value)
     {
         buffer.putLong(offset + 4, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
     }
 
-
-    public static int encodingId()
-    {
-        return 4;
-    }
-
-    public static String encodingCharacterEncoding()
-    {
-        return "ASCII";
-    }
-
-    public static String encodingMetaAttribute(final MetaAttribute metaAttribute)
-    {
-        switch (metaAttribute)
-        {
-            case EPOCH: return "unix";
-            case TIME_UNIT: return "nanosecond";
-            case SEMANTIC_TYPE: return "";
-            case PRESENCE: return "required";
-        }
-
-        return "";
-    }
-
-    public static int encodingHeaderLength()
-    {
-        return 4;
-    }
-
-    public ListenEncoder putEncoding(final DirectBuffer src, final int srcOffset, final int length)
-    {
-        if (length > 1073741824)
-        {
-            throw new IllegalStateException("length > maxValue for type: " + length);
-        }
-
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        parentMessage.limit(limit + headerLength + length);
-        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
-        buffer.putBytes(limit + headerLength, src, srcOffset, length);
-
-        return this;
-    }
-
-    public ListenEncoder putEncoding(final byte[] src, final int srcOffset, final int length)
-    {
-        if (length > 1073741824)
-        {
-            throw new IllegalStateException("length > maxValue for type: " + length);
-        }
-
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        parentMessage.limit(limit + headerLength + length);
-        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
-        buffer.putBytes(limit + headerLength, src, srcOffset, length);
-
-        return this;
-    }
-
-    public ListenEncoder encoding(final String value)
-    {
-        final int length = null == value ? 0 : value.length();
-        if (length > 1073741824)
-        {
-            throw new IllegalStateException("length > maxValue for type: " + length);
-        }
-
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        parentMessage.limit(limit + headerLength + length);
-        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
-        buffer.putStringWithoutLengthAscii(limit + headerLength, value);
-
-        return this;
-    }
-
-    public ListenEncoder encoding(final CharSequence value)
-    {
-        final int length = null == value ? 0 : value.length();
-        if (length > 1073741824)
-        {
-            throw new IllegalStateException("length > maxValue for type: " + length);
-        }
-
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        parentMessage.limit(limit + headerLength + length);
-        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
-        for (int i = 0; i < length; ++i)
-        {
-            final char charValue = value.charAt(i);
-            final byte byteValue = charValue > 127 ? (byte)'?' : (byte)charValue;
-            buffer.putByte(limit + headerLength + i, byteValue);
-        }
-
-        return this;
-    }
 
 
     public String toString()
@@ -310,7 +211,7 @@ public class ListenEncoder
 
     public StringBuilder appendTo(final StringBuilder builder)
     {
-        ListenDecoder writer = new ListenDecoder();
+        StopListeningDecoder writer = new StopListeningDecoder();
         writer.wrap(buffer, offset, BLOCK_LENGTH, SCHEMA_VERSION);
 
         return writer.appendTo(builder);

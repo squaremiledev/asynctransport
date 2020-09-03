@@ -5,15 +5,15 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
-public class ListenDecoder
+public class StopListeningDecoder
 {
     public static final int BLOCK_LENGTH = 12;
-    public static final int TEMPLATE_ID = 103;
+    public static final int TEMPLATE_ID = 105;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
     public static final java.nio.ByteOrder BYTE_ORDER = java.nio.ByteOrder.LITTLE_ENDIAN;
 
-    private final ListenDecoder parentMessage = this;
+    private final StopListeningDecoder parentMessage = this;
     private DirectBuffer buffer;
     protected int offset;
     protected int limit;
@@ -55,7 +55,7 @@ public class ListenDecoder
         return offset;
     }
 
-    public ListenDecoder wrap(
+    public StopListeningDecoder wrap(
         final DirectBuffer buffer,
         final int offset,
         final int actingBlockLength,
@@ -196,131 +196,6 @@ public class ListenDecoder
     }
 
 
-    public static int encodingId()
-    {
-        return 4;
-    }
-
-    public static int encodingSinceVersion()
-    {
-        return 0;
-    }
-
-    public static String encodingCharacterEncoding()
-    {
-        return "ASCII";
-    }
-
-    public static String encodingMetaAttribute(final MetaAttribute metaAttribute)
-    {
-        switch (metaAttribute)
-        {
-            case EPOCH: return "unix";
-            case TIME_UNIT: return "nanosecond";
-            case SEMANTIC_TYPE: return "";
-            case PRESENCE: return "required";
-        }
-
-        return "";
-    }
-
-    public static int encodingHeaderLength()
-    {
-        return 4;
-    }
-
-    public int encodingLength()
-    {
-        final int limit = parentMessage.limit();
-        return (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-    }
-
-    public int skipEncoding()
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int dataOffset = limit + headerLength;
-
-        parentMessage.limit(dataOffset + dataLength);
-
-        return dataLength;
-    }
-
-    public int getEncoding(final MutableDirectBuffer dst, final int dstOffset, final int length)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int bytesCopied = Math.min(length, dataLength);
-        parentMessage.limit(limit + headerLength + dataLength);
-        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
-
-        return bytesCopied;
-    }
-
-    public int getEncoding(final byte[] dst, final int dstOffset, final int length)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int bytesCopied = Math.min(length, dataLength);
-        parentMessage.limit(limit + headerLength + dataLength);
-        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
-
-        return bytesCopied;
-    }
-
-    public void wrapEncoding(final DirectBuffer wrapBuffer)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        parentMessage.limit(limit + headerLength + dataLength);
-        wrapBuffer.wrap(buffer, limit + headerLength, dataLength);
-    }
-
-    public String encoding()
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        parentMessage.limit(limit + headerLength + dataLength);
-
-        if (0 == dataLength)
-        {
-            return "";
-        }
-
-        final byte[] tmp = new byte[dataLength];
-        buffer.getBytes(limit + headerLength, tmp, 0, dataLength);
-
-        final String value;
-        try
-        {
-            value = new String(tmp, "ASCII");
-        }
-        catch (final java.io.UnsupportedEncodingException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-
-        return value;
-    }
-
-    public int getEncoding(final Appendable appendable)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int dataOffset = limit + headerLength;
-
-        parentMessage.limit(dataOffset + dataLength);
-        buffer.getStringWithoutLengthAscii(dataOffset, dataLength, appendable);
-
-        return dataLength;
-    }
-
 
     public String toString()
     {
@@ -331,7 +206,7 @@ public class ListenDecoder
     {
         final int originalLimit = limit();
         limit(offset + actingBlockLength);
-        builder.append("[Listen](sbeTemplateId=");
+        builder.append("[StopListening](sbeTemplateId=");
         builder.append(TEMPLATE_ID);
         builder.append("|sbeSchemaId=");
         builder.append(SCHEMA_ID);
@@ -355,11 +230,6 @@ public class ListenDecoder
         builder.append('|');
         builder.append("commandId=");
         builder.append(commandId());
-        builder.append('|');
-        builder.append("encoding=");
-        builder.append('\'');
-        getEncoding(builder);
-        builder.append('\'');
 
         limit(originalLimit);
 
