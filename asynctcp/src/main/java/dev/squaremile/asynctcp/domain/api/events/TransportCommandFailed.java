@@ -7,7 +7,7 @@ public class TransportCommandFailed implements CommandFailed
     private final int port;
     private final long commandId;
     private final String details;
-    private final Class<? extends TransportCommand> commandType;
+    private final String commandType;
 
     public TransportCommandFailed(final TransportCommand command, final String details)
     {
@@ -15,6 +15,11 @@ public class TransportCommandFailed implements CommandFailed
     }
 
     public TransportCommandFailed(final int port, final long commandId, final String details, final Class<? extends TransportCommand> commandType)
+    {
+        this(port, commandId, details, commandType.getSimpleName());
+    }
+
+    public TransportCommandFailed(final int port, final long commandId, final String details, final String commandType)
     {
         this.port = port;
         this.commandId = commandId;
@@ -40,6 +45,11 @@ public class TransportCommandFailed implements CommandFailed
         return details;
     }
 
+    public String commandType()
+    {
+        return commandType;
+    }
+
     @Override
     public String toString()
     {
@@ -47,7 +57,7 @@ public class TransportCommandFailed implements CommandFailed
                "port=" + port +
                ", commandId=" + commandId +
                ", details='" + details + '\'' +
-               ", commandType='" + commandType.getSimpleName() + '\'' +
+               ", commandType='" + commandType + '\'' +
                '}';
     }
 

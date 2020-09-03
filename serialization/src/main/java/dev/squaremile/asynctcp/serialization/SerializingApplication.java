@@ -46,7 +46,7 @@ public class SerializingApplication implements Application
                     .port(event.port())
                     .commandId(event.commandId())
                     .details(event.details())
-                    .commandType("??");
+                    .commandType(event.commandType());
             serializedEventListener.onSerializedEvent(buffer, offset);
         }
     }

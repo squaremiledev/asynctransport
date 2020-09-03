@@ -3,7 +3,6 @@ package dev.squaremile.asynctcp.serialization;
 import org.agrona.collections.Int2ObjectHashMap;
 
 
-import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
@@ -56,7 +55,7 @@ public class TransportEventDecoders
                             decoder.port(),
                             decoder.commandId(),
                             decoder.details(),
-                            Listen.class // TODO
+                            decoder.commandType()
                     );
                 }
         );
