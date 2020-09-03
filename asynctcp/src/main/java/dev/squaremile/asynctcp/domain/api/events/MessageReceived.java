@@ -5,12 +5,18 @@ import java.util.Arrays;
 
 
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 
 public class MessageReceived implements ConnectionEvent
 {
     private ConnectionId connectionId;
     private ByteBuffer data;
     private int length;
+
+    public MessageReceived(final ConnectionId connectionId)
+    {
+        this.connectionId = new ConnectionIdValue(connectionId);
+    }
 
     @Override
     public int port()
@@ -24,9 +30,16 @@ public class MessageReceived implements ConnectionEvent
         return connectionId.connectionId();
     }
 
-    public MessageReceived set(final ConnectionId dataReceived, final ByteBuffer data, final int length)
+    public MessageReceived set(final ByteBuffer data, final int length)
     {
-        this.connectionId = dataReceived;
+        this.data = data;
+        this.length = length;
+        return this;
+    }
+
+    public MessageReceived set(final ConnectionId connectionId, final ByteBuffer data, final int length)
+    {
+        this.connectionId = connectionId;
         this.data = data;
         this.length = length;
         return this;
@@ -62,6 +75,6 @@ public class MessageReceived implements ConnectionEvent
     @Override
     public MessageReceived copy()
     {
-        return new MessageReceived().set(connectionId, ByteBuffer.wrap(Arrays.copyOf(data.array(), data.array().length)), length);
+        return new MessageReceived(connectionId).set(ByteBuffer.wrap(Arrays.copyOf(data.array(), data.array().length)), length);
     }
 }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 
@@ -21,7 +22,7 @@ class SingleByteDataHandlerTest
     @Test
     void shouldNotDoAnythingWhenNoData()
     {
-        SingleByteDataHandler handler = new SingleByteDataHandler(1, messageReceivedSpy);
+        SingleByteDataHandler handler = new SingleByteDataHandler(new ConnectionIdValue(8888, 1), messageReceivedSpy);
         dataReceived.prepare();
         dataReceived.commit(0, 0);
 
@@ -35,7 +36,7 @@ class SingleByteDataHandlerTest
     @Test
     void shouldNotifyAboutSingleByteReceived()
     {
-        SingleByteDataHandler handler = new SingleByteDataHandler(1, messageReceivedSpy);
+        SingleByteDataHandler handler = new SingleByteDataHandler(new ConnectionIdValue(8888, 1), messageReceivedSpy);
         dataReceived.prepare().put((byte)'x').put((byte)'y').put((byte)'z');
         dataReceived.commit(3, 3);
 
@@ -60,7 +61,7 @@ class SingleByteDataHandlerTest
     @Test
     void shouldNotifyAllUpdates()
     {
-        SingleByteDataHandler handler = new SingleByteDataHandler(5, messageReceivedSpy);
+        SingleByteDataHandler handler = new SingleByteDataHandler(new ConnectionIdValue(8888, 1), messageReceivedSpy);
 
         // When
         dataReceived.prepare().put((byte)'x');

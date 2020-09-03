@@ -124,9 +124,9 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                         {
                             Socket socket = socketChannel.socket();
                             // TODO [perf]: size buffers correctly
-                            long connectionId = connectionIdSource.newId();
+                            ConnectionIdValue connectionId = new ConnectionIdValue(socket.getLocalPort(), connectionIdSource.newId());
                             final ConnectionConfiguration configuration = new ConnectionConfiguration(
-                                    new ConnectionIdValue(socket.getLocalPort(), connectionId),
+                                    connectionId,
                                     connectedNotification.remoteHost,
                                     socket.getPort(),
                                     socket.getSendBufferSize(),
@@ -146,7 +146,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                                             )
                                     )
                             );
-                            connections.get(connectionId).connected(connectedNotification.commandId);
+                            connections.get(connectionId.connectionId()).connected(connectedNotification.commandId);
                             pendingConnections.removePendingConnection(key);
                         }
                     }

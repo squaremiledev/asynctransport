@@ -3,6 +3,8 @@ package dev.squaremile.asynctcp.encodings;
 import java.nio.ByteBuffer;
 
 
+import dev.squaremile.asynctcp.domain.api.ConnectionId;
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 import dev.squaremile.asynctcp.domain.api.events.MessageListener;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
@@ -10,16 +12,18 @@ import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 public class FixedLengthDataHandler implements ReceivedDataHandler
 {
     private final MessageReceived messageReceived;
+    private final ConnectionIdValue connectionId;
     private final MessageListener messageListener;
     private final ByteBuffer messageBuffer;
     private int messageLength;
 
-    public FixedLengthDataHandler(final MessageListener messageListener, final int messageLength)
+    public FixedLengthDataHandler(final ConnectionId connectionId, final MessageListener messageListener, final int messageLength)
     {
+        this.connectionId = new ConnectionIdValue(connectionId);
         this.messageListener = messageListener;
         this.messageLength = messageLength;
         this.messageBuffer = ByteBuffer.wrap(new byte[messageLength]);
-        this.messageReceived = new MessageReceived();
+        this.messageReceived = new MessageReceived(connectionId);
     }
 
     @Override
@@ -44,6 +48,7 @@ public class FixedLengthDataHandler implements ReceivedDataHandler
     {
         return "FixedLengthDataHandler{" +
                "messageReceived=" + messageReceived +
+               ", connectionId=" + connectionId +
                ", messageListener=" + messageListener +
                ", messageBuffer=" + messageBuffer +
                ", messageLength=" + messageLength +

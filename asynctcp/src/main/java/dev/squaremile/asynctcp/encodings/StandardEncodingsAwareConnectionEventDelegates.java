@@ -1,5 +1,6 @@
 package dev.squaremile.asynctcp.encodings;
 
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.StandardEncoding;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionEvent;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
@@ -10,7 +11,7 @@ import static dev.squaremile.asynctcp.domain.api.StandardEncoding.valueOf;
 
 public class StandardEncodingsAwareConnectionEventDelegates
 {
-    public ConnectionEventsListener createFor(final long connectionId, String encoding, EventListener eventListener)
+    public ConnectionEventsListener createFor(final ConnectionIdValue connectionId, String encoding, EventListener eventListener)
     {
         StandardEncoding standardEncoding = valueOf(encoding);
         switch (standardEncoding)
@@ -22,7 +23,7 @@ public class StandardEncodingsAwareConnectionEventDelegates
             case LONGS:
                 return new Delegation(eventListener, new LongDataHandler(connectionId, eventListener::onEvent));
             case FOUR_KB:
-                return new Delegation(eventListener, new FixedLengthDataHandler(eventListener::onEvent, 4 * 1024));
+                return new Delegation(eventListener, new FixedLengthDataHandler(connectionId, eventListener::onEvent, 4 * 1024));
             default:
                 throw new IllegalStateException("Unexpected encoding value: " + encoding);
         }

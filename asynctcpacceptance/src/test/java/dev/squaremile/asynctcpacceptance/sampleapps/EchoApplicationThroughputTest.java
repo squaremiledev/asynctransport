@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.application.TransportAppLauncher;
 import dev.squaremile.asynctcp.application.TransportApplication;
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.StandardEncoding;
 import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
@@ -34,7 +35,7 @@ class EchoApplicationThroughputTest
     private final MutableLong totalBytesReceived = new MutableLong(0);
     private final MutableLong totalMessagesReceived = new MutableLong(0);
     private final int messageSize = 4 * 1024;
-    private final FixedLengthDataHandler messageCounter = new FixedLengthDataHandler(messageReceived -> totalMessagesReceived.increment(), messageSize);
+    private final FixedLengthDataHandler messageCounter = new FixedLengthDataHandler(new ConnectionIdValue(8888, 1), messageReceived -> totalMessagesReceived.increment(), messageSize);
     private int port;
     private WhiteboxApplication<TransportEventsListener> whiteboxApplication;
 

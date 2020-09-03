@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.events.DataReceived;
 
 import static java.nio.ByteBuffer.wrap;
@@ -15,7 +16,7 @@ class LongDataHandlerTest
 {
     private MessageReceivedSpy messageReceivedSpy = new MessageReceivedSpy();
     private DataReceived dataReceived = new DataReceived(8888, 1, 0, 0, 100, wrap(new byte[100]));
-    private LongDataHandler handler = new LongDataHandler(1, messageReceivedSpy);
+    private LongDataHandler handler = new LongDataHandler(new ConnectionIdValue(8888, 1), messageReceivedSpy);
 
     @Test
     void shouldNotNotifyOnNoData()

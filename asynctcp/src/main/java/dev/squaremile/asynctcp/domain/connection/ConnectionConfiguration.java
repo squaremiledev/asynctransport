@@ -1,5 +1,6 @@
 package dev.squaremile.asynctcp.domain.connection;
 
+import dev.squaremile.asynctcp.domain.api.ConnectionId;
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 
 public class ConnectionConfiguration
@@ -12,7 +13,7 @@ public class ConnectionConfiguration
     public final int inboundPduLimit;
 
     public ConnectionConfiguration(
-            final ConnectionIdValue connectionId,
+            final ConnectionId connectionId,
             final String remoteHost,
             final int remotePort,
             final int outboundPduLimit,
@@ -20,7 +21,7 @@ public class ConnectionConfiguration
             final int inboundPduLimit
     )
     {
-        this.connectionId = connectionId;
+        this.connectionId = new ConnectionIdValue(connectionId);
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
         this.outboundPduLimit = outboundPduLimit;

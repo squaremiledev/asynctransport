@@ -39,6 +39,7 @@ class SerializingApplicationTest
                 new TransportCommandFailed(8001, 101L, "some details", Listen.class),
                 new ConnectionResetByPeer(5888, 4, 6),
                 new DataSent(5888, 4, 1, 9, 18, 104)
+//                new MessageReceived(new ConnectionIdValue(8899, 4)).set(ByteBuffer.wrap(new byte[]{1, 2, 3, 4}), 3)
         );
     }
 
