@@ -68,4 +68,9 @@
         <field name="commandId" id="2" type="commandId"/>
         <field name="connectionId" id="3" type="connectionId"/>
     </sbe:message>
+    <sbe:message name="ConnectionResetByPeer" id="6">
+        <field name="port" id="1" type="port"/>
+        <field name="commandId" id="2" type="commandId"/>
+        <field name="connectionId" id="3" type="connectionId"/>
+    </sbe:message>
 </sbe:messageSchema>

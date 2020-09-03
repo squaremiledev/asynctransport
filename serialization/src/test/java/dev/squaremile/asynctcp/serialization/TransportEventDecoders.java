@@ -6,11 +6,13 @@ import org.agrona.collections.Int2ObjectHashMap;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.sbe.ConnectedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionAcceptedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionClosedDecoder;
+import dev.squaremile.asynctcp.sbe.ConnectionResetByPeerDecoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 import dev.squaremile.asynctcp.sbe.StartedListeningDecoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedDecoder;
@@ -27,6 +29,7 @@ public class TransportEventDecoders
         registerConnectedDecoder(eventDecoders, headerDecoder);
         registerConnectionAcceptedDecoder(eventDecoders, headerDecoder);
         registerConnectionClosed(eventDecoders, headerDecoder);
+        registerConnectionResetByPeer(eventDecoders, headerDecoder);
     }
 
     private void registerStartedListening(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
@@ -140,6 +143,24 @@ public class TransportEventDecoders
                             headerDecoder.version()
                     );
                     return new ConnectionClosed(decoder.port(), decoder.connectionId(), decoder.commandId());
+                }
+        );
+    }
+
+    private void registerConnectionResetByPeer(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
+    {
+        final ConnectionResetByPeerDecoder decoder = new ConnectionResetByPeerDecoder();
+        eventDecoders.put(
+                decoder.sbeTemplateId(), (buffer, offset) ->
+                {
+                    headerDecoder.wrap(buffer, offset);
+                    decoder.wrap(
+                            buffer,
+                            headerDecoder.encodedLength() + headerDecoder.offset(),
+                            headerDecoder.blockLength(),
+                            headerDecoder.version()
+                    );
+                    return new ConnectionResetByPeer(decoder.port(), decoder.connectionId(), decoder.commandId());
                 }
         );
     }

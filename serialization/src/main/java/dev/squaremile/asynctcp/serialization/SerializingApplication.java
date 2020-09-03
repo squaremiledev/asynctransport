@@ -7,12 +7,14 @@ import dev.squaremile.asynctcp.application.Application;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.domain.api.events.Event;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.sbe.ConnectedEncoder;
 import dev.squaremile.asynctcp.sbe.ConnectionAcceptedEncoder;
 import dev.squaremile.asynctcp.sbe.ConnectionClosedEncoder;
+import dev.squaremile.asynctcp.sbe.ConnectionResetByPeerEncoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
 import dev.squaremile.asynctcp.sbe.StartedListeningEncoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedEncoder;
@@ -28,6 +30,7 @@ public class SerializingApplication implements Application
     private final ConnectedEncoder connectedEncoder = new ConnectedEncoder();
     private final ConnectionAcceptedEncoder connectionAcceptedEncoder = new ConnectionAcceptedEncoder();
     private final ConnectionClosedEncoder connectionClosedEncoder = new ConnectionClosedEncoder();
+    private final ConnectionResetByPeerEncoder connectionResetByPeerEncoder = new ConnectionResetByPeerEncoder();
 
 
     public SerializingApplication(final MutableDirectBuffer buffer, final int offset, final SerializedEventListener serializedEventListener)
@@ -88,6 +91,15 @@ public class SerializingApplication implements Application
         {
             ConnectionClosed event = (ConnectionClosed)unknownEvent;
             connectionClosedEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
+                    .port(event.port())
+                    .commandId(event.commandId())
+                    .connectionId(event.connectionId());
+            serializedEventListener.onSerializedEvent(buffer, offset);
+        }
+        if (unknownEvent instanceof ConnectionResetByPeer)
+        {
+            ConnectionResetByPeer event = (ConnectionResetByPeer)unknownEvent;
+            connectionResetByPeerEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(event.port())
                     .commandId(event.commandId())
                     .connectionId(event.connectionId());
