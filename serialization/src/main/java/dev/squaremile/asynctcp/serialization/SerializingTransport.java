@@ -10,6 +10,7 @@ import dev.squaremile.asynctcp.domain.api.ConnectionId;
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
+import dev.squaremile.asynctcp.domain.api.commands.CommandFactory;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
 import dev.squaremile.asynctcp.domain.api.commands.Listen;
@@ -43,12 +44,19 @@ public class SerializingTransport implements Transport, TransportEventsListener
     private final SendDataEncoder sendDataEncoder = new SendDataEncoder();
     private final ConnectEncoder connectEncoder = new ConnectEncoder();
     private final Long2ObjectHashMap<ConnectionCommands> connectionCommandsByConnectionId = new Long2ObjectHashMap<>();
+    private final CommandFactory commandFactory = new CommandFactory();
+    private final Listen listenCommand;
+    private final StopListening stopListeningCommand;
+    private final Connect connectCommand;
 
     public SerializingTransport(final MutableDirectBuffer buffer, final int offset, final SerializedCommandListener serializedCommandListener)
     {
         this.buffer = buffer;
         this.offset = offset;
         this.serializedCommandListener = serializedCommandListener;
+        this.listenCommand = commandFactory.create(Listen.class);
+        this.stopListeningCommand = commandFactory.create(StopListening.class);
+        this.connectCommand = commandFactory.create(Connect.class);
     }
 
     @Override
@@ -66,7 +74,19 @@ public class SerializingTransport implements Transport, TransportEventsListener
     @Override
     public <C extends TransportCommand> C command(final Class<C> commandType)
     {
-        return null;
+        if (commandType.equals(Listen.class))
+        {
+            return commandType.cast(listenCommand);
+        }
+        if (commandType.equals(Connect.class))
+        {
+            return commandType.cast(connectCommand);
+        }
+        if (commandType.equals(StopListening.class))
+        {
+            return commandType.cast(stopListeningCommand);
+        }
+        return commandFactory.create(commandType);
     }
 
     @Override

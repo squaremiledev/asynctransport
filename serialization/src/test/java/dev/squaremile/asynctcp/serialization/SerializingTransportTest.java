@@ -40,10 +40,10 @@ class SerializingTransportTest
     {
         return Stream.of(
                 transport -> transport.command(CONNECTED_EVENT, CloseConnection.class).set(201),
-                transport -> new Connect().set("remoteHost", 8899, 202, 10, StandardEncoding.SINGLE_BYTE),
-                transport -> new Listen().set(203, 6688, StandardEncoding.LONGS),
-                transport -> new StopListening().set(204, 7788),
-                transport -> transport.command(CONNECTED_EVENT, SendData.class).set(new byte[]{1, 2, 3, 4, 5, 6}, 205)
+                transport -> transport.command(CONNECTED_EVENT, SendData.class).set(new byte[]{1, 2, 3, 4, 5, 6}, 205),
+                transport -> transport.command(Connect.class).set("remoteHost", 8899, 202, 10, StandardEncoding.SINGLE_BYTE),
+                transport -> transport.command(Listen.class).set(203, 6688, StandardEncoding.LONGS),
+                transport -> transport.command(StopListening.class).set(204, 7788)
         );
     }
 
