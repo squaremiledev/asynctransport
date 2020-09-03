@@ -86,4 +86,8 @@
         <field name="connectionId" id="2" type="connectionId"/>
         <field name="data" id="3" type="varDataEncoding"/>
     </sbe:message>
+    <sbe:message name="StoppedListening" id="9">
+        <field name="port" id="1" type="port"/>
+        <field name="commandId" id="2" type="commandId"/>
+    </sbe:message>
 </sbe:messageSchema>

@@ -14,6 +14,7 @@ import dev.squaremile.asynctcp.domain.api.events.DataSent;
 import dev.squaremile.asynctcp.domain.api.events.Event;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
+import dev.squaremile.asynctcp.domain.api.events.StoppedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.sbe.ConnectedEncoder;
 import dev.squaremile.asynctcp.sbe.ConnectionAcceptedEncoder;
@@ -23,6 +24,7 @@ import dev.squaremile.asynctcp.sbe.DataSentEncoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
 import dev.squaremile.asynctcp.sbe.MessageReceivedEncoder;
 import dev.squaremile.asynctcp.sbe.StartedListeningEncoder;
+import dev.squaremile.asynctcp.sbe.StoppedListeningEncoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedEncoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingEncoder;
 
@@ -40,6 +42,7 @@ public class SerializingApplication implements Application
     private final ConnectionResetByPeerEncoder connectionResetByPeerEncoder = new ConnectionResetByPeerEncoder();
     private final DataSentEncoder dataSentEncoder = new DataSentEncoder();
     private final MessageReceivedEncoder messageReceivedEncoder = new MessageReceivedEncoder();
+    private final StoppedListeningEncoder stoppedListeningEncoder = new StoppedListeningEncoder();
 
 
     public SerializingApplication(final MutableDirectBuffer buffer, final int offset, final SerializedEventListener serializedEventListener)
@@ -52,15 +55,7 @@ public class SerializingApplication implements Application
     @Override
     public void onEvent(final Event unknownEvent)
     {
-        if (unknownEvent instanceof StartedListening)
-        {
-            StartedListening event = (StartedListening)unknownEvent;
-            startedListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
-                    .port(event.port())
-                    .commandId(event.commandId());
-            serializedEventListener.onSerializedEvent(buffer, offset);
-        }
-        else if (unknownEvent instanceof TransportCommandFailed)
+        if (unknownEvent instanceof TransportCommandFailed)
         {
             TransportCommandFailed event = (TransportCommandFailed)unknownEvent;
             transportCommandFailedEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
@@ -125,6 +120,23 @@ public class SerializingApplication implements Application
                     .totalBytesSent(event.totalBytesSent())
                     .totalBytesBuffered(event.totalBytesBuffered());
             serializedEventListener.onSerializedEvent(buffer, offset);
+        }
+        if (unknownEvent instanceof StartedListening)
+        {
+            StartedListening event = (StartedListening)unknownEvent;
+            startedListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
+                    .port(event.port())
+                    .commandId(event.commandId());
+            serializedEventListener.onSerializedEvent(buffer, offset);
+        }
+
+        if (unknownEvent instanceof StoppedListening)
+        {
+            StoppedListening event = (StoppedListening)unknownEvent;
+            stoppedListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
+                    .port(event.port())
+                    .commandId(event.commandId());
+            serializedEventListener.onSerializedEvent(this.buffer, this.offset);
         }
         if (unknownEvent instanceof MessageReceived)
         {

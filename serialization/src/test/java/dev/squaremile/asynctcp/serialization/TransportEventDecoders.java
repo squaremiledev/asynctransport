@@ -13,6 +13,7 @@ import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.domain.api.events.DataSent;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
+import dev.squaremile.asynctcp.domain.api.events.StoppedListening;
 import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.sbe.ConnectedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionAcceptedDecoder;
@@ -22,6 +23,7 @@ import dev.squaremile.asynctcp.sbe.DataSentDecoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 import dev.squaremile.asynctcp.sbe.MessageReceivedDecoder;
 import dev.squaremile.asynctcp.sbe.StartedListeningDecoder;
+import dev.squaremile.asynctcp.sbe.StoppedListeningDecoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
 
@@ -32,19 +34,20 @@ public class TransportEventDecoders
     public TransportEventDecoders()
     {
         final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
-        registerStartedListening(eventDecoders, headerDecoder);
-        registerTransportCommandFailedDecoder(eventDecoders, headerDecoder);
         registerConnectedDecoder(eventDecoders, headerDecoder);
         registerConnectionAcceptedDecoder(eventDecoders, headerDecoder);
         registerConnectionClosed(eventDecoders, headerDecoder);
         registerConnectionResetByPeer(eventDecoders, headerDecoder);
         registerDataSent(eventDecoders, headerDecoder);
         registerMessageReceived(eventDecoders, headerDecoder);
+        registerStartedListening(eventDecoders, headerDecoder);
+        registerStoppedListening(eventDecoders, headerDecoder);
+        registerTransportCommandFailedDecoder(eventDecoders, headerDecoder);
     }
 
-    private void registerStartedListening(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
+    private void registerStoppedListening(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
     {
-        final StartedListeningDecoder decoder = new StartedListeningDecoder();
+        final StoppedListeningDecoder decoder = new StoppedListeningDecoder();
         eventDecoders.put(
                 decoder.sbeTemplateId(), (buffer, offset) ->
                 {
@@ -55,30 +58,7 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    return new StartedListening(decoder.port(), decoder.commandId());
-                }
-        );
-    }
-
-    private void registerTransportCommandFailedDecoder(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
-    {
-        final TransportCommandFailedDecoder decoder = new TransportCommandFailedDecoder();
-        eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
-                {
-                    headerDecoder.wrap(buffer, offset);
-                    decoder.wrap(
-                            buffer,
-                            headerDecoder.encodedLength() + headerDecoder.offset(),
-                            headerDecoder.blockLength(),
-                            headerDecoder.version()
-                    );
-                    return new TransportCommandFailed(
-                            decoder.port(),
-                            decoder.commandId(),
-                            decoder.details(),
-                            decoder.commandType()
-                    );
+                    return new StoppedListening(decoder.port(), decoder.commandId());
                 }
         );
     }
@@ -193,6 +173,24 @@ public class TransportEventDecoders
         );
     }
 
+    private void registerStartedListening(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
+    {
+        final StartedListeningDecoder decoder = new StartedListeningDecoder();
+        eventDecoders.put(
+                decoder.sbeTemplateId(), (buffer, offset) ->
+                {
+                    headerDecoder.wrap(buffer, offset);
+                    decoder.wrap(
+                            buffer,
+                            headerDecoder.encodedLength() + headerDecoder.offset(),
+                            headerDecoder.blockLength(),
+                            headerDecoder.version()
+                    );
+                    return new StartedListening(decoder.port(), decoder.commandId());
+                }
+        );
+    }
+
     private void registerMessageReceived(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
     {
         final MessageReceivedDecoder decoder = new MessageReceivedDecoder();
@@ -210,6 +208,29 @@ public class TransportEventDecoders
                     byte[] dstArray = new byte[(int)srcData.length()];
                     srcData.buffer().getBytes(srcData.offset() + srcData.encodedLength(), dstArray);
                     return new MessageReceived(new ConnectionIdValue(decoder.port(), decoder.connectionId())).set(ByteBuffer.wrap(dstArray), dstArray.length);
+                }
+        );
+    }
+
+    private void registerTransportCommandFailedDecoder(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
+    {
+        final TransportCommandFailedDecoder decoder = new TransportCommandFailedDecoder();
+        eventDecoders.put(
+                decoder.sbeTemplateId(), (buffer, offset) ->
+                {
+                    headerDecoder.wrap(buffer, offset);
+                    decoder.wrap(
+                            buffer,
+                            headerDecoder.encodedLength() + headerDecoder.offset(),
+                            headerDecoder.blockLength(),
+                            headerDecoder.version()
+                    );
+                    return new TransportCommandFailed(
+                            decoder.port(),
+                            decoder.commandId(),
+                            decoder.details(),
+                            decoder.commandType()
+                    );
                 }
         );
     }
