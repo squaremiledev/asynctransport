@@ -3,7 +3,7 @@ package dev.squaremile.asynctcp.testfixtures;
 import dev.squaremile.asynctcp.domain.api.events.StatusEvent;
 import dev.squaremile.asynctcp.domain.api.events.StatusEventListener;
 
-public final class StatusEventsSpy extends EventsSpy<StatusEvent> implements StatusEventListener
+public final class StatusEventsSpy extends Spy<StatusEvent> implements StatusEventListener
 {
     private final CapturedItems<StatusEvent> items;
 

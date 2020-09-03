@@ -4,7 +4,7 @@ import dev.squaremile.asynctcp.domain.api.events.TransportCorrelatedEvent;
 import dev.squaremile.asynctcp.domain.api.events.TransportEvent;
 import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
 
-public final class TransportEventsSpy extends EventsSpy<TransportEvent> implements TransportEventsListener
+public final class TransportEventsSpy extends Spy<TransportEvent> implements TransportEventsListener
 {
     private final CapturedItems<TransportEvent> items;
 

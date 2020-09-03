@@ -3,11 +3,11 @@ package dev.squaremile.asynctcp.testfixtures;
 import java.util.List;
 import java.util.function.Predicate;
 
-public abstract class EventsSpy<E>
+public abstract class Spy<E>
 {
     private final CapturedItems<E> items;
 
-    public EventsSpy(final CapturedItems<E> items)
+    public Spy(final CapturedItems<E> items)
     {
         this.items = items;
     }

@@ -8,9 +8,9 @@ import java.util.stream.Collectors;
 import dev.squaremile.asynctcp.domain.api.events.MessageListener;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
 import dev.squaremile.asynctcp.testfixtures.CapturedItems;
-import dev.squaremile.asynctcp.testfixtures.EventsSpy;
+import dev.squaremile.asynctcp.testfixtures.Spy;
 
-public final class MessageReceivedSpy extends EventsSpy<MessageReceived> implements MessageListener
+public final class MessageReceivedSpy extends Spy<MessageReceived> implements MessageListener
 {
     private final CapturedItems<MessageReceived> items;
 

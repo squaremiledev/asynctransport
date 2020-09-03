@@ -3,11 +3,9 @@ package dev.squaremile.asynctcp.domain.api;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
 import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
 
-public interface Transport extends AutoCloseable
+public interface Transport extends AutoCloseable, TransportCommandHandler
 {
     void work();
-
-    void handle(TransportCommand command);
 
     @Override
     void close();
