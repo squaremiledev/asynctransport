@@ -108,6 +108,13 @@
         <field name="commandId" id="2" type="commandId"/>
         <data name="encoding" id="4" type="varAsciiEncoding"/>
     </sbe:message>
+    <sbe:message name="SendData" id="104">
+        <field name="port" id="1" type="port"/>
+        <field name="connectionId" id="2" type="connectionId"/>
+        <field name="commandId" id="3" type="commandId"/>
+        <field name="capacity" id="4" type="int32"/>
+        <field name="data" id="5" type="varDataEncoding"/>
+    </sbe:message>
     <sbe:message name="StopListening" id="105">
         <field name="port" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>

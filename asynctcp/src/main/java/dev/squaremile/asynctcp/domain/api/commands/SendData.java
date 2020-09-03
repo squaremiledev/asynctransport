@@ -100,6 +100,16 @@ public class SendData implements ConnectionCommand
         return this;
     }
 
+    public int capacity()
+    {
+        return capacity;
+    }
+
+    public int length()
+    {
+        return length;
+    }
+
     @Override
     public String toString()
     {

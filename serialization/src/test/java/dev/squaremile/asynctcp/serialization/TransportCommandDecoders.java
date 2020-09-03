@@ -8,12 +8,15 @@ import dev.squaremile.asynctcp.domain.api.StandardEncoding;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
 import dev.squaremile.asynctcp.domain.api.commands.Listen;
+import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.commands.StopListening;
 import dev.squaremile.asynctcp.sbe.CloseConnectionDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectDecoder;
 import dev.squaremile.asynctcp.sbe.ListenDecoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
+import dev.squaremile.asynctcp.sbe.SendDataDecoder;
 import dev.squaremile.asynctcp.sbe.StopListeningDecoder;
+import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
 
 public class TransportCommandDecoders
 {
@@ -26,6 +29,7 @@ public class TransportCommandDecoders
         registerConnect(commandDecoders, headerDecoder);
         registerListen(commandDecoders, headerDecoder);
         registerStopListening(commandDecoders, headerDecoder);
+        registerSendData(commandDecoders, headerDecoder);
     }
 
     private void registerCloseConnection(final Int2ObjectHashMap<TransportCommandDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
@@ -100,6 +104,27 @@ public class TransportCommandDecoders
                             headerDecoder.version()
                     );
                     return new StopListening().set(decoder.commandId(), decoder.port());
+                }
+        );
+    }
+
+    private void registerSendData(final Int2ObjectHashMap<TransportCommandDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
+    {
+        final SendDataDecoder decoder = new SendDataDecoder();
+        eventDecoders.put(
+                decoder.sbeTemplateId(), (buffer, offset) ->
+                {
+                    headerDecoder.wrap(buffer, offset);
+                    decoder.wrap(
+                            buffer,
+                            headerDecoder.encodedLength() + headerDecoder.offset(),
+                            headerDecoder.blockLength(),
+                            headerDecoder.version()
+                    );
+                    VarDataEncodingDecoder srcData = decoder.data();
+                    byte[] dstArray = new byte[(int)srcData.length()];
+                    srcData.buffer().getBytes(srcData.offset() + srcData.encodedLength(), dstArray);
+                    return new SendData(decoder.port(), decoder.connectionId(), decoder.capacity()).set(dstArray, decoder.commandId());
                 }
         );
     }
