@@ -9,18 +9,18 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.application.TransportAppLauncher;
-import dev.squaremile.asynctcp.application.TransportApplication;
-import dev.squaremile.asynctcp.domain.api.StandardEncoding;
-import dev.squaremile.asynctcp.domain.api.commands.Connect;
-import dev.squaremile.asynctcp.domain.api.commands.SendData;
-import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
-import dev.squaremile.asynctcp.domain.api.events.Connected;
-import dev.squaremile.asynctcp.domain.api.events.DataReceived;
+import dev.squaremile.asynctcp.setup.TransportAppLauncher;
+import dev.squaremile.asynctcp.setup.TransportApplication;
+import dev.squaremile.asynctcp.api.commands.Connect;
+import dev.squaremile.asynctcp.api.commands.SendData;
+import dev.squaremile.asynctcp.api.app.CommandFailed;
+import dev.squaremile.asynctcp.api.events.Connected;
+import dev.squaremile.asynctcp.api.events.DataReceived;
+import dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding;
 import dev.squaremile.asynctcp.testfixtures.TransportEventsSpy;
 import dev.squaremile.asynctcp.testfixtures.app.WhiteboxApplication;
 
-import static dev.squaremile.asynctcp.domain.api.events.EventListener.IGNORE_EVENTS;
+import static dev.squaremile.asynctcp.api.app.EventListener.IGNORE_EVENTS;
 import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
 
 class EchoApplicationTest
@@ -41,7 +41,7 @@ class EchoApplicationTest
                 }, "");
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppLauncher().launch(transport -> new EchoApplication(transport, port, IGNORE_EVENTS, StandardEncoding.LONGS), "");
+        transportApplication = new TransportAppLauncher().launch(transport -> new EchoApplication(transport, port, IGNORE_EVENTS, PredefinedTransportEncoding.LONGS), "");
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         transportApplication.onStart();
         transportApplication.work();

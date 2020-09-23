@@ -14,9 +14,9 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.domain.api.events.DataReceived;
-import dev.squaremile.asynctcp.domain.api.events.StartedListening;
+import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.events.DataReceived;
+import dev.squaremile.asynctcp.api.events.StartedListening;
 import dev.squaremile.asynctcp.testfixtures.ConnectionEventsSpy;
 
 import static dev.squaremile.asynctcp.testfixtures.BackgroundRunner.completed;

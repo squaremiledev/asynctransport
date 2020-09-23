@@ -9,16 +9,16 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.application.TransportAppLauncher;
-import dev.squaremile.asynctcp.application.TransportApplication;
-import dev.squaremile.asynctcp.domain.api.commands.Listen;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
-import dev.squaremile.asynctcp.domain.api.events.DataReceived;
+import dev.squaremile.asynctcp.setup.TransportAppLauncher;
+import dev.squaremile.asynctcp.setup.TransportApplication;
+import dev.squaremile.asynctcp.api.commands.Listen;
+import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.api.events.DataReceived;
 import dev.squaremile.asynctcp.testfixtures.TransportEventsSpy;
 import dev.squaremile.asynctcp.testfixtures.app.WhiteboxApplication;
 
-import static dev.squaremile.asynctcp.domain.api.events.EventListener.IGNORE_EVENTS;
+import static dev.squaremile.asynctcp.api.app.EventListener.IGNORE_EVENTS;
 import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.testfixtures.StringFixtures.byteArrayWith;
 import static dev.squaremile.asynctcp.testfixtures.StringFixtures.fixedLengthStringStartingWith;

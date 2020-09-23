@@ -1,9 +1,9 @@
 package dev.squaremile.asynctcp.testfixtures.app;
 
-import dev.squaremile.asynctcp.application.Application;
-import dev.squaremile.asynctcp.domain.api.Transport;
-import dev.squaremile.asynctcp.domain.api.events.Event;
-import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
+import dev.squaremile.asynctcp.api.app.Application;
+import dev.squaremile.asynctcp.api.app.Transport;
+import dev.squaremile.asynctcp.api.app.TransportEventsListener;
+import dev.squaremile.asynctcp.api.app.Event;
 
 /**
  * A standard app should by autonomous and reactive.

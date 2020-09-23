@@ -3,13 +3,13 @@ package dev.squaremile.asynctcp.serialization;
 import org.agrona.collections.Int2ObjectHashMap;
 
 
-import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
-import dev.squaremile.asynctcp.domain.api.StandardEncoding;
-import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
-import dev.squaremile.asynctcp.domain.api.commands.Connect;
-import dev.squaremile.asynctcp.domain.api.commands.Listen;
-import dev.squaremile.asynctcp.domain.api.commands.SendData;
-import dev.squaremile.asynctcp.domain.api.commands.StopListening;
+import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding;
+import dev.squaremile.asynctcp.api.commands.CloseConnection;
+import dev.squaremile.asynctcp.api.commands.Connect;
+import dev.squaremile.asynctcp.api.commands.Listen;
+import dev.squaremile.asynctcp.api.commands.SendData;
+import dev.squaremile.asynctcp.api.commands.StopListening;
 import dev.squaremile.asynctcp.sbe.CloseConnectionDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectDecoder;
 import dev.squaremile.asynctcp.sbe.ListenDecoder;
@@ -63,9 +63,9 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    StandardEncoding standardEncoding = StandardEncoding.valueOf(decoder.encoding());
+                    PredefinedTransportEncoding predefinedTransportEncoding = PredefinedTransportEncoding.valueOf(decoder.encoding());
                     String remoteHost = decoder.remoteHost();
-                    return new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), standardEncoding);
+                    return new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), predefinedTransportEncoding);
                 }
         );
     }
@@ -84,8 +84,8 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    StandardEncoding standardEncoding = StandardEncoding.valueOf(decoder.encoding());
-                    return new Listen().set(decoder.commandId(), decoder.port(), standardEncoding);
+                    PredefinedTransportEncoding predefinedTransportEncoding = PredefinedTransportEncoding.valueOf(decoder.encoding());
+                    return new Listen().set(decoder.commandId(), decoder.port(), predefinedTransportEncoding);
                 }
         );
     }

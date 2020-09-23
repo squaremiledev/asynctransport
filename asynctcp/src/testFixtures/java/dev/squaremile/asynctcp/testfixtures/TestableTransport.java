@@ -4,15 +4,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 
-import dev.squaremile.asynctcp.domain.api.ConnectionId;
-import dev.squaremile.asynctcp.domain.api.Transport;
-import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
-import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
-import dev.squaremile.asynctcp.domain.api.commands.TransportUserCommand;
-import dev.squaremile.asynctcp.domain.api.events.DelegatingEventListener;
-import dev.squaremile.asynctcp.domain.api.events.StatusEventListener;
-import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
-import dev.squaremile.asynctcp.nonblockingimpl.NonBlockingTransport;
+import dev.squaremile.asynctcp.api.app.Transport;
+import dev.squaremile.asynctcp.api.app.TransportEventsListener;
+import dev.squaremile.asynctcp.api.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.api.app.TransportCommand;
+import dev.squaremile.asynctcp.api.app.TransportUserCommand;
+import dev.squaremile.asynctcp.internal.domain.StatusEventListener;
+import dev.squaremile.asynctcp.api.values.ConnectionId;
+import dev.squaremile.asynctcp.internal.nonblockingimpl.NonBlockingTransport;
 
 import static dev.squaremile.asynctcp.testfixtures.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
 import static java.util.concurrent.locks.LockSupport.parkNanos;

@@ -1,8 +1,8 @@
 package dev.squaremile.asynctcp.testfixtures;
 
-import dev.squaremile.asynctcp.domain.api.events.TransportCorrelatedEvent;
-import dev.squaremile.asynctcp.domain.api.events.TransportEvent;
-import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
+import dev.squaremile.asynctcp.api.app.TransportCorrelatedEvent;
+import dev.squaremile.asynctcp.api.app.TransportEvent;
+import dev.squaremile.asynctcp.api.app.TransportEventsListener;
 
 public final class TransportEventsSpy extends Spy<TransportEvent> implements TransportEventsListener
 {

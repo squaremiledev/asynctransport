@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.function.Predicate;
 
 
-import dev.squaremile.asynctcp.domain.api.events.ConnectionEvent;
-import dev.squaremile.asynctcp.domain.connection.ConnectionEventsListener;
+import dev.squaremile.asynctcp.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.internal.domain.connection.ConnectionEventsListener;
 
 public final class ConnectionEventsSpy implements ConnectionEventsListener
 {

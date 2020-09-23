@@ -1,7 +1,7 @@
 package dev.squaremile.asynctcp.testfixtures;
 
-import dev.squaremile.asynctcp.domain.api.TransportCommandHandler;
-import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
+import dev.squaremile.asynctcp.api.app.TransportCommand;
+import dev.squaremile.asynctcp.api.app.TransportCommandHandler;
 
 public class TransportCommandSpy extends Spy<TransportCommand> implements TransportCommandHandler
 {

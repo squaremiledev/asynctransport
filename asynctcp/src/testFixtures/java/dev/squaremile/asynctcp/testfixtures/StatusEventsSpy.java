@@ -1,7 +1,7 @@
 package dev.squaremile.asynctcp.testfixtures;
 
-import dev.squaremile.asynctcp.domain.api.events.StatusEvent;
-import dev.squaremile.asynctcp.domain.api.events.StatusEventListener;
+import dev.squaremile.asynctcp.internal.domain.StatusEvent;
+import dev.squaremile.asynctcp.internal.domain.StatusEventListener;
 
 public final class StatusEventsSpy extends Spy<StatusEvent> implements StatusEventListener
 {

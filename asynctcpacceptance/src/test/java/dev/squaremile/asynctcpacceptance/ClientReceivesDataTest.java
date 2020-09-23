@@ -13,11 +13,11 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.domain.api.commands.SendData;
-import dev.squaremile.asynctcp.domain.api.events.Connected;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.domain.api.events.DataReceived;
-import dev.squaremile.asynctcp.domain.api.events.DataSent;
+import dev.squaremile.asynctcp.api.commands.SendData;
+import dev.squaremile.asynctcp.api.events.Connected;
+import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.events.DataReceived;
+import dev.squaremile.asynctcp.api.events.DataSent;
 import dev.squaremile.asynctcp.testfixtures.ConnectionEventsSpy;
 
 import static dev.squaremile.asynctcp.testfixtures.DataFixtures.concatenatedData;

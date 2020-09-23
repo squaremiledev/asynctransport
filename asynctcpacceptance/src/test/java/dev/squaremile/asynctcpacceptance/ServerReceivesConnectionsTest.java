@@ -10,20 +10,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import dev.squaremile.asynctcp.domain.api.CommandId;
-import dev.squaremile.asynctcp.domain.api.ConnectionId;
-import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
-import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
-import dev.squaremile.asynctcp.domain.api.commands.Listen;
-import dev.squaremile.asynctcp.domain.api.commands.SendData;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
-import dev.squaremile.asynctcp.domain.api.events.DataReceived;
-import dev.squaremile.asynctcp.domain.api.events.DataSent;
-import dev.squaremile.asynctcp.domain.api.events.NumberOfConnectionsChanged;
-import dev.squaremile.asynctcp.domain.api.events.StartedListening;
-import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.api.values.CommandId;
+import dev.squaremile.asynctcp.api.values.ConnectionId;
+import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.api.commands.CloseConnection;
+import dev.squaremile.asynctcp.api.commands.Listen;
+import dev.squaremile.asynctcp.api.commands.SendData;
+import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.api.events.ConnectionResetByPeer;
+import dev.squaremile.asynctcp.api.events.DataReceived;
+import dev.squaremile.asynctcp.api.events.DataSent;
+import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
+import dev.squaremile.asynctcp.api.events.StartedListening;
+import dev.squaremile.asynctcp.api.events.TransportCommandFailed;
 
 import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.testfixtures.BackgroundRunner.completed;

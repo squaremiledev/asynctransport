@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 
-import dev.squaremile.asynctcp.application.TransportApplication;
-import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
+import dev.squaremile.asynctcp.setup.TransportApplication;
+import dev.squaremile.asynctcp.api.app.CommandFailed;
 import dev.squaremile.asynctcp.testfixtures.TransportEventsSpy;
 import dev.squaremile.asynctcp.testfixtures.app.WhiteboxApplication;
 

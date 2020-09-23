@@ -1,6 +1,6 @@
 package dev.squaremile.asynctcp.testfixtures;
 
-import dev.squaremile.asynctcp.domain.api.events.NumberOfConnectionsChanged;
+import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
 
 public class TearDown
 {

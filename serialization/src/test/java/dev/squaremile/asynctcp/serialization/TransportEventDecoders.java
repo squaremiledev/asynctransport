@@ -5,17 +5,17 @@ import java.nio.ByteBuffer;
 import org.agrona.collections.Int2ObjectHashMap;
 
 
-import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
-import dev.squaremile.asynctcp.domain.api.events.Connected;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionCommandFailed;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
-import dev.squaremile.asynctcp.domain.api.events.DataSent;
-import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
-import dev.squaremile.asynctcp.domain.api.events.StartedListening;
-import dev.squaremile.asynctcp.domain.api.events.StoppedListening;
-import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.api.events.Connected;
+import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.api.events.ConnectionCommandFailed;
+import dev.squaremile.asynctcp.api.events.ConnectionResetByPeer;
+import dev.squaremile.asynctcp.api.events.DataSent;
+import dev.squaremile.asynctcp.api.events.MessageReceived;
+import dev.squaremile.asynctcp.api.events.StartedListening;
+import dev.squaremile.asynctcp.api.events.StoppedListening;
+import dev.squaremile.asynctcp.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.sbe.ConnectedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionAcceptedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionClosedDecoder;

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.AfterEach;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
+import dev.squaremile.asynctcp.api.app.CommandFailed;
 import dev.squaremile.asynctcp.testfixtures.TearDown;
 import dev.squaremile.asynctcp.testfixtures.TransportUnderTest;
 

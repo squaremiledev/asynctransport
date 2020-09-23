@@ -13,16 +13,16 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.domain.api.CommandId;
-import dev.squaremile.asynctcp.domain.api.commands.SendData;
-import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
-import dev.squaremile.asynctcp.domain.api.events.DataSent;
-import dev.squaremile.asynctcp.domain.api.events.NumberOfConnectionsChanged;
-import dev.squaremile.asynctcp.domain.api.events.StartedListening;
-import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.domain.api.events.TransportEvent;
+import dev.squaremile.asynctcp.api.values.CommandId;
+import dev.squaremile.asynctcp.api.commands.SendData;
+import dev.squaremile.asynctcp.api.app.CommandFailed;
+import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.api.events.DataSent;
+import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
+import dev.squaremile.asynctcp.api.events.StartedListening;
+import dev.squaremile.asynctcp.api.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.api.app.TransportEvent;
 import dev.squaremile.asynctcp.testfixtures.FreePort;
 import dev.squaremile.asynctcp.testfixtures.Worker;
 

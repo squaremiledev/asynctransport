@@ -9,14 +9,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import dev.squaremile.asynctcp.domain.api.commands.Listen;
-import dev.squaremile.asynctcp.domain.api.commands.StopListening;
-import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.domain.api.events.NumberOfConnectionsChanged;
-import dev.squaremile.asynctcp.domain.api.events.StartedListening;
-import dev.squaremile.asynctcp.domain.api.events.StoppedListening;
-import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.api.commands.Listen;
+import dev.squaremile.asynctcp.api.commands.StopListening;
+import dev.squaremile.asynctcp.api.app.CommandFailed;
+import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
+import dev.squaremile.asynctcp.api.events.StartedListening;
+import dev.squaremile.asynctcp.api.events.StoppedListening;
+import dev.squaremile.asynctcp.api.events.TransportCommandFailed;
 
 import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.testfixtures.BackgroundRunner.completed;

@@ -8,14 +8,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.domain.api.TransportId;
-import dev.squaremile.asynctcp.domain.api.commands.Connect;
-import dev.squaremile.asynctcp.domain.api.events.CommandFailed;
-import dev.squaremile.asynctcp.domain.api.events.Connected;
-import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.domain.api.events.NumberOfConnectionsChanged;
-import dev.squaremile.asynctcp.domain.api.events.StartedListening;
-import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.api.values.TransportId;
+import dev.squaremile.asynctcp.api.commands.Connect;
+import dev.squaremile.asynctcp.api.app.CommandFailed;
+import dev.squaremile.asynctcp.api.events.Connected;
+import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
+import dev.squaremile.asynctcp.api.events.StartedListening;
+import dev.squaremile.asynctcp.api.events.TransportCommandFailed;
 
 import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
