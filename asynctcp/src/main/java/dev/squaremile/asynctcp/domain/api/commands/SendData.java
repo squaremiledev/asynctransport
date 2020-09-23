@@ -7,7 +7,7 @@ import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 
-public class SendData implements ConnectionCommand
+public class SendData implements ConnectionUserCommand
 {
     private final ConnectionId connectionId;
     private final ByteBuffer data;

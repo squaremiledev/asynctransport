@@ -1,6 +1,8 @@
 package dev.squaremile.asynctcp.domain.connection;
 
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
+
 
 import org.junit.jupiter.api.Test;
 
@@ -232,7 +234,7 @@ class ConnectionRepositoryTest
         }
 
         @Override
-        public <C extends ConnectionCommand> C command(final Class<C> commandType)
+        public <C extends ConnectionUserCommand> C command(final Class<C> commandType)
         {
             throw new UnsupportedOperationException();
         }

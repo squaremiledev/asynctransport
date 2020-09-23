@@ -1,5 +1,6 @@
 package dev.squaremile.asynctcp.nonblockingimpl;
 
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
 import dev.squaremile.asynctcp.domain.connection.Channel;
 import dev.squaremile.asynctcp.domain.connection.Connection;
@@ -57,7 +58,7 @@ public class ConnectionImpl implements AutoCloseable, Connection
     }
 
     @Override
-    public <C extends ConnectionCommand> C command(final Class<C> commandType)
+    public <C extends ConnectionUserCommand> C command(final Class<C> commandType)
     {
         return delegate.command(commandType);
     }

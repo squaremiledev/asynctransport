@@ -21,6 +21,7 @@ import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.CommandFactory;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
 import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.commands.NoOpCommand;
@@ -62,7 +63,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         connectionIdSource = new ConnectionIdSource();
     }
 
-    private void handle(final ConnectionCommand command)
+    private void handle(final ConnectionUserCommand command)
     {
         Connection connection = connections.get(command.connectionId());
         if (connection == null)
@@ -191,7 +192,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     }
 
     @Override
-    public <C extends ConnectionCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
     {
         Connection connection = connections.get(connectionId.connectionId());
         return connection != null ? connection.command(commandType) : null;
@@ -199,9 +200,9 @@ public class NonBlockingTransport implements AutoCloseable, Transport
 
     private void tryHandle(final TransportCommand command)
     {
-        if (command instanceof ConnectionCommand)
+        if (command instanceof ConnectionUserCommand)
         {
-            handle((ConnectionCommand)command);
+            handle((ConnectionUserCommand)command);
         }
         else if (command instanceof Listen)
         {

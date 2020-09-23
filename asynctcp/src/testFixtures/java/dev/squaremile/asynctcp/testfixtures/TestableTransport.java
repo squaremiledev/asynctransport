@@ -6,7 +6,7 @@ import java.util.function.BooleanSupplier;
 
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
 import dev.squaremile.asynctcp.domain.api.Transport;
-import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
 import dev.squaremile.asynctcp.domain.api.events.DelegatingEventListener;
 import dev.squaremile.asynctcp.domain.api.events.StatusEventListener;
@@ -83,7 +83,7 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
     }
 
     @Override
-    public <C extends ConnectionCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
     {
         return delegate.command(connectionId, commandType);
     }

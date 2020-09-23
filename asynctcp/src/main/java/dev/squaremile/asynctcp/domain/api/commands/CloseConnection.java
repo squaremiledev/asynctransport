@@ -4,7 +4,7 @@ import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.ConnectionId;
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 
-public class CloseConnection implements ConnectionCommand
+public class CloseConnection implements ConnectionUserCommand
 {
     private long commandId = CommandId.NO_COMMAND_ID;
     private final ConnectionId connectionId;

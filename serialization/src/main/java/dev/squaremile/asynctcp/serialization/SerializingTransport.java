@@ -12,7 +12,7 @@ import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.domain.api.commands.CommandFactory;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
-import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.commands.StopListening;
@@ -90,7 +90,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
     }
 
     @Override
-    public <C extends ConnectionCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
     {
         if (!connectionCommandsByConnectionId.containsKey(connectionId.connectionId()))
         {

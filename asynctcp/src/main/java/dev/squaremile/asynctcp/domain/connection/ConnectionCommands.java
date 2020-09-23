@@ -3,7 +3,7 @@ package dev.squaremile.asynctcp.domain.connection;
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.domain.api.commands.CommandFactory;
-import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.NoOpCommand;
 import dev.squaremile.asynctcp.domain.api.commands.ReadData;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
@@ -24,7 +24,7 @@ public class ConnectionCommands
         this.noOpCommand = commandFactory.create(connectionId, NoOpCommand.class);
     }
 
-    public <C extends ConnectionCommand> C command(final Class<C> commandType)
+    public <C extends ConnectionUserCommand> C command(final Class<C> commandType)
     {
         if (commandType.equals(SendData.class))
         {
