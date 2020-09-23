@@ -58,7 +58,7 @@ public class ConnectionCommandFailed implements CommandFailed, ConnectionEvent
     }
 
     @Override
-    public TransportEvent copy()
+    public ConnectionCommandFailed copy()
     {
         return new ConnectionCommandFailed(port, commandId, details, connectionId);
     }

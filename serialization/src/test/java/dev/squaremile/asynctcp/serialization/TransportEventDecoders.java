@@ -9,6 +9,7 @@ import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.domain.api.events.ConnectionCommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.domain.api.events.DataSent;
 import dev.squaremile.asynctcp.domain.api.events.MessageReceived;
@@ -18,6 +19,7 @@ import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.sbe.ConnectedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionAcceptedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionClosedDecoder;
+import dev.squaremile.asynctcp.sbe.ConnectionCommandFailedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionResetByPeerDecoder;
 import dev.squaremile.asynctcp.sbe.DataSentDecoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
@@ -27,6 +29,7 @@ import dev.squaremile.asynctcp.sbe.StoppedListeningDecoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
 
+// TODO [perf]: avoid garbage
 public class TransportEventDecoders
 {
     private final Int2ObjectHashMap<TransportEventDecoder> eventDecoders = new Int2ObjectHashMap<>();
@@ -37,6 +40,7 @@ public class TransportEventDecoders
         registerConnectedDecoder(eventDecoders, headerDecoder);
         registerConnectionAcceptedDecoder(eventDecoders, headerDecoder);
         registerConnectionClosed(eventDecoders, headerDecoder);
+        registerConnectionCommandFailedDecoder(eventDecoders, headerDecoder);
         registerConnectionResetByPeer(eventDecoders, headerDecoder);
         registerDataSent(eventDecoders, headerDecoder);
         registerMessageReceived(eventDecoders, headerDecoder);
@@ -133,6 +137,29 @@ public class TransportEventDecoders
                             headerDecoder.version()
                     );
                     return new ConnectionClosed(decoder.port(), decoder.connectionId(), decoder.commandId());
+                }
+        );
+    }
+
+    private void registerConnectionCommandFailedDecoder(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
+    {
+        final ConnectionCommandFailedDecoder decoder = new ConnectionCommandFailedDecoder();
+        eventDecoders.put(
+                decoder.sbeTemplateId(), (buffer, offset) ->
+                {
+                    headerDecoder.wrap(buffer, offset);
+                    decoder.wrap(
+                            buffer,
+                            headerDecoder.encodedLength() + headerDecoder.offset(),
+                            headerDecoder.blockLength(),
+                            headerDecoder.version()
+                    );
+                    return new ConnectionCommandFailed(
+                            decoder.port(),
+                            decoder.commandId(),
+                            decoder.details(),
+                            decoder.connectionId()
+                    );
                 }
         );
     }

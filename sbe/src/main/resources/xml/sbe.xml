@@ -30,11 +30,14 @@
             <type name="varData" primitiveType="uint8" length="0"/>
         </composite>
     </types>
+
     <types>
         <type name="port" primitiveType="int32"/>
         <type name="commandId" primitiveType="int64"/>
         <type name="connectionId" primitiveType="int64"/>
     </types>
+
+    <!-- TRANSPORT/CONNECTION EVENTS -->
     <sbe:message name="StartedListening" id="1">
         <field name="port" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
@@ -42,8 +45,8 @@
     <sbe:message name="TransportCommandFailed" id="2">
         <field name="port" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
-        <data name="details" id="18" type="varAsciiEncoding"/>
-        <data name="commandType" id="3" type="varAsciiEncoding"/>
+        <data name="details" id="3" type="varAsciiEncoding"/>
+        <data name="commandType" id="4" type="varAsciiEncoding"/>
     </sbe:message>
     <sbe:message name="Connected" id="3">
         <field name="port" id="1" type="port"/>
@@ -90,7 +93,14 @@
         <field name="port" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
     </sbe:message>
+    <sbe:message name="ConnectionCommandFailed" id="10">
+        <field name="port" id="1" type="port"/>
+        <field name="commandId" id="2" type="commandId"/>
+        <field name="connectionId" id="3" type="connectionId"/>
+        <data name="details" id="4" type="varAsciiEncoding"/>
+    </sbe:message>
 
+    <!-- TRANSPORT/CONNECTION USER COMMANDS -->
     <sbe:message name="CloseConnection" id="101">
         <field name="port" id="1" type="port"/>
         <field name="connectionId" id="2" type="connectionId"/>

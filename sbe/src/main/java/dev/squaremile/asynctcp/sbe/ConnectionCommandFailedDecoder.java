@@ -5,15 +5,15 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
-public class TransportCommandFailedDecoder
+public class ConnectionCommandFailedDecoder
 {
-    public static final int BLOCK_LENGTH = 12;
-    public static final int TEMPLATE_ID = 2;
+    public static final int BLOCK_LENGTH = 20;
+    public static final int TEMPLATE_ID = 10;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
     public static final java.nio.ByteOrder BYTE_ORDER = java.nio.ByteOrder.LITTLE_ENDIAN;
 
-    private final TransportCommandFailedDecoder parentMessage = this;
+    private final ConnectionCommandFailedDecoder parentMessage = this;
     private DirectBuffer buffer;
     protected int offset;
     protected int limit;
@@ -55,7 +55,7 @@ public class TransportCommandFailedDecoder
         return offset;
     }
 
-    public TransportCommandFailedDecoder wrap(
+    public ConnectionCommandFailedDecoder wrap(
         final DirectBuffer buffer,
         final int offset,
         final int actingBlockLength,
@@ -196,9 +196,63 @@ public class TransportCommandFailedDecoder
     }
 
 
-    public static int detailsId()
+    public static int connectionIdId()
     {
         return 3;
+    }
+
+    public static int connectionIdSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int connectionIdEncodingOffset()
+    {
+        return 12;
+    }
+
+    public static int connectionIdEncodingLength()
+    {
+        return 8;
+    }
+
+    public static String connectionIdMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public static long connectionIdNullValue()
+    {
+        return -9223372036854775808L;
+    }
+
+    public static long connectionIdMinValue()
+    {
+        return -9223372036854775807L;
+    }
+
+    public static long connectionIdMaxValue()
+    {
+        return 9223372036854775807L;
+    }
+
+    public long connectionId()
+    {
+        return buffer.getLong(offset + 12, java.nio.ByteOrder.LITTLE_ENDIAN);
+    }
+
+
+    public static int detailsId()
+    {
+        return 4;
     }
 
     public static int detailsSinceVersion()
@@ -321,131 +375,6 @@ public class TransportCommandFailedDecoder
         return dataLength;
     }
 
-    public static int commandTypeId()
-    {
-        return 4;
-    }
-
-    public static int commandTypeSinceVersion()
-    {
-        return 0;
-    }
-
-    public static String commandTypeCharacterEncoding()
-    {
-        return "ASCII";
-    }
-
-    public static String commandTypeMetaAttribute(final MetaAttribute metaAttribute)
-    {
-        switch (metaAttribute)
-        {
-            case EPOCH: return "unix";
-            case TIME_UNIT: return "nanosecond";
-            case SEMANTIC_TYPE: return "";
-            case PRESENCE: return "required";
-        }
-
-        return "";
-    }
-
-    public static int commandTypeHeaderLength()
-    {
-        return 4;
-    }
-
-    public int commandTypeLength()
-    {
-        final int limit = parentMessage.limit();
-        return (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-    }
-
-    public int skipCommandType()
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int dataOffset = limit + headerLength;
-
-        parentMessage.limit(dataOffset + dataLength);
-
-        return dataLength;
-    }
-
-    public int getCommandType(final MutableDirectBuffer dst, final int dstOffset, final int length)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int bytesCopied = Math.min(length, dataLength);
-        parentMessage.limit(limit + headerLength + dataLength);
-        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
-
-        return bytesCopied;
-    }
-
-    public int getCommandType(final byte[] dst, final int dstOffset, final int length)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int bytesCopied = Math.min(length, dataLength);
-        parentMessage.limit(limit + headerLength + dataLength);
-        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
-
-        return bytesCopied;
-    }
-
-    public void wrapCommandType(final DirectBuffer wrapBuffer)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        parentMessage.limit(limit + headerLength + dataLength);
-        wrapBuffer.wrap(buffer, limit + headerLength, dataLength);
-    }
-
-    public String commandType()
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        parentMessage.limit(limit + headerLength + dataLength);
-
-        if (0 == dataLength)
-        {
-            return "";
-        }
-
-        final byte[] tmp = new byte[dataLength];
-        buffer.getBytes(limit + headerLength, tmp, 0, dataLength);
-
-        final String value;
-        try
-        {
-            value = new String(tmp, "ASCII");
-        }
-        catch (final java.io.UnsupportedEncodingException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-
-        return value;
-    }
-
-    public int getCommandType(final Appendable appendable)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int dataOffset = limit + headerLength;
-
-        parentMessage.limit(dataOffset + dataLength);
-        buffer.getStringWithoutLengthAscii(dataOffset, dataLength, appendable);
-
-        return dataLength;
-    }
-
 
     public String toString()
     {
@@ -456,7 +385,7 @@ public class TransportCommandFailedDecoder
     {
         final int originalLimit = limit();
         limit(offset + actingBlockLength);
-        builder.append("[TransportCommandFailed](sbeTemplateId=");
+        builder.append("[ConnectionCommandFailed](sbeTemplateId=");
         builder.append(TEMPLATE_ID);
         builder.append("|sbeSchemaId=");
         builder.append(SCHEMA_ID);
@@ -481,14 +410,12 @@ public class TransportCommandFailedDecoder
         builder.append("commandId=");
         builder.append(commandId());
         builder.append('|');
+        builder.append("connectionId=");
+        builder.append(connectionId());
+        builder.append('|');
         builder.append("details=");
         builder.append('\'');
         getDetails(builder);
-        builder.append('\'');
-        builder.append('|');
-        builder.append("commandType=");
-        builder.append('\'');
-        getCommandType(builder);
         builder.append('\'');
 
         limit(originalLimit);

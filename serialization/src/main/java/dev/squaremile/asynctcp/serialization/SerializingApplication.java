@@ -9,6 +9,7 @@ import dev.squaremile.asynctcp.application.Application;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.domain.api.events.ConnectionCommandFailed;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.domain.api.events.DataSent;
 import dev.squaremile.asynctcp.domain.api.events.Event;
@@ -19,6 +20,7 @@ import dev.squaremile.asynctcp.domain.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.sbe.ConnectedEncoder;
 import dev.squaremile.asynctcp.sbe.ConnectionAcceptedEncoder;
 import dev.squaremile.asynctcp.sbe.ConnectionClosedEncoder;
+import dev.squaremile.asynctcp.sbe.ConnectionCommandFailedEncoder;
 import dev.squaremile.asynctcp.sbe.ConnectionResetByPeerEncoder;
 import dev.squaremile.asynctcp.sbe.DataSentEncoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
@@ -39,6 +41,7 @@ public class SerializingApplication implements Application
     private final ConnectedEncoder connectedEncoder = new ConnectedEncoder();
     private final ConnectionAcceptedEncoder connectionAcceptedEncoder = new ConnectionAcceptedEncoder();
     private final ConnectionClosedEncoder connectionClosedEncoder = new ConnectionClosedEncoder();
+    private final ConnectionCommandFailedEncoder connectionCommandFailedEncoder = new ConnectionCommandFailedEncoder();
     private final ConnectionResetByPeerEncoder connectionResetByPeerEncoder = new ConnectionResetByPeerEncoder();
     private final DataSentEncoder dataSentEncoder = new DataSentEncoder();
     private final MessageReceivedEncoder messageReceivedEncoder = new MessageReceivedEncoder();
@@ -91,7 +94,7 @@ public class SerializingApplication implements Application
                     .remoteHost(event.remoteHost());
             serializedEventListener.onSerializedEvent(buffer, offset);
         }
-        if (unknownEvent instanceof ConnectionClosed)
+        else if (unknownEvent instanceof ConnectionClosed)
         {
             ConnectionClosed event = (ConnectionClosed)unknownEvent;
             connectionClosedEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
@@ -100,7 +103,17 @@ public class SerializingApplication implements Application
                     .connectionId(event.connectionId());
             serializedEventListener.onSerializedEvent(buffer, offset);
         }
-        if (unknownEvent instanceof ConnectionResetByPeer)
+        else if (unknownEvent instanceof ConnectionCommandFailed)
+        {
+            ConnectionCommandFailed event = (ConnectionCommandFailed)unknownEvent;
+            connectionCommandFailedEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
+                    .port(event.port())
+                    .commandId(event.commandId())
+                    .connectionId(event.connectionId())
+                    .details(event.details());
+            serializedEventListener.onSerializedEvent(buffer, offset);
+        }
+        else if (unknownEvent instanceof ConnectionResetByPeer)
         {
             ConnectionResetByPeer event = (ConnectionResetByPeer)unknownEvent;
             connectionResetByPeerEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
@@ -109,7 +122,7 @@ public class SerializingApplication implements Application
                     .connectionId(event.connectionId());
             serializedEventListener.onSerializedEvent(buffer, offset);
         }
-        if (unknownEvent instanceof DataSent)
+        else if (unknownEvent instanceof DataSent)
         {
             DataSent event = (DataSent)unknownEvent;
             dataSentEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
@@ -121,7 +134,7 @@ public class SerializingApplication implements Application
                     .totalBytesBuffered(event.totalBytesBuffered());
             serializedEventListener.onSerializedEvent(buffer, offset);
         }
-        if (unknownEvent instanceof StartedListening)
+        else if (unknownEvent instanceof StartedListening)
         {
             StartedListening event = (StartedListening)unknownEvent;
             startedListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
@@ -130,7 +143,7 @@ public class SerializingApplication implements Application
             serializedEventListener.onSerializedEvent(buffer, offset);
         }
 
-        if (unknownEvent instanceof StoppedListening)
+        else if (unknownEvent instanceof StoppedListening)
         {
             StoppedListening event = (StoppedListening)unknownEvent;
             stoppedListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
@@ -138,7 +151,7 @@ public class SerializingApplication implements Application
                     .commandId(event.commandId());
             serializedEventListener.onSerializedEvent(this.buffer, this.offset);
         }
-        if (unknownEvent instanceof MessageReceived)
+        else if (unknownEvent instanceof MessageReceived)
         {
             MessageReceived event = (MessageReceived)unknownEvent;
             messageReceivedEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
