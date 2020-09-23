@@ -21,14 +21,15 @@ import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
 import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.CommandFactory;
 import dev.squaremile.asynctcp.domain.api.commands.Connect;
-import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.commands.NoOpCommand;
 import dev.squaremile.asynctcp.domain.api.commands.ReadData;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.commands.StopListening;
 import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
+import dev.squaremile.asynctcp.domain.api.commands.TransportUserCommand;
 import dev.squaremile.asynctcp.domain.api.events.EventListener;
 import dev.squaremile.asynctcp.domain.api.events.StartedListening;
 import dev.squaremile.asynctcp.domain.api.events.StoppedListening;
@@ -171,6 +172,19 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     }
 
     @Override
+    public <C extends TransportUserCommand> C command(final Class<C> commandType)
+    {
+        return commandFactory.create(commandType);
+    }
+
+    @Override
+    public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    {
+        Connection connection = connections.get(connectionId.connectionId());
+        return connection != null ? connection.command(commandType) : null;
+    }
+
+    @Override
     public void handle(final TransportCommand command)
     {
 //        System.out.println("T@" + command);
@@ -183,19 +197,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             eventListener.onEvent(new TransportCommandFailed(command, e.getMessage() == null || e.getMessage().isEmpty() ? e.getClass().getSimpleName() : e.getMessage()));
         }
         work();
-    }
-
-    @Override
-    public <C extends TransportCommand> C command(final Class<C> commandType)
-    {
-        return commandFactory.create(commandType);
-    }
-
-    @Override
-    public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
-    {
-        Connection connection = connections.get(connectionId.connectionId());
-        return connection != null ? connection.command(commandType) : null;
     }
 
     private void tryHandle(final TransportCommand command)

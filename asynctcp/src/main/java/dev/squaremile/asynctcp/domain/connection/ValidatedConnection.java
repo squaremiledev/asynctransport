@@ -1,8 +1,8 @@
 package dev.squaremile.asynctcp.domain.connection;
 
 import dev.squaremile.asynctcp.domain.api.ConnectionIdValue;
-import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 
 public class ValidatedConnection implements AutoCloseable, Connection
 {

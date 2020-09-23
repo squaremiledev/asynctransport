@@ -1,14 +1,13 @@
 package dev.squaremile.asynctcp.domain.connection;
 
-import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
-import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
-
-
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;

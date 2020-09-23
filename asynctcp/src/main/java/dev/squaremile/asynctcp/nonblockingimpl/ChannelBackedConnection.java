@@ -9,8 +9,8 @@ import static org.agrona.LangUtil.rethrowUnchecked;
 
 import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.commands.CloseConnection;
-import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.NoOpCommand;
 import dev.squaremile.asynctcp.domain.api.commands.ReadData;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;

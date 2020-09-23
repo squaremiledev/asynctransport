@@ -4,7 +4,7 @@ import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.StandardEncoding;
 import dev.squaremile.asynctcp.domain.api.TransportId;
 
-public class Listen implements TransportCommand
+public class Listen implements TransportUserCommand
 {
     private int port = TransportId.NO_PORT;
     private long commandId = CommandId.NO_COMMAND_ID;

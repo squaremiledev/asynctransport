@@ -4,7 +4,7 @@ import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.StandardEncoding;
 import dev.squaremile.asynctcp.domain.api.TransportId;
 
-public class Connect implements TransportCommand
+public class Connect implements TransportUserCommand
 {
     private int remotePort = TransportId.NO_PORT;
     private long commandId = CommandId.NO_COMMAND_ID;

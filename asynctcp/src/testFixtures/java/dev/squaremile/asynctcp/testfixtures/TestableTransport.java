@@ -8,6 +8,7 @@ import dev.squaremile.asynctcp.domain.api.ConnectionId;
 import dev.squaremile.asynctcp.domain.api.Transport;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
+import dev.squaremile.asynctcp.domain.api.commands.TransportUserCommand;
 import dev.squaremile.asynctcp.domain.api.events.DelegatingEventListener;
 import dev.squaremile.asynctcp.domain.api.events.StatusEventListener;
 import dev.squaremile.asynctcp.domain.api.events.TransportEventsListener;
@@ -64,20 +65,13 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
     }
 
     @Override
-    public void handle(final TransportCommand command)
-    {
-        work();
-        delegate.handle(command);
-    }
-
-    @Override
     public void close()
     {
         delegate.close();
     }
 
     @Override
-    public <C extends TransportCommand> C command(final Class<C> commandType)
+    public <C extends TransportUserCommand> C command(final Class<C> commandType)
     {
         return delegate.command(commandType);
     }
@@ -86,5 +80,12 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
     public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
     {
         return delegate.command(connectionId, commandType);
+    }
+
+    @Override
+    public void handle(final TransportCommand command)
+    {
+        work();
+        delegate.handle(command);
     }
 }

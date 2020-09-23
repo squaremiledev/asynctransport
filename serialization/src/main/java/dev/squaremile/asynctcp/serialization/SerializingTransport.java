@@ -17,6 +17,7 @@ import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.commands.StopListening;
 import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
+import dev.squaremile.asynctcp.domain.api.commands.TransportUserCommand;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.domain.api.events.ConnectionClosed;
@@ -72,7 +73,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
     }
 
     @Override
-    public <C extends TransportCommand> C command(final Class<C> commandType)
+    public <C extends TransportUserCommand> C command(final Class<C> commandType)
     {
         if (commandType.equals(Listen.class))
         {

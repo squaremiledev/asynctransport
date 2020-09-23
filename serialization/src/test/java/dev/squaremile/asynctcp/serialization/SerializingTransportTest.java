@@ -21,6 +21,7 @@ import dev.squaremile.asynctcp.domain.api.commands.Listen;
 import dev.squaremile.asynctcp.domain.api.commands.SendData;
 import dev.squaremile.asynctcp.domain.api.commands.StopListening;
 import dev.squaremile.asynctcp.domain.api.commands.TransportCommand;
+import dev.squaremile.asynctcp.domain.api.commands.TransportUserCommand;
 import dev.squaremile.asynctcp.domain.api.events.Connected;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 import dev.squaremile.asynctcp.testfixtures.TransportCommandSpy;
@@ -36,7 +37,7 @@ class SerializingTransportTest
     private final TransportCommandSpy commandsSpy = new TransportCommandSpy();
     private final TransportCommandDecoders decoders = new TransportCommandDecoders();
 
-    static Stream<Function<Transport, TransportCommand>> commands()
+    static Stream<Function<Transport, TransportUserCommand>> commands()
     {
         return Stream.of(
                 transport -> transport.command(CONNECTED_EVENT, CloseConnection.class).set(201),

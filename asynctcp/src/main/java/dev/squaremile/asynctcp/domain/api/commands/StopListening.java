@@ -3,7 +3,7 @@ package dev.squaremile.asynctcp.domain.api.commands;
 import dev.squaremile.asynctcp.domain.api.CommandId;
 import dev.squaremile.asynctcp.domain.api.TransportId;
 
-public class StopListening implements TransportCommand
+public class StopListening implements TransportUserCommand
 {
     private long commandId = CommandId.NO_COMMAND_ID;
     private int port = TransportId.NO_PORT;

@@ -1,7 +1,7 @@
 package dev.squaremile.asynctcp.nonblockingimpl;
 
-import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.api.commands.ConnectionCommand;
+import dev.squaremile.asynctcp.domain.api.commands.ConnectionUserCommand;
 import dev.squaremile.asynctcp.domain.connection.Channel;
 import dev.squaremile.asynctcp.domain.connection.Connection;
 import dev.squaremile.asynctcp.domain.connection.ConnectionConfiguration;
