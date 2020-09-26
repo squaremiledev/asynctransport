@@ -71,9 +71,14 @@ class MessageEncodingApplicationTest
     {
         // When
         app.onEvent(new DataReceived(8808, 100, 1, 1, 30, wrap(new byte[]{5})));
+        app.onEvent(new DataReceived(8809, 101, 1, 1, 30, wrap(new byte[]{6})));
 
         // Then
-        assertEquals(spy.invoked(), new MessageReceived(new ConnectionIdValue(8808, 100)).set(ByteBuffer.wrap(new byte[]{5}), 1));
+        assertEquals(
+                spy.invoked(),
+                new MessageReceived(new ConnectionIdValue(8808, 100)).set(ByteBuffer.wrap(new byte[]{5}), 1),
+                new MessageReceived(new ConnectionIdValue(8809, 101)).set(ByteBuffer.wrap(new byte[]{6}), 1)
+        );
     }
 
     private static class ApplicationSpy implements Application
@@ -106,7 +111,7 @@ class MessageEncodingApplicationTest
         @Override
         public void onEvent(final Event event)
         {
-            invoked.add(event);
+            invoked.add(event.copy());
         }
     }
 }

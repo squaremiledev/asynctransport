@@ -14,6 +14,11 @@ public class MessageReceived implements ConnectionEvent
     private ByteBuffer data;
     private int length;
 
+    public MessageReceived()
+    {
+
+    }
+
     public MessageReceived(final ConnectionId connectionId)
     {
         this.connectionId = new ConnectionIdValue(connectionId);
