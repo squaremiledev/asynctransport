@@ -24,12 +24,12 @@ class MessageEncodingApplicationTest
 {
 
     private final ApplicationSpy spy = new ApplicationSpy();
-    private final MessageEncodingApplication app = new MessageEncodingApplication(spy, SINGLE_BYTE);
 
     @Test
     void shouldDelegateToUnderlyingApplication()
     {
         // Given
+        final MessageEncodingApplication app = new MessageEncodingApplication(spy, SINGLE_BYTE);
         assertThat(spy.invoked()).isEmpty();
 
         // When
@@ -48,14 +48,11 @@ class MessageEncodingApplicationTest
         );
     }
 
-    private void assertEquals(final List<Object> actual, final Object... expected)
-    {
-        assertThat(actual).usingRecursiveComparison().isEqualTo(asList(expected));
-    }
-
     @Test
     void shouldPassMessagesThrough()
     {
+        final MessageEncodingApplication app = new MessageEncodingApplication(spy, SINGLE_BYTE);
+
         // When
         MessageReceived messageReceived1 = new MessageReceived(new ConnectionIdValue(8899, 4)).set(ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7}), 5);
         MessageReceived messageReceived2 = new MessageReceived(new ConnectionIdValue(6234, 5)).set(ByteBuffer.wrap(new byte[]{0}), 1);
@@ -67,8 +64,10 @@ class MessageEncodingApplicationTest
     }
 
     @Test
-    void shouldEncodeDataAsMessage()
+    void shouldEncodeSingleByteDataAsMessage()
     {
+        final MessageEncodingApplication app = new MessageEncodingApplication(spy, SINGLE_BYTE);
+
         // When
         app.onEvent(new DataReceived(8808, 100, 1, 1, 30, wrap(new byte[]{5})));
         app.onEvent(new DataReceived(8809, 101, 1, 1, 30, wrap(new byte[]{6})));
@@ -81,8 +80,32 @@ class MessageEncodingApplicationTest
         );
     }
 
+    @Test
+    void shouldEncodeMultipleBytesAsMultipleIndividualMessages()
+    {
+        final MessageEncodingApplication app = new MessageEncodingApplication(spy, SINGLE_BYTE);
+
+        // When
+        DataReceived event = new DataReceived(8808, 100, 1, 3, 30, wrap(new byte[]{1, 2, 3}));
+        app.onEvent(event);
+
+        // Then
+        assertEquals(
+                spy.invoked(),
+                new MessageReceived(event).set(ByteBuffer.wrap(new byte[]{1}), 1),
+                new MessageReceived(event).set(ByteBuffer.wrap(new byte[]{2}), 1),
+                new MessageReceived(event).set(ByteBuffer.wrap(new byte[]{3}), 1)
+        );
+    }
+
+    private void assertEquals(final List<Object> actual, final Object... expected)
+    {
+        assertThat(actual).usingRecursiveComparison().isEqualTo(asList(expected));
+    }
+
     private static class ApplicationSpy implements Application
     {
+
         private final List<Object> invoked = new ArrayList<>();
 
         List<Object> invoked()

@@ -1,5 +1,8 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
+import java.nio.ByteBuffer;
+
+
 import dev.squaremile.asynctcp.api.app.Application;
 import dev.squaremile.asynctcp.api.app.Event;
 import dev.squaremile.asynctcp.api.events.DataReceived;
@@ -9,8 +12,10 @@ import dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding;
 public class MessageEncodingApplication implements Application
 {
     private final Application delegate;
-    private final PredefinedTransportEncoding encoding;
     private final MessageReceived messageReceivedFlyweight = new MessageReceived();
+    // TODO: [perf] use offset and the underlying buffer instead
+    private final byte[] oneByteFlyweight = new byte[1];
+    private final ByteBuffer oneByteByteBuffer = ByteBuffer.wrap(oneByteFlyweight);
 
     public MessageEncodingApplication(final Application delegate, final PredefinedTransportEncoding encoding)
     {
@@ -19,7 +24,6 @@ public class MessageEncodingApplication implements Application
             throw new IllegalArgumentException(encoding + " is not supported yet");
         }
         this.delegate = delegate;
-        this.encoding = encoding;
     }
 
     @Override
@@ -46,8 +50,12 @@ public class MessageEncodingApplication implements Application
         if (event instanceof DataReceived)
         {
             DataReceived dataReceived = (DataReceived)event;
-            // TODO: WIP
-            delegate.onEvent(messageReceivedFlyweight.set(dataReceived, dataReceived.data(), 1));
+            int length = dataReceived.length();
+            for (int i = 0; i < length; i++)
+            {
+                oneByteFlyweight[0] = dataReceived.data().get(i);
+                delegate.onEvent(messageReceivedFlyweight.set(dataReceived, oneByteByteBuffer, 1));
+            }
         }
         else
         {
