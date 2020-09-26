@@ -35,6 +35,9 @@ class TcpOverDirectBufferTest
     @Test
     void shouldUseTcpOverDirectBuffer() throws IOException
     {
+        // TODO #6: Two instances, one for each direction, of org.agrona.concurrent.ringbuffer.OneToOneRingBuffer
+        // seems to be a good fit here
+
         // Given
         final MutableBoolean eventWrittenToTheBuffer = new MutableBoolean(false);
         final NonBLockingMessageDrivenTransport networkFacingTransport = new NonBLockingMessageDrivenTransport(
