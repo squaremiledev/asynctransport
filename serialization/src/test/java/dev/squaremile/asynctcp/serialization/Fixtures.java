@@ -1,11 +1,18 @@
 package dev.squaremile.asynctcp.serialization;
 
 import java.nio.ByteBuffer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 
+import dev.squaremile.asynctcp.api.app.Transport;
 import dev.squaremile.asynctcp.api.app.TransportEvent;
+import dev.squaremile.asynctcp.api.app.TransportUserCommand;
+import dev.squaremile.asynctcp.api.commands.CloseConnection;
+import dev.squaremile.asynctcp.api.commands.Connect;
 import dev.squaremile.asynctcp.api.commands.Listen;
+import dev.squaremile.asynctcp.api.commands.SendData;
+import dev.squaremile.asynctcp.api.commands.StopListening;
 import dev.squaremile.asynctcp.api.events.Connected;
 import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.api.events.ConnectionClosed;
@@ -17,6 +24,7 @@ import dev.squaremile.asynctcp.api.events.StartedListening;
 import dev.squaremile.asynctcp.api.events.StoppedListening;
 import dev.squaremile.asynctcp.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding;
 
 class Fixtures
 {
@@ -41,5 +49,21 @@ class Fixtures
                 new TransportCommandFailed(8001, 101L, "some details", Listen.class)
 
         );
+    }
+
+    static Stream<Function<Transport, TransportUserCommand>> commands()
+    {
+        return Stream.of(
+                transport -> transport.command(connectedEvent(), CloseConnection.class).set(201),
+                transport -> transport.command(Connect.class).set("remoteHost", 8899, 202, 10, PredefinedTransportEncoding.SINGLE_BYTE),
+                transport -> transport.command(Listen.class).set(203, 6688, PredefinedTransportEncoding.LONGS),
+                transport -> transport.command(connectedEvent(), SendData.class).set(new byte[]{1, 2, 3, 4, 5, 6}, 205),
+                transport -> transport.command(StopListening.class).set(204, 7788)
+        );
+    }
+
+    public static Connected connectedEvent()
+    {
+        return new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000);
     }
 }

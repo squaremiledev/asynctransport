@@ -3,13 +3,13 @@ package dev.squaremile.asynctcp.serialization;
 import org.agrona.collections.Int2ObjectHashMap;
 
 
-import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding;
 import dev.squaremile.asynctcp.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.api.commands.Connect;
 import dev.squaremile.asynctcp.api.commands.Listen;
 import dev.squaremile.asynctcp.api.commands.SendData;
 import dev.squaremile.asynctcp.api.commands.StopListening;
+import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding;
 import dev.squaremile.asynctcp.sbe.CloseConnectionDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectDecoder;
 import dev.squaremile.asynctcp.sbe.ListenDecoder;
@@ -18,6 +18,7 @@ import dev.squaremile.asynctcp.sbe.SendDataDecoder;
 import dev.squaremile.asynctcp.sbe.StopListeningDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
 
+// TODO [perf]: avoid garbage
 public class TransportCommandDecoders
 {
     private final Int2ObjectHashMap<TransportCommandDecoder> commandDecoders = new Int2ObjectHashMap<>();
