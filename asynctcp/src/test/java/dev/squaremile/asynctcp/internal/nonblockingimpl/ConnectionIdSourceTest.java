@@ -16,6 +16,7 @@ class ConnectionIdSourceTest
         final Set<Long> uniqueIds = new HashSet<>();
         for (int k = 0; k < 100; k++)
         {
+
             uniqueIds.add(connectionIdSource.newId());
         }
         assertEquals(100, uniqueIds.size());

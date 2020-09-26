@@ -1,9 +1,9 @@
 package dev.squaremile.asynctcp.testfixtures.app;
 
 import dev.squaremile.asynctcp.api.app.Application;
+import dev.squaremile.asynctcp.api.app.Event;
 import dev.squaremile.asynctcp.api.app.Transport;
 import dev.squaremile.asynctcp.api.app.TransportEventsListener;
-import dev.squaremile.asynctcp.api.app.Event;
 
 /**
  * A standard app should by autonomous and reactive.
@@ -38,5 +38,11 @@ public class WhiteboxApplication<L extends TransportEventsListener> implements A
     public L events()
     {
         return events;
+    }
+
+    @Override
+    public void work()
+    {
+        transport.work();
     }
 }

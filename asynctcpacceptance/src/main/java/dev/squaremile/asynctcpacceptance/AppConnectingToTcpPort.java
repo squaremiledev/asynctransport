@@ -4,9 +4,9 @@ import java.io.IOException;
 
 
 import dev.squaremile.asynctcp.api.app.Application;
+import dev.squaremile.asynctcp.api.app.Event;
 import dev.squaremile.asynctcp.api.app.Transport;
 import dev.squaremile.asynctcp.api.commands.Connect;
-import dev.squaremile.asynctcp.api.app.Event;
 import dev.squaremile.asynctcp.setup.Setup;
 
 import static java.lang.Integer.parseInt;
@@ -52,5 +52,11 @@ public class AppConnectingToTcpPort implements Application
     public void onEvent(final Event event)
     {
         System.out.println(event);
+    }
+
+    @Override
+    public void work()
+    {
+
     }
 }

@@ -2,12 +2,12 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 
 
 import dev.squaremile.asynctcp.api.app.Application;
+import dev.squaremile.asynctcp.api.app.Event;
 import dev.squaremile.asynctcp.api.app.EventListener;
 import dev.squaremile.asynctcp.api.app.Transport;
 import dev.squaremile.asynctcp.api.commands.Listen;
 import dev.squaremile.asynctcp.api.commands.SendData;
 import dev.squaremile.asynctcp.api.commands.StopListening;
-import dev.squaremile.asynctcp.api.app.Event;
 import dev.squaremile.asynctcp.api.events.MessageReceived;
 import dev.squaremile.asynctcp.api.events.StartedListening;
 import dev.squaremile.asynctcp.api.events.StoppedListening;
@@ -26,10 +26,22 @@ public class EchoApplication implements Application
 
     public EchoApplication(final Transport transport, final int listeningPort, final EventListener eventListener, final PredefinedTransportEncoding encoding)
     {
+        this(transport, listeningPort, eventListener, encoding, 101);
+    }
+
+    public EchoApplication(
+            final Transport transport,
+            final int listeningPort,
+            final EventListener eventListener,
+            final PredefinedTransportEncoding encoding,
+            final int initialCommandId
+    )
+    {
         this.transport = requireNonNull(transport);
         this.listeningPort = listeningPort;
         this.eventListener = eventListener;
         this.encoding = encoding;
+        this.nextCommandId = initialCommandId;
     }
 
     @Override
@@ -71,5 +83,11 @@ public class EchoApplication implements Application
         SendData sendData = transport.command(messageReceivedEvent, SendData.class);
         messageReceivedEvent.copyDataTo(sendData.prepare());
         return sendData.commit(messageReceivedEvent.length());
+    }
+
+    @Override
+    public void work()
+    {
+
     }
 }

@@ -1,6 +1,6 @@
 package dev.squaremile.asynctcp.api.app;
 
-public interface Application extends EventListener
+public interface Application extends EventListener, OnDuty
 {
     default void onStart()
     {
@@ -8,11 +8,6 @@ public interface Application extends EventListener
     }
 
     default void onStop()
-    {
-
-    }
-
-    default void work()
     {
 
     }

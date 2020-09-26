@@ -6,7 +6,7 @@ import org.agrona.DirectBuffer;
 import dev.squaremile.asynctcp.api.app.TransportCommandHandler;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 
-class TransportCommandDeserialization implements SerializedCommandListener
+public class TransportCommandDeserialization implements SerializedCommandListener
 {
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final TransportCommandDecoders decoders = new TransportCommandDecoders();

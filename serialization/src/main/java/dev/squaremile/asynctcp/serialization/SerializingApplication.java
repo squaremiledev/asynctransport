@@ -6,13 +6,13 @@ import org.agrona.MutableDirectBuffer;
 
 
 import dev.squaremile.asynctcp.api.app.Application;
+import dev.squaremile.asynctcp.api.app.Event;
 import dev.squaremile.asynctcp.api.events.Connected;
 import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.api.events.ConnectionCommandFailed;
 import dev.squaremile.asynctcp.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.api.events.DataSent;
-import dev.squaremile.asynctcp.api.app.Event;
 import dev.squaremile.asynctcp.api.events.MessageReceived;
 import dev.squaremile.asynctcp.api.events.StartedListening;
 import dev.squaremile.asynctcp.api.events.StoppedListening;
@@ -169,4 +169,9 @@ public class SerializingApplication implements Application
         }
     }
 
+    @Override
+    public void work()
+    {
+
+    }
 }

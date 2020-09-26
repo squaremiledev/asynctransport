@@ -2,9 +2,9 @@ package dev.squaremile.asynctcpacceptance;
 
 import dev.squaremile.asynctcp.api.app.Application;
 import dev.squaremile.asynctcp.api.app.ApplicationFactory;
+import dev.squaremile.asynctcp.api.app.Event;
 import dev.squaremile.asynctcp.api.app.Transport;
 import dev.squaremile.asynctcp.api.commands.Listen;
-import dev.squaremile.asynctcp.api.app.Event;
 import dev.squaremile.asynctcp.setup.Setup;
 
 import static java.lang.Integer.parseInt;
@@ -50,5 +50,11 @@ public class AppListeningOnTcpPort implements Application
     public void onEvent(final Event event)
     {
         System.out.println(event);
+    }
+
+    @Override
+    public void work()
+    {
+
     }
 }

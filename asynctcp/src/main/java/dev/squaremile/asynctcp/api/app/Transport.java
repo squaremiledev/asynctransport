@@ -2,10 +2,8 @@ package dev.squaremile.asynctcp.api.app;
 
 import dev.squaremile.asynctcp.api.values.ConnectionId;
 
-public interface Transport extends AutoCloseable, TransportCommandHandler
+public interface Transport extends AutoCloseable, TransportCommandHandler, OnDuty
 {
-    void work();
-
     @Override
     void close();
 

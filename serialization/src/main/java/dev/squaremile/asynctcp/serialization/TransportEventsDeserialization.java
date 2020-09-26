@@ -6,13 +6,13 @@ import org.agrona.DirectBuffer;
 import dev.squaremile.asynctcp.api.app.TransportEventsListener;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 
-class TransportEventsDeserialization implements SerializedEventListener
+public class TransportEventsDeserialization implements SerializedEventListener
 {
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final TransportEventDecoders decoders = new TransportEventDecoders();
     private final TransportEventsListener transportEventsListener;
 
-    TransportEventsDeserialization(final TransportEventsListener transportEventsListener)
+    public TransportEventsDeserialization(final TransportEventsListener transportEventsListener)
     {
         this.transportEventsListener = transportEventsListener;
     }
