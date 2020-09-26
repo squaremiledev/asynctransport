@@ -8,14 +8,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.api.values.TransportId;
-import dev.squaremile.asynctcp.api.commands.Connect;
 import dev.squaremile.asynctcp.api.app.CommandFailed;
+import dev.squaremile.asynctcp.api.commands.Connect;
 import dev.squaremile.asynctcp.api.events.Connected;
 import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
 import dev.squaremile.asynctcp.api.events.StartedListening;
 import dev.squaremile.asynctcp.api.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.api.values.TransportId;
+import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
 
 import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
@@ -40,7 +40,6 @@ class ClientConnectsTest extends TransportTestBase
 
         // Then
         ConnectionAccepted connectionAcceptedByServer = serverTransport.connectionEvents().last(ConnectionAccepted.class);
-        assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
         Connected connected = clientTransport.events().last(Connected.class);
         assertEqual(
                 clientTransport.events().all(Connected.class),

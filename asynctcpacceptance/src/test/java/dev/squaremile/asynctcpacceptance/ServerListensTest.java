@@ -9,14 +9,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
+import dev.squaremile.asynctcp.api.app.CommandFailed;
 import dev.squaremile.asynctcp.api.commands.Listen;
 import dev.squaremile.asynctcp.api.commands.StopListening;
-import dev.squaremile.asynctcp.api.app.CommandFailed;
 import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
 import dev.squaremile.asynctcp.api.events.StartedListening;
 import dev.squaremile.asynctcp.api.events.StoppedListening;
 import dev.squaremile.asynctcp.api.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
 
 import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.testfixtures.BackgroundRunner.completed;
@@ -34,7 +34,6 @@ class ServerListensTest extends TransportTestBase
         // Given
         serverTransport.handle(serverTransport.command(Listen.class).set(102, port));
         serverTransport.workUntil(() -> serverTransport.events().contains(StartedListening.class));
-        serverTransport.events().last(StartedListening.class);
         assertEqual(serverTransport.events().all(StartedListening.class), new StartedListening(port, 102));
 
         // When
