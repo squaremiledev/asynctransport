@@ -6,6 +6,9 @@ import java.util.Optional;
 
 import org.agrona.CloseHelper;
 
+
+import dev.squaremile.asynctcp.testfixtures.network.SampleClient;
+
 public class SampleClients implements AutoCloseable
 {
     private final Map<Integer, SampleClient> clients = new HashMap<>();

@@ -13,16 +13,16 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.api.values.CommandId;
-import dev.squaremile.asynctcp.api.commands.SendData;
 import dev.squaremile.asynctcp.api.app.CommandFailed;
+import dev.squaremile.asynctcp.api.app.TransportEvent;
+import dev.squaremile.asynctcp.api.commands.SendData;
 import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.api.events.DataSent;
-import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
 import dev.squaremile.asynctcp.api.events.StartedListening;
 import dev.squaremile.asynctcp.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.api.app.TransportEvent;
+import dev.squaremile.asynctcp.api.values.CommandId;
+import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
 import dev.squaremile.asynctcp.testfixtures.FreePort;
 import dev.squaremile.asynctcp.testfixtures.Worker;
 
@@ -33,7 +33,7 @@ import static dev.squaremile.asynctcp.testfixtures.FreePort.freePortOtherThan;
 import static dev.squaremile.asynctcp.testfixtures.StringFixtures.byteArrayWith;
 import static dev.squaremile.asynctcp.testfixtures.StringFixtures.stringWith;
 import static dev.squaremile.asynctcp.testfixtures.Worker.runUntil;
-import static dev.squaremile.asynctcpacceptance.SampleClient.ReadDataConsumer.DEV_NULL;
+import static dev.squaremile.asynctcp.testfixtures.network.SampleClient.ReadDataConsumer.DEV_NULL;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;

@@ -8,42 +8,23 @@ import java.util.function.BooleanSupplier;
 import dev.squaremile.asynctcp.api.app.OnDuty;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 
 class ThingsOnDutyRunner
 {
     private final List<OnDuty> onDuty;
-    private final BufferWriteSpy networkToUserWrites;
-    private final BufferWriteSpy userToNetworkWrites;
 
-    public ThingsOnDutyRunner(
-            final BufferWriteSpy networkToUserWrites,
-            final BufferWriteSpy userToNetworkWrites,
-            final OnDuty... thingsOnDuty
-    )
+    public ThingsOnDutyRunner(final OnDuty... thingsOnDuty)
     {
         this.onDuty = asList(thingsOnDuty);
-        this.networkToUserWrites = networkToUserWrites;
-        this.userToNetworkWrites = userToNetworkWrites;
     }
 
-    public BooleanSupplier reachedMinimumNetworkToUserWritesOf(final int value)
-    {
-        return getAsBoolean(value, 0);
-    }
-
-    public BooleanSupplier reachedMinimumUserToNetworkWritesOf(final int value)
-    {
-        return getAsBoolean(0, value);
-    }
-
-
-    private BooleanSupplier getAsBoolean(final int minimumNetworkToUserWrites, final int minimumUserToNetworkWrites)
+    public BooleanSupplier reached(final BooleanSupplier... conditions)
     {
         return () ->
         {
             onDuty.forEach(OnDuty::work);
-            return networkToUserWrites.entries().size() >= minimumNetworkToUserWrites &&
-                   userToNetworkWrites.entries.size() >= minimumUserToNetworkWrites;
+            return stream(conditions).allMatch(BooleanSupplier::getAsBoolean);
         };
     }
 
@@ -56,9 +37,9 @@ class ThingsOnDutyRunner
             entries.add(new BufferWriteSpy.WrittenEntries(offset, length));
         }
 
-        List<BufferWriteSpy.WrittenEntries> entries()
+        public int count()
         {
-            return entries;
+            return entries.size();
         }
 
         BufferWriteSpy.WrittenEntries entry(final int index)

@@ -1,5 +1,7 @@
 package dev.squaremile.asynctcpacceptance;
 
+import dev.squaremile.asynctcp.testfixtures.network.SampleClient;
+
 public class ThreadSafeReadDataSpy implements SampleClient.ReadDataConsumer
 {
     private byte[] dataHolder = new byte[0];

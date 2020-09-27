@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.asynctcp.testfixtures.network;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

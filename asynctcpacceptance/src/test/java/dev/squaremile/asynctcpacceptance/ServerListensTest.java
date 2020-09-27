@@ -17,6 +17,7 @@ import dev.squaremile.asynctcp.api.events.StartedListening;
 import dev.squaremile.asynctcp.api.events.StoppedListening;
 import dev.squaremile.asynctcp.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.internal.domain.NumberOfConnectionsChanged;
+import dev.squaremile.asynctcp.testfixtures.network.SampleClient;
 
 import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.testfixtures.BackgroundRunner.completed;
