@@ -1,28 +1,21 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.asynctcp.serialization.internal.messaging;
 
-import org.agrona.DirectBuffer;
+import org.agrona.concurrent.ringbuffer.RingBuffer;
 
 
-import dev.squaremile.asynctcp.serialization.internal.MessageDrivenApplication;
 import dev.squaremile.asynctcp.serialization.internal.TransportEventsDeserialization;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 
-public class MessageOnlyDrivenApplication implements MessageDrivenApplication
+public class RingBufferApplication implements Application
 {
     private final Application application;
-    private final TransportEventsDeserialization deserialization;
+    private final RingBufferReader ringBufferReader;
 
-    public MessageOnlyDrivenApplication(final Application application)
+    public RingBufferApplication(final Application application, final RingBuffer ringBuffer)
     {
         this.application = application;
-        this.deserialization = new TransportEventsDeserialization(application::onEvent);
-    }
-
-    @Override
-    public void onSerialized(final DirectBuffer sourceBuffer, final int sourceOffset, final int length)
-    {
-        deserialization.onSerialized(sourceBuffer, sourceOffset, length);
+        this.ringBufferReader = new RingBufferReader(ringBuffer, new TransportEventsDeserialization(application::onEvent));
     }
 
     @Override
@@ -46,6 +39,7 @@ public class MessageOnlyDrivenApplication implements MessageDrivenApplication
     @Override
     public void work()
     {
+        ringBufferReader.read();
         application.work();
     }
 }

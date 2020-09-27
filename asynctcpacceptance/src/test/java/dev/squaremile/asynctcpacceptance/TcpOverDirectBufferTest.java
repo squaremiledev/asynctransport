@@ -72,10 +72,8 @@ class TcpOverDirectBufferTest
 
 
         // When
-        runUntil(thingsOnDuty.reached(
-                completed(() -> sampleClient.connectedTo(port)),
-                () -> networkToUserWrites.count() > 1
-        ));
+        runUntil(thingsOnDuty.reached(completed(() -> sampleClient.connectedTo(port))));
+        runUntil(thingsOnDuty.reached(() -> networkToUserWrites.count() > 1));
         userFacingApp.onSerialized(networkToUserWrites.buffer(), networkToUserWrites.entry(1).offset, networkToUserWrites.entry(1).length);
 
         // Then
