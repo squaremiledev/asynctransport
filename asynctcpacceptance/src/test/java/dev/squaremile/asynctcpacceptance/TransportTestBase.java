@@ -7,11 +7,11 @@ import org.junit.jupiter.api.AfterEach;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.api.app.CommandFailed;
-import dev.squaremile.asynctcp.testfixtures.TearDown;
-import dev.squaremile.asynctcp.testfixtures.TransportUnderTest;
+import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
+import dev.squaremile.asynctcp.transport.testfixtures.TearDown;
+import dev.squaremile.asynctcp.transport.testfixtures.TransportUnderTest;
 
-import static dev.squaremile.asynctcp.testfixtures.Worker.runUntil;
+import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 
 abstract class TransportTestBase
 {

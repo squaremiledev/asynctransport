@@ -10,22 +10,22 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.api.app.Transport;
-import dev.squaremile.asynctcp.setup.TransportAppLauncher;
-import dev.squaremile.asynctcp.setup.TransportApplication;
-import dev.squaremile.asynctcp.api.app.TransportEventsListener;
-import dev.squaremile.asynctcp.api.commands.Connect;
-import dev.squaremile.asynctcp.api.commands.SendData;
-import dev.squaremile.asynctcp.api.events.Connected;
-import dev.squaremile.asynctcp.api.events.DataReceived;
-import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding;
-import dev.squaremile.asynctcp.internal.transportencoding.FixedLengthDataHandler;
-import dev.squaremile.asynctcp.testfixtures.Worker;
-import dev.squaremile.asynctcp.testfixtures.app.WhiteboxApplication;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportEventsListener;
+import dev.squaremile.asynctcp.transport.api.commands.Connect;
+import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.events.Connected;
+import dev.squaremile.asynctcp.transport.api.events.DataReceived;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding;
+import dev.squaremile.asynctcp.transport.internal.transportencoding.FixedLengthDataHandler;
+import dev.squaremile.asynctcp.transport.setup.TransportAppFactory;
+import dev.squaremile.asynctcp.transport.setup.TransportApplication;
+import dev.squaremile.asynctcp.transport.testfixtures.Worker;
+import dev.squaremile.asynctcp.transport.testfixtures.app.WhiteboxApplication;
 
-import static dev.squaremile.asynctcp.api.app.EventListener.IGNORE_EVENTS;
-import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
+import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
 class EchoApplicationThroughputTest
 {
@@ -41,8 +41,8 @@ class EchoApplicationThroughputTest
 
     EchoApplicationThroughputTest()
     {
-        drivingApplication = new TransportAppLauncher().launch(
-                transport ->
+        drivingApplication = new TransportAppFactory().create(
+                "", transport ->
                 {
                     whiteboxApplication = new WhiteboxApplication<>(transport, event ->
                     {
@@ -59,10 +59,10 @@ class EchoApplicationThroughputTest
                         }
                     });
                     return whiteboxApplication;
-                }, "");
+                });
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppLauncher().launch(transport -> new EchoApplication(transport, port, IGNORE_EVENTS, PredefinedTransportEncoding.FOUR_KB), "");
+        transportApplication = new TransportAppFactory().create("", transport -> new EchoApplication(transport, port, IGNORE_EVENTS, PredefinedTransportEncoding.FOUR_KB));
         transportApplication.onStart();
         transportApplication.work();
     }

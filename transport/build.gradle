@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+    id 'java-test-fixtures'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+test {
+    useJUnitPlatform {
+//        excludeTags 'tcperror' // uncomment not to run tests that produce tcp errors (expected)
+    }
+}
+
+dependencies {
+    implementation 'org.agrona:agrona:1.6.0'
+    testFixturesImplementation 'org.agrona:agrona:1.6.0'
+    testFixturesImplementation 'org.assertj:assertj-core:3.16.1'
+    testImplementation 'org.assertj:assertj-core:3.16.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
+}

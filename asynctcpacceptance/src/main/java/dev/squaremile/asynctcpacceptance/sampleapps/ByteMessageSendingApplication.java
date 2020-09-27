@@ -1,19 +1,19 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
 
-import dev.squaremile.asynctcp.api.app.Application;
-import dev.squaremile.asynctcp.api.app.Event;
-import dev.squaremile.asynctcp.api.app.EventListener;
-import dev.squaremile.asynctcp.api.app.Transport;
-import dev.squaremile.asynctcp.api.commands.CloseConnection;
-import dev.squaremile.asynctcp.api.commands.Connect;
-import dev.squaremile.asynctcp.api.commands.SendData;
-import dev.squaremile.asynctcp.api.events.Connected;
-import dev.squaremile.asynctcp.api.events.ConnectionClosed;
-import dev.squaremile.asynctcp.api.events.ConnectionResetByPeer;
-import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventListener;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
+import dev.squaremile.asynctcp.transport.api.commands.Connect;
+import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.events.Connected;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
-import static dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding.SINGLE_BYTE;
+import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding.SINGLE_BYTE;
 import static java.util.Objects.requireNonNull;
 
 public class ByteMessageSendingApplication implements Application

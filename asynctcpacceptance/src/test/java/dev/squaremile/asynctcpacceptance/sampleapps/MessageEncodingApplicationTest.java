@@ -9,14 +9,15 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.api.app.Application;
-import dev.squaremile.asynctcp.api.app.Event;
-import dev.squaremile.asynctcp.api.events.DataReceived;
-import dev.squaremile.asynctcp.api.events.MessageReceived;
-import dev.squaremile.asynctcp.api.events.StartedListening;
-import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.events.DataReceived;
+import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.serialization.internal.MessageEncodingApplication;
 
-import static dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding.SINGLE_BYTE;
+import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding.SINGLE_BYTE;
 import static java.nio.ByteBuffer.wrap;
 import static java.util.Arrays.asList;
 

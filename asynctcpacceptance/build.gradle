@@ -13,8 +13,12 @@ distZip {
 }
 
 dependencies {
-    implementation project(':asynctcp')
+    implementation project(':transport')
+    implementation testFixtures(project(':asynctcp'))
     implementation 'org.agrona:agrona:1.6.0'
+
+    testImplementation project(':serialization')
+    testImplementation testFixtures(project(':transport'))
     testImplementation testFixtures(project(':asynctcp'))
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     testImplementation 'org.assertj:assertj-core:3.16.1'

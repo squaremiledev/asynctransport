@@ -4,16 +4,16 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 
-import dev.squaremile.asynctcp.setup.TransportAppLauncher;
-import dev.squaremile.asynctcp.setup.TransportApplication;
-import dev.squaremile.asynctcp.api.events.Connected;
-import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.api.events.StartedListening;
-import dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding;
-import dev.squaremile.asynctcp.testfixtures.TransportEventsSpy;
-import dev.squaremile.asynctcp.testfixtures.app.TransportEventsRedirect;
+import dev.squaremile.asynctcp.transport.api.events.Connected;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding;
+import dev.squaremile.asynctcp.transport.setup.TransportAppFactory;
+import dev.squaremile.asynctcp.transport.setup.TransportApplication;
+import dev.squaremile.asynctcp.transport.testfixtures.TransportEventsSpy;
+import dev.squaremile.asynctcp.transport.testfixtures.app.TransportEventsRedirect;
 
-import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
 public class TwoAppsInteractionTest
 {
@@ -29,18 +29,18 @@ public class TwoAppsInteractionTest
     TwoAppsInteractionTest()
     {
         port = freePort();
-        streamingApplication = new TransportAppLauncher().launch(transport -> new ByteMessageSendingApplication(
+        streamingApplication = new TransportAppFactory().create("streamingApplication", transport -> new ByteMessageSendingApplication(
                 transport,
                 host,
                 port,
                 dataToSend,
                 new TransportEventsRedirect(eventsReceivedByStreamingApplication)
-        ), "streamingApplication");
-        echoApplication = new TransportAppLauncher().launch(transport -> new EchoApplication(
+        ));
+        echoApplication = new TransportAppFactory().create("echoApplication", transport -> new EchoApplication(
                 transport,
                 port,
                 new TransportEventsRedirect(eventsReceivedByEchoApplication), PredefinedTransportEncoding.SINGLE_BYTE
-        ), "echoApplication");
+        ));
         spin = new Spin(streamingApplication, echoApplication);
     }
 

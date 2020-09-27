@@ -1,17 +1,17 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
 
-import dev.squaremile.asynctcp.api.app.Application;
-import dev.squaremile.asynctcp.api.app.Event;
-import dev.squaremile.asynctcp.api.app.EventListener;
-import dev.squaremile.asynctcp.api.app.Transport;
-import dev.squaremile.asynctcp.api.commands.Listen;
-import dev.squaremile.asynctcp.api.commands.SendData;
-import dev.squaremile.asynctcp.api.commands.StopListening;
-import dev.squaremile.asynctcp.api.events.MessageReceived;
-import dev.squaremile.asynctcp.api.events.StartedListening;
-import dev.squaremile.asynctcp.api.events.StoppedListening;
-import dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding;
+import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventListener;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.commands.Listen;
+import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.commands.StopListening;
+import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
+import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding;
 
 import static java.util.Objects.requireNonNull;
 

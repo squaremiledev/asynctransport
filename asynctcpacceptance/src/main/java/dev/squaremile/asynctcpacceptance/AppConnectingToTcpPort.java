@@ -1,15 +1,16 @@
 package dev.squaremile.asynctcpacceptance;
 
-import java.io.IOException;
+import dev.squaremile.asynctcp.api.AsyncTcp;
+import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.commands.Connect;
+import dev.squaremile.asynctcp.transport.setup.NaiveRoundRobinSingleThreadRunner;
+import dev.squaremile.asynctcp.transport.setup.TransportApplication;
 
-
-import dev.squaremile.asynctcp.api.app.Application;
-import dev.squaremile.asynctcp.api.app.Event;
-import dev.squaremile.asynctcp.api.app.Transport;
-import dev.squaremile.asynctcp.api.commands.Connect;
-import dev.squaremile.asynctcp.setup.Setup;
-
+import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static java.lang.Integer.parseInt;
+import static java.util.Collections.singletonList;
 
 public class AppConnectingToTcpPort implements Application
 {
@@ -22,12 +23,14 @@ public class AppConnectingToTcpPort implements Application
         this.port = port;
     }
 
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args)
     {
         if (args.length == 1)
         {
-            Setup.launchAsNaiveRoundRobinSingleThreadedApp(
-                    transport -> new AppConnectingToTcpPort(transport, parseInt(args[0])));
+            TransportApplication transportApplication = new AsyncTcp().transportAppFactory(NON_PROD_GRADE)
+                    .create("", transport -> new AppConnectingToTcpPort(transport, parseInt(args[0])));
+
+            new NaiveRoundRobinSingleThreadRunner().run(singletonList(transportApplication));
         }
         else
         {

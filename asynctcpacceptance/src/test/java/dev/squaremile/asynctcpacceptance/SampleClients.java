@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.agrona.CloseHelper;
 
 
-import dev.squaremile.asynctcp.testfixtures.network.SampleClient;
+import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 
 public class SampleClients implements AutoCloseable
 {

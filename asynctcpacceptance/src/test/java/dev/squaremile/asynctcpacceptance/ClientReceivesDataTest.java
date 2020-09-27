@@ -13,17 +13,17 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.api.commands.SendData;
-import dev.squaremile.asynctcp.api.events.Connected;
-import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.api.events.DataReceived;
-import dev.squaremile.asynctcp.api.events.DataSent;
-import dev.squaremile.asynctcp.testfixtures.ConnectionEventsSpy;
+import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.events.Connected;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.transport.api.events.DataReceived;
+import dev.squaremile.asynctcp.transport.api.events.DataSent;
+import dev.squaremile.asynctcp.transport.testfixtures.ConnectionEventsSpy;
 
-import static dev.squaremile.asynctcp.testfixtures.DataFixtures.concatenatedData;
-import static dev.squaremile.asynctcp.testfixtures.StringFixtures.byteArrayWith;
-import static dev.squaremile.asynctcp.testfixtures.StringFixtures.fixedLengthStringStartingWith;
-import static dev.squaremile.asynctcp.testfixtures.StringFixtures.stringWith;
+import static dev.squaremile.asynctcp.transport.testfixtures.DataFixtures.concatenatedData;
+import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.byteArrayWith;
+import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.fixedLengthStringStartingWith;
+import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.stringWith;
 
 
 class ClientReceivesDataTest extends TransportTestBase

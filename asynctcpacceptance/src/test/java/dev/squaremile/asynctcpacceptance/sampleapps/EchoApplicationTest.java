@@ -9,19 +9,19 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.setup.TransportAppLauncher;
-import dev.squaremile.asynctcp.setup.TransportApplication;
-import dev.squaremile.asynctcp.api.commands.Connect;
-import dev.squaremile.asynctcp.api.commands.SendData;
-import dev.squaremile.asynctcp.api.app.CommandFailed;
-import dev.squaremile.asynctcp.api.events.Connected;
-import dev.squaremile.asynctcp.api.events.DataReceived;
-import dev.squaremile.asynctcp.api.values.PredefinedTransportEncoding;
-import dev.squaremile.asynctcp.testfixtures.TransportEventsSpy;
-import dev.squaremile.asynctcp.testfixtures.app.WhiteboxApplication;
+import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
+import dev.squaremile.asynctcp.transport.api.commands.Connect;
+import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.events.Connected;
+import dev.squaremile.asynctcp.transport.api.events.DataReceived;
+import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding;
+import dev.squaremile.asynctcp.transport.setup.TransportAppFactory;
+import dev.squaremile.asynctcp.transport.setup.TransportApplication;
+import dev.squaremile.asynctcp.transport.testfixtures.TransportEventsSpy;
+import dev.squaremile.asynctcp.transport.testfixtures.app.WhiteboxApplication;
 
-import static dev.squaremile.asynctcp.api.app.EventListener.IGNORE_EVENTS;
-import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
+import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
 class EchoApplicationTest
 {
@@ -33,15 +33,15 @@ class EchoApplicationTest
 
     EchoApplicationTest()
     {
-        drivingApplication = new TransportAppLauncher().launch(
-                transport ->
+        drivingApplication = new TransportAppFactory().create(
+                "", transport ->
                 {
                     whiteboxApplication = new WhiteboxApplication<>(transport, new TransportEventsSpy());
                     return whiteboxApplication;
-                }, "");
+                });
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppLauncher().launch(transport -> new EchoApplication(transport, port, IGNORE_EVENTS, PredefinedTransportEncoding.LONGS), "");
+        transportApplication = new TransportAppFactory().create("", transport -> new EchoApplication(transport, port, IGNORE_EVENTS, PredefinedTransportEncoding.LONGS));
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         transportApplication.onStart();
         transportApplication.work();

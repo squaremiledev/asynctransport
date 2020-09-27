@@ -4,7 +4,7 @@
 
 To build:
 
-    make
+make
 
 To run sample app after built:
 
@@ -15,6 +15,8 @@ telnet localhost 9999
 ```
 
 To write your own application, see dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort class.
+
+To use TCP in a message-driven fashion, look at `dev.squaremile.asynctcpacceptance.TcpOverDirectBufferTest`
 
 ## Design objectives
 
@@ -34,8 +36,8 @@ private int port;
 
 private AppListeningOnTcpPort(final Transport transport, final int port)
 {
-    this.transport = transport;
-    this.port = port;
+this.transport = transport;
+this.port = port;
 }
 
 @Override
@@ -47,7 +49,6 @@ public void onEvent(final Event event)
 
 The user provided implementation can be passed using a factory to the launcher.
 The remaining concerns, such as running the app are kept separate and can be composed from the building blocks.
-
 
 
 ## Maintenance

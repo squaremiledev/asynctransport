@@ -9,20 +9,20 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.setup.TransportAppLauncher;
-import dev.squaremile.asynctcp.setup.TransportApplication;
-import dev.squaremile.asynctcp.api.commands.Listen;
-import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.api.events.ConnectionClosed;
-import dev.squaremile.asynctcp.api.events.DataReceived;
-import dev.squaremile.asynctcp.testfixtures.TransportEventsSpy;
-import dev.squaremile.asynctcp.testfixtures.app.WhiteboxApplication;
+import dev.squaremile.asynctcp.transport.api.commands.Listen;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.transport.api.events.DataReceived;
+import dev.squaremile.asynctcp.transport.setup.TransportAppFactory;
+import dev.squaremile.asynctcp.transport.setup.TransportApplication;
+import dev.squaremile.asynctcp.transport.testfixtures.TransportEventsSpy;
+import dev.squaremile.asynctcp.transport.testfixtures.app.WhiteboxApplication;
 
-import static dev.squaremile.asynctcp.api.app.EventListener.IGNORE_EVENTS;
-import static dev.squaremile.asynctcp.testfixtures.FreePort.freePort;
-import static dev.squaremile.asynctcp.testfixtures.StringFixtures.byteArrayWith;
-import static dev.squaremile.asynctcp.testfixtures.StringFixtures.fixedLengthStringStartingWith;
-import static dev.squaremile.asynctcp.testfixtures.StringFixtures.stringWith;
+import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
+import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.byteArrayWith;
+import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.fixedLengthStringStartingWith;
+import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.stringWith;
 
 class ByteMessageSendingApplicationTest
 {
@@ -36,15 +36,15 @@ class ByteMessageSendingApplicationTest
 
     ByteMessageSendingApplicationTest()
     {
-        drivingApplication = new TransportAppLauncher().launch(
-                transport ->
+        drivingApplication = new TransportAppFactory().create(
+                "", transport ->
                 {
                     whiteboxApplication = new WhiteboxApplication<>(transport, new TransportEventsSpy());
                     return whiteboxApplication;
-                }, "");
+                });
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppLauncher().launch(transport -> new ByteMessageSendingApplication(transport, host, port, dataToSend, IGNORE_EVENTS), "");
+        transportApplication = new TransportAppFactory().create("", transport -> new ByteMessageSendingApplication(transport, host, port, dataToSend, IGNORE_EVENTS));
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Listen.class).set(1, port));
         transportApplication.onStart();
