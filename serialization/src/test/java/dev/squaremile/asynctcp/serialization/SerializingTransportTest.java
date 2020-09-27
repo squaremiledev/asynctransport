@@ -18,7 +18,6 @@ import dev.squaremile.asynctcp.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.api.events.Connected;
 import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 import dev.squaremile.asynctcp.testfixtures.TransportCommandSpy;
 
 import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
@@ -28,7 +27,6 @@ class SerializingTransportTest
     private static final int OFFSET = 6;
     private static final Connected CONNECTED_EVENT = Fixtures.connectedEvent();
 
-    private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final TransportCommandSpy commandsSpy = new TransportCommandSpy();
     private final TransportCommandDecoders decoders = new TransportCommandDecoders();
 
@@ -45,11 +43,7 @@ class SerializingTransportTest
         SerializingTransport transport = new SerializingTransport(
                 new UnsafeBuffer(new byte[100]),
                 OFFSET,
-                (buffer, offset) ->
-                {
-                    headerDecoder.wrap(buffer, offset);
-                    commandsSpy.handle(decoders.commandDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset));
-                }
+                (buffer, offset) -> commandsSpy.handle(decoders.decode(buffer, offset))
         );
         transport.onEvent(CONNECTED_EVENT);
         TransportCommand command = commandProvider.apply(transport);
@@ -68,11 +62,7 @@ class SerializingTransportTest
         SerializingTransport transport = new SerializingTransport(
                 new UnsafeBuffer(new byte[100]),
                 OFFSET,
-                (buffer, offset) ->
-                {
-                    headerDecoder.wrap(buffer, offset);
-                    commandsSpy.handle(decoders.commandDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset));
-                }
+                (buffer, offset) -> commandsSpy.handle(decoders.decode(buffer, offset))
         );
         transport.onEvent(CONNECTED_EVENT);
 
@@ -94,11 +84,7 @@ class SerializingTransportTest
         SerializingTransport transport = new SerializingTransport(
                 new UnsafeBuffer(new byte[100]),
                 OFFSET,
-                (buffer, offset) ->
-                {
-                    headerDecoder.wrap(buffer, offset);
-                    commandsSpy.handle(decoders.commandDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset));
-                }
+                (buffer, offset) -> commandsSpy.handle(decoders.decode(buffer, offset))
         );
 
         // Then

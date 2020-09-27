@@ -2,9 +2,11 @@ package dev.squaremile.asynctcp.serialization;
 
 import java.nio.ByteBuffer;
 
+import org.agrona.DirectBuffer;
 import org.agrona.collections.Int2ObjectHashMap;
 
 
+import dev.squaremile.asynctcp.api.app.TransportEvent;
 import dev.squaremile.asynctcp.api.events.Connected;
 import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.api.events.ConnectionClosed;
@@ -32,11 +34,11 @@ import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
 // TODO [perf]: avoid garbage
 public class TransportEventDecoders
 {
+    private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final Int2ObjectHashMap<TransportEventDecoder> eventDecoders = new Int2ObjectHashMap<>();
 
     public TransportEventDecoders()
     {
-        final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
         registerConnectedDecoder(eventDecoders, headerDecoder);
         registerConnectionAcceptedDecoder(eventDecoders, headerDecoder);
         registerConnectionClosed(eventDecoders, headerDecoder);
@@ -47,6 +49,12 @@ public class TransportEventDecoders
         registerStartedListening(eventDecoders, headerDecoder);
         registerStoppedListening(eventDecoders, headerDecoder);
         registerTransportCommandFailedDecoder(eventDecoders, headerDecoder);
+    }
+
+    public TransportEvent decode(final DirectBuffer buffer, final int offset)
+    {
+        headerDecoder.wrap(buffer, offset);
+        return eventDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset);
     }
 
     private void registerStoppedListening(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
@@ -262,7 +270,7 @@ public class TransportEventDecoders
         );
     }
 
-    public TransportEventDecoder eventDecoderForTemplateId(int templateId)
+    private TransportEventDecoder eventDecoderForTemplateId(int templateId)
     {
         if (!eventDecoders.containsKey(templateId))
         {

@@ -1,8 +1,10 @@
 package dev.squaremile.asynctcp.serialization;
 
+import org.agrona.DirectBuffer;
 import org.agrona.collections.Int2ObjectHashMap;
 
 
+import dev.squaremile.asynctcp.api.app.TransportCommand;
 import dev.squaremile.asynctcp.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.api.commands.Connect;
 import dev.squaremile.asynctcp.api.commands.Listen;
@@ -21,16 +23,22 @@ import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
 // TODO [perf]: avoid garbage
 public class TransportCommandDecoders
 {
+    private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final Int2ObjectHashMap<TransportCommandDecoder> commandDecoders = new Int2ObjectHashMap<>();
 
     public TransportCommandDecoders()
     {
-        final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
         registerCloseConnection(commandDecoders, headerDecoder);
         registerConnect(commandDecoders, headerDecoder);
         registerListen(commandDecoders, headerDecoder);
         registerStopListening(commandDecoders, headerDecoder);
         registerSendData(commandDecoders, headerDecoder);
+    }
+
+    public TransportCommand decode(DirectBuffer buffer, int offset)
+    {
+        headerDecoder.wrap(buffer, offset);
+        return commandDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset);
     }
 
     private void registerCloseConnection(final Int2ObjectHashMap<TransportCommandDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
@@ -70,7 +78,6 @@ public class TransportCommandDecoders
                 }
         );
     }
-
 
     private void registerListen(final Int2ObjectHashMap<TransportCommandDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
     {
@@ -130,7 +137,7 @@ public class TransportCommandDecoders
         );
     }
 
-    public TransportCommandDecoder commandDecoderForTemplateId(int templateId)
+    private TransportCommandDecoder commandDecoderForTemplateId(int templateId)
     {
         if (!commandDecoders.containsKey(templateId))
         {
