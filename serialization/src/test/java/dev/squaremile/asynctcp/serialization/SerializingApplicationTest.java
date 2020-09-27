@@ -14,7 +14,7 @@ import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
 
 class SerializingApplicationTest
 {
-    private static final int OFFSET = 0;
+    private static final int OFFSET = 4;
     private final TransportEventsSpy eventsSpy = new TransportEventsSpy();
     private final TransportEventDecoders decoders = new TransportEventDecoders();
 
