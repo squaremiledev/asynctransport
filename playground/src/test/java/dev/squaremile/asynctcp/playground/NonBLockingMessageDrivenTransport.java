@@ -27,9 +27,9 @@ public class NonBLockingMessageDrivenTransport implements MessageDrivenTransport
     }
 
     @Override
-    public void onSerializedCommand(final DirectBuffer buffer, final int offset, final int length)
+    public void onSerialized(final DirectBuffer sourceBuffer, final int sourceOffset, final int length)
     {
-        deserialization.onSerializedCommand(buffer, offset, length);
+        deserialization.onSerialized(sourceBuffer, sourceOffset, length);
     }
 
     @Override

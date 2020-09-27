@@ -1,8 +1,5 @@
 package dev.squaremile.asynctcp.serialization;
 
-import org.agrona.DirectBuffer;
-
-public interface SerializedEventListener
+public interface SerializedEventListener extends SerializedMessageListener
 {
-    void onSerializedEvent(DirectBuffer buffer, int offset, final int length);
 }

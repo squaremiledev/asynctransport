@@ -21,9 +21,9 @@ public class MessageOnlyDrivenApplication implements MessageDrivenApplication
     }
 
     @Override
-    public void onSerializedEvent(final DirectBuffer buffer, final int offset, final int length)
+    public void onSerialized(final DirectBuffer sourceBuffer, final int sourceOffset, final int length)
     {
-        deserialization.onSerializedEvent(buffer, offset, length);
+        deserialization.onSerialized(sourceBuffer, sourceOffset, length);
     }
 
     @Override

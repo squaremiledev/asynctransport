@@ -110,7 +110,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
                     .port(command.port())
                     .connectionId(command.connectionId())
                     .commandId(command.commandId());
-            serializedCommandListener.onSerializedCommand(buffer, offset, headerEncoder.encodedLength() + closeConnectionEncoder.encodedLength());
+            serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + closeConnectionEncoder.encodedLength());
         }
         if (unknownCommand instanceof Connect)
         {
@@ -121,7 +121,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
                     .timeoutMs(command.timeoutMs())
                     .encoding(command.encodingName())
                     .remoteHost(command.remoteHost());
-            serializedCommandListener.onSerializedCommand(buffer, offset, headerEncoder.encodedLength() + connectEncoder.encodedLength());
+            serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + connectEncoder.encodedLength());
         }
         if (unknownCommand instanceof Listen)
         {
@@ -130,7 +130,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
                     .port(command.port())
                     .commandId(command.commandId())
                     .encoding(command.encodingName());
-            serializedCommandListener.onSerializedCommand(buffer, offset, headerEncoder.encodedLength() + listenEncoder.encodedLength());
+            serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + listenEncoder.encodedLength());
         }
         if (unknownCommand instanceof StopListening)
         {
@@ -138,7 +138,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
             stopListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(command.port())
                     .commandId(command.commandId());
-            serializedCommandListener.onSerializedCommand(buffer, offset, headerEncoder.encodedLength() + stopListeningEncoder.encodedLength());
+            serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + stopListeningEncoder.encodedLength());
         }
         if (unknownCommand instanceof SendData)
         {
@@ -156,7 +156,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
             int offset = dstData.offset();
             dstData.buffer().putBytes(offset + dstData.encodedLength(), srcBuffer, srcLength);
 
-            serializedCommandListener.onSerializedCommand(this.buffer, this.offset, headerEncoder.encodedLength() + sendDataEncoder.encodedLength());
+            serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + sendDataEncoder.encodedLength());
         }
 
     }

@@ -1,6 +1,5 @@
 package dev.squaremile.asynctcp.playground;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -28,35 +27,4 @@ class ThingsOnDutyRunner
         };
     }
 
-    public static class BufferWriteSpy
-    {
-        private final List<BufferWriteSpy.WrittenEntries> entries = new ArrayList<>();
-
-        void add(final int offset, final int length)
-        {
-            entries.add(new BufferWriteSpy.WrittenEntries(offset, length));
-        }
-
-        public int count()
-        {
-            return entries.size();
-        }
-
-        BufferWriteSpy.WrittenEntries entry(final int index)
-        {
-            return entries.get(index);
-        }
-
-        static class WrittenEntries
-        {
-            final int offset;
-            final int length;
-
-            WrittenEntries(final int offset, final int length)
-            {
-                this.offset = offset;
-                this.length = length;
-            }
-        }
-    }
 }
