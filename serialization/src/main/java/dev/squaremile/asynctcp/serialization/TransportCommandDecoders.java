@@ -25,6 +25,7 @@ public class TransportCommandDecoders
 {
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final Int2ObjectHashMap<TransportCommandDecoder> commandDecoders = new Int2ObjectHashMap<>();
+    private int decodedLength;
 
     public TransportCommandDecoders()
     {
@@ -35,10 +36,16 @@ public class TransportCommandDecoders
         registerSendData(commandDecoders, headerDecoder);
     }
 
-    public TransportCommand decode(DirectBuffer buffer, int offset)
+    public TransportCommand decode(DirectBuffer buffer, int offset, final int length)
     {
+        decodedLength = 0;
         headerDecoder.wrap(buffer, offset);
-        return commandDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset);
+        TransportCommand result = commandDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset);
+        if (decodedLength != length)
+        {
+            throw new IllegalArgumentException("Decoded length of " + decodedLength + " does not match declared length of " + length);
+        }
+        return result;
     }
 
     private void registerCloseConnection(final Int2ObjectHashMap<TransportCommandDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
@@ -54,7 +61,9 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    return new CloseConnection(new ConnectionIdValue(decoder.port(), decoder.connectionId())).set(decoder.commandId());
+                    CloseConnection result = new CloseConnection(new ConnectionIdValue(decoder.port(), decoder.connectionId())).set(decoder.commandId());
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -74,7 +83,9 @@ public class TransportCommandDecoders
                     );
                     PredefinedTransportEncoding predefinedTransportEncoding = PredefinedTransportEncoding.valueOf(decoder.encoding());
                     String remoteHost = decoder.remoteHost();
-                    return new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), predefinedTransportEncoding);
+                    Connect result = new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), predefinedTransportEncoding);
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -93,7 +104,9 @@ public class TransportCommandDecoders
                             headerDecoder.version()
                     );
                     PredefinedTransportEncoding predefinedTransportEncoding = PredefinedTransportEncoding.valueOf(decoder.encoding());
-                    return new Listen().set(decoder.commandId(), decoder.port(), predefinedTransportEncoding);
+                    Listen result = new Listen().set(decoder.commandId(), decoder.port(), predefinedTransportEncoding);
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -111,7 +124,9 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    return new StopListening().set(decoder.commandId(), decoder.port());
+                    StopListening result = new StopListening().set(decoder.commandId(), decoder.port());
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -132,7 +147,9 @@ public class TransportCommandDecoders
                     VarDataEncodingDecoder srcData = decoder.data();
                     byte[] dstArray = new byte[(int)srcData.length()];
                     srcData.buffer().getBytes(srcData.offset() + srcData.encodedLength(), dstArray);
-                    return new SendData(decoder.port(), decoder.connectionId(), decoder.capacity()).set(dstArray, decoder.commandId());
+                    SendData result = new SendData(decoder.port(), decoder.connectionId(), decoder.capacity()).set(dstArray, decoder.commandId());
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }

@@ -2,7 +2,7 @@ package dev.squaremile.asynctcp.serialization;
 
 import java.util.stream.Stream;
 
-import org.agrona.concurrent.UnsafeBuffer;
+import org.agrona.ExpandableArrayBuffer;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -14,7 +14,7 @@ import static dev.squaremile.asynctcp.testfixtures.Assertions.assertEqual;
 
 class SerializingApplicationTest
 {
-    private static final int OFFSET = 3;
+    private static final int OFFSET = 0;
     private final TransportEventsSpy eventsSpy = new TransportEventsSpy();
     private final TransportEventDecoders decoders = new TransportEventDecoders();
 
@@ -30,9 +30,9 @@ class SerializingApplicationTest
     {
         // Given
         SerializingApplication application = new SerializingApplication(
-                new UnsafeBuffer(new byte[100]),
+                new ExpandableArrayBuffer(64),
                 OFFSET,
-                (buffer, offset) -> eventsSpy.onEvent(decoders.decode(buffer, offset))
+                (buffer, offset, length) -> eventsSpy.onEvent(decoders.decode(buffer, offset, length))
         );
 
         // When

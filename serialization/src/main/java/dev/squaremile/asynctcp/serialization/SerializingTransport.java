@@ -6,21 +6,21 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.Long2ObjectHashMap;
 
 
+import dev.squaremile.asynctcp.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.api.app.Transport;
+import dev.squaremile.asynctcp.api.app.TransportCommand;
+import dev.squaremile.asynctcp.api.app.TransportEvent;
 import dev.squaremile.asynctcp.api.app.TransportEventsListener;
+import dev.squaremile.asynctcp.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.api.commands.Connect;
-import dev.squaremile.asynctcp.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.api.commands.Listen;
 import dev.squaremile.asynctcp.api.commands.SendData;
 import dev.squaremile.asynctcp.api.commands.StopListening;
-import dev.squaremile.asynctcp.api.app.TransportCommand;
-import dev.squaremile.asynctcp.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.api.events.Connected;
 import dev.squaremile.asynctcp.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.api.events.ConnectionResetByPeer;
-import dev.squaremile.asynctcp.api.app.TransportEvent;
 import dev.squaremile.asynctcp.api.values.ConnectionId;
 import dev.squaremile.asynctcp.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.internal.domain.CommandFactory;
@@ -110,7 +110,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
                     .port(command.port())
                     .connectionId(command.connectionId())
                     .commandId(command.commandId());
-            serializedCommandListener.onSerializedCommand(buffer, offset);
+            serializedCommandListener.onSerializedCommand(buffer, offset, headerEncoder.encodedLength() + closeConnectionEncoder.encodedLength());
         }
         if (unknownCommand instanceof Connect)
         {
@@ -121,7 +121,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
                     .timeoutMs(command.timeoutMs())
                     .encoding(command.encodingName())
                     .remoteHost(command.remoteHost());
-            serializedCommandListener.onSerializedCommand(buffer, offset);
+            serializedCommandListener.onSerializedCommand(buffer, offset, headerEncoder.encodedLength() + connectEncoder.encodedLength());
         }
         if (unknownCommand instanceof Listen)
         {
@@ -130,7 +130,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
                     .port(command.port())
                     .commandId(command.commandId())
                     .encoding(command.encodingName());
-            serializedCommandListener.onSerializedCommand(buffer, offset);
+            serializedCommandListener.onSerializedCommand(buffer, offset, headerEncoder.encodedLength() + listenEncoder.encodedLength());
         }
         if (unknownCommand instanceof StopListening)
         {
@@ -138,7 +138,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
             stopListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(command.port())
                     .commandId(command.commandId());
-            serializedCommandListener.onSerializedCommand(buffer, offset);
+            serializedCommandListener.onSerializedCommand(buffer, offset, headerEncoder.encodedLength() + stopListeningEncoder.encodedLength());
         }
         if (unknownCommand instanceof SendData)
         {
@@ -156,7 +156,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
             int offset = dstData.offset();
             dstData.buffer().putBytes(offset + dstData.encodedLength(), srcBuffer, srcLength);
 
-            serializedCommandListener.onSerializedCommand(this.buffer, this.offset);
+            serializedCommandListener.onSerializedCommand(this.buffer, this.offset, headerEncoder.encodedLength() + sendDataEncoder.encodedLength());
         }
 
     }

@@ -1,9 +1,10 @@
 package dev.squaremile.asynctcp.playground;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.agrona.MutableDirectBuffer;
-import org.agrona.collections.MutableBoolean;
 import org.agrona.concurrent.SystemEpochClock;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
@@ -39,14 +40,14 @@ class TcpOverDirectBufferTest
         // seems to be a good fit here
 
         // Given
-        final MutableBoolean eventWrittenToTheBuffer = new MutableBoolean(false);
+        final BufferWriteSpy networkToUserWrites = new BufferWriteSpy();
         final NonBLockingMessageDrivenTransport networkFacingTransport = new NonBLockingMessageDrivenTransport(
                 new NonBlockingTransport(
                         new MessageEncodingApplication(
                                 new SerializingApplication(
                                         NETWORK_TO_USER_BUFFER,
                                         NETWORK_TO_USER_BUFFER_OFFSET,
-                                        (buffer, offset) -> eventWrittenToTheBuffer.set(true)
+                                        (buffer, offset, length) -> networkToUserWrites.add(offset, length)
                                 ),
                                 SINGLE_BYTE
                         ),
@@ -55,16 +56,14 @@ class TcpOverDirectBufferTest
                 ));
 
 
+        final BufferWriteSpy userToNetworkWrites = new BufferWriteSpy();
         final EventsSpy userFacingAppEvents = new EventsSpy();
         final MessageOnlyDrivenApplication userFacingApp = new MessageOnlyDrivenApplication(
                 new EchoApplication(
                         new SerializingTransport(
                                 USER_TO_NETWORK_BUFFER,
                                 USER_TO_NETWORK_BUFFER_OFFSET,
-                                (buffer, offset) ->
-                                {
-
-                                }
+                                (buffer, offset, length) -> userToNetworkWrites.add(offset, length)
                         ),
                         port,
                         userFacingAppEvents,
@@ -76,20 +75,52 @@ class TcpOverDirectBufferTest
         // When the echo app starts, it starts listening on a predefined port
         userFacingApp.onStart();
         // however, it does not know that it merely writes a Listen command to the buffer
-        networkFacingTransport.onSerializedCommand(USER_TO_NETWORK_BUFFER, USER_TO_NETWORK_BUFFER_OFFSET);
+        networkFacingTransport.onSerializedCommand(USER_TO_NETWORK_BUFFER, USER_TO_NETWORK_BUFFER_OFFSET, userToNetworkWrites.entry(0).length);
         // the actual network facing transport reads the buffer and starts listening
         runUntil(() ->
                  {
                      networkFacingTransport.work();
                      userFacingApp.work();
-                     return eventWrittenToTheBuffer.get();
+                     return !networkToUserWrites.entries().isEmpty();
                  });
         // the network facing transport confirms that it started listening
         // the confirmation is written to the returning buffer
-        userFacingApp.onSerializedEvent(NETWORK_TO_USER_BUFFER, NETWORK_TO_USER_BUFFER_OFFSET);
+        userFacingApp.onSerializedEvent(NETWORK_TO_USER_BUFFER, NETWORK_TO_USER_BUFFER_OFFSET, networkToUserWrites.entry(0).length);
 
         // Then the echo app receives confirmation that is started listening
         assertEqual(userFacingAppEvents.received(), new StartedListening(port, INITIAL_COMMAND_ID));
+    }
+
+    private static class BufferWriteSpy
+    {
+        private final List<WrittenEntries> entries = new ArrayList<>();
+
+        void add(final int offset, final int length)
+        {
+            entries.add(new WrittenEntries(offset, length));
+        }
+
+        public List<WrittenEntries> entries()
+        {
+            return entries;
+        }
+
+        public WrittenEntries entry(int index)
+        {
+            return entries.get(index);
+        }
+
+        static class WrittenEntries
+        {
+            final int offset;
+            final int length;
+
+            WrittenEntries(final int offset, final int length)
+            {
+                this.offset = offset;
+                this.length = length;
+            }
+        }
     }
 
 }

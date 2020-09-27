@@ -16,8 +16,8 @@ public class TransportEventsDeserialization implements SerializedEventListener
     }
 
     @Override
-    public void onSerializedEvent(final DirectBuffer buffer, final int offset)
+    public void onSerializedEvent(final DirectBuffer buffer, final int offset, final int length)
     {
-        transportEventsListener.onEvent(decoders.decode(buffer, offset));
+        transportEventsListener.onEvent(decoders.decode(buffer, offset, length));
     }
 }

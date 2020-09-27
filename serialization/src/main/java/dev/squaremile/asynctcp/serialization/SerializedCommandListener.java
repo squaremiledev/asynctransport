@@ -4,5 +4,5 @@ import org.agrona.DirectBuffer;
 
 public interface SerializedCommandListener
 {
-    void onSerializedCommand(DirectBuffer buffer, int offset);
+    void onSerializedCommand(DirectBuffer buffer, int offset, final int length);
 }

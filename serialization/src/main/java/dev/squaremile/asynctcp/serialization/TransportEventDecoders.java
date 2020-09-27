@@ -36,6 +36,7 @@ public class TransportEventDecoders
 {
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final Int2ObjectHashMap<TransportEventDecoder> eventDecoders = new Int2ObjectHashMap<>();
+    private int decodedLength;
 
     public TransportEventDecoders()
     {
@@ -51,10 +52,16 @@ public class TransportEventDecoders
         registerTransportCommandFailedDecoder(eventDecoders, headerDecoder);
     }
 
-    public TransportEvent decode(final DirectBuffer buffer, final int offset)
+    public TransportEvent decode(final DirectBuffer buffer, final int offset, final int length)
     {
+        decodedLength = 0;
         headerDecoder.wrap(buffer, offset);
-        return eventDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset);
+        TransportEvent result = eventDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset);
+        if (decodedLength != length)
+        {
+            throw new IllegalArgumentException("Decoded length of " + decodedLength + " does not match declared length of " + length);
+        }
+        return result;
     }
 
     private void registerStoppedListening(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
@@ -70,7 +77,9 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    return new StoppedListening(decoder.port(), decoder.commandId());
+                    StoppedListening result = new StoppedListening(decoder.port(), decoder.commandId());
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -90,7 +99,7 @@ public class TransportEventDecoders
                     );
                     // got away with out of order variable length decoding as it't the only field of its type
                     // and only ordering within variable length fields matter
-                    return new Connected(
+                    Connected result = new Connected(
                             decoder.port(),
                             decoder.commandId(),
                             decoder.remoteHost(),
@@ -99,6 +108,8 @@ public class TransportEventDecoders
                             decoder.inboundPduLimit(),
                             decoder.outboundPduLimit()
                     );
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -118,7 +129,7 @@ public class TransportEventDecoders
                     );
                     // got away with out of order variable length decoding as it't the only field of its type
                     // and only ordering within variable length fields matter
-                    return new ConnectionAccepted(
+                    ConnectionAccepted result = new ConnectionAccepted(
                             decoder.port(),
                             decoder.commandId(),
                             decoder.remoteHost(),
@@ -127,6 +138,8 @@ public class TransportEventDecoders
                             decoder.inboundPduLimit(),
                             decoder.outboundPduLimit()
                     );
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -144,7 +157,9 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    return new ConnectionClosed(decoder.port(), decoder.connectionId(), decoder.commandId());
+                    ConnectionClosed result = new ConnectionClosed(decoder.port(), decoder.connectionId(), decoder.commandId());
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -162,12 +177,14 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    return new ConnectionCommandFailed(
+                    ConnectionCommandFailed result = new ConnectionCommandFailed(
                             decoder.port(),
                             decoder.commandId(),
                             decoder.details(),
                             decoder.connectionId()
                     );
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -185,7 +202,9 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    return new ConnectionResetByPeer(decoder.port(), decoder.connectionId(), decoder.commandId());
+                    ConnectionResetByPeer result = new ConnectionResetByPeer(decoder.port(), decoder.connectionId(), decoder.commandId());
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -203,7 +222,9 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    return new DataSent(decoder.port(), decoder.connectionId(), decoder.bytesSent(), decoder.totalBytesSent(), decoder.totalBytesBuffered(), decoder.commandId());
+                    DataSent result = new DataSent(decoder.port(), decoder.connectionId(), decoder.bytesSent(), decoder.totalBytesSent(), decoder.totalBytesBuffered(), decoder.commandId());
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -221,7 +242,9 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    return new StartedListening(decoder.port(), decoder.commandId());
+                    StartedListening result = new StartedListening(decoder.port(), decoder.commandId());
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -242,7 +265,9 @@ public class TransportEventDecoders
                     VarDataEncodingDecoder srcData = decoder.data();
                     byte[] dstArray = new byte[(int)srcData.length()];
                     srcData.buffer().getBytes(srcData.offset() + srcData.encodedLength(), dstArray);
-                    return new MessageReceived(new ConnectionIdValue(decoder.port(), decoder.connectionId())).set(ByteBuffer.wrap(dstArray), dstArray.length);
+                    MessageReceived result = new MessageReceived(new ConnectionIdValue(decoder.port(), decoder.connectionId())).set(ByteBuffer.wrap(dstArray), dstArray.length);
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }
@@ -260,12 +285,14 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    return new TransportCommandFailed(
+                    TransportCommandFailed result = new TransportCommandFailed(
                             decoder.port(),
                             decoder.commandId(),
                             decoder.details(),
                             decoder.commandType()
                     );
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
                 }
         );
     }

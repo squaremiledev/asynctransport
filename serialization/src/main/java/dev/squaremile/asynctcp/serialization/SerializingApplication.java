@@ -61,12 +61,14 @@ public class SerializingApplication implements Application
         if (unknownEvent instanceof TransportCommandFailed)
         {
             TransportCommandFailed event = (TransportCommandFailed)unknownEvent;
-            transportCommandFailedEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
-                    .port(event.port())
-                    .commandId(event.commandId())
-                    .details(event.details())
-                    .commandType(event.commandType());
-            serializedEventListener.onSerializedEvent(buffer, offset);
+            transportCommandFailedEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder);
+            transportCommandFailedEncoder.port(event.port());
+
+            transportCommandFailedEncoder.commandId(event.commandId());
+            transportCommandFailedEncoder.details(event.details());
+            transportCommandFailedEncoder.commandType(event.commandType());
+
+            serializedEventListener.onSerializedEvent(buffer, offset, headerEncoder.encodedLength() + transportCommandFailedEncoder.encodedLength());
         }
         else if (unknownEvent instanceof Connected)
         {
@@ -79,7 +81,7 @@ public class SerializingApplication implements Application
                     .inboundPduLimit(event.inboundPduLimit())
                     .outboundPduLimit(event.outboundPduLimit())
                     .remoteHost(event.remoteHost());
-            serializedEventListener.onSerializedEvent(buffer, offset);
+            serializedEventListener.onSerializedEvent(buffer, offset, headerEncoder.encodedLength() + connectedEncoder.encodedLength());
         }
         else if (unknownEvent instanceof ConnectionAccepted)
         {
@@ -92,7 +94,7 @@ public class SerializingApplication implements Application
                     .inboundPduLimit(event.inboundPduLimit())
                     .outboundPduLimit(event.outboundPduLimit())
                     .remoteHost(event.remoteHost());
-            serializedEventListener.onSerializedEvent(buffer, offset);
+            serializedEventListener.onSerializedEvent(buffer, offset, headerEncoder.encodedLength() + connectionAcceptedEncoder.encodedLength());
         }
         else if (unknownEvent instanceof ConnectionClosed)
         {
@@ -101,7 +103,7 @@ public class SerializingApplication implements Application
                     .port(event.port())
                     .commandId(event.commandId())
                     .connectionId(event.connectionId());
-            serializedEventListener.onSerializedEvent(buffer, offset);
+            serializedEventListener.onSerializedEvent(buffer, offset, headerEncoder.encodedLength() + connectionClosedEncoder.encodedLength());
         }
         else if (unknownEvent instanceof ConnectionCommandFailed)
         {
@@ -111,7 +113,7 @@ public class SerializingApplication implements Application
                     .commandId(event.commandId())
                     .connectionId(event.connectionId())
                     .details(event.details());
-            serializedEventListener.onSerializedEvent(buffer, offset);
+            serializedEventListener.onSerializedEvent(buffer, offset, headerEncoder.encodedLength() + connectionCommandFailedEncoder.encodedLength());
         }
         else if (unknownEvent instanceof ConnectionResetByPeer)
         {
@@ -120,7 +122,7 @@ public class SerializingApplication implements Application
                     .port(event.port())
                     .commandId(event.commandId())
                     .connectionId(event.connectionId());
-            serializedEventListener.onSerializedEvent(buffer, offset);
+            serializedEventListener.onSerializedEvent(buffer, offset, headerEncoder.encodedLength() + connectionResetByPeerEncoder.encodedLength());
         }
         else if (unknownEvent instanceof DataSent)
         {
@@ -132,7 +134,7 @@ public class SerializingApplication implements Application
                     .bytesSent(event.bytesSent())
                     .totalBytesSent(event.totalBytesSent())
                     .totalBytesBuffered(event.totalBytesBuffered());
-            serializedEventListener.onSerializedEvent(buffer, offset);
+            serializedEventListener.onSerializedEvent(buffer, offset, headerEncoder.encodedLength() + dataSentEncoder.encodedLength());
         }
         else if (unknownEvent instanceof StartedListening)
         {
@@ -140,7 +142,7 @@ public class SerializingApplication implements Application
             startedListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(event.port())
                     .commandId(event.commandId());
-            serializedEventListener.onSerializedEvent(buffer, offset);
+            serializedEventListener.onSerializedEvent(buffer, offset, headerEncoder.encodedLength() + startedListeningEncoder.encodedLength());
         }
 
         else if (unknownEvent instanceof StoppedListening)
@@ -149,7 +151,7 @@ public class SerializingApplication implements Application
             stoppedListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(event.port())
                     .commandId(event.commandId());
-            serializedEventListener.onSerializedEvent(this.buffer, this.offset);
+            serializedEventListener.onSerializedEvent(this.buffer, this.offset, headerEncoder.encodedLength() + stoppedListeningEncoder.encodedLength());
         }
         else if (unknownEvent instanceof MessageReceived)
         {
@@ -165,7 +167,7 @@ public class SerializingApplication implements Application
             int offset = dstData.offset();
             dstData.buffer().putBytes(offset + dstData.encodedLength(), srcBuffer, srcLength);
 
-            serializedEventListener.onSerializedEvent(this.buffer, this.offset);
+            serializedEventListener.onSerializedEvent(this.buffer, this.offset, headerEncoder.encodedLength() + messageReceivedEncoder.encodedLength());
         }
     }
 

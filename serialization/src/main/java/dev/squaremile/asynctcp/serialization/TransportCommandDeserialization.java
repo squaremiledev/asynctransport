@@ -16,8 +16,8 @@ public class TransportCommandDeserialization implements SerializedCommandListene
     }
 
     @Override
-    public void onSerializedCommand(final DirectBuffer buffer, final int offset)
+    public void onSerializedCommand(final DirectBuffer buffer, final int offset, final int length)
     {
-        transportCommandHandler.handle(decoders.decode(buffer, offset));
+        transportCommandHandler.handle(decoders.decode(buffer, offset, length));
     }
 }

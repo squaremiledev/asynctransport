@@ -43,7 +43,7 @@ class SerializingTransportTest
         SerializingTransport transport = new SerializingTransport(
                 new UnsafeBuffer(new byte[100]),
                 OFFSET,
-                (buffer, offset) -> commandsSpy.handle(decoders.decode(buffer, offset))
+                (buffer, offset, length) -> commandsSpy.handle(decoders.decode(buffer, offset, length))
         );
         transport.onEvent(CONNECTED_EVENT);
         TransportCommand command = commandProvider.apply(transport);
@@ -62,7 +62,7 @@ class SerializingTransportTest
         SerializingTransport transport = new SerializingTransport(
                 new UnsafeBuffer(new byte[100]),
                 OFFSET,
-                (buffer, offset) -> commandsSpy.handle(decoders.decode(buffer, offset))
+                (buffer, offset, length) -> commandsSpy.handle(decoders.decode(buffer, offset, length))
         );
         transport.onEvent(CONNECTED_EVENT);
 
@@ -84,7 +84,7 @@ class SerializingTransportTest
         SerializingTransport transport = new SerializingTransport(
                 new UnsafeBuffer(new byte[100]),
                 OFFSET,
-                (buffer, offset) -> commandsSpy.handle(decoders.decode(buffer, offset))
+                (buffer, offset, length) -> commandsSpy.handle(decoders.decode(buffer, offset, length))
         );
 
         // Then
