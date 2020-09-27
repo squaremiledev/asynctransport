@@ -31,20 +31,39 @@ The construction of the app is as simple as:
 
 ```java
 
-private final Transport transport;
-private int port;
+TransportApplication app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
+    "AppListeningOnTcpPort",
+    transport -> new Application()
+    {
+        @Override
+        public void onStart()
+        {
+            System.out.println("START");
+            transport.handle(transport.command(Listen.class).set(1, appPort));
+        }
 
-private AppListeningOnTcpPort(final Transport transport, final int port)
-{
-this.transport = transport;
-this.port = port;
-}
+        @Override
+        public void onStop()
+        {
+            System.out.println("STOP");
+        }
 
-@Override
-public void onEvent(final Event event)
-{
+        @Override
+        public void onEvent(final Event event)
+        {
+            System.out.println(event);
+        }
 
-}
+        @Override
+        public void work()
+        {
+            transport.work();
+        }
+    }
+);
+
+// full version: asynctcpacceptance/src/main/java/dev/squaremile/asynctcpacceptance/AppListeningOnTcpPort.java
+
 ```
 
 The user provided implementation can be passed using a factory to the launcher.
