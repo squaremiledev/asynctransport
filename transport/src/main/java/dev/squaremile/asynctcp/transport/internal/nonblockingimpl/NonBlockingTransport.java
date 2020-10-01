@@ -317,7 +317,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             long connectionId = connectionIdSource.newId();
             socketChannel.connect(new InetSocketAddress(command.remoteHost(), command.remotePort()));
             final SelectionKey selectionKey = socketChannel.register(selector, SelectionKey.OP_CONNECT);
-            pendingConnections.add(new ConnectedNotification(connectionId, socketChannel, command, clock.time() + command.timeoutMs(), selectionKey, command.encodingName()));
+            pendingConnections.add(new ConnectedNotification(connectionId, socketChannel, command, clock.time() + command.timeoutMs(), selectionKey, command.delineationName()));
         }
         catch (IOException e)
         {

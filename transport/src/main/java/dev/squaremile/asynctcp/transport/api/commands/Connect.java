@@ -61,7 +61,7 @@ public class Connect implements TransportUserCommand
         return timeoutMs;
     }
 
-    public String encodingName()
+    public String delineationName()
     {
         return delineation.name();
     }

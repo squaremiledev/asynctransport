@@ -120,7 +120,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
                     .remotePort(command.remotePort())
                     .commandId(command.commandId())
                     .timeoutMs(command.timeoutMs())
-                    .encoding(command.encodingName())
+                    .encoding(command.delineationName())
                     .remoteHost(command.remoteHost());
             serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + connectEncoder.encodedLength());
         }

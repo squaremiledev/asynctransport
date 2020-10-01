@@ -7,7 +7,9 @@ import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler;
+import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
+import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
@@ -43,6 +45,11 @@ public class DelineationApplication implements Application, TransportCommandHand
     @Override
     public void onEvent(final Event event)
     {
+        if (event instanceof Connected)
+        {
+            Connected connected = (Connected)event;
+            delineationPerConnection.put(connected.connectionId(), new SingleByte(delegate::onEvent));
+        }
         if (event instanceof ConnectionAccepted)
         {
             ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
@@ -65,11 +72,20 @@ public class DelineationApplication implements Application, TransportCommandHand
         if (command instanceof Listen)
         {
             Listen listen = (Listen)command;
+            validateDelineation(listen.delineationName());
+        }
+        else if (command instanceof Connect)
+        {
+            Connect connect = (Connect)command;
+            validateDelineation(connect.delineationName());
+        }
+    }
 
-            if (!PredefinedTransportDelineation.SINGLE_BYTE.name().equals(listen.delineationName()))
-            {
-                throw new IllegalArgumentException(listen.delineationName() + " is not supported yet");
-            }
+    private void validateDelineation(final String s)
+    {
+        if (!PredefinedTransportDelineation.SINGLE_BYTE.name().equals(s))
+        {
+            throw new IllegalArgumentException(s + " is not supported yet");
         }
     }
 }

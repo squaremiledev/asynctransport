@@ -13,7 +13,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
+import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
@@ -136,6 +138,31 @@ class DelineationApplicationTest
 
         );
     }
+
+    @Test
+    void shouldSupportMultipleInitiatedConnections()
+    {
+        final DelineationApplication app = new DelineationApplication(spy);
+        app.handle(new Connect().set("localhost", 8888, 100, 500, SINGLE_BYTE));
+        app.onEvent(new Connected(8888, 100, "remoteHost1", 5555, 1, 56000, 80000));
+        app.handle(new Connect().set("127.0.0.1", 8889, 101, 500, SINGLE_BYTE));
+        app.onEvent(new Connected(8889, 101, "remoteHost2", 5556, 2, 46000, 90000));
+
+        // When
+        app.onEvent(new DataReceived(8888, 1, 1, 1, 30, wrap(new byte[]{88})));
+        app.onEvent(new DataReceived(8889, 2, 1, 1, 40, wrap(new byte[]{89})));
+
+        // Then
+        assertEquals(
+                spy.messagesReceived(),
+                new MessageReceived(new ConnectionIdValue(8888, 1)).set(ByteBuffer.wrap(new byte[]{88}), 1),
+                new MessageReceived(new ConnectionIdValue(8889, 2)).set(ByteBuffer.wrap(new byte[]{89}), 1)
+        );
+    }
+
+    // TODO: remove delineation when connection removed
+    // TODO: different delineations at the same time for different connections
+
 
     private void assertEquals(final List<Object> actual, final Object... expected)
     {
