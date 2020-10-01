@@ -19,7 +19,8 @@ import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineati
 public class DelineationApplication implements Application, TransportCommandHandler
 {
     private final Application delegate;
-    private final Long2ObjectHashMap<SingleByteDelineation> delineationPerConnection = new Long2ObjectHashMap<>();
+    private final Long2ObjectHashMap<DelineationHandler> delineationPerConnection = new Long2ObjectHashMap<>();
+    private final DelineationImplementations delineationImplementations = new DelineationImplementations();
 
     public DelineationApplication(final Application delegate)
     {
@@ -54,7 +55,10 @@ public class DelineationApplication implements Application, TransportCommandHand
             final ConnectionIdValue connectionIdValue = new ConnectionIdValue(connected);
             delineationPerConnection.put(
                     connectionIdValue.connectionId(),
-                    new SingleByteDelineation((byteBuffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, byteBuffer, length)))
+                    delineationImplementations.create(
+                            PredefinedTransportDelineation.SINGLE_BYTE.name(),
+                            (byteBuffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, byteBuffer, length))
+                    )
             );
         }
         if (event instanceof ConnectionAccepted)
@@ -64,7 +68,10 @@ public class DelineationApplication implements Application, TransportCommandHand
             final ConnectionIdValue connectionIdValue = new ConnectionIdValue(connectionAccepted);
             delineationPerConnection.put(
                     connectionIdValue.connectionId(),
-                    new SingleByteDelineation((byteBuffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, byteBuffer, length)))
+                    delineationImplementations.create(
+                            PredefinedTransportDelineation.SINGLE_BYTE.name(),
+                            (byteBuffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, byteBuffer, length))
+                    )
             );
         }
         if (event instanceof DataReceived)
