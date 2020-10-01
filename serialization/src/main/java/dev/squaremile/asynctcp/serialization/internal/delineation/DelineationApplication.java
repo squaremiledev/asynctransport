@@ -12,12 +12,14 @@ import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
+import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 
 public class DelineationApplication implements Application, TransportCommandHandler
 {
     private final Application delegate;
-    private final Long2ObjectHashMap<SingleByte> delineationPerConnection = new Long2ObjectHashMap<>();
+    private final Long2ObjectHashMap<SingleByteDelineation> delineationPerConnection = new Long2ObjectHashMap<>();
 
     public DelineationApplication(final Application delegate)
     {
@@ -48,17 +50,27 @@ public class DelineationApplication implements Application, TransportCommandHand
         if (event instanceof Connected)
         {
             Connected connected = (Connected)event;
-            delineationPerConnection.put(connected.connectionId(), new SingleByte(delegate::onEvent));
+            final MessageReceived messageReceived = new MessageReceived();
+            final ConnectionIdValue connectionIdValue = new ConnectionIdValue(connected);
+            delineationPerConnection.put(
+                    connectionIdValue.connectionId(),
+                    new SingleByteDelineation((byteBuffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, byteBuffer, length)))
+            );
         }
         if (event instanceof ConnectionAccepted)
         {
             ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
-            delineationPerConnection.put(connectionAccepted.connectionId(), new SingleByte(delegate::onEvent));
+            final MessageReceived messageReceived = new MessageReceived();
+            final ConnectionIdValue connectionIdValue = new ConnectionIdValue(connectionAccepted);
+            delineationPerConnection.put(
+                    connectionIdValue.connectionId(),
+                    new SingleByteDelineation((byteBuffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, byteBuffer, length)))
+            );
         }
         if (event instanceof DataReceived)
         {
             DataReceived dataReceived = (DataReceived)event;
-            delineationPerConnection.get(dataReceived.connectionId()).delineate(dataReceived);
+            delineationPerConnection.get(dataReceived.connectionId()).onData(dataReceived.data(), dataReceived.offset(), dataReceived.length());
         }
         else
         {

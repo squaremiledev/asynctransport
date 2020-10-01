@@ -61,8 +61,8 @@ class DelineationApplicationTest
         final DelineationApplication app = new DelineationApplication(spy);
 
         // When
-        MessageReceived messageReceived1 = new MessageReceived(new ConnectionIdValue(8899, 4)).set(ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7}), 5);
-        MessageReceived messageReceived2 = new MessageReceived(new ConnectionIdValue(6234, 5)).set(ByteBuffer.wrap(new byte[]{0}), 1);
+        MessageReceived messageReceived1 = new MessageReceived(new ConnectionIdValue(8899, 4)).set(wrap(new byte[]{1, 2, 3, 4, 5, 6, 7}), 5);
+        MessageReceived messageReceived2 = new MessageReceived(new ConnectionIdValue(6234, 5)).set(wrap(new byte[]{0}), 1);
         app.onEvent(messageReceived1);
         app.onEvent(messageReceived2);
 
@@ -79,16 +79,16 @@ class DelineationApplicationTest
         app.onEvent(new ConnectionAccepted(8808, 51, "localhost", 33160, 5, 65536, 1313280));
 
         // When
-        app.onEvent(new DataReceived(8808, 51, 1, 1, 30, wrap(new byte[]{5})));
-        app.onEvent(new DataReceived(8809, 51, 1, 1, 30, wrap(new byte[]{6})));
+        app.onEvent(new DataReceived(8808, 5, 1, 1, 30, wrap(new byte[]{5})));
+        app.onEvent(new DataReceived(8809, 5, 1, 1, 30, wrap(new byte[]{6})));
 
         // Then
         assertEquals(
                 spy.invoked(),
                 new StartedListening(8808, 99),
                 new ConnectionAccepted(8808, 51, "localhost", 33160, 5, 65536, 1313280),
-                new MessageReceived(new ConnectionIdValue(8808, 51)).set(ByteBuffer.wrap(new byte[]{5}), 1),
-                new MessageReceived(new ConnectionIdValue(8809, 51)).set(ByteBuffer.wrap(new byte[]{6}), 1)
+                new MessageReceived(new ConnectionIdValue(8808, 5)).set(wrap(new byte[]{5}), 1),
+                new MessageReceived(new ConnectionIdValue(8809, 5)).set(wrap(new byte[]{6}), 1)
         );
     }
 
@@ -98,20 +98,20 @@ class DelineationApplicationTest
         final DelineationApplication app = new DelineationApplication(spy);
         app.handle(new Listen().set(99, 8808, SINGLE_BYTE));
         app.onEvent(new StartedListening(8808, 99));
-        app.onEvent(new ConnectionAccepted(8808, 100, "localhost", 33160, 5, 65536, 1313280));
+        app.onEvent(new ConnectionAccepted(8808, 100, "localhost", 33160, 6, 65536, 1313280));
 
         // When
-        DataReceived event = new DataReceived(8808, 100, 1, 3, 30, wrap(new byte[]{1, 2, 3}));
+        DataReceived event = new DataReceived(8808, 6, 1, 3, 30, wrap(new byte[]{1, 2, 3}));
         app.onEvent(event);
 
         // Then
         assertEquals(
                 spy.invoked(),
                 new StartedListening(8808, 99),
-                new ConnectionAccepted(8808, 100, "localhost", 33160, 5, 65536, 1313280),
-                new MessageReceived(event).set(ByteBuffer.wrap(new byte[]{1}), 1),
-                new MessageReceived(event).set(ByteBuffer.wrap(new byte[]{2}), 1),
-                new MessageReceived(event).set(ByteBuffer.wrap(new byte[]{3}), 1)
+                new ConnectionAccepted(8808, 100, "localhost", 33160, 6, 65536, 1313280),
+                new MessageReceived(event).set(wrap(new byte[]{1}), 1),
+                new MessageReceived(event).set(wrap(new byte[]{2}), 1),
+                new MessageReceived(event).set(wrap(new byte[]{3}), 1)
         );
     }
 
@@ -133,8 +133,8 @@ class DelineationApplicationTest
         // Then
         assertEquals(
                 spy.messagesReceived(),
-                new MessageReceived(new ConnectionIdValue(8809, 9)).set(ByteBuffer.wrap(new byte[]{90}), 1),
-                new MessageReceived(new ConnectionIdValue(8808, 8)).set(ByteBuffer.wrap(new byte[]{80}), 1)
+                new MessageReceived(new ConnectionIdValue(8809, 9)).set(wrap(new byte[]{90}), 1),
+                new MessageReceived(new ConnectionIdValue(8808, 8)).set(wrap(new byte[]{80}), 1)
 
         );
     }
@@ -155,8 +155,8 @@ class DelineationApplicationTest
         // Then
         assertEquals(
                 spy.messagesReceived(),
-                new MessageReceived(new ConnectionIdValue(8888, 1)).set(ByteBuffer.wrap(new byte[]{88}), 1),
-                new MessageReceived(new ConnectionIdValue(8889, 2)).set(ByteBuffer.wrap(new byte[]{89}), 1)
+                new MessageReceived(new ConnectionIdValue(8888, 1)).set(wrap(new byte[]{88}), 1),
+                new MessageReceived(new ConnectionIdValue(8889, 2)).set(wrap(new byte[]{89}), 1)
         );
     }
 

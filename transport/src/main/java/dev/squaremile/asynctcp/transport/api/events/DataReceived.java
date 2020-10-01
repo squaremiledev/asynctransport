@@ -37,6 +37,11 @@ public class DataReceived implements ConnectionEvent
         return data;
     }
 
+    public int offset()
+    {
+        return 0;
+    }
+
     public ByteBuffer prepare()
     {
         length = -1;
