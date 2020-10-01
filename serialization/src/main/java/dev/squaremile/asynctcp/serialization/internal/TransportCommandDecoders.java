@@ -4,14 +4,6 @@ import org.agrona.DirectBuffer;
 import org.agrona.collections.Int2ObjectHashMap;
 
 
-import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
-import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
-import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.transport.api.commands.Listen;
-import dev.squaremile.asynctcp.transport.api.commands.SendData;
-import dev.squaremile.asynctcp.transport.api.commands.StopListening;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding;
 import dev.squaremile.asynctcp.sbe.CloseConnectionDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectDecoder;
 import dev.squaremile.asynctcp.sbe.ListenDecoder;
@@ -19,6 +11,14 @@ import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 import dev.squaremile.asynctcp.sbe.SendDataDecoder;
 import dev.squaremile.asynctcp.sbe.StopListeningDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
+import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
+import dev.squaremile.asynctcp.transport.api.commands.Connect;
+import dev.squaremile.asynctcp.transport.api.commands.Listen;
+import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.commands.StopListening;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 
 // TODO [perf]: avoid garbage
 public class TransportCommandDecoders
@@ -81,9 +81,9 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    PredefinedTransportEncoding predefinedTransportEncoding = PredefinedTransportEncoding.valueOf(decoder.encoding());
+                    PredefinedTransportDelineation predefinedTransportDelineation = PredefinedTransportDelineation.valueOf(decoder.encoding());
                     String remoteHost = decoder.remoteHost();
-                    Connect result = new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), predefinedTransportEncoding);
+                    Connect result = new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), predefinedTransportDelineation);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }
@@ -103,8 +103,8 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    PredefinedTransportEncoding predefinedTransportEncoding = PredefinedTransportEncoding.valueOf(decoder.encoding());
-                    Listen result = new Listen().set(decoder.commandId(), decoder.port(), predefinedTransportEncoding);
+                    PredefinedTransportDelineation predefinedTransportDelineation = PredefinedTransportDelineation.valueOf(decoder.encoding());
+                    Listen result = new Listen().set(decoder.commandId(), decoder.port(), predefinedTransportDelineation);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }

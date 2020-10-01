@@ -1,6 +1,6 @@
 package dev.squaremile.asynctcp.transport.api.values;
 
-public enum PredefinedTransportEncoding
+public enum PredefinedTransportDelineation
 {
     RAW_STREAMING,
     SINGLE_BYTE,

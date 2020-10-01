@@ -25,7 +25,7 @@ import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.asynctcpacceptance.sampleapps.EchoApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding.SINGLE_BYTE;
+import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.SINGLE_BYTE;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;

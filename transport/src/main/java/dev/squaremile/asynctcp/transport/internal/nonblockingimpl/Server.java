@@ -16,7 +16,7 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.Connection;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionConfiguration;
-import dev.squaremile.asynctcp.transport.internal.transportencoding.StandardEncodingsAwareConnectionEventDelegates;
+import dev.squaremile.asynctcp.transport.internal.transportencoding.StandardDelineationAwareConnectionEventDelegates;
 
 public class Server implements AutoCloseable
 {
@@ -27,10 +27,10 @@ public class Server implements AutoCloseable
     private final EventListener eventListener;
     private final CommandFactory commandFactory;
     private final ServerSocketChannel serverSocketChannel;
-    private final StandardEncodingsAwareConnectionEventDelegates connectionEventDelegates;
+    private final StandardDelineationAwareConnectionEventDelegates connectionEventDelegates;
 
     Server(
-            final StandardEncodingsAwareConnectionEventDelegates connectionEventDelegates,
+            final StandardDelineationAwareConnectionEventDelegates connectionEventDelegates,
             final int port,
             final String protocolName,
             final long commandIdThatTriggeredListening,

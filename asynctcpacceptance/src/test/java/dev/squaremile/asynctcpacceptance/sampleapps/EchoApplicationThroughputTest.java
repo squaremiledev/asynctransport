@@ -17,7 +17,7 @@ import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding;
+import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.transport.internal.transportencoding.FixedLengthDataHandler;
 import dev.squaremile.asynctcp.transport.setup.TransportAppFactory;
 import dev.squaremile.asynctcp.transport.setup.TransportApplication;
@@ -62,7 +62,7 @@ class EchoApplicationThroughputTest
                 });
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppFactory().create("", transport -> new EchoApplication(transport, port, IGNORE_EVENTS, PredefinedTransportEncoding.FOUR_KB));
+        transportApplication = new TransportAppFactory().create("", transport -> new EchoApplication(transport, port, IGNORE_EVENTS, PredefinedTransportDelineation.FOUR_KB));
         transportApplication.onStart();
         transportApplication.work();
     }

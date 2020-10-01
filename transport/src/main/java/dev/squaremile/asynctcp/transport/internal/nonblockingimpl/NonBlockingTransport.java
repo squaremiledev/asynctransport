@@ -16,16 +16,16 @@ import org.agrona.LangUtil;
 import org.agrona.concurrent.EpochClock;
 
 
-import dev.squaremile.asynctcp.transport.api.app.EventListener;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.transport.api.app.EventListener;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
+import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.commands.StopListening;
-import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
-import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
@@ -37,7 +37,7 @@ import dev.squaremile.asynctcp.transport.internal.domain.ReadData;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.Connection;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionState;
-import dev.squaremile.asynctcp.transport.internal.transportencoding.StandardEncodingsAwareConnectionEventDelegates;
+import dev.squaremile.asynctcp.transport.internal.transportencoding.StandardDelineationAwareConnectionEventDelegates;
 
 // TODO [perf]: make sure all commands and events can be used without generating garbage
 public class NonBlockingTransport implements AutoCloseable, Transport
@@ -51,7 +51,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final PendingConnections pendingConnections;
     private final EpochClock clock;
     private final String role;
-    private final StandardEncodingsAwareConnectionEventDelegates connectionEventDelegates = new StandardEncodingsAwareConnectionEventDelegates();
+    private final StandardDelineationAwareConnectionEventDelegates connectionEventDelegates = new StandardDelineationAwareConnectionEventDelegates();
 
     public NonBlockingTransport(final EventListener eventListener, final EpochClock clock, final String role) throws IOException
     {
@@ -278,7 +278,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         }
         try
         {
-            servers.start(command.port(), command.commandId(), command.encodingName(), connectionIdSource, eventListener, commandFactory);
+            servers.start(command.port(), command.commandId(), command.delineationName(), connectionIdSource, eventListener, commandFactory);
             Server server = servers.serverListeningOn(command.port());
             final ServerSocketChannel serverSocketChannel = server.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);

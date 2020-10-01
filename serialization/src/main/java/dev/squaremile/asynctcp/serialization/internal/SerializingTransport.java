@@ -6,6 +6,13 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.Long2ObjectHashMap;
 
 
+import dev.squaremile.asynctcp.sbe.CloseConnectionEncoder;
+import dev.squaremile.asynctcp.sbe.ConnectEncoder;
+import dev.squaremile.asynctcp.sbe.ListenEncoder;
+import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
+import dev.squaremile.asynctcp.sbe.SendDataEncoder;
+import dev.squaremile.asynctcp.sbe.StopListeningEncoder;
+import dev.squaremile.asynctcp.sbe.VarDataEncodingEncoder;
 import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
@@ -26,13 +33,6 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionCommands;
-import dev.squaremile.asynctcp.sbe.CloseConnectionEncoder;
-import dev.squaremile.asynctcp.sbe.ConnectEncoder;
-import dev.squaremile.asynctcp.sbe.ListenEncoder;
-import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
-import dev.squaremile.asynctcp.sbe.SendDataEncoder;
-import dev.squaremile.asynctcp.sbe.StopListeningEncoder;
-import dev.squaremile.asynctcp.sbe.VarDataEncodingEncoder;
 
 public class SerializingTransport implements Transport, TransportEventsListener
 {
@@ -130,7 +130,7 @@ public class SerializingTransport implements Transport, TransportEventsListener
             listenEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(command.port())
                     .commandId(command.commandId())
-                    .encoding(command.encodingName());
+                    .encoding(command.delineationName());
             serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + listenEncoder.encodedLength());
         }
         if (unknownCommand instanceof StopListening)

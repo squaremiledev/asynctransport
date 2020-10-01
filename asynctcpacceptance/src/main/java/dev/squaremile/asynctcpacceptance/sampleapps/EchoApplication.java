@@ -11,7 +11,7 @@ import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding;
+import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 
 import static java.util.Objects.requireNonNull;
 
@@ -20,34 +20,34 @@ public class EchoApplication implements Application
     private final Transport transport;
     private final int listeningPort;
     private final EventListener eventListener;
-    private final PredefinedTransportEncoding encoding;
+    private final PredefinedTransportDelineation delineation;
     private boolean listening = false;
     private int nextCommandId = 101;
 
-    public EchoApplication(final Transport transport, final int listeningPort, final EventListener eventListener, final PredefinedTransportEncoding encoding)
+    public EchoApplication(final Transport transport, final int listeningPort, final EventListener eventListener, final PredefinedTransportDelineation delineation)
     {
-        this(transport, listeningPort, eventListener, encoding, 101);
+        this(transport, listeningPort, eventListener, delineation, 101);
     }
 
     public EchoApplication(
             final Transport transport,
             final int listeningPort,
             final EventListener eventListener,
-            final PredefinedTransportEncoding encoding,
+            final PredefinedTransportDelineation delineation,
             final int initialCommandId
     )
     {
         this.transport = requireNonNull(transport);
         this.listeningPort = listeningPort;
         this.eventListener = eventListener;
-        this.encoding = encoding;
+        this.delineation = delineation;
         this.nextCommandId = initialCommandId;
     }
 
     @Override
     public void onStart()
     {
-        transport.handle(transport.command(Listen.class).set(nextCommandId++, listeningPort, encoding));
+        transport.handle(transport.command(Listen.class).set(nextCommandId++, listeningPort, delineation));
     }
 
     @Override

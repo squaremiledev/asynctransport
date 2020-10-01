@@ -2,7 +2,7 @@ package dev.squaremile.asynctcp.transport.api.commands;
 
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.values.CommandId;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportEncoding;
+import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.transport.api.values.TransportId;
 
 public class Connect implements TransportUserCommand
@@ -11,11 +11,11 @@ public class Connect implements TransportUserCommand
     private long commandId = CommandId.NO_COMMAND_ID;
     private String remoteHost;
     private int timeoutMs = 1_000;
-    private PredefinedTransportEncoding encoding;
+    private PredefinedTransportDelineation delineation;
 
     public Connect set(final String remoteHost, final int remotePort, final long commandId, final int timeoutMs)
     {
-        return set(remoteHost, remotePort, commandId, timeoutMs, PredefinedTransportEncoding.RAW_STREAMING);
+        return set(remoteHost, remotePort, commandId, timeoutMs, PredefinedTransportDelineation.RAW_STREAMING);
     }
 
     public Connect set(
@@ -23,14 +23,14 @@ public class Connect implements TransportUserCommand
             final int remotePort,
             final long commandId,
             final int timeoutMs,
-            final PredefinedTransportEncoding encoding
+            final PredefinedTransportDelineation delineation
     )
     {
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
         this.commandId = commandId;
         this.timeoutMs = timeoutMs;
-        this.encoding = encoding;
+        this.delineation = delineation;
         return this;
     }
 
@@ -63,7 +63,7 @@ public class Connect implements TransportUserCommand
 
     public String encodingName()
     {
-        return encoding.name();
+        return delineation.name();
     }
 
     @Override
@@ -74,13 +74,13 @@ public class Connect implements TransportUserCommand
                ", commandId=" + commandId +
                ", remoteHost='" + remoteHost + '\'' +
                ", timeoutMs=" + timeoutMs +
-               ", encodingName='" + encoding + '\'' +
+               ", delineation='" + delineation + '\'' +
                '}';
     }
 
     @Override
     public Connect copy()
     {
-        return new Connect().set(remoteHost, remotePort, commandId, timeoutMs, encoding);
+        return new Connect().set(remoteHost, remotePort, commandId, timeoutMs, delineation);
     }
 }
