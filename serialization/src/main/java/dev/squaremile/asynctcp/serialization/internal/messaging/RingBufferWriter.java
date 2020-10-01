@@ -9,16 +9,16 @@ import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
 
 public class RingBufferWriter implements SerializedEventListener, SerializedCommandListener
 {
-    private final RingBuffer networkToUserRingBuffer;
+    private final RingBuffer ringBuffer;
 
-    public RingBufferWriter(final RingBuffer networkToUserRingBuffer)
+    public RingBufferWriter(final RingBuffer ringBuffer)
     {
-        this.networkToUserRingBuffer = networkToUserRingBuffer;
+        this.ringBuffer = ringBuffer;
     }
 
     @Override
     public void onSerialized(final DirectBuffer sourceBuffer, final int sourceOffset, final int length)
     {
-        networkToUserRingBuffer.write(1, sourceBuffer, sourceOffset, length);
+        ringBuffer.write(1, sourceBuffer, sourceOffset, length);
     }
 }

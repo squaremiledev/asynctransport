@@ -1,24 +1,25 @@
 package dev.squaremile.asynctcp.serialization.internal.delineation;
 
+import org.agrona.collections.Long2ObjectHashMap;
+
+
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler;
+import dev.squaremile.asynctcp.transport.api.commands.Listen;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 
-public class DelineationApplication implements Application
+public class DelineationApplication implements Application, TransportCommandHandler
 {
     private final Application delegate;
-    // TODO: [perf] use offset and the underlying buffer instead
-    private final SingleByte singleByteDelineation;
+    private final Long2ObjectHashMap<SingleByte> delineationPerConnection = new Long2ObjectHashMap<>();
 
-    public DelineationApplication(final Application delegate, final PredefinedTransportDelineation delineation)
+    public DelineationApplication(final Application delegate)
     {
-        if (delineation != PredefinedTransportDelineation.SINGLE_BYTE)
-        {
-            throw new IllegalArgumentException(delineation + " is not supported yet");
-        }
         this.delegate = delegate;
-        this.singleByteDelineation = new SingleByte(delegate::onEvent);
     }
 
     @Override
@@ -42,13 +43,33 @@ public class DelineationApplication implements Application
     @Override
     public void onEvent(final Event event)
     {
+        if (event instanceof ConnectionAccepted)
+        {
+            ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
+            delineationPerConnection.put(connectionAccepted.connectionId(), new SingleByte(delegate::onEvent));
+        }
         if (event instanceof DataReceived)
         {
-            singleByteDelineation.delineate((DataReceived)event);
+            DataReceived dataReceived = (DataReceived)event;
+            delineationPerConnection.get(dataReceived.connectionId()).delineate(dataReceived);
         }
         else
         {
             delegate.onEvent(event);
+        }
+    }
+
+    @Override
+    public void handle(final TransportCommand command)
+    {
+        if (command instanceof Listen)
+        {
+            Listen listen = (Listen)command;
+
+            if (!PredefinedTransportDelineation.SINGLE_BYTE.name().equals(listen.delineationName()))
+            {
+                throw new IllegalArgumentException(listen.delineationName() + " is not supported yet");
+            }
         }
     }
 }

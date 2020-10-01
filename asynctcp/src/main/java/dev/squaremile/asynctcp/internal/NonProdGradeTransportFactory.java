@@ -24,16 +24,17 @@ public class NonProdGradeTransportFactory implements TransportFactory
             final SerializedEventListener serializedEventListener
     ) throws IOException
     {
+        DelineationApplication delineationApplication = new DelineationApplication(
+                new SerializingApplication(
+                        new ExpandableArrayBuffer(),
+                        0,
+                        serializedEventListener
+                )
+        );
         return new NonBLockingMessageDrivenTransport(
                 new NonBlockingTransport(
-                        new DelineationApplication(
-                                new SerializingApplication(
-                                        new ExpandableArrayBuffer(),
-                                        0,
-                                        serializedEventListener
-                                ),
-                                predefinedTransportDelineation
-                        ),
+                        delineationApplication,
+                        delineationApplication,
                         new SystemEpochClock(),
                         role
                 ));

@@ -4,13 +4,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.app.TransportEventsListener;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportEventsListener;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
-import dev.squaremile.asynctcp.transport.internal.domain.StatusEventListener;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.asynctcp.transport.internal.domain.StatusEventListener;
 import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
@@ -26,7 +26,7 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
         this.events = events;
         try
         {
-            this.delegate = new NonBlockingTransport(new DelegatingEventListener(events, statusEventListener), System::currentTimeMillis, "");
+            this.delegate = new NonBlockingTransport(new DelegatingEventListener(events, statusEventListener), NO_HANDLER, System::currentTimeMillis, "");
         }
         catch (Exception e)
         {

@@ -21,6 +21,7 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
@@ -50,16 +51,18 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final Servers servers;
     private final PendingConnections pendingConnections;
     private final EpochClock clock;
+    private final TransportCommandHandler commandHandler;
     private final String role;
     private final StandardDelineationAwareConnectionEventDelegates connectionEventDelegates = new StandardDelineationAwareConnectionEventDelegates();
 
-    public NonBlockingTransport(final EventListener eventListener, final EpochClock clock, final String role) throws IOException
+    public NonBlockingTransport(final EventListener eventListener, final TransportCommandHandler commandHandler, final EpochClock clock, final String role) throws IOException
     {
         this.role = role;
         this.clock = clock;
         this.servers = new Servers(connectionEventDelegates);
         this.connections = new Connections(eventListener::onEvent);
         this.eventListener = eventListener;
+        this.commandHandler = commandHandler;
         this.pendingConnections = new PendingConnections(clock, eventListener);
         connectionIdSource = new ConnectionIdSource();
     }
@@ -190,6 +193,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
 //        System.out.println("T@" + command);
         try
         {
+            commandHandler.handle(command);
             tryHandle(command);
         }
         catch (Exception e)
