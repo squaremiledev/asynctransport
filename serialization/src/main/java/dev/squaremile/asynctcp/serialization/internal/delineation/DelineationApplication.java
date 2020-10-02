@@ -77,7 +77,7 @@ public class DelineationApplication implements Application, TransportCommandHand
         if (event instanceof DataReceived)
         {
             DataReceived dataReceived = (DataReceived)event;
-            delineationPerConnection.get(dataReceived.connectionId()).onData(dataReceived.data(), dataReceived.offset(), dataReceived.length());
+            delineationPerConnection.get(dataReceived.connectionId()).onData(dataReceived.dataForReading(), dataReceived.offset(), dataReceived.length());
         }
         else
         {

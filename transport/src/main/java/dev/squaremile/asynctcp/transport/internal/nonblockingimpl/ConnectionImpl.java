@@ -17,7 +17,6 @@ public class ConnectionImpl implements AutoCloseable, Connection
 
     ConnectionImpl(final ConnectionConfiguration configuration, final Channel channel, final ConnectionEventsListener eventsListener)
     {
-//        System.out.println("C@" + configuration.connectionId);
         delegate = new ValidatedConnection(
                 configuration.connectionId,
                 new SingleConnectionEvents(

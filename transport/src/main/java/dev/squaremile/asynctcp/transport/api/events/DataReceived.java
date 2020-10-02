@@ -3,6 +3,9 @@ package dev.squaremile.asynctcp.transport.api.events;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import org.agrona.MutableDirectBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
+
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 
@@ -11,6 +14,7 @@ public class DataReceived implements ConnectionEvent
     private final int port;
     private final long connectionId;
     private final ByteBuffer data;
+    private final MutableDirectBuffer directBuffer;
     private long totalBytesReceived;
     private int length;
     private int inboundPduLimit;
@@ -24,14 +28,14 @@ public class DataReceived implements ConnectionEvent
     {
         this.port = port;
         this.connectionId = connectionId;
-
+        this.directBuffer = new UnsafeBuffer(data);
         this.totalBytesReceived = totalBytesReceived;
         this.inboundPduLimit = inboundPduLimit;
         this.data = data;
         this.length = length;
     }
 
-    public ByteBuffer data()
+    public ByteBuffer dataForReading()
     {
         data.position(0).limit(length);
         return data;

@@ -28,7 +28,7 @@ public class FixedLengthDataHandler implements ReceivedDataHandler
     @Override
     public void onDataReceived(final DataReceived event)
     {
-        ByteBuffer sourceBuffer = event.data();
+        ByteBuffer sourceBuffer = event.dataForReading();
         int sourceLength = event.length();
         for (int i = 0; i < sourceLength; i++)
         {

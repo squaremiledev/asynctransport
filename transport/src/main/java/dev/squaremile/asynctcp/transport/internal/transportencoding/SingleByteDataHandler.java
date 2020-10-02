@@ -25,7 +25,7 @@ class SingleByteDataHandler implements ReceivedDataHandler
     @Override
     public void onDataReceived(final DataReceived event)
     {
-        ByteBuffer srcBuffer = event.data();
+        ByteBuffer srcBuffer = event.dataForReading();
         while (srcBuffer.hasRemaining())
         {
             byte b = srcBuffer.get();
