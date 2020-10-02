@@ -23,8 +23,8 @@ class SingleByteDataHandlerTest
     void shouldNotDoAnythingWhenNoData()
     {
         SingleByteDataHandler handler = new SingleByteDataHandler(new ConnectionIdValue(8888, 1), messageReceivedSpy);
-        dataReceived.prepare();
-        dataReceived.commit(0, 0);
+        dataReceived.prepareForWriting();
+        dataReceived.commitWriting(0, 0);
 
         // When
         handler.onDataReceived(dataReceived);
@@ -37,8 +37,8 @@ class SingleByteDataHandlerTest
     void shouldNotifyAboutSingleByteReceived()
     {
         SingleByteDataHandler handler = new SingleByteDataHandler(new ConnectionIdValue(8888, 1), messageReceivedSpy);
-        dataReceived.prepare().put((byte)'x').put((byte)'y').put((byte)'z');
-        dataReceived.commit(3, 3);
+        dataReceived.prepareForWriting().put((byte)'x').put((byte)'y').put((byte)'z');
+        dataReceived.commitWriting(3, 3);
 
         // When
         handler.onDataReceived(dataReceived);
@@ -64,11 +64,11 @@ class SingleByteDataHandlerTest
         SingleByteDataHandler handler = new SingleByteDataHandler(new ConnectionIdValue(8888, 1), messageReceivedSpy);
 
         // When
-        dataReceived.prepare().put((byte)'x');
-        dataReceived.commit(1, 1);
+        dataReceived.prepareForWriting().put((byte)'x');
+        dataReceived.commitWriting(1, 1);
         handler.onDataReceived(dataReceived);
-        dataReceived.prepare().put((byte)'y');
-        dataReceived.commit(1, 1);
+        dataReceived.prepareForWriting().put((byte)'y');
+        dataReceived.commitWriting(1, 1);
         handler.onDataReceived(dataReceived);
 
         // Then

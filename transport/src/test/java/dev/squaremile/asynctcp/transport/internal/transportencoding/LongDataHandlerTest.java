@@ -21,8 +21,8 @@ class LongDataHandlerTest
     @Test
     void shouldNotNotifyOnNoData()
     {
-        dataReceived.prepare();
-        dataReceived.commit(0, 0);
+        dataReceived.prepareForWriting();
+        dataReceived.commitWriting(0, 0);
 
         // When
         handler.onDataReceived(dataReceived);
@@ -34,9 +34,9 @@ class LongDataHandlerTest
     @Test
     void shouldNotNotifyOnInsufficientData()
     {
-        ByteBuffer buffer = dataReceived.prepare();
+        ByteBuffer buffer = dataReceived.prepareForWriting();
         buffer.put((byte)1).put((byte)2).put((byte)3);
-        dataReceived.commit(3, 3);
+        dataReceived.commitWriting(3, 3);
 
         // When
         handler.onDataReceived(dataReceived);
@@ -48,8 +48,8 @@ class LongDataHandlerTest
     @Test
     void shouldNotifyAboutReceivedLong()
     {
-        dataReceived.prepare().putLong(Long.MAX_VALUE);
-        dataReceived.commit(8, 8);
+        dataReceived.prepareForWriting().putLong(Long.MAX_VALUE);
+        dataReceived.commitWriting(8, 8);
 
         // When
         handler.onDataReceived(dataReceived);
@@ -63,10 +63,10 @@ class LongDataHandlerTest
     @Test
     void shouldNotifyAboutReceivedFullLongsOnly()
     {
-        ByteBuffer buffer = dataReceived.prepare();
+        ByteBuffer buffer = dataReceived.prepareForWriting();
         buffer.putLong(1295619689L);
         buffer.put((byte)1).put((byte)2);
-        dataReceived.commit(10, 10);
+        dataReceived.commitWriting(10, 10);
 
         // When
         handler.onDataReceived(dataReceived);
@@ -81,11 +81,11 @@ class LongDataHandlerTest
     void shouldHandleMultipleLongsSent()
     {
         // When
-        dataReceived.prepare().putLong(1);
-        dataReceived.commit(8, 8);
+        dataReceived.prepareForWriting().putLong(1);
+        dataReceived.commitWriting(8, 8);
         handler.onDataReceived(dataReceived);
-        dataReceived.prepare().putLong(3);
-        dataReceived.commit(8, 8);
+        dataReceived.prepareForWriting().putLong(3);
+        dataReceived.commitWriting(8, 8);
         handler.onDataReceived(dataReceived);
 
         // Then
@@ -97,8 +97,8 @@ class LongDataHandlerTest
     @Test
     void shouldHandleMultipleLongsEncodedBackToBack()
     {
-        dataReceived.prepare().putLong(1).putLong(2).putLong(3);
-        dataReceived.commit(8 * 3, 8 * 3);
+        dataReceived.prepareForWriting().putLong(1).putLong(2).putLong(3);
+        dataReceived.commitWriting(8 * 3, 8 * 3);
 
         // When
         handler.onDataReceived(dataReceived);
@@ -119,12 +119,12 @@ class LongDataHandlerTest
         source.putLong(Long.MIN_VALUE).putLong(200).putLong(Long.MAX_VALUE);
 
         // When
-        ByteBuffer buffer1 = dataReceived.prepare();
+        ByteBuffer buffer1 = dataReceived.prepareForWriting();
         buffer1.put(array[0]);
-        dataReceived.commit(1, 1);
+        dataReceived.commitWriting(1, 1);
         handler.onDataReceived(dataReceived);
 
-        ByteBuffer buffer2 = dataReceived.prepare();
+        ByteBuffer buffer2 = dataReceived.prepareForWriting();
         buffer2.put(array[1]);
         buffer2.put(array[2]);
         buffer2.put(array[3]);
@@ -135,10 +135,10 @@ class LongDataHandlerTest
         buffer2.put(array[8]);
         buffer2.put(array[9]);
         buffer2.put(array[10]);
-        dataReceived.commit(10, 10);
+        dataReceived.commitWriting(10, 10);
         handler.onDataReceived(dataReceived);
 
-        ByteBuffer buffer3 = dataReceived.prepare();
+        ByteBuffer buffer3 = dataReceived.prepareForWriting();
         buffer3.put(array[11]);
         buffer3.put(array[12]);
         buffer3.put(array[13]);
@@ -152,7 +152,7 @@ class LongDataHandlerTest
         buffer3.put(array[21]);
         buffer3.put(array[22]);
         buffer3.put(array[23]);
-        dataReceived.commit(13, 13);
+        dataReceived.commitWriting(13, 13);
         handler.onDataReceived(dataReceived);
 
         // Then

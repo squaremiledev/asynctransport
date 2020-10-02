@@ -42,7 +42,7 @@ public class DataReceived implements ConnectionEvent
         return 0;
     }
 
-    public ByteBuffer prepare()
+    public ByteBuffer prepareForWriting()
     {
         length = -1;
         totalBytesReceived = -1;
@@ -50,7 +50,7 @@ public class DataReceived implements ConnectionEvent
         return data;
     }
 
-    public DataReceived commit(final int length, final long totalBytesReceived)
+    public DataReceived commitWriting(final int length, final long totalBytesReceived)
     {
         this.totalBytesReceived = totalBytesReceived;
         this.length = length;

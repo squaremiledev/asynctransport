@@ -153,7 +153,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         try
         {
             DataReceived dataReceivedEvent = singleConnectionEvents.dataReceivedEvent();
-            final int readLength = channel.read(dataReceivedEvent.prepare());
+            final int readLength = channel.read(dataReceivedEvent.prepareForWriting());
             if (readLength == -1)
             {
                 closeConnection(CommandId.NO_COMMAND_ID, false);
@@ -165,7 +165,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
                 totalBytesReceived += readLength;
             }
 
-            singleConnectionEvents.onEvent(dataReceivedEvent.commit(readLength, totalBytesReceived));
+            singleConnectionEvents.onEvent(dataReceivedEvent.commitWriting(readLength, totalBytesReceived));
         }
         catch (IOException e)
         {
