@@ -22,7 +22,7 @@ public class EchoApplication implements Application
     private final EventListener eventListener;
     private final PredefinedTransportDelineation delineation;
     private boolean listening = false;
-    private int nextCommandId = 101;
+    private int nextCommandId;
 
     public EchoApplication(final Transport transport, final int listeningPort, final EventListener eventListener, final PredefinedTransportDelineation delineation)
     {

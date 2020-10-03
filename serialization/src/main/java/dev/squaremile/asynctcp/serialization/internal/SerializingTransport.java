@@ -15,10 +15,10 @@ import dev.squaremile.asynctcp.sbe.StopListeningEncoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingEncoder;
 import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
-import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
-import dev.squaremile.asynctcp.transport.api.app.TransportEventsListener;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
@@ -34,7 +34,7 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionCommands;
 
-public class SerializingTransport implements Transport, TransportEventsListener
+public class SerializingTransport implements Transport, EventListener
 {
     private final MutableDirectBuffer buffer;
     private final int offset;
@@ -156,14 +156,13 @@ public class SerializingTransport implements Transport, TransportEventsListener
             dstData.length(srcLength);
             int offset = dstData.offset();
             dstData.buffer().putBytes(offset + dstData.encodedLength(), srcBuffer, srcLength);
-
             serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + sendDataEncoder.encodedLength());
         }
 
     }
 
     @Override
-    public void onEvent(final TransportEvent unknownEvent)
+    public void onEvent(final Event unknownEvent)
     {
         if (unknownEvent instanceof Connected)
         {

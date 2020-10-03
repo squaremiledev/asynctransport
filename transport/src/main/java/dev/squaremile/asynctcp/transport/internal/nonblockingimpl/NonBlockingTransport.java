@@ -190,7 +190,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     @Override
     public void handle(final TransportCommand command)
     {
-//        System.out.println("T@" + command);
         try
         {
             commandHandler.handle(command);

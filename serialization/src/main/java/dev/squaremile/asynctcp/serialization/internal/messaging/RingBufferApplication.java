@@ -15,7 +15,7 @@ public class RingBufferApplication implements Application
     public RingBufferApplication(final Application application, final RingBuffer ringBuffer)
     {
         this.application = application;
-        this.ringBufferReader = new RingBufferReader(ringBuffer, new TransportEventsDeserialization(application::onEvent));
+        this.ringBufferReader = new RingBufferReader("fromNetwork", ringBuffer, new TransportEventsDeserialization(application::onEvent));
     }
 
     @Override

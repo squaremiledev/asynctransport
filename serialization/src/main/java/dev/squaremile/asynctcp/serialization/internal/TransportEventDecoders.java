@@ -54,7 +54,7 @@ public class TransportEventDecoders
     {
         decodedLength = 0;
         headerDecoder.wrap(buffer, offset);
-        TransportEvent result = eventDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset);
+        TransportEvent result = eventDecoderForTemplateId(headerDecoder.templateId()).decode(buffer, offset, length);
         if (decodedLength != length)
         {
             throw new IllegalArgumentException("Decoded length of " + decodedLength + " does not match declared length of " + length);
@@ -66,7 +66,7 @@ public class TransportEventDecoders
     {
         final StoppedListeningDecoder decoder = new StoppedListeningDecoder();
         eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
+                decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
                     headerDecoder.wrap(buffer, offset);
                     decoder.wrap(
@@ -86,7 +86,7 @@ public class TransportEventDecoders
     {
         final ConnectedDecoder decoder = new ConnectedDecoder();
         eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
+                decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
                     headerDecoder.wrap(buffer, offset);
                     decoder.wrap(
@@ -116,7 +116,7 @@ public class TransportEventDecoders
     {
         final ConnectionAcceptedDecoder decoder = new ConnectionAcceptedDecoder();
         eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
+                decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
                     headerDecoder.wrap(buffer, offset);
                     decoder.wrap(
@@ -146,7 +146,7 @@ public class TransportEventDecoders
     {
         final ConnectionClosedDecoder decoder = new ConnectionClosedDecoder();
         eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
+                decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
                     headerDecoder.wrap(buffer, offset);
                     decoder.wrap(
@@ -166,7 +166,7 @@ public class TransportEventDecoders
     {
         final ConnectionCommandFailedDecoder decoder = new ConnectionCommandFailedDecoder();
         eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
+                decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
                     headerDecoder.wrap(buffer, offset);
                     decoder.wrap(
@@ -191,7 +191,7 @@ public class TransportEventDecoders
     {
         final ConnectionResetByPeerDecoder decoder = new ConnectionResetByPeerDecoder();
         eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
+                decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
                     headerDecoder.wrap(buffer, offset);
                     decoder.wrap(
@@ -211,7 +211,7 @@ public class TransportEventDecoders
     {
         final DataSentDecoder decoder = new DataSentDecoder();
         eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
+                decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
                     headerDecoder.wrap(buffer, offset);
                     decoder.wrap(
@@ -231,7 +231,7 @@ public class TransportEventDecoders
     {
         final StartedListeningDecoder decoder = new StartedListeningDecoder();
         eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
+                decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
                     headerDecoder.wrap(buffer, offset);
                     decoder.wrap(
@@ -251,7 +251,7 @@ public class TransportEventDecoders
     {
         final MessageReceivedDecoder decoder = new MessageReceivedDecoder();
         eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
+                decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
                     headerDecoder.wrap(buffer, offset);
                     decoder.wrap(
@@ -276,7 +276,7 @@ public class TransportEventDecoders
     {
         final TransportCommandFailedDecoder decoder = new TransportCommandFailedDecoder();
         eventDecoders.put(
-                decoder.sbeTemplateId(), (buffer, offset) ->
+                decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
                     headerDecoder.wrap(buffer, offset);
                     decoder.wrap(

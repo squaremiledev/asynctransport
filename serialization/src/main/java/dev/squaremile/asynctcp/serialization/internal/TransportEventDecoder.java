@@ -7,5 +7,5 @@ import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
 
 public interface TransportEventDecoder
 {
-    TransportEvent decode(DirectBuffer buffer, int offset);
+    TransportEvent decode(DirectBuffer buffer, int offset, final int length);
 }

@@ -14,7 +14,7 @@ public class RingBufferBackedTransport implements MessageDrivenTransport
     public RingBufferBackedTransport(final MessageDrivenTransport messageDrivenTransport, final RingBuffer toNetworkBuffer)
     {
         this.messageDrivenTransport = messageDrivenTransport;
-        bufferReader = new RingBufferReader(toNetworkBuffer, this.messageDrivenTransport);
+        bufferReader = new RingBufferReader("toNetwork", toNetworkBuffer, this.messageDrivenTransport);
     }
 
     @Override

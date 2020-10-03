@@ -21,6 +21,7 @@ import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.asynctcpacceptance.sampleapps.EchoApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
+import static dev.squaremile.asynctcp.fixtures.EventsSpy.spy;
 import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.SINGLE_BYTE;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
@@ -39,8 +40,7 @@ class TcpOverDirectBufferTest
         final SampleClient sampleClient = new SampleClient();
         final SerializedMessagesSpy networkToUserWrites = new SerializedMessagesSpy();
         final SerializedMessagesSpy userToNetworkWrites = new SerializedMessagesSpy();
-        final EventsSpy userFacingAppEvents = new EventsSpy();
-
+        final EventsSpy userFacingAppEvents = spy();
         final MessageDrivenTransport networkFacingTransport = asyncTcpTransportFactory.createMessageDrivenTransport("networkFacing", SINGLE_BYTE, networkToUserWrites);
         final MessageOnlyDrivenApplication userFacingApp = new MessageOnlyDrivenApplication(
                 new EchoApplication(

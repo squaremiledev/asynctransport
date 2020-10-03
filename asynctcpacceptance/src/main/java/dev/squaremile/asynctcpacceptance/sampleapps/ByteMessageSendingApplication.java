@@ -60,7 +60,6 @@ public class ByteMessageSendingApplication implements Application
     @Override
     public void onEvent(final Event event)
     {
-//        System.out.println("S@" + event);
         eventListener.onEvent(event);
         if (event instanceof Connected)
         {
