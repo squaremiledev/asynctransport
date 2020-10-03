@@ -13,6 +13,7 @@ class DelineationImplementations
 {
     private static final Set<String> SUPPORTED_DELINEATION = unmodifiableSet(new HashSet<>(asList(
             PredefinedTransportDelineation.SINGLE_BYTE.name(),
+            PredefinedTransportDelineation.INTEGERS.name(),
             PredefinedTransportDelineation.LONGS.name()
     )));
 
@@ -26,6 +27,8 @@ class DelineationImplementations
         {
             case "SINGLE_BYTE":
                 return new SingleByteDelineation(delineatedDataHandler);
+            case "INTEGERS":
+                return new IntegersDelineation(delineatedDataHandler);
             case "LONGS":
                 return new LongsDelineation(delineatedDataHandler);
             default:

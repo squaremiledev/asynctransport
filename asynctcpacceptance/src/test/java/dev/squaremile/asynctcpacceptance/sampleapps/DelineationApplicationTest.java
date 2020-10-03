@@ -23,6 +23,7 @@ import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
+import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.INTEGERS;
 import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.LONGS;
 import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.SINGLE_BYTE;
 import static java.nio.ByteBuffer.wrap;
@@ -167,12 +168,8 @@ class DelineationApplicationTest
         );
     }
 
-    // TODO: remove delineation when connection removed
-
-    // TODO: different delineations at the same time for different connections
-
     @Test
-    void shouldSupportOtherDelineationMechanisms()
+    void shouldSupportOtherLongsAsDelineationMechanisms()
     {
         final DelineationApplication app = new DelineationApplication(spy);
         app.handle(new Listen().set(99, 8808, LONGS));
@@ -189,6 +186,28 @@ class DelineationApplicationTest
         );
     }
 
+    @Test
+    void shouldSupportOtherIntsAsDelineationMechanisms()
+    {
+        final DelineationApplication app = new DelineationApplication(spy);
+        app.handle(new Listen().set(99, 8808, INTEGERS));
+        app.onEvent(new StartedListening(8808, 99));
+        app.onEvent(new ConnectionAccepted(8808, 51, "localhost", 33160, 5, 65536, 1313280));
+
+        // When
+        app.onEvent(new DataReceived(8808, 5, 4, 4, 30, wrap(byteArrayWithInt())));
+
+        // Then
+        assertEquals(
+                spy.messagesReceived(),
+                new MessageReceived(new ConnectionIdValue(8808, 5)).set(wrapDirect(byteArrayWithInt()), 4).copy()
+        );
+    }
+
+    // TODO: remove delineation when connection removed
+
+    // TODO: different delineations at the same time for different connections
+
     private void assertEquals(final List<Object> actual, final Object... expected)
     {
         assertThat(actual).usingRecursiveComparison().isEqualTo(asList(expected));
@@ -197,6 +216,11 @@ class DelineationApplicationTest
     private byte[] byteArrayWithLong()
     {
         return new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
+    }
+
+    private byte[] byteArrayWithInt()
+    {
+        return new byte[]{11, 12, 13, 14};
     }
 
     private static class ApplicationSpy implements Application

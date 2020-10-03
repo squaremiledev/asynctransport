@@ -2,13 +2,13 @@ package dev.squaremile.asynctcp.serialization.internal.delineation;
 
 import org.agrona.DirectBuffer;
 
-class LongsDelineation implements DelineationHandler
+class IntegersDelineation implements DelineationHandler
 {
     private final FixedLengthDelineation delineation;
 
-    LongsDelineation(final DelineationHandler delineatedDataHandler)
+    IntegersDelineation(final DelineationHandler delineatedDataHandler)
     {
-        this.delineation = new FixedLengthDelineation(delineatedDataHandler, 8);
+        this.delineation = new FixedLengthDelineation(delineatedDataHandler, 4);
     }
 
     @Override
