@@ -14,13 +14,15 @@ import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 
 public class DelineationApplication implements Application, TransportCommandHandler
 {
+
     private final Application delegate;
     private final Long2ObjectHashMap<DelineationHandler> delineationPerConnection = new Long2ObjectHashMap<>();
     private final DelineationImplementations delineationImplementations = new DelineationImplementations();
+    // TODO #8: delineation per connection
+    private String lastDelineation;
 
     public DelineationApplication(final Application delegate)
     {
@@ -56,7 +58,7 @@ public class DelineationApplication implements Application, TransportCommandHand
             delineationPerConnection.put(
                     connectionIdValue.connectionId(),
                     delineationImplementations.create(
-                            PredefinedTransportDelineation.SINGLE_BYTE.name(),
+                            lastDelineation,
                             (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, buffer, offset, length))
                     )
             );
@@ -69,7 +71,7 @@ public class DelineationApplication implements Application, TransportCommandHand
             delineationPerConnection.put(
                     connectionIdValue.connectionId(),
                     delineationImplementations.create(
-                            PredefinedTransportDelineation.SINGLE_BYTE.name(),
+                            lastDelineation,
                             (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, buffer, offset, length))
                     )
             );
@@ -92,19 +94,21 @@ public class DelineationApplication implements Application, TransportCommandHand
         {
             Listen listen = (Listen)command;
             validateDelineation(listen.delineationName());
+            lastDelineation = listen.delineationName();
         }
         else if (command instanceof Connect)
         {
             Connect connect = (Connect)command;
             validateDelineation(connect.delineationName());
+            lastDelineation = connect.delineationName();
         }
     }
 
-    private void validateDelineation(final String s)
+    private void validateDelineation(final String delineation)
     {
-        if (!PredefinedTransportDelineation.SINGLE_BYTE.name().equals(s))
+        if (!delineationImplementations.isSupported(delineation))
         {
-            throw new IllegalArgumentException(s + " is not supported yet");
+            throw new IllegalArgumentException(delineation + " is not supported yet");
         }
     }
 }

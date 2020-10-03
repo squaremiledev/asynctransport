@@ -23,6 +23,7 @@ import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
+import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.LONGS;
 import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.SINGLE_BYTE;
 import static java.nio.ByteBuffer.wrap;
 import static java.util.Arrays.asList;
@@ -167,11 +168,35 @@ class DelineationApplicationTest
     }
 
     // TODO: remove delineation when connection removed
+
     // TODO: different delineations at the same time for different connections
+
+    @Test
+    void shouldSupportOtherDelineationMechanisms()
+    {
+        final DelineationApplication app = new DelineationApplication(spy);
+        app.handle(new Listen().set(99, 8808, LONGS));
+        app.onEvent(new StartedListening(8808, 99));
+        app.onEvent(new ConnectionAccepted(8808, 51, "localhost", 33160, 5, 65536, 1313280));
+
+        // When
+        app.onEvent(new DataReceived(8808, 5, 8, 8, 30, wrap(byteArrayWithLong())));
+
+        // Then
+        assertEquals(
+                spy.messagesReceived(),
+                new MessageReceived(new ConnectionIdValue(8808, 5)).set(wrapDirect(byteArrayWithLong()), 8).copy()
+        );
+    }
 
     private void assertEquals(final List<Object> actual, final Object... expected)
     {
         assertThat(actual).usingRecursiveComparison().isEqualTo(asList(expected));
+    }
+
+    private byte[] byteArrayWithLong()
+    {
+        return new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
     }
 
     private static class ApplicationSpy implements Application
@@ -212,12 +237,5 @@ class DelineationApplicationTest
         {
             invoked.add(event.copy());
         }
-    }
-
-    private byte[] dataIn(final MessageReceived message)
-    {
-        byte[] content = new byte[message.length()];
-        message.buffer().getBytes(message.offset(), content);
-        return content;
     }
 }
