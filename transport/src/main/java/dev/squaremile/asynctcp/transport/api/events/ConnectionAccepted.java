@@ -3,6 +3,7 @@ package dev.squaremile.asynctcp.transport.api.events;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.TransportCorrelatedEvent;
 import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedEvent
 {
@@ -13,6 +14,18 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     private final long connectionId;
     private final int inboundPduLimit;
     private final int outboundPduLimit;
+
+    public ConnectionAccepted(
+            final ConnectionId connectionId,
+            final long commandId,
+            final String remoteHost,
+            final int remotePort,
+            final int inboundPduLimit,
+            final int outboundPduLimit
+    )
+    {
+        this(connectionId.port(), commandId, remoteHost, remotePort, connectionId.connectionId(), inboundPduLimit, outboundPduLimit);
+    }
 
     public ConnectionAccepted(
             final int port,

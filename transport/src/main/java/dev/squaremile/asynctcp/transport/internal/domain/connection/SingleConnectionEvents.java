@@ -1,9 +1,12 @@
 package dev.squaremile.asynctcp.transport.internal.domain.connection;
 
+import java.nio.ByteBuffer;
+
+
 import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionCommandFailed;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
@@ -22,7 +25,7 @@ public class SingleConnectionEvents implements ConnectionEventsListener
         this.eventsListener = eventsListener;
         this.port = port;
         this.connectionId = connectionId;
-        this.dataReceivedEvent = new DataReceived(port, connectionId, inboundPduLimit);
+        this.dataReceivedEvent = new DataReceived(port, connectionId, 0, 0, inboundPduLimit, ByteBuffer.wrap(new byte[inboundPduLimit]));
         this.dataSentEvent = new DataSent(this.port, this.connectionId);
     }
 

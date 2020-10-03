@@ -9,6 +9,7 @@ import org.agrona.concurrent.UnsafeBuffer;
 
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 public class DataReceived implements ConnectionEvent
 {
@@ -20,9 +21,9 @@ public class DataReceived implements ConnectionEvent
     private int length;
     private int inboundPduLimit;
 
-    public DataReceived(final int port, final long connectionId, final int inboundPduLimit)
+    public DataReceived(final ConnectionId connectionId, final long totalBytesReceived, final int length, final int inboundPduLimit, final ByteBuffer data)
     {
-        this(port, connectionId, 0, 0, inboundPduLimit, ByteBuffer.wrap(new byte[inboundPduLimit]));
+        this(connectionId.port(), connectionId.connectionId(), totalBytesReceived, length, inboundPduLimit, data);
     }
 
     public DataReceived(final int port, final long connectionId, final long totalBytesReceived, final int length, final int inboundPduLimit, final ByteBuffer data)
