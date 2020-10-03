@@ -12,6 +12,10 @@ distZip {
     archiveFileName = 'asynctcpacceptance.zip'
 }
 
+test {
+    useJUnitPlatform()
+}
+
 dependencies {
     implementation project(':transport')
     implementation testFixtures(project(':asynctcp'))

@@ -19,4 +19,9 @@ subprojects {
     java {
         modularity.inferModulePath = true
     }
+    test {
+        useJUnitPlatform {
+//        excludeTags 'tcperror' // uncomment not to run tests that produce tcp errors (expected)
+        }
+    }
 }

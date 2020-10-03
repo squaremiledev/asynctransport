@@ -8,11 +8,6 @@ java {
     withSourcesJar()
 }
 
-test {
-    useJUnitPlatform {
-//        excludeTags 'tcperror' // uncomment not to run tests that produce tcp errors (expected)
-    }
-}
 
 dependencies {
     implementation 'org.agrona:agrona:1.6.0'
