@@ -7,10 +7,11 @@ import org.agrona.CloseHelper;
 import static org.agrona.LangUtil.rethrowUnchecked;
 
 
-import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
@@ -79,6 +80,10 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         {
             handle((SendData)command);
         }
+        else if (command instanceof SendMessage)
+        {
+            handle((SendMessage)command);
+        }
         else if (command instanceof ReadData)
         {
             handle((ReadData)command);
@@ -137,6 +142,18 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     }
 
     private void handle(final SendData command)
+    {
+        try
+        {
+            connectionState = outgoingStream.sendData(channel, command.data(), command.commandId());
+        }
+        catch (IOException e)
+        {
+            rethrowUnchecked(e);
+        }
+    }
+
+    private void handle(final SendMessage command)
     {
         try
         {

@@ -1,7 +1,5 @@
 package dev.squaremile.asynctcp.serialization.internal;
 
-import java.nio.ByteBuffer;
-
 import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.Long2ObjectHashMap;
 
@@ -11,8 +9,8 @@ import dev.squaremile.asynctcp.sbe.ConnectEncoder;
 import dev.squaremile.asynctcp.sbe.ListenEncoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
 import dev.squaremile.asynctcp.sbe.SendDataEncoder;
+import dev.squaremile.asynctcp.sbe.SendMessageEncoder;
 import dev.squaremile.asynctcp.sbe.StopListeningEncoder;
-import dev.squaremile.asynctcp.sbe.VarDataEncodingEncoder;
 import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.transport.api.app.Event;
@@ -24,6 +22,7 @@ import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
@@ -44,6 +43,7 @@ public class SerializingTransport implements Transport, EventListener
     private final ListenEncoder listenEncoder = new ListenEncoder();
     private final StopListeningEncoder stopListeningEncoder = new StopListeningEncoder();
     private final SendDataEncoder sendDataEncoder = new SendDataEncoder();
+    private final SendMessageEncoder sendMessageEncoder = new SendMessageEncoder();
     private final ConnectEncoder connectEncoder = new ConnectEncoder();
     private final Long2ObjectHashMap<ConnectionCommands> connectionCommandsByConnectionId = new Long2ObjectHashMap<>();
     private final CommandFactory commandFactory = new CommandFactory();
@@ -113,7 +113,7 @@ public class SerializingTransport implements Transport, EventListener
                     .commandId(command.commandId());
             serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + closeConnectionEncoder.encodedLength());
         }
-        if (unknownCommand instanceof Connect)
+        else if (unknownCommand instanceof Connect)
         {
             Connect command = (Connect)unknownCommand;
             connectEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
@@ -124,7 +124,7 @@ public class SerializingTransport implements Transport, EventListener
                     .remoteHost(command.remoteHost());
             serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + connectEncoder.encodedLength());
         }
-        if (unknownCommand instanceof Listen)
+        else if (unknownCommand instanceof Listen)
         {
             Listen command = (Listen)unknownCommand;
             listenEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
@@ -133,7 +133,7 @@ public class SerializingTransport implements Transport, EventListener
                     .encoding(command.delineationName());
             serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + listenEncoder.encodedLength());
         }
-        if (unknownCommand instanceof StopListening)
+        else if (unknownCommand instanceof StopListening)
         {
             StopListening command = (StopListening)unknownCommand;
             stopListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
@@ -141,22 +141,38 @@ public class SerializingTransport implements Transport, EventListener
                     .commandId(command.commandId());
             serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + stopListeningEncoder.encodedLength());
         }
-        if (unknownCommand instanceof SendData)
+        else if (unknownCommand instanceof SendData)
         {
             SendData command = (SendData)unknownCommand;
-            sendDataEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
+            final SendDataEncoder encoder = this.sendDataEncoder;
+
+            encoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(command.port())
                     .connectionId(command.connectionId())
                     .commandId(command.commandId())
                     .capacity(command.capacity());
 
-            VarDataEncodingEncoder dstData = sendDataEncoder.data();
-            ByteBuffer srcBuffer = command.data();
-            int srcLength = command.length();
-            dstData.length(srcLength);
-            int offset = dstData.offset();
-            dstData.buffer().putBytes(offset + dstData.encodedLength(), srcBuffer, srcLength);
-            serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + sendDataEncoder.encodedLength());
+            encoder.data().length(command.length());
+            encoder.data().buffer().putBytes(encoder.data().offset() + encoder.data().encodedLength(), command.buffer(), command.offset(), command.length());
+            serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + encoder.encodedLength());
+        }
+        else if (unknownCommand instanceof SendMessage)
+        {
+            SendMessage command = (SendMessage)unknownCommand;
+            final SendMessageEncoder encoder = this.sendMessageEncoder;
+
+            encoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
+                    .port(command.port())
+                    .connectionId(command.connectionId())
+                    .commandId(command.commandId());
+
+            encoder.data().length(command.length());
+            encoder.data().buffer().putBytes(encoder.data().offset() + encoder.data().encodedLength(), command.buffer(), command.offset(), command.length());
+            serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + encoder.encodedLength());
+        }
+        else
+        {
+            throw new UnsupportedOperationException(unknownCommand.toString());
         }
 
     }

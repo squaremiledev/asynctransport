@@ -18,6 +18,7 @@ import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.testfixtures.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.transport.testfixtures.TransportCommandSpy;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
@@ -28,7 +29,7 @@ class SerializingTransportTest
     private static final Connected CONNECTED_EVENT = Fixtures.connectedEvent();
 
     private final TransportCommandSpy commandsSpy = new TransportCommandSpy();
-    private final TransportCommandDecoders decoders = new TransportCommandDecoders();
+    private final TransportCommandDecoders decoders = new TransportCommandDecoders(new CommandsProvidingTransport());
 
     static Stream<Function<Transport, TransportUserCommand>> commands()
     {

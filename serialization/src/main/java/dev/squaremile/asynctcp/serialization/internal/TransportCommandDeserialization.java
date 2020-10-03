@@ -4,21 +4,22 @@ import org.agrona.DirectBuffer;
 
 
 import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
-import dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
 
 public class TransportCommandDeserialization implements SerializedCommandListener
 {
-    private final TransportCommandDecoders decoders = new TransportCommandDecoders();
-    private final TransportCommandHandler transportCommandHandler;
+    private final TransportCommandDecoders decoders;
+    private final Transport transport;
 
-    public TransportCommandDeserialization(final TransportCommandHandler transportCommandHandler)
+    public TransportCommandDeserialization(final Transport transport)
     {
-        this.transportCommandHandler = transportCommandHandler;
+        this.transport = transport;
+        this.decoders = new TransportCommandDecoders(transport);
     }
 
     @Override
     public void onSerialized(final DirectBuffer sourceBuffer, final int sourceOffset, final int length)
     {
-        transportCommandHandler.handle(decoders.decode(sourceBuffer, sourceOffset, length));
+        transport.handle(decoders.decode(sourceBuffer, sourceOffset, length));
     }
 }

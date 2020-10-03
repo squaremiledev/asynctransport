@@ -11,6 +11,7 @@ import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
@@ -57,6 +58,7 @@ class Fixtures
                 transport -> transport.command(Connect.class).set("remoteHost", 8899, 202, 10, PredefinedTransportDelineation.SINGLE_BYTE),
                 transport -> transport.command(Listen.class).set(203, 6688, PredefinedTransportDelineation.LONGS),
                 transport -> transport.command(connectedEvent(), SendData.class).set(new byte[]{1, 2, 3, 4, 5, 6}, 205),
+                transport -> set(transport.command(connectedEvent(), SendMessage.class), 0, new byte[]{1, 2, 3, 4, 5, 6}, 2, 3),
                 transport -> transport.command(StopListening.class).set(204, 7788)
         );
     }
@@ -64,5 +66,12 @@ class Fixtures
     public static Connected connectedEvent()
     {
         return new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000);
+    }
+
+    private static SendMessage set(final SendMessage command, final int index, byte[] src, final int offset, final int length)
+    {
+        command.prepare().putBytes(index, src, offset, length);
+        command.commit(length);
+        return command;
     }
 }

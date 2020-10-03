@@ -1,27 +1,24 @@
 package dev.squaremile.asynctcp.transport.internal.domain.connection;
 
-import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
-import dev.squaremile.asynctcp.transport.internal.domain.NoOpCommand;
-import dev.squaremile.asynctcp.transport.internal.domain.ReadData;
 
 public class ConnectionCommands
 {
     private final SendData sendDataCommand;
-    private final ReadData readDataCommand;
+    private final SendMessage sendMessageCommand;
     private final CloseConnection closeConnection;
-    private final NoOpCommand noOpCommand;
 
     public ConnectionCommands(final ConnectionIdValue connectionId, final int initialSenderBufferSize)
     {
         CommandFactory commandFactory = new CommandFactory();
         this.sendDataCommand = new SendData(connectionId, initialSenderBufferSize);
-        this.readDataCommand = commandFactory.create(connectionId, ReadData.class);
+        this.sendMessageCommand = new SendMessage(connectionId);
         this.closeConnection = commandFactory.create(connectionId, CloseConnection.class);
-        this.noOpCommand = commandFactory.create(connectionId, NoOpCommand.class);
     }
 
     public <C extends ConnectionUserCommand> C command(final Class<C> commandType)
@@ -30,17 +27,13 @@ public class ConnectionCommands
         {
             return commandType.cast(sendDataCommand.reset());
         }
-        if (commandType.equals(ReadData.class))
+        if (commandType.equals(SendMessage.class))
         {
-            return commandType.cast(readDataCommand);
+            return commandType.cast(sendMessageCommand.reset());
         }
         if (commandType.equals(CloseConnection.class))
         {
             return commandType.cast(closeConnection);
-        }
-        if (commandType.equals(NoOpCommand.class))
-        {
-            return commandType.cast(noOpCommand);
         }
         throw new IllegalArgumentException(commandType.getSimpleName());
     }

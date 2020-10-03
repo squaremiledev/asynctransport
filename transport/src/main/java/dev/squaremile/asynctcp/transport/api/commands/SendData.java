@@ -2,6 +2,7 @@ package dev.squaremile.asynctcp.transport.api.commands;
 
 import java.nio.ByteBuffer;
 
+import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 
@@ -57,6 +58,16 @@ public class SendData implements ConnectionUserCommand
     public long connectionId()
     {
         return connectionId.connectionId();
+    }
+
+    public DirectBuffer buffer()
+    {
+        return buffer;
+    }
+
+    public int offset()
+    {
+        return 0;
     }
 
     public ByteBuffer data()

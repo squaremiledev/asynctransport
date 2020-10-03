@@ -23,7 +23,7 @@ import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferWriter
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
-import dev.squaremile.asynctcpacceptance.sampleapps.EchoApplication;
+import dev.squaremile.asynctcpacceptance.sampleapps.MessageEchoApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.fixtures.EventsSpy.spyAndDelegateTo;
@@ -53,7 +53,7 @@ class TcpOverRingBufferTest
         );
         final EventsSpy userFacingAppEvents = spyAndDelegateTo(serializingTransport);
         final RingBufferApplication userFacingApp = new RingBufferApplication(
-                new EchoApplication(
+                new MessageEchoApplication(
                         serializingTransport,
                         port,
                         userFacingAppEvents,

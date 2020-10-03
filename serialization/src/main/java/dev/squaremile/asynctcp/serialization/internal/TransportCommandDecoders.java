@@ -9,13 +9,16 @@ import dev.squaremile.asynctcp.sbe.ConnectDecoder;
 import dev.squaremile.asynctcp.sbe.ListenDecoder;
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 import dev.squaremile.asynctcp.sbe.SendDataDecoder;
+import dev.squaremile.asynctcp.sbe.SendMessageDecoder;
 import dev.squaremile.asynctcp.sbe.StopListeningDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
@@ -25,15 +28,18 @@ public class TransportCommandDecoders
 {
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final Int2ObjectHashMap<TransportCommandDecoder> commandDecoders = new Int2ObjectHashMap<>();
+    private final Transport transport;
     private int decodedLength;
 
-    public TransportCommandDecoders()
+    public TransportCommandDecoders(final Transport transport)
     {
+        this.transport = transport;
         registerCloseConnection(commandDecoders, headerDecoder);
         registerConnect(commandDecoders, headerDecoder);
         registerListen(commandDecoders, headerDecoder);
         registerStopListening(commandDecoders, headerDecoder);
         registerSendData(commandDecoders, headerDecoder);
+        registerSendMessage(commandDecoders, headerDecoder);
     }
 
     public TransportCommand decode(DirectBuffer buffer, int offset, final int length)
@@ -148,6 +154,29 @@ public class TransportCommandDecoders
                     byte[] dstArray = new byte[(int)srcData.length()];
                     srcData.buffer().getBytes(srcData.offset() + srcData.encodedLength(), dstArray);
                     SendData result = new SendData(decoder.port(), decoder.connectionId(), decoder.capacity()).set(dstArray, decoder.commandId());
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    return result;
+                }
+        );
+    }
+
+    private void registerSendMessage(final Int2ObjectHashMap<TransportCommandDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
+    {
+        final SendMessageDecoder decoder = new SendMessageDecoder();
+        eventDecoders.put(
+                decoder.sbeTemplateId(), (buffer, offset) ->
+                {
+                    headerDecoder.wrap(buffer, offset);
+                    decoder.wrap(
+                            buffer,
+                            headerDecoder.encodedLength() + headerDecoder.offset(),
+                            headerDecoder.blockLength(),
+                            headerDecoder.version()
+                    );
+                    int dataLength = (int)decoder.data().length();
+                    SendMessage result = transport.command(new ConnectionIdValue(decoder.port(), decoder.connectionId()), SendMessage.class);
+                    result.prepare().putBytes(result.offset(), decoder.data().buffer(), decoder.data().offset() + decoder.data().encodedLength(), dataLength);
+                    result.commit(dataLength);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }

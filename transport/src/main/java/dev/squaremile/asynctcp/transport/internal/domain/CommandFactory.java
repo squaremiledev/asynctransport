@@ -1,12 +1,13 @@
 package dev.squaremile.asynctcp.transport.internal.domain;
 
+import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.commands.StopListening;
-import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 public class CommandFactory
@@ -20,6 +21,10 @@ public class CommandFactory
         if (commandType.equals(SendData.class))
         {
             return commandType.cast(new SendData(connectionId, 0));
+        }
+        if (commandType.equals(SendMessage.class))
+        {
+            return commandType.cast(new SendMessage(connectionId));
         }
         if (commandType.equals(CloseConnection.class))
         {
