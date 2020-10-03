@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance.sampleapps;
+package dev.squaremile.asynctcp.serialization.internal.delineation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
@@ -42,6 +41,16 @@ class DelineationApplicationTest
     static DirectBuffer wrapDirect(byte[] array)
     {
         return new UnsafeBuffer(array);
+    }
+
+    private static ConnectionResetByPeer connectionResetByPeer(final ConnectionId connectionId)
+    {
+        return new ConnectionResetByPeer(connectionId.port(), connectionId.connectionId(), -1);
+    }
+
+    private static ConnectionClosed connectionClosed(final ConnectionId connectionId)
+    {
+        return new ConnectionClosed(connectionId.port(), connectionId.connectionId(), -1);
     }
 
     @Test
@@ -338,11 +347,6 @@ class DelineationApplicationTest
         );
     }
 
-
-    // TODO: remove delineation when connection removed
-
-    // TODO: different delineations at the same time for different connections
-
     private void assertEquals(final List<Object> actual, final Object... expected)
     {
         assertThat(actual).usingRecursiveComparison().isEqualTo(asList(expected));
@@ -366,16 +370,6 @@ class DelineationApplicationTest
     private ConnectionAccepted connectionAccepted(final ConnectionId connectionId)
     {
         return new ConnectionAccepted(connectionId, 51, "localhost", 33160, 65536, 1313280);
-    }
-
-    private static ConnectionResetByPeer connectionResetByPeer(final ConnectionId connectionId)
-    {
-        return new ConnectionResetByPeer(connectionId.port(), connectionId.connectionId(), -1);
-    }
-
-    private static ConnectionClosed connectionClosed(final ConnectionId connectionId)
-    {
-        return new ConnectionClosed(connectionId.port(), connectionId.connectionId(), -1);
     }
 
     private static class ApplicationSpy implements Application
