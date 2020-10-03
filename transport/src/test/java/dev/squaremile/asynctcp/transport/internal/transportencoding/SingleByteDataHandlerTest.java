@@ -50,12 +50,12 @@ class SingleByteDataHandlerTest
         assertThat(firstMessage.connectionId()).isEqualTo(1);
         assertThat(firstMessage.port()).isEqualTo(8888);
         assertThat(firstMessage.length()).isEqualTo(1);
-        assertThat(firstMessage.data().get(0)).isEqualTo((byte)'x');
+        assertThat(firstMessage.buffer().getByte(firstMessage.offset())).isEqualTo((byte)'x');
         MessageReceived lastMessage = received.get(2);
         assertThat(lastMessage.connectionId()).isEqualTo(1);
         assertThat(lastMessage.port()).isEqualTo(8888);
         assertThat(lastMessage.length()).isEqualTo(1);
-        assertThat(lastMessage.data().get(0)).isEqualTo((byte)'z');
+        assertThat(lastMessage.buffer().getByte(lastMessage.offset())).isEqualTo((byte)'z');
     }
 
     @Test
@@ -78,12 +78,12 @@ class SingleByteDataHandlerTest
         assertThat(firstMessage.connectionId()).isEqualTo(1);
         assertThat(firstMessage.port()).isEqualTo(8888);
         assertThat(firstMessage.length()).isEqualTo(1);
-        assertThat(firstMessage.data().get(0)).isEqualTo((byte)'x');
+        assertThat(firstMessage.buffer().getByte(0)).isEqualTo((byte)'x');
         MessageReceived lastMessage = received.get(1);
         assertThat(lastMessage.connectionId()).isEqualTo(1);
         assertThat(lastMessage.port()).isEqualTo(8888);
         assertThat(lastMessage.length()).isEqualTo(1);
-        assertThat(lastMessage.data().get(0)).isEqualTo((byte)'y');
+        assertThat(lastMessage.buffer().getByte(0)).isEqualTo((byte)'y');
         assertEqual(
                 messageReceivedSpy.asPdus(),
                 new byte[]{'x'},

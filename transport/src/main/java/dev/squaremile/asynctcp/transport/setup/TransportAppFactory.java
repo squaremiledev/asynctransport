@@ -2,11 +2,10 @@ package dev.squaremile.asynctcp.transport.setup;
 
 import java.io.IOException;
 
-import org.agrona.collections.MutableReference;
-
 
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
+import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
@@ -17,17 +16,41 @@ public class TransportAppFactory
 {
     public TransportApplication create(final String role, ApplicationFactory applicationFactory)
     {
-        MutableReference<EventListener> listener = new MutableReference<>();
         try
         {
-            Transport transport = new NonBlockingTransport(event -> listener.get().onEvent(event), NO_HANDLER, System::currentTimeMillis, role);
+            ListeningApplication listeningApplication = new ListeningApplication();
+            Transport transport = new NonBlockingTransport(listeningApplication, NO_HANDLER, System::currentTimeMillis, role);
             Application app = applicationFactory.create(transport);
-            listener.set(app);
+            listeningApplication.set(app);
             return new TransportApplication(transport, app);
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static class ListeningApplication implements EventListener
+    {
+        private Application listeningApplication;
+
+        @Override
+        public void onEvent(final Event event)
+        {
+            listeningApplication.onEvent(event);
+        }
+
+        public void set(final Application app)
+        {
+            listeningApplication = app;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "ListeningApplication{" +
+                   "listeningApplication=" + listeningApplication +
+                   '}';
         }
     }
 }

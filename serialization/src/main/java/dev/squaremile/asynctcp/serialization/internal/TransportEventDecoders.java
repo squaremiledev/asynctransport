@@ -1,23 +1,9 @@
 package dev.squaremile.asynctcp.serialization.internal;
 
-import java.nio.ByteBuffer;
-
 import org.agrona.DirectBuffer;
 import org.agrona.collections.Int2ObjectHashMap;
 
 
-import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
-import dev.squaremile.asynctcp.transport.api.events.Connected;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionCommandFailed;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
-import dev.squaremile.asynctcp.transport.api.events.DataSent;
-import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
-import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.sbe.ConnectedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionAcceptedDecoder;
 import dev.squaremile.asynctcp.sbe.ConnectionClosedDecoder;
@@ -30,6 +16,18 @@ import dev.squaremile.asynctcp.sbe.StartedListeningDecoder;
 import dev.squaremile.asynctcp.sbe.StoppedListeningDecoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
+import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
+import dev.squaremile.asynctcp.transport.api.events.Connected;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionCommandFailed;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
+import dev.squaremile.asynctcp.transport.api.events.DataSent;
+import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
+import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 // TODO [perf]: avoid garbage
 public class TransportEventDecoders
@@ -263,9 +261,11 @@ public class TransportEventDecoders
                             headerDecoder.version()
                     );
                     VarDataEncodingDecoder srcData = decoder.data();
-                    byte[] dstArray = new byte[(int)srcData.length()];
-                    srcData.buffer().getBytes(srcData.offset() + srcData.encodedLength(), dstArray);
-                    MessageReceived result = new MessageReceived(new ConnectionIdValue(decoder.port(), decoder.connectionId())).set(ByteBuffer.wrap(dstArray), dstArray.length);
+                    DirectBuffer dataBuffer = srcData.buffer();
+                    int dataOffset = srcData.offset() + VarDataEncodingDecoder.lengthEncodingLength();
+                    int dataLength = (int)srcData.length();
+                    MessageReceived result = new MessageReceived(new ConnectionIdValue(decoder.port(), decoder.connectionId()))
+                            .set(dataBuffer, dataOffset, dataLength);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }

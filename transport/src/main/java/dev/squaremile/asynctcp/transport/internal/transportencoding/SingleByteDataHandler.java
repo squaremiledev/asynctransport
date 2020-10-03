@@ -1,6 +1,6 @@
 package dev.squaremile.asynctcp.transport.internal.transportencoding;
 
-import java.nio.ByteBuffer;
+import org.agrona.DirectBuffer;
 
 
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
@@ -13,7 +13,6 @@ class SingleByteDataHandler implements ReceivedDataHandler
     private final MessageReceived messageReceivedFlyweight;
     private final ConnectionIdValue connectionId; // to show that it's single connection scoped
     private final MessageListener messageListener;
-    private ByteBuffer singleByteByteBuffer = ByteBuffer.wrap(new byte[1]);
 
     SingleByteDataHandler(final ConnectionId connectionId, final MessageListener messageListener)
     {
@@ -25,14 +24,13 @@ class SingleByteDataHandler implements ReceivedDataHandler
     @Override
     public void onDataReceived(final DataReceived event)
     {
-        ByteBuffer srcBuffer = event.dataForReading();
-        while (srcBuffer.hasRemaining())
+        DirectBuffer srcBuffer = event.buffer();
+        int srcOffset = event.offset();
+        int srcLength = event.length();
+        for (int i = 0; i < srcLength; i++)
         {
-            byte b = srcBuffer.get();
-            singleByteByteBuffer.clear();
-            singleByteByteBuffer.put(b);
-            MessageReceived messageReceived = this.messageReceivedFlyweight.set(event, singleByteByteBuffer, 1);
-            messageListener.onMessage(messageReceived);
+            messageReceivedFlyweight.set(event, srcBuffer, srcOffset + i, 1);
+            messageListener.onMessage(messageReceivedFlyweight);
         }
     }
 

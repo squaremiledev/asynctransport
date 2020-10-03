@@ -1,6 +1,8 @@
 package dev.squaremile.asynctcp.transport.internal.transportencoding;
 
-import java.nio.ByteBuffer;
+import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
 
 
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
@@ -13,7 +15,8 @@ public class FixedLengthDataHandler implements ReceivedDataHandler
     private final MessageReceived messageReceived;
     private final ConnectionIdValue connectionId;
     private final MessageListener messageListener;
-    private final ByteBuffer messageBuffer;
+    private final MutableDirectBuffer messageBuffer;
+    private int messageBufferOffset = 0;
     private int messageLength;
 
     public FixedLengthDataHandler(final ConnectionId connectionId, final MessageListener messageListener, final int messageLength)
@@ -21,23 +24,24 @@ public class FixedLengthDataHandler implements ReceivedDataHandler
         this.connectionId = new ConnectionIdValue(connectionId);
         this.messageListener = messageListener;
         this.messageLength = messageLength;
-        this.messageBuffer = ByteBuffer.wrap(new byte[messageLength]);
+        this.messageBuffer = new UnsafeBuffer(new byte[messageLength]);
         this.messageReceived = new MessageReceived(connectionId);
     }
 
     @Override
     public void onDataReceived(final DataReceived event)
     {
-        ByteBuffer sourceBuffer = event.dataForReading();
-        int sourceLength = event.length();
-        for (int i = 0; i < sourceLength; i++)
+        DirectBuffer srcBuffer = event.buffer();
+        int srcOffset = event.offset();
+        int srcLength = event.length();
+        for (int i = 0; i < srcLength; i++)
         {
-            // TODO [perf]: think about a zero copy alternative (source buffer with offset based)
-            messageBuffer.put(sourceBuffer.get());
-            if (messageBuffer.position() == messageLength)
+            messageBufferOffset++;
+            messageBuffer.putByte(messageBufferOffset - 1, srcBuffer.getByte(srcOffset + i));
+            if (messageBufferOffset == messageLength)
             {
-                messageListener.onMessage(messageReceived.set(event, messageBuffer, messageLength));
-                messageBuffer.clear();
+                messageListener.onMessage(messageReceived.set(event, messageBuffer, 0, messageLength));
+                messageBufferOffset = 0;
             }
         }
     }

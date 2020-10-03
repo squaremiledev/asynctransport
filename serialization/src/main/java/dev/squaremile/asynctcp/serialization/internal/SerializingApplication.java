@@ -1,10 +1,21 @@
 package dev.squaremile.asynctcp.serialization.internal;
 
-import java.nio.ByteBuffer;
-
+import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
 
+import dev.squaremile.asynctcp.sbe.ConnectedEncoder;
+import dev.squaremile.asynctcp.sbe.ConnectionAcceptedEncoder;
+import dev.squaremile.asynctcp.sbe.ConnectionClosedEncoder;
+import dev.squaremile.asynctcp.sbe.ConnectionCommandFailedEncoder;
+import dev.squaremile.asynctcp.sbe.ConnectionResetByPeerEncoder;
+import dev.squaremile.asynctcp.sbe.DataSentEncoder;
+import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
+import dev.squaremile.asynctcp.sbe.MessageReceivedEncoder;
+import dev.squaremile.asynctcp.sbe.StartedListeningEncoder;
+import dev.squaremile.asynctcp.sbe.StoppedListeningEncoder;
+import dev.squaremile.asynctcp.sbe.TransportCommandFailedEncoder;
+import dev.squaremile.asynctcp.sbe.VarDataEncodingEncoder;
 import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Event;
@@ -18,18 +29,6 @@ import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.sbe.ConnectedEncoder;
-import dev.squaremile.asynctcp.sbe.ConnectionAcceptedEncoder;
-import dev.squaremile.asynctcp.sbe.ConnectionClosedEncoder;
-import dev.squaremile.asynctcp.sbe.ConnectionCommandFailedEncoder;
-import dev.squaremile.asynctcp.sbe.ConnectionResetByPeerEncoder;
-import dev.squaremile.asynctcp.sbe.DataSentEncoder;
-import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
-import dev.squaremile.asynctcp.sbe.MessageReceivedEncoder;
-import dev.squaremile.asynctcp.sbe.StartedListeningEncoder;
-import dev.squaremile.asynctcp.sbe.StoppedListeningEncoder;
-import dev.squaremile.asynctcp.sbe.TransportCommandFailedEncoder;
-import dev.squaremile.asynctcp.sbe.VarDataEncodingEncoder;
 
 public class SerializingApplication implements Application
 {
@@ -162,11 +161,11 @@ public class SerializingApplication implements Application
                     .connectionId(event.connectionId());
             VarDataEncodingEncoder dstData = messageReceivedEncoder.data();
 
-            ByteBuffer srcBuffer = event.data();
+            DirectBuffer srcBuffer = event.buffer();
             int srcLength = event.length();
             dstData.length(srcLength);
             int offset = dstData.offset();
-            dstData.buffer().putBytes(offset + dstData.encodedLength(), srcBuffer, srcLength);
+            dstData.buffer().putBytes(offset + dstData.encodedLength(), srcBuffer, event.offset(), srcLength);
 
             serializedEventListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + messageReceivedEncoder.encodedLength());
         }

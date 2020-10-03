@@ -62,7 +62,6 @@ public class EchoApplication implements Application
     @Override
     public void onEvent(final Event event)
     {
-//        System.out.println("E@" + event);
         eventListener.onEvent(event);
         if (event instanceof MessageReceived)
         {
@@ -81,7 +80,8 @@ public class EchoApplication implements Application
     private SendData sendDataCommandWithDataFrom(final MessageReceived messageReceivedEvent)
     {
         SendData sendData = transport.command(messageReceivedEvent, SendData.class);
-        messageReceivedEvent.copyDataTo(sendData.prepare());
+        messageReceivedEvent.buffer().getBytes(
+                messageReceivedEvent.offset(), sendData.prepare(), 0, messageReceivedEvent.length());
         return sendData.commit(messageReceivedEvent.length());
     }
 

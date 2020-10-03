@@ -1,7 +1,7 @@
 package dev.squaremile.asynctcp.transport.api.events;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import org.agrona.DirectBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
 
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
@@ -11,8 +11,9 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 public class MessageReceived implements ConnectionEvent
 {
     private ConnectionId connectionId;
-    private ByteBuffer data;
+    private DirectBuffer data;
     private int length;
+    private int offset;
 
     public MessageReceived()
     {
@@ -36,25 +37,33 @@ public class MessageReceived implements ConnectionEvent
         return connectionId.connectionId();
     }
 
-    public MessageReceived set(final ByteBuffer data, final int length)
+    public DirectBuffer buffer()
     {
-        this.data = data;
-        this.length = length;
-        return this;
+        return data;
     }
 
-    public MessageReceived set(final ConnectionId connectionId, final ByteBuffer data, final int length)
+    public int offset()
+    {
+        return offset;
+    }
+
+    public MessageReceived set(final DirectBuffer data, final int length)
+    {
+        return set(data, 0, length);
+    }
+
+    public MessageReceived set(final DirectBuffer data, final int offset, final int length)
+    {
+        return set(connectionId, data, offset, length);
+    }
+
+    public MessageReceived set(final ConnectionId connectionId, final DirectBuffer data, final int offset, final int length)
     {
         this.connectionId = connectionId;
         this.data = data;
+        this.offset = offset;
         this.length = length;
         return this;
-    }
-
-    public void copyDataTo(final ByteBuffer dst)
-    {
-        data.clear().limit(length);
-        dst.put(data);
     }
 
     @Override
@@ -72,15 +81,12 @@ public class MessageReceived implements ConnectionEvent
         return length;
     }
 
-    public ByteBuffer data()
-    {
-        data.position(0).limit(length);
-        return data;
-    }
 
     @Override
     public MessageReceived copy()
     {
-        return new MessageReceived(connectionId).set(ByteBuffer.wrap(Arrays.copyOf(data.array(), data.array().length)), length);
+        UnsafeBuffer bufferCopy = new UnsafeBuffer(new byte[length]);
+        data.getBytes(offset, bufferCopy, 0, length);
+        return new MessageReceived(connectionId).set(bufferCopy, 0, length);
     }
 }

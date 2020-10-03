@@ -3,6 +3,7 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.agrona.collections.MutableInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -108,8 +109,15 @@ class EchoApplicationTest
 
     private byte[] extractedContent(final List<DataReceived> receivedEvents)
     {
-        ByteBuffer actualContent = ByteBuffer.allocate((int)receivedEvents.get(receivedEvents.size() - 1).totalBytesReceived());
-        receivedEvents.forEach(event -> event.copyDataTo(actualContent));
-        return actualContent.array();
+        int totalBytes = (int)receivedEvents.get(receivedEvents.size() - 1).totalBytesReceived();
+        byte[] content = new byte[totalBytes];
+        final MutableInteger bytesWrittenToContent = new MutableInteger(0);
+        receivedEvents.forEach(
+                dataReceived ->
+                {
+                    dataReceived.buffer().getBytes(dataReceived.offset(), content, bytesWrittenToContent.getAndAdd(dataReceived.length()), dataReceived.length());
+                });
+
+        return content;
     }
 }

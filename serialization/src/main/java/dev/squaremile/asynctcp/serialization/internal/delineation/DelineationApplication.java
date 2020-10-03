@@ -57,7 +57,7 @@ public class DelineationApplication implements Application, TransportCommandHand
                     connectionIdValue.connectionId(),
                     delineationImplementations.create(
                             PredefinedTransportDelineation.SINGLE_BYTE.name(),
-                            (byteBuffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, byteBuffer, length))
+                            (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, buffer, offset, length))
                     )
             );
         }
@@ -70,14 +70,14 @@ public class DelineationApplication implements Application, TransportCommandHand
                     connectionIdValue.connectionId(),
                     delineationImplementations.create(
                             PredefinedTransportDelineation.SINGLE_BYTE.name(),
-                            (byteBuffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, byteBuffer, length))
+                            (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, buffer, offset, length))
                     )
             );
         }
         if (event instanceof DataReceived)
         {
             DataReceived dataReceived = (DataReceived)event;
-            delineationPerConnection.get(dataReceived.connectionId()).onData(dataReceived.dataForReading(), dataReceived.offset(), dataReceived.length());
+            delineationPerConnection.get(dataReceived.connectionId()).onData(dataReceived.buffer(), dataReceived.offset(), dataReceived.length());
         }
         else
         {

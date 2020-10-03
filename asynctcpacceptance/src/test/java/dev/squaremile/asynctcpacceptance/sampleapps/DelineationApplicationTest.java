@@ -1,10 +1,11 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.agrona.DirectBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,12 +32,17 @@ class DelineationApplicationTest
 
     private final ApplicationSpy spy = new ApplicationSpy();
 
+    static DirectBuffer wrapDirect(byte[] array)
+    {
+        return new UnsafeBuffer(array);
+    }
+
     @Test
     void shouldDelegateEventsToUnderlyingApplication()
     {
         // Given
         final DelineationApplication app = new DelineationApplication(spy);
-        assertThat(spy.invoked()).isEmpty();
+        assertThat(spy.all()).isEmpty();
 
         // When
         app.onStart();
@@ -47,7 +53,7 @@ class DelineationApplicationTest
 
         // Then
         assertEquals(
-                spy.invoked(),
+                spy.all(),
                 "onStart",
                 "onStop",
                 "work",
@@ -61,13 +67,13 @@ class DelineationApplicationTest
         final DelineationApplication app = new DelineationApplication(spy);
 
         // When
-        MessageReceived messageReceived1 = new MessageReceived(new ConnectionIdValue(8899, 4)).set(wrap(new byte[]{1, 2, 3, 4, 5, 6, 7}), 5);
-        MessageReceived messageReceived2 = new MessageReceived(new ConnectionIdValue(6234, 5)).set(wrap(new byte[]{0}), 1);
+        MessageReceived messageReceived1 = new MessageReceived(new ConnectionIdValue(8899, 4)).set(wrapDirect(new byte[]{1, 2, 3, 4, 5, 6, 7}), 5);
+        MessageReceived messageReceived2 = new MessageReceived(new ConnectionIdValue(6234, 5)).set(wrapDirect(new byte[]{0}), 1);
         app.onEvent(messageReceived1);
         app.onEvent(messageReceived2);
 
         // Then
-        assertEquals(spy.invoked(), messageReceived1, messageReceived2);
+        assertEquals(spy.all(), messageReceived1.copy(), messageReceived2.copy());
     }
 
     @Test
@@ -84,11 +90,11 @@ class DelineationApplicationTest
 
         // Then
         assertEquals(
-                spy.invoked(),
+                spy.all(),
                 new StartedListening(8808, 99),
                 new ConnectionAccepted(8808, 51, "localhost", 33160, 5, 65536, 1313280),
-                new MessageReceived(new ConnectionIdValue(8808, 5)).set(wrap(new byte[]{5}), 1),
-                new MessageReceived(new ConnectionIdValue(8809, 5)).set(wrap(new byte[]{6}), 1)
+                new MessageReceived(new ConnectionIdValue(8808, 5)).set(wrapDirect(new byte[]{5}), 1).copy(),
+                new MessageReceived(new ConnectionIdValue(8809, 5)).set(wrapDirect(new byte[]{6}), 1).copy()
         );
     }
 
@@ -106,12 +112,12 @@ class DelineationApplicationTest
 
         // Then
         assertEquals(
-                spy.invoked(),
+                spy.all(),
                 new StartedListening(8808, 99),
                 new ConnectionAccepted(8808, 100, "localhost", 33160, 6, 65536, 1313280),
-                new MessageReceived(event).set(wrap(new byte[]{1}), 1),
-                new MessageReceived(event).set(wrap(new byte[]{2}), 1),
-                new MessageReceived(event).set(wrap(new byte[]{3}), 1)
+                new MessageReceived(event).set(wrapDirect(new byte[]{1}), 1).copy(),
+                new MessageReceived(event).set(wrapDirect(new byte[]{2}), 1).copy(),
+                new MessageReceived(event).set(wrapDirect(new byte[]{3}), 1).copy()
         );
     }
 
@@ -133,8 +139,8 @@ class DelineationApplicationTest
         // Then
         assertEquals(
                 spy.messagesReceived(),
-                new MessageReceived(new ConnectionIdValue(8809, 9)).set(wrap(new byte[]{90}), 1),
-                new MessageReceived(new ConnectionIdValue(8808, 8)).set(wrap(new byte[]{80}), 1)
+                new MessageReceived(new ConnectionIdValue(8809, 9)).set(wrapDirect(new byte[]{90}), 1).copy(),
+                new MessageReceived(new ConnectionIdValue(8808, 8)).set(wrapDirect(new byte[]{80}), 1).copy()
 
         );
     }
@@ -155,14 +161,13 @@ class DelineationApplicationTest
         // Then
         assertEquals(
                 spy.messagesReceived(),
-                new MessageReceived(new ConnectionIdValue(8888, 1)).set(wrap(new byte[]{88}), 1),
-                new MessageReceived(new ConnectionIdValue(8889, 2)).set(wrap(new byte[]{89}), 1)
+                new MessageReceived(new ConnectionIdValue(8888, 1)).set(wrapDirect(new byte[]{88}), 1).copy(),
+                new MessageReceived(new ConnectionIdValue(8889, 2)).set(wrapDirect(new byte[]{89}), 1).copy()
         );
     }
 
     // TODO: remove delineation when connection removed
     // TODO: different delineations at the same time for different connections
-
 
     private void assertEquals(final List<Object> actual, final Object... expected)
     {
@@ -174,7 +179,7 @@ class DelineationApplicationTest
 
         private final List<Object> invoked = new ArrayList<>();
 
-        List<Object> invoked()
+        List<Object> all()
         {
             return invoked;
         }
@@ -207,5 +212,12 @@ class DelineationApplicationTest
         {
             invoked.add(event.copy());
         }
+    }
+
+    private byte[] dataIn(final MessageReceived message)
+    {
+        byte[] content = new byte[message.length()];
+        message.buffer().getBytes(message.offset(), content);
+        return content;
     }
 }

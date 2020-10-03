@@ -3,6 +3,7 @@ package dev.squaremile.asynctcp.transport.api.events;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 
@@ -35,10 +36,9 @@ public class DataReceived implements ConnectionEvent
         this.length = length;
     }
 
-    public ByteBuffer dataForReading()
+    public DirectBuffer buffer()
     {
-        data.position(0).limit(length);
-        return data;
+        return directBuffer;
     }
 
     public int offset()

@@ -2,6 +2,9 @@ package dev.squaremile.asynctcp.transport.api.commands;
 
 import java.nio.ByteBuffer;
 
+import org.agrona.MutableDirectBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
+
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.transport.api.values.CommandId;
@@ -12,6 +15,7 @@ public class SendData implements ConnectionUserCommand
 {
     private final ConnectionId connectionId;
     private final ByteBuffer data;
+    private final MutableDirectBuffer buffer;
     private final int capacity;
     private int length;
     private long commandId;
@@ -31,6 +35,7 @@ public class SendData implements ConnectionUserCommand
 
         this.connectionId = connectionId;
         this.data = buffer;
+        this.buffer = new UnsafeBuffer(data);
         this.capacity = capacity;
         this.length = length;
         this.commandId = commandId;

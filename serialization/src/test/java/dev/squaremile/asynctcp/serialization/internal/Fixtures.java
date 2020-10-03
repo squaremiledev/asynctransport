@@ -1,6 +1,5 @@
 package dev.squaremile.asynctcp.serialization.internal;
 
-import java.nio.ByteBuffer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -19,11 +18,9 @@ import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionCommandFailed;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
-import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 
 class Fixtures
@@ -33,8 +30,11 @@ class Fixtures
      * <p>
      * Delineation process applied to DataReceived will result in zero or more MessageReceived events, thus
      * DataReceived event itself is not currently serialized.
+     * <p>
+     * The MessageReceived type is serializable, but has its own test as the offset in the buffer is not guaranteed
+     * to remain the same due to compacting to avoid copying large amount of unnecessary data
      */
-    static Stream<TransportEvent> serializableEvents()
+    static Stream<TransportEvent> oneToOneSerializableEvents()
     {
         return Stream.of(
                 new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000),
@@ -43,7 +43,6 @@ class Fixtures
                 new ConnectionCommandFailed(8884, 103, "some details", 6),
                 new ConnectionResetByPeer(5888, 4, 6),
                 new DataSent(5888, 4, 1, 9, 18, 104),
-                new MessageReceived(new ConnectionIdValue(8899, 4)).set(ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7}), 5),
                 new StartedListening(8888, 5),
                 new StoppedListening(8988, 6),
                 new TransportCommandFailed(8001, 101L, "some details", Listen.class)

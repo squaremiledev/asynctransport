@@ -1,6 +1,5 @@
 package dev.squaremile.asynctcp.transport.internal.transportencoding;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,8 +35,7 @@ public final class MessageReceivedSpy extends Spy<MessageReceived> implements Me
                 msg ->
                 {
                     byte[] data = new byte[msg.length()];
-                    ByteBuffer target = ByteBuffer.wrap(data);
-                    msg.copyDataTo(target);
+                    msg.buffer().getBytes(msg.offset(), data, 0, msg.length());
                     return data;
                 }).collect(Collectors.toList());
     }

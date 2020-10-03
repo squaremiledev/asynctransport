@@ -114,44 +114,43 @@ class LongDataHandlerTest
     void shouldReassembleLongs()
     {
         // When
-        byte[] array = new byte[24];
-        ByteBuffer source = wrap(array);
-        source.putLong(Long.MIN_VALUE).putLong(200).putLong(Long.MAX_VALUE);
+        final byte[] srcArray = new byte[24];
+        wrap(srcArray).putLong(Long.MIN_VALUE).putLong(200).putLong(Long.MAX_VALUE);
 
         // When
         ByteBuffer buffer1 = dataReceived.prepareForWriting();
-        buffer1.put(array[0]);
+        buffer1.put(srcArray[0]);
         dataReceived.commitWriting(1, 1);
         handler.onDataReceived(dataReceived);
 
         ByteBuffer buffer2 = dataReceived.prepareForWriting();
-        buffer2.put(array[1]);
-        buffer2.put(array[2]);
-        buffer2.put(array[3]);
-        buffer2.put(array[4]);
-        buffer2.put(array[5]);
-        buffer2.put(array[6]);
-        buffer2.put(array[7]);
-        buffer2.put(array[8]);
-        buffer2.put(array[9]);
-        buffer2.put(array[10]);
+        buffer2.put(srcArray[1]);
+        buffer2.put(srcArray[2]);
+        buffer2.put(srcArray[3]);
+        buffer2.put(srcArray[4]);
+        buffer2.put(srcArray[5]);
+        buffer2.put(srcArray[6]);
+        buffer2.put(srcArray[7]);
+        buffer2.put(srcArray[8]);
+        buffer2.put(srcArray[9]);
+        buffer2.put(srcArray[10]);
         dataReceived.commitWriting(10, 10);
         handler.onDataReceived(dataReceived);
 
         ByteBuffer buffer3 = dataReceived.prepareForWriting();
-        buffer3.put(array[11]);
-        buffer3.put(array[12]);
-        buffer3.put(array[13]);
-        buffer3.put(array[14]);
-        buffer3.put(array[15]);
-        buffer3.put(array[16]);
-        buffer3.put(array[17]);
-        buffer3.put(array[18]);
-        buffer3.put(array[19]);
-        buffer3.put(array[20]);
-        buffer3.put(array[21]);
-        buffer3.put(array[22]);
-        buffer3.put(array[23]);
+        buffer3.put(srcArray[11]);
+        buffer3.put(srcArray[12]);
+        buffer3.put(srcArray[13]);
+        buffer3.put(srcArray[14]);
+        buffer3.put(srcArray[15]);
+        buffer3.put(srcArray[16]);
+        buffer3.put(srcArray[17]);
+        buffer3.put(srcArray[18]);
+        buffer3.put(srcArray[19]);
+        buffer3.put(srcArray[20]);
+        buffer3.put(srcArray[21]);
+        buffer3.put(srcArray[22]);
+        buffer3.put(srcArray[23]);
         dataReceived.commitWriting(13, 13);
         handler.onDataReceived(dataReceived);
 
