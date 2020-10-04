@@ -28,11 +28,13 @@ import static java.lang.String.format;
 
 class EchoApplicationThroughputTest
 {
+    private static final int BYTES_CAP = 20_000_000;
+    private static final int MESSAGE_SIZE_IN_BYTES = 4 * 1024;
+
     private final TransportApplication drivingApplication;
     private final TransportApplication transportApplication;
     private final MutableReference<Connected> connectedEventHolder = new MutableReference<>();
     private final MutableLong totalBytesReceived = new MutableLong(0);
-    private final int messageSizeInBytes = 4 * 1024;
     private int port;
     private WhiteboxApplication<TransportEventsListener> whiteboxApplication;
 
@@ -76,7 +78,7 @@ class EchoApplicationThroughputTest
                         });
         Connected connected = connectedEventHolder.get();
         SendData sendDataCommand = drivingTransport.command(connected, SendData.class);
-        int numberOfMessagesSentDuringOneIteration = connected.outboundPduLimit() / messageSizeInBytes;
+        int numberOfMessagesSentDuringOneIteration = connected.outboundPduLimit() / MESSAGE_SIZE_IN_BYTES;
 
         long startTimeMs = System.currentTimeMillis();
         Worker.runWithoutTimeoutUntil(() ->
@@ -84,28 +86,36 @@ class EchoApplicationThroughputTest
                                           for (int i = 0; i < numberOfMessagesSentDuringOneIteration; i++)
                                           {
                                               sendDataCommand.prepare().putLong(i);
-                                              sendDataCommand.commit(messageSizeInBytes);
+                                              sendDataCommand.commit(MESSAGE_SIZE_IN_BYTES);
                                               drivingTransport.handle(sendDataCommand);
                                               drivingTransport.work();
                                               transportApplication.work();
+                                              if (totalBytesReceived.get() >= BYTES_CAP)
+                                              {
+                                                  break;
+                                              }
                                           }
-                                          return totalBytesReceived.get() > 20_000_000L;
+                                          return totalBytesReceived.get() >= BYTES_CAP;
                                       });
         long endTimeMs = System.currentTimeMillis();
         long bitsReceived = totalBytesReceived.get() * 8;
-        long messagesReceived = totalBytesReceived.get() / messageSizeInBytes;
+        long bytesReceived = totalBytesReceived.get();
+        long messagesReceived = totalBytesReceived.get() / MESSAGE_SIZE_IN_BYTES;
         long timeElapsedMs = endTimeMs - startTimeMs;
         long _bps = (bitsReceived * TimeUnit.SECONDS.toMillis(1)) / timeElapsedMs;
         long _Mbps = _bps / 1_000_000;
-        long _msgps = _bps / (messageSizeInBytes * 8);
-        assertThat(_Mbps).isGreaterThan(8);
-        assertThat(_msgps).isGreaterThan(2_000);
+        long _msgps = _bps / (MESSAGE_SIZE_IN_BYTES * 8);
+        System.out.println(format("bps = %d", _bps));
         System.out.println(format("Mbps = %d", _Mbps));
         System.out.println(format("msg/s = %d", _msgps));
         System.out.println("---------------------------");
-        System.out.println(format("message size  = %d B", messageSizeInBytes));
+        System.out.println(format("message size  = %d B", MESSAGE_SIZE_IN_BYTES));
+        System.out.println(format("bytes received  = %d B", bytesReceived));
         System.out.println(format("messages received = %d", messagesReceived));
         System.out.println(format("time elapsed = %d ms", timeElapsedMs));
+
+        assertThat(_Mbps).isGreaterThan(8);
+        assertThat(_msgps).isGreaterThan(2_000);
     }
 
     @AfterEach
