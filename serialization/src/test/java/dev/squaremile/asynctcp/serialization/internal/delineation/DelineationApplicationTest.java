@@ -29,6 +29,7 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.INTEGERS;
 import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.LONGS;
+import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.RAW_STREAMING;
 import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.SINGLE_BYTE;
 import static java.nio.ByteBuffer.wrap;
 import static java.util.Arrays.asList;
@@ -90,6 +91,28 @@ class DelineationApplicationTest
 
         // Then
         assertEquals(spy.all(), messageReceived1.copy(), messageReceived2.copy());
+    }
+
+    @Test
+    void shouldNotDelineateRawStreaming()
+    {
+        final DelineationApplication app = new DelineationApplication(spy);
+        app.handle(new Listen().set(99, connectionId().port(), RAW_STREAMING));
+        app.onEvent(new StartedListening(connectionId().port(), 99));
+        app.onEvent(connectionAccepted(connectionId()));
+
+        // When
+        app.onEvent(new DataReceived(connectionId(), 2, 2, 30, wrap(new byte[]{5, 7})));
+        app.onEvent(new DataReceived(8809, 5, 1, 1, 30, wrap(new byte[]{6})));
+
+        // Then
+        assertEquals(
+                spy.all(),
+                new StartedListening(connectionId().port(), 99),
+                connectionAccepted(connectionId()),
+                new MessageReceived(connectionId()).set(wrapDirect(new byte[]{5, 7}), 2).copy(),
+                new MessageReceived(new ConnectionIdValue(8809, 5)).set(wrapDirect(new byte[]{6}), 1).copy()
+        );
     }
 
     @Test

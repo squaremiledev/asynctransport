@@ -16,32 +16,25 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.Connection;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionConfiguration;
-import dev.squaremile.asynctcp.transport.internal.transportencoding.StandardDelineationAwareConnectionEventDelegates;
 
 public class Server implements AutoCloseable
 {
     private final int port;
-    private final String protocolName;
     private final long commandIdThatTriggeredListening;
     private final ConnectionIdSource connectionIdSource;
     private final EventListener eventListener;
     private final CommandFactory commandFactory;
     private final ServerSocketChannel serverSocketChannel;
-    private final StandardDelineationAwareConnectionEventDelegates connectionEventDelegates;
 
     Server(
-            final StandardDelineationAwareConnectionEventDelegates connectionEventDelegates,
             final int port,
-            final String protocolName,
             final long commandIdThatTriggeredListening,
             final ConnectionIdSource connectionIdSource,
             final EventListener eventListener,
             final CommandFactory commandFactory
     ) throws IOException
     {
-        this.connectionEventDelegates = connectionEventDelegates;
         this.port = port;
-        this.protocolName = protocolName;
         this.commandIdThatTriggeredListening = commandIdThatTriggeredListening;
         this.connectionIdSource = connectionIdSource;
         this.eventListener = eventListener;
@@ -93,14 +86,10 @@ public class Server implements AutoCloseable
                 acceptedSocketChannel.socket().getSendBufferSize() * 2,
                 acceptedSocketChannel.socket().getReceiveBufferSize()
         );
-        return new ConnectionImpl(
-                configuration,
-                new SocketBackedChannel(acceptedSocketChannel),
-                connectionEventDelegates.createFor(connectionId, protocolName, eventListener)
-        );
+        return new ConnectionImpl(configuration, new SocketBackedChannel(acceptedSocketChannel), eventListener::onEvent);
     }
 
-    public SocketChannel acceptChannel() throws IOException
+    SocketChannel acceptChannel() throws IOException
     {
         final SocketChannel acceptedSocketChannel = serverSocketChannel.accept();
         acceptedSocketChannel.configureBlocking(false);

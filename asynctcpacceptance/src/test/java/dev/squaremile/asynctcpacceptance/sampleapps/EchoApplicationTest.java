@@ -15,7 +15,6 @@ import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.transport.setup.TransportAppFactory;
 import dev.squaremile.asynctcp.transport.setup.TransportApplication;
 import dev.squaremile.asynctcp.transport.testfixtures.TransportEventsSpy;
@@ -42,7 +41,7 @@ class EchoApplicationTest
                 });
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppFactory().create("", transport -> new EchoApplication(transport, port, IGNORE_EVENTS, PredefinedTransportDelineation.LONGS));
+        transportApplication = new TransportAppFactory().create("", transport -> new EchoApplication(transport, port, IGNORE_EVENTS, 101));
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
         transportApplication.onStart();
         transportApplication.work();

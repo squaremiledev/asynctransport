@@ -16,9 +16,6 @@ import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
-import dev.squaremile.asynctcp.transport.internal.transportencoding.FixedLengthDataHandler;
 import dev.squaremile.asynctcp.transport.setup.TransportAppFactory;
 import dev.squaremile.asynctcp.transport.setup.TransportApplication;
 import dev.squaremile.asynctcp.transport.testfixtures.Worker;
@@ -26,6 +23,7 @@ import dev.squaremile.asynctcp.transport.testfixtures.app.WhiteboxApplication;
 
 import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
+import static java.lang.String.format;
 
 class EchoApplicationThroughputTest
 {
@@ -33,9 +31,7 @@ class EchoApplicationThroughputTest
     private final TransportApplication transportApplication;
     private final MutableReference<Connected> connectedEventHolder = new MutableReference<>();
     private final MutableLong totalBytesReceived = new MutableLong(0);
-    private final MutableLong totalMessagesReceived = new MutableLong(0);
-    private final int messageSize = 4 * 1024;
-    private final FixedLengthDataHandler messageCounter = new FixedLengthDataHandler(new ConnectionIdValue(8888, 1), messageReceived -> totalMessagesReceived.increment(), messageSize);
+    private final int messageSizeInBytes = 4 * 1024;
     private int port;
     private WhiteboxApplication<TransportEventsListener> whiteboxApplication;
 
@@ -55,14 +51,13 @@ class EchoApplicationThroughputTest
                         {
                             DataReceived dataReceivedEvent = (DataReceived)event;
                             totalBytesReceived.set(dataReceivedEvent.totalBytesReceived());
-                            messageCounter.onDataReceived(dataReceivedEvent);
                         }
                     });
                     return whiteboxApplication;
                 });
         drivingApplication.onStart();
         port = freePort();
-        transportApplication = new TransportAppFactory().create("", transport -> new EchoApplication(transport, port, IGNORE_EVENTS, PredefinedTransportDelineation.FOUR_KB));
+        transportApplication = new TransportAppFactory().create("", transport -> new EchoApplication(transport, port, IGNORE_EVENTS, 101));
         transportApplication.onStart();
         transportApplication.work();
     }
@@ -80,29 +75,36 @@ class EchoApplicationThroughputTest
                         });
         Connected connected = connectedEventHolder.get();
         SendData sendDataCommand = drivingTransport.command(connected, SendData.class);
-        int longsSentInOneGo = connected.outboundPduLimit() / messageSize;
+        int numberOfMessagesSentDuringOneIteration = connected.outboundPduLimit() / messageSizeInBytes;
 
         long startTimeMs = System.currentTimeMillis();
         Worker.runWithoutTimeoutUntil(() ->
                                       {
-                                          for (int i = 0; i < longsSentInOneGo; i++)
+                                          for (int i = 0; i < numberOfMessagesSentDuringOneIteration; i++)
                                           {
                                               sendDataCommand.prepare().putLong(i);
-                                              sendDataCommand.commit(messageSize);
+                                              sendDataCommand.commit(messageSizeInBytes);
                                               drivingTransport.handle(sendDataCommand);
                                               drivingTransport.work();
                                               transportApplication.work();
                                           }
-                                          return totalBytesReceived.get() > 200_000_000L;
+                                          return totalBytesReceived.get() > 20_000_000L;
                                       });
         long endTimeMs = System.currentTimeMillis();
-        long bitsPerSecond = (totalBytesReceived.get() * TimeUnit.SECONDS.toMillis(1)) / (endTimeMs - startTimeMs);
-        long messagesPerSecond = ((totalMessagesReceived.get()) * TimeUnit.SECONDS.toMillis(1)) / (endTimeMs - startTimeMs);
-        long megabytesPerSecond = bitsPerSecond / 1024 / 1024;
-        assertThat(megabytesPerSecond).isGreaterThan(1);
-        assertThat(messagesPerSecond).isGreaterThan(4_000);
-//        System.out.println(megabytesPerSecond);
-//        System.out.println(messagesPerSecond);
+        long bitsReceived = totalBytesReceived.get() * 8;
+        long messagesReceived = totalBytesReceived.get() / messageSizeInBytes;
+        long timeElapsedMs = endTimeMs - startTimeMs;
+        long _bps = (bitsReceived * TimeUnit.SECONDS.toMillis(1)) / timeElapsedMs;
+        long _Mbps = _bps / 1_000_000;
+        long _msgps = _bps / (messageSizeInBytes * 8);
+        assertThat(_Mbps).isGreaterThan(8);
+        assertThat(_msgps).isGreaterThan(2_000);
+        System.out.println(format("Mbps = %d", _Mbps));
+        System.out.println(format("msg/s = %d", _msgps));
+        System.out.println("---------------------------");
+        System.out.println(format("message size  = %d B", messageSizeInBytes));
+        System.out.println(format("messages received = %d", messagesReceived));
+        System.out.println(format("time elapsed = %d ms", timeElapsedMs));
     }
 
     @AfterEach

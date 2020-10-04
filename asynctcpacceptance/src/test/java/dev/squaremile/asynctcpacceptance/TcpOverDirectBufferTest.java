@@ -51,7 +51,6 @@ class TcpOverDirectBufferTest
                         ),
                         port,
                         userFacingAppEvents,
-                        SINGLE_BYTE,
                         100
                 ));
         final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(networkFacingTransport, userFacingApp);

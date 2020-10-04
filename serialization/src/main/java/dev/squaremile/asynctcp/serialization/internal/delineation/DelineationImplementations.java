@@ -14,7 +14,8 @@ class DelineationImplementations
     private static final Set<String> SUPPORTED_DELINEATION = unmodifiableSet(new HashSet<>(asList(
             PredefinedTransportDelineation.SINGLE_BYTE.name(),
             PredefinedTransportDelineation.INTEGERS.name(),
-            PredefinedTransportDelineation.LONGS.name()
+            PredefinedTransportDelineation.LONGS.name(),
+            PredefinedTransportDelineation.RAW_STREAMING.name()
     )));
 
     DelineationHandler create(final String delineation, final DelineationHandler delineatedDataHandler)
@@ -31,6 +32,8 @@ class DelineationImplementations
                 return new IntegersDelineation(delineatedDataHandler);
             case "LONGS":
                 return new LongsDelineation(delineatedDataHandler);
+            case "RAW_STREAMING":
+                return delineatedDataHandler;
             default:
                 throw new IllegalArgumentException(delineation + " is not supported yet");
         }

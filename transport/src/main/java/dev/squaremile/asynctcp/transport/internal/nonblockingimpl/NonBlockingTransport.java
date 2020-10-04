@@ -38,7 +38,6 @@ import dev.squaremile.asynctcp.transport.internal.domain.ReadData;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.Connection;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionState;
-import dev.squaremile.asynctcp.transport.internal.transportencoding.StandardDelineationAwareConnectionEventDelegates;
 
 // TODO [perf]: make sure all commands and events can be used without generating garbage
 public class NonBlockingTransport implements AutoCloseable, Transport
@@ -53,13 +52,12 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     private final EpochClock clock;
     private final TransportCommandHandler commandHandler;
     private final String role;
-    private final StandardDelineationAwareConnectionEventDelegates connectionEventDelegates = new StandardDelineationAwareConnectionEventDelegates();
 
     public NonBlockingTransport(final EventListener eventListener, final TransportCommandHandler commandHandler, final EpochClock clock, final String role) throws IOException
     {
         this.role = role;
         this.clock = clock;
-        this.servers = new Servers(connectionEventDelegates);
+        this.servers = new Servers();
         this.connections = new Connections(eventListener::onEvent);
         this.eventListener = eventListener;
         this.commandHandler = commandHandler;
@@ -144,11 +142,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                                     new ConnectionImpl(
                                             configuration,
                                             new SocketBackedChannel(socketChannel),
-                                            connectionEventDelegates.createFor(
-                                                    connectionId,
-                                                    connectedNotification.protocolName,
-                                                    eventListener
-                                            )
+                                            eventListener::onEvent
                                     )
                             );
                             connections.get(connectionId.connectionId()).connected(connectedNotification.commandId);
@@ -281,7 +275,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         }
         try
         {
-            servers.start(command.port(), command.commandId(), command.delineationName(), connectionIdSource, eventListener, commandFactory);
+            servers.start(command.port(), command.commandId(), connectionIdSource, eventListener, commandFactory);
             Server server = servers.serverListeningOn(command.port());
             final ServerSocketChannel serverSocketChannel = server.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
