@@ -20,6 +20,7 @@ import dev.squaremile.asynctcp.transport.setup.TransportApplication;
 import dev.squaremile.asynctcp.transport.testfixtures.TransportEventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.app.WhiteboxApplication;
 
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
 import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
@@ -61,7 +62,7 @@ class EchoApplicationTest
     void shouldListenUponStartAndStopListeningWhenStopped()
     {
         // When
-        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 1, 50));
+        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, (long)1, 50, RAW_STREAMING.type));
         spin.spinUntil(() -> whiteboxApplication.events().contains(Connected.class));
 
         // Then
@@ -70,7 +71,7 @@ class EchoApplicationTest
         // When
         transportApplication.onStop();
         transportApplication.work();
-        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 2, 50));
+        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, (long)2, 50, RAW_STREAMING.type));
         spin.spinUntilAllowingFailures(() -> whiteboxApplication.events().contains(CommandFailed.class));
 
         // Then
@@ -100,7 +101,7 @@ class EchoApplicationTest
 
     private Connected connect()
     {
-        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, 1, 50));
+        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Connect.class).set("localhost", port, (long)1, 50, RAW_STREAMING.type));
         whiteboxApplication.underlyingtTansport().work();
         spin.spinUntil(() -> whiteboxApplication.events().contains(Connected.class));
         return whiteboxApplication.events().lastResponse(Connected.class, 1);

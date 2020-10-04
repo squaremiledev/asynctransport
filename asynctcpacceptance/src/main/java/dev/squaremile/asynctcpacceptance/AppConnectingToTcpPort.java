@@ -9,6 +9,7 @@ import dev.squaremile.asynctcp.transport.setup.NaiveRoundRobinSingleThreadRunner
 import dev.squaremile.asynctcp.transport.setup.TransportApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.singletonList;
 
@@ -42,7 +43,7 @@ public class AppConnectingToTcpPort implements Application
     public void onStart()
     {
         System.out.println("START");
-        transport.handle(transport.command(Connect.class).set("localhost", port, 1, 1_000));
+        transport.handle(transport.command(Connect.class).set("localhost", port, (long)1, 1_000, RAW_STREAMING.type));
     }
 
     @Override

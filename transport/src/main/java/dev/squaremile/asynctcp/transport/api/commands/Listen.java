@@ -2,21 +2,16 @@ package dev.squaremile.asynctcp.transport.api.commands;
 
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.values.CommandId;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
+import dev.squaremile.asynctcp.transport.api.values.DelineationType;
 import dev.squaremile.asynctcp.transport.api.values.TransportId;
 
 public class Listen implements TransportUserCommand
 {
     private int port = TransportId.NO_PORT;
     private long commandId = CommandId.NO_COMMAND_ID;
-    private PredefinedTransportDelineation delineation;
+    private DelineationType delineation;
 
-    public Listen set(final long commandId, final int port)
-    {
-        return set(commandId, port, PredefinedTransportDelineation.RAW_STREAMING);
-    }
-
-    public Listen set(final long commandId, final int port, final PredefinedTransportDelineation delineation)
+    public Listen set(final long commandId, final int port, final DelineationType delineation)
     {
         this.port = port;
         this.commandId = commandId;
@@ -36,9 +31,9 @@ public class Listen implements TransportUserCommand
         return commandId;
     }
 
-    public String delineationName()
+    public DelineationType delineation()
     {
-        return delineation.name();
+        return delineation;
     }
 
     @Override

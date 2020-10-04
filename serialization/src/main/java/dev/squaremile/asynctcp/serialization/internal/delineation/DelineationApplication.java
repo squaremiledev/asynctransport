@@ -18,15 +18,16 @@ import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.api.values.DelineationType;
 
 public class DelineationApplication implements Application, TransportCommandHandler
 {
 
     private final Application delegate;
     private final Long2ObjectHashMap<DelineationHandler> delineationPerConnection = new Long2ObjectHashMap<>();
-    private final DelineationImplementations delineationImplementations = new DelineationImplementations();
-    private final Int2ObjectHashMap<String> delineationTypePerListeningPort = new Int2ObjectHashMap<>();
-    private final Long2ObjectHashMap<String> delineationTypePerConnectingCommandId = new Long2ObjectHashMap<>();
+    private final DelineationHandlerFactory delineationHandlerFactory = new DelineationHandlerFactory();
+    private final Int2ObjectHashMap<DelineationType> delineationTypePerListeningPort = new Int2ObjectHashMap<>();
+    private final Long2ObjectHashMap<DelineationType> delineationTypePerConnectingCommandId = new Long2ObjectHashMap<>();
 
     public DelineationApplication(final Application delegate)
     {
@@ -84,7 +85,7 @@ public class DelineationApplication implements Application, TransportCommandHand
             final ConnectionIdValue connectionIdValue = new ConnectionIdValue(connected);
             delineationPerConnection.put(
                     connectionIdValue.connectionId(),
-                    delineationImplementations.create(
+                    delineationHandlerFactory.create(
                             delineationTypePerConnectingCommandId.remove(connected.commandId()),
                             (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, buffer, offset, length))
                     )
@@ -101,7 +102,7 @@ public class DelineationApplication implements Application, TransportCommandHand
             final ConnectionIdValue connectionIdValue = new ConnectionIdValue(connectionAccepted);
             delineationPerConnection.put(
                     connectionIdValue.connectionId(),
-                    delineationImplementations.create(
+                    delineationHandlerFactory.create(
                             delineationTypePerListeningPort.get(connectionAccepted.port()),
                             (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, buffer, offset, length))
                     )
@@ -120,20 +121,20 @@ public class DelineationApplication implements Application, TransportCommandHand
         if (command instanceof Listen)
         {
             Listen listen = (Listen)command;
-            validateDelineation(listen.delineationName());
-            delineationTypePerListeningPort.put(listen.port(), listen.delineationName());
+            validateDelineation(listen.delineation());
+            delineationTypePerListeningPort.put(listen.port(), listen.delineation());
         }
         else if (command instanceof Connect)
         {
             Connect connect = (Connect)command;
-            validateDelineation(connect.delineationName());
-            delineationTypePerConnectingCommandId.put(connect.commandId(), connect.delineationName());
+            validateDelineation(connect.delineation());
+            delineationTypePerConnectingCommandId.put(connect.commandId(), connect.delineation());
         }
     }
 
-    private void validateDelineation(final String delineation)
+    private void validateDelineation(final DelineationType delineation)
     {
-        if (!delineationImplementations.isSupported(delineation))
+        if (!delineationHandlerFactory.isSupported(delineation))
         {
             throw new IllegalArgumentException(delineation + " is not supported yet");
         }

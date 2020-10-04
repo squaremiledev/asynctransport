@@ -14,6 +14,7 @@ import dev.squaremile.asynctcp.fixtures.EventsSpy;
 import dev.squaremile.asynctcp.fixtures.SerializedMessagesSpy;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
+import dev.squaremile.asynctcp.serialization.api.delineation.FixedLengthDelineationType;
 import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
@@ -22,7 +23,6 @@ import dev.squaremile.asynctcpacceptance.sampleapps.EchoApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.fixtures.EventsSpy.spy;
-import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.SINGLE_BYTE;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
@@ -41,7 +41,8 @@ class TcpOverDirectBufferTest
         final SerializedMessagesSpy networkToUserWrites = new SerializedMessagesSpy();
         final SerializedMessagesSpy userToNetworkWrites = new SerializedMessagesSpy();
         final EventsSpy userFacingAppEvents = spy();
-        final MessageDrivenTransport networkFacingTransport = asyncTcpTransportFactory.createMessageDrivenTransport("networkFacing", SINGLE_BYTE, networkToUserWrites);
+        final MessageDrivenTransport networkFacingTransport = asyncTcpTransportFactory.createMessageDrivenTransport(
+                "networkFacing", new FixedLengthDelineationType("SINGLE_BYTE", 0), networkToUserWrites);
         final MessageOnlyDrivenApplication userFacingApp = new MessageOnlyDrivenApplication(
                 new EchoApplication(
                         new SerializingTransport(

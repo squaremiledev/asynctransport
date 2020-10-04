@@ -12,6 +12,7 @@ import dev.squaremile.asynctcp.sbe.SendDataDecoder;
 import dev.squaremile.asynctcp.sbe.SendMessageDecoder;
 import dev.squaremile.asynctcp.sbe.StopListeningDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
+import dev.squaremile.asynctcp.serialization.api.delineation.FixedLengthDelineationType;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
@@ -21,7 +22,9 @@ import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
+import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+
+import static java.lang.Integer.parseInt;
 
 // TODO [perf]: avoid garbage
 public class TransportCommandDecoders
@@ -87,9 +90,9 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    PredefinedTransportDelineation predefinedTransportDelineation = PredefinedTransportDelineation.valueOf(decoder.encoding());
+                    DelineationType delineation = new FixedLengthDelineationType(parseInt(decoder.delineation()));
                     String remoteHost = decoder.remoteHost();
-                    Connect result = new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), predefinedTransportDelineation);
+                    Connect result = new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), delineation);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }
@@ -109,8 +112,7 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    PredefinedTransportDelineation predefinedTransportDelineation = PredefinedTransportDelineation.valueOf(decoder.encoding());
-                    Listen result = new Listen().set(decoder.commandId(), decoder.port(), predefinedTransportDelineation);
+                    Listen result = new Listen().set(decoder.commandId(), decoder.port(), new FixedLengthDelineationType(parseInt(decoder.delineation())));
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }

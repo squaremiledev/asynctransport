@@ -120,7 +120,7 @@ public class SerializingTransport implements Transport, EventListener
                     .remotePort(command.remotePort())
                     .commandId(command.commandId())
                     .timeoutMs(command.timeoutMs())
-                    .encoding(command.delineationName())
+                    .delineation("" + command.delineation().fixedLength())
                     .remoteHost(command.remoteHost());
             serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + connectEncoder.encodedLength());
         }
@@ -130,7 +130,7 @@ public class SerializingTransport implements Transport, EventListener
             listenEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(command.port())
                     .commandId(command.commandId())
-                    .encoding(command.delineationName());
+                    .delineation("" + command.delineation().fixedLength());
             serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + listenEncoder.encodedLength());
         }
         else if (unknownCommand instanceof StopListening)

@@ -203,17 +203,17 @@ public class ListenEncoder
     }
 
 
-    public static int encodingId()
+    public static int delineationId()
     {
         return 4;
     }
 
-    public static String encodingCharacterEncoding()
+    public static String delineationCharacterEncoding()
     {
         return "ASCII";
     }
 
-    public static String encodingMetaAttribute(final MetaAttribute metaAttribute)
+    public static String delineationMetaAttribute(final MetaAttribute metaAttribute)
     {
         switch (metaAttribute)
         {
@@ -226,12 +226,12 @@ public class ListenEncoder
         return "";
     }
 
-    public static int encodingHeaderLength()
+    public static int delineationHeaderLength()
     {
         return 4;
     }
 
-    public ListenEncoder putEncoding(final DirectBuffer src, final int srcOffset, final int length)
+    public ListenEncoder putDelineation(final DirectBuffer src, final int srcOffset, final int length)
     {
         if (length > 1073741824)
         {
@@ -247,7 +247,7 @@ public class ListenEncoder
         return this;
     }
 
-    public ListenEncoder putEncoding(final byte[] src, final int srcOffset, final int length)
+    public ListenEncoder putDelineation(final byte[] src, final int srcOffset, final int length)
     {
         if (length > 1073741824)
         {
@@ -263,7 +263,7 @@ public class ListenEncoder
         return this;
     }
 
-    public ListenEncoder encoding(final String value)
+    public ListenEncoder delineation(final String value)
     {
         final int length = null == value ? 0 : value.length();
         if (length > 1073741824)
@@ -280,7 +280,7 @@ public class ListenEncoder
         return this;
     }
 
-    public ListenEncoder encoding(final CharSequence value)
+    public ListenEncoder delineation(final CharSequence value)
     {
         final int length = null == value ? 0 : value.length();
         if (length > 1073741824)

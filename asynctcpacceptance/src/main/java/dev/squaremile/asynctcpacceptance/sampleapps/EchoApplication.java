@@ -1,6 +1,7 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
 
+import dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
@@ -12,7 +13,6 @@ import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 
 import static java.util.Objects.requireNonNull;
 
@@ -40,7 +40,7 @@ public class EchoApplication implements Application
     @Override
     public void onStart()
     {
-        transport.handle(transport.command(Listen.class).set(nextCommandId++, listeningPort, PredefinedTransportDelineation.RAW_STREAMING));
+        transport.handle(transport.command(Listen.class).set(nextCommandId++, listeningPort, PredefinedTransportDelineation.RAW_STREAMING.type));
     }
 
     @Override

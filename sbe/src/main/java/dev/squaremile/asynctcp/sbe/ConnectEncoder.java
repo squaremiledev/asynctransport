@@ -258,17 +258,17 @@ public class ConnectEncoder
     }
 
 
-    public static int encodingId()
+    public static int delineationId()
     {
         return 4;
     }
 
-    public static String encodingCharacterEncoding()
+    public static String delineationCharacterEncoding()
     {
         return "ASCII";
     }
 
-    public static String encodingMetaAttribute(final MetaAttribute metaAttribute)
+    public static String delineationMetaAttribute(final MetaAttribute metaAttribute)
     {
         switch (metaAttribute)
         {
@@ -281,12 +281,12 @@ public class ConnectEncoder
         return "";
     }
 
-    public static int encodingHeaderLength()
+    public static int delineationHeaderLength()
     {
         return 4;
     }
 
-    public ConnectEncoder putEncoding(final DirectBuffer src, final int srcOffset, final int length)
+    public ConnectEncoder putDelineation(final DirectBuffer src, final int srcOffset, final int length)
     {
         if (length > 1073741824)
         {
@@ -302,7 +302,7 @@ public class ConnectEncoder
         return this;
     }
 
-    public ConnectEncoder putEncoding(final byte[] src, final int srcOffset, final int length)
+    public ConnectEncoder putDelineation(final byte[] src, final int srcOffset, final int length)
     {
         if (length > 1073741824)
         {
@@ -318,7 +318,7 @@ public class ConnectEncoder
         return this;
     }
 
-    public ConnectEncoder encoding(final String value)
+    public ConnectEncoder delineation(final String value)
     {
         final int length = null == value ? 0 : value.length();
         if (length > 1073741824)
@@ -335,7 +335,7 @@ public class ConnectEncoder
         return this;
     }
 
-    public ConnectEncoder encoding(final CharSequence value)
+    public ConnectEncoder delineation(final CharSequence value)
     {
         final int length = null == value ? 0 : value.length();
         if (length > 1073741824)

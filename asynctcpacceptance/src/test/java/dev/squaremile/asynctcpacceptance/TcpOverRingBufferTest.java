@@ -27,7 +27,7 @@ import dev.squaremile.asynctcpacceptance.sampleapps.MessageEchoApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.fixtures.EventsSpy.spyAndDelegateTo;
-import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.SINGLE_BYTE;
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.SINGLE_BYTE;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
@@ -57,14 +57,14 @@ class TcpOverRingBufferTest
                         serializingTransport,
                         port,
                         userFacingAppEvents,
-                        SINGLE_BYTE,
+                        SINGLE_BYTE.type,
                         100
                 ),
                 networkToUserRingBuffer
         );
         final RingBufferBackedTransport networkFacingTransport = new RingBufferBackedTransport(
                 transportFactory.createMessageDrivenTransport(
-                        "networkFacing", SINGLE_BYTE, new RingBufferWriter("networkToUserRingBuffer", networkToUserRingBuffer)
+                        "networkFacing", SINGLE_BYTE.type, new RingBufferWriter("networkToUserRingBuffer", networkToUserRingBuffer)
                 ), userToNetworkRingBuffer
         );
         final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(networkFacingTransport, userFacingApp);

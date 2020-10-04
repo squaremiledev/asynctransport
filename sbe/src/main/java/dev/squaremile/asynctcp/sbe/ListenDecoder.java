@@ -196,22 +196,22 @@ public class ListenDecoder
     }
 
 
-    public static int encodingId()
+    public static int delineationId()
     {
         return 4;
     }
 
-    public static int encodingSinceVersion()
+    public static int delineationSinceVersion()
     {
         return 0;
     }
 
-    public static String encodingCharacterEncoding()
+    public static String delineationCharacterEncoding()
     {
         return "ASCII";
     }
 
-    public static String encodingMetaAttribute(final MetaAttribute metaAttribute)
+    public static String delineationMetaAttribute(final MetaAttribute metaAttribute)
     {
         switch (metaAttribute)
         {
@@ -224,18 +224,18 @@ public class ListenDecoder
         return "";
     }
 
-    public static int encodingHeaderLength()
+    public static int delineationHeaderLength()
     {
         return 4;
     }
 
-    public int encodingLength()
+    public int delineationLength()
     {
         final int limit = parentMessage.limit();
         return (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
     }
 
-    public int skipEncoding()
+    public int skipDelineation()
     {
         final int headerLength = 4;
         final int limit = parentMessage.limit();
@@ -247,7 +247,7 @@ public class ListenDecoder
         return dataLength;
     }
 
-    public int getEncoding(final MutableDirectBuffer dst, final int dstOffset, final int length)
+    public int getDelineation(final MutableDirectBuffer dst, final int dstOffset, final int length)
     {
         final int headerLength = 4;
         final int limit = parentMessage.limit();
@@ -259,7 +259,7 @@ public class ListenDecoder
         return bytesCopied;
     }
 
-    public int getEncoding(final byte[] dst, final int dstOffset, final int length)
+    public int getDelineation(final byte[] dst, final int dstOffset, final int length)
     {
         final int headerLength = 4;
         final int limit = parentMessage.limit();
@@ -271,7 +271,7 @@ public class ListenDecoder
         return bytesCopied;
     }
 
-    public void wrapEncoding(final DirectBuffer wrapBuffer)
+    public void wrapDelineation(final DirectBuffer wrapBuffer)
     {
         final int headerLength = 4;
         final int limit = parentMessage.limit();
@@ -280,7 +280,7 @@ public class ListenDecoder
         wrapBuffer.wrap(buffer, limit + headerLength, dataLength);
     }
 
-    public String encoding()
+    public String delineation()
     {
         final int headerLength = 4;
         final int limit = parentMessage.limit();
@@ -308,7 +308,7 @@ public class ListenDecoder
         return value;
     }
 
-    public int getEncoding(final Appendable appendable)
+    public int getDelineation(final Appendable appendable)
     {
         final int headerLength = 4;
         final int limit = parentMessage.limit();
@@ -356,9 +356,9 @@ public class ListenDecoder
         builder.append("commandId=");
         builder.append(commandId());
         builder.append('|');
-        builder.append("encoding=");
+        builder.append("delineation=");
         builder.append('\'');
-        getEncoding(builder);
+        getDelineation(builder);
         builder.append('\'');
 
         limit(originalLimit);

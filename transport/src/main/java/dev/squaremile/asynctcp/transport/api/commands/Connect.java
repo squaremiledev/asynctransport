@@ -2,7 +2,7 @@ package dev.squaremile.asynctcp.transport.api.commands;
 
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.values.CommandId;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
+import dev.squaremile.asynctcp.transport.api.values.DelineationType;
 import dev.squaremile.asynctcp.transport.api.values.TransportId;
 
 public class Connect implements TransportUserCommand
@@ -11,19 +11,14 @@ public class Connect implements TransportUserCommand
     private long commandId = CommandId.NO_COMMAND_ID;
     private String remoteHost;
     private int timeoutMs = 1_000;
-    private PredefinedTransportDelineation delineation;
-
-    public Connect set(final String remoteHost, final int remotePort, final long commandId, final int timeoutMs)
-    {
-        return set(remoteHost, remotePort, commandId, timeoutMs, PredefinedTransportDelineation.RAW_STREAMING);
-    }
+    private DelineationType delineation;
 
     public Connect set(
             final String remoteHost,
             final int remotePort,
             final long commandId,
             final int timeoutMs,
-            final PredefinedTransportDelineation delineation
+            final DelineationType delineation
     )
     {
         this.remoteHost = remoteHost;
@@ -61,9 +56,9 @@ public class Connect implements TransportUserCommand
         return timeoutMs;
     }
 
-    public String delineationName()
+    public DelineationType delineation()
     {
-        return delineation.name();
+        return delineation;
     }
 
     @Override

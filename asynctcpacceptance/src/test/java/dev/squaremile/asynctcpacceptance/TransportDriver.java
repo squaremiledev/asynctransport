@@ -22,6 +22,7 @@ import dev.squaremile.asynctcp.transport.testfixtures.TransportUnderTest;
 import dev.squaremile.asynctcp.transport.testfixtures.Worker;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortOtherThan;
@@ -80,7 +81,7 @@ public class TransportDriver
         final StartedListening startedListeningEvent = startListening(serverPort);
         int acceptedEventsBefore = transport.connectionEvents().all(ConnectionAccepted.class).size();
         int connectedEventsBefore = client.connectionEvents().all(Connected.class).size();
-        client.handle(client.command(Connect.class).set("localhost", startedListeningEvent.port(), CommandId.NO_COMMAND_ID, 1_000));
+        client.handle(client.command(Connect.class).set("localhost", startedListeningEvent.port(), CommandId.NO_COMMAND_ID, 1_000, RAW_STREAMING.type));
         Worker.runUntil(() ->
                         {
                             transport.work();
@@ -118,7 +119,7 @@ public class TransportDriver
     public StartedListening startListening(final int port)
     {
         final int commandId = nextCommandId++;
-        transport.handle(transport.command(Listen.class).set(commandId, port));
+        transport.handle(transport.command(Listen.class).set((long)commandId, port, RAW_STREAMING.type));
         transport.work();
         return transport.events().last(StartedListening.class, event -> event.commandId() == commandId);
     }

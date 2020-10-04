@@ -27,10 +27,10 @@ import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
-import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.INTEGERS;
-import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.LONGS;
-import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.RAW_STREAMING;
-import static dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation.SINGLE_BYTE;
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.INTEGERS;
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.LONGS;
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.SINGLE_BYTE;
 import static java.nio.ByteBuffer.wrap;
 import static java.util.Arrays.asList;
 
@@ -65,7 +65,7 @@ class DelineationApplicationTest
         app.onStart();
         app.onStop();
         app.work();
-        app.handle(new Listen().set(99, connectionId().port(), SINGLE_BYTE));
+        app.handle(new Listen().set((long)99, connectionId().port(), SINGLE_BYTE.type));
         app.onEvent(new StartedListening(8888, 5));
 
         // Then
@@ -97,7 +97,7 @@ class DelineationApplicationTest
     void shouldNotDelineateRawStreaming()
     {
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Listen().set(99, connectionId().port(), RAW_STREAMING));
+        app.handle(new Listen().set((long)99, connectionId().port(), RAW_STREAMING.type));
         app.onEvent(new StartedListening(connectionId().port(), 99));
         app.onEvent(connectionAccepted(connectionId()));
 
@@ -119,7 +119,7 @@ class DelineationApplicationTest
     void shouldEncodeSingleByteDataAsMessage()
     {
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Listen().set(99, connectionId().port(), SINGLE_BYTE));
+        app.handle(new Listen().set((long)99, connectionId().port(), SINGLE_BYTE.type));
         app.onEvent(new StartedListening(connectionId().port(), 99));
         app.onEvent(connectionAccepted(connectionId()));
 
@@ -141,7 +141,7 @@ class DelineationApplicationTest
     void shouldEncodeMultipleBytesAsMultipleIndividualMessages()
     {
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Listen().set(99, connectionId().port(), SINGLE_BYTE));
+        app.handle(new Listen().set((long)99, connectionId().port(), SINGLE_BYTE.type));
         app.onEvent(new StartedListening(connectionId().port(), 99));
         app.onEvent(new ConnectionAccepted(connectionId().port(), 100, "localhost", 33160, 6, 65536, 1313280));
 
@@ -164,10 +164,10 @@ class DelineationApplicationTest
     void shouldSupportMultipleConnections()
     {
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Listen().set(100, connectionId().port(), SINGLE_BYTE));
+        app.handle(new Listen().set((long)100, connectionId().port(), SINGLE_BYTE.type));
         app.onEvent(new StartedListening(connectionId().port(), 100));
         app.onEvent(new ConnectionAccepted(connectionId().port(), 100, "localhost", 33160, 8, 65536, 1313280));
-        app.handle(new Listen().set(200, 8809, SINGLE_BYTE));
+        app.handle(new Listen().set((long)200, 8809, SINGLE_BYTE.type));
         app.onEvent(new StartedListening(8809, 200));
         app.onEvent(new ConnectionAccepted(8809, 200, "127.0.0.1", 33170, 9, 1234, 5678));
 
@@ -188,9 +188,9 @@ class DelineationApplicationTest
     void shouldSupportMultipleInitiatedConnections()
     {
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Connect().set("localhost", 8888, 100, 500, SINGLE_BYTE));
+        app.handle(new Connect().set("localhost", 8888, (long)100, 500, SINGLE_BYTE.type));
         app.onEvent(new Connected(8888, 100, "remoteHost1", 5555, 1, 56000, 80000));
-        app.handle(new Connect().set("127.0.0.1", 8889, 101, 500, SINGLE_BYTE));
+        app.handle(new Connect().set("127.0.0.1", 8889, (long)101, 500, SINGLE_BYTE.type));
         app.onEvent(new Connected(8889, 101, "remoteHost2", 5556, 2, 46000, 90000));
 
         // When
@@ -212,7 +212,7 @@ class DelineationApplicationTest
         ConnectionIdValue reconnectedId = new ConnectionIdValue(resetConnectionId.port(), resetConnectionId.connectionId() + 1);
         ConnectionIdValue anotherConnectionId = new ConnectionIdValue(resetConnectionId.port(), resetConnectionId.connectionId() + 2);
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Listen().set(99, resetConnectionId.port(), LONGS));
+        app.handle(new Listen().set((long)99, resetConnectionId.port(), LONGS.type));
         app.onEvent(new StartedListening(resetConnectionId.port(), 99));
         app.onEvent(connectionAccepted(resetConnectionId));
         app.onEvent(connectionResetByPeer(resetConnectionId));
@@ -236,7 +236,7 @@ class DelineationApplicationTest
     {
         ConnectionId resetConnectionId = connectionId();
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Listen().set(99, resetConnectionId.port(), LONGS));
+        app.handle(new Listen().set((long)99, resetConnectionId.port(), LONGS.type));
         app.onEvent(new StartedListening(resetConnectionId.port(), 99));
         app.onEvent(connectionAccepted(resetConnectionId));
         app.onEvent(connectionResetByPeer(resetConnectionId));
@@ -252,7 +252,7 @@ class DelineationApplicationTest
     void shouldSupportOtherIntsAsDelineationMechanisms()
     {
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Listen().set(99, connectionId().port(), INTEGERS));
+        app.handle(new Listen().set((long)99, connectionId().port(), INTEGERS.type));
         app.onEvent(new StartedListening(connectionId().port(), 99));
         app.onEvent(connectionAccepted(connectionId()));
 
@@ -271,7 +271,7 @@ class DelineationApplicationTest
     {
         ConnectionIdValue noLongerListeningPortConnectionId = new ConnectionIdValue(connectionId().port(), connectionId().connectionId() + 1);
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Listen().set(99, connectionId().port(), LONGS));
+        app.handle(new Listen().set((long)99, connectionId().port(), LONGS.type));
         app.onEvent(new StartedListening(connectionId().port(), 99));
         app.onEvent(connectionAccepted(connectionId()));
         app.onEvent(new StoppedListening(connectionId().port(), 100));
@@ -295,9 +295,9 @@ class DelineationApplicationTest
         ConnectionId connectionId1 = new ConnectionIdValue(8801, 1);
         ConnectionId connectionId2 = new ConnectionIdValue(8802, 2);
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Connect().set("localhost1", 5551, 201, 500, LONGS));
+        app.handle(new Connect().set("localhost1", 5551, (long)201, 500, LONGS.type));
         app.onEvent(new Connected(connectionId1.port(), 201, "remoteHost1", 5551, connectionId1.connectionId(), 56000, 80000));
-        app.handle(new Connect().set("localhost2", 5552, 202, 500, LONGS));
+        app.handle(new Connect().set("localhost2", 5552, (long)202, 500, LONGS.type));
         app.onEvent(new Connected(connectionId2.port(), 202, "remoteHost2", 5552, connectionId2.connectionId(), 56000, 80000));
         app.handle(new CloseConnection(connectionId2));
         app.onEvent(connectionResetByPeer(connectionId2));
@@ -322,15 +322,15 @@ class DelineationApplicationTest
         ConnectionIdValue acceptedSingleByteConnectionId = new ConnectionIdValue(8801, 1);
         ConnectionIdValue acceptedLongsConnectionId = new ConnectionIdValue(8802, 2);
         ConnectionIdValue acceptedIntegersConnectionId = new ConnectionIdValue(8803, 3);
-        app.handle(new Connect().set("localhost1", 5551, 201, 500, SINGLE_BYTE));
-        app.handle(new Listen().set(101, acceptedSingleByteConnectionId.port(), SINGLE_BYTE));
+        app.handle(new Connect().set("localhost1", 5551, (long)201, 500, SINGLE_BYTE.type));
+        app.handle(new Listen().set((long)101, acceptedSingleByteConnectionId.port(), SINGLE_BYTE.type));
         app.onEvent(new StartedListening(acceptedSingleByteConnectionId.port(), 101));
-        app.handle(new Connect().set("localhost2", 5552, 202, 500, LONGS));
+        app.handle(new Connect().set("localhost2", 5552, (long)202, 500, LONGS.type));
         app.onEvent(new Connected(connectedSingleByteConnectionId.port(), 201, "remoteHost1", 5551, connectedSingleByteConnectionId.connectionId(), 56000, 80000));
         app.onEvent(connectionAccepted(acceptedSingleByteConnectionId));
-        app.handle(new Listen().set(102, acceptedLongsConnectionId.port(), LONGS));
-        app.handle(new Listen().set(103, acceptedIntegersConnectionId.port(), INTEGERS));
-        app.handle(new Connect().set("localhost3", 5553, 203, 500, INTEGERS));
+        app.handle(new Listen().set((long)102, acceptedLongsConnectionId.port(), LONGS.type));
+        app.handle(new Listen().set((long)103, acceptedIntegersConnectionId.port(), INTEGERS.type));
+        app.handle(new Connect().set("localhost3", 5553, (long)203, 500, INTEGERS.type));
         app.onEvent(new StartedListening(acceptedLongsConnectionId.port(), 102));
         app.onEvent(new StartedListening(acceptedIntegersConnectionId.port(), 103));
         app.onEvent(connectionAccepted(acceptedLongsConnectionId));

@@ -4,7 +4,6 @@ import org.agrona.DirectBuffer;
 
 class SingleByteDelineation implements DelineationHandler
 {
-
     private final DelineationHandler delineatedDataHandler;
 
     SingleByteDelineation(final DelineationHandler delineatedDataHandler)

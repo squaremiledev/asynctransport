@@ -4,6 +4,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 
+import dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
@@ -22,7 +23,6 @@ import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
 
 class Fixtures
 {
@@ -55,8 +55,8 @@ class Fixtures
     {
         return Stream.of(
                 transport -> transport.command(connectedEvent(), CloseConnection.class).set(201),
-                transport -> transport.command(Connect.class).set("remoteHost", 8899, 202, 10, PredefinedTransportDelineation.SINGLE_BYTE),
-                transport -> transport.command(Listen.class).set(203, 6688, PredefinedTransportDelineation.LONGS),
+                transport -> transport.command(Connect.class).set("remoteHost", 8899, (long)202, 10, PredefinedTransportDelineation.SINGLE_BYTE.type),
+                transport -> transport.command(Listen.class).set((long)203, 6688, PredefinedTransportDelineation.LONGS.type),
                 transport -> transport.command(connectedEvent(), SendData.class).set(new byte[]{1, 2, 3, 4, 5, 6}, 205),
                 transport -> set(transport.command(connectedEvent(), SendMessage.class), 0, new byte[]{1, 2, 3, 4, 5, 6}, 2, 3),
                 transport -> transport.command(StopListening.class).set(204, 7788)

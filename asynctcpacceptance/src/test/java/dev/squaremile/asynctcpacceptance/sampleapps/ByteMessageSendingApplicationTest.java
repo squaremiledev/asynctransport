@@ -18,6 +18,7 @@ import dev.squaremile.asynctcp.transport.setup.TransportApplication;
 import dev.squaremile.asynctcp.transport.testfixtures.TransportEventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.app.WhiteboxApplication;
 
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
 import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.byteArrayWith;
@@ -46,7 +47,7 @@ class ByteMessageSendingApplicationTest
         port = freePort();
         transportApplication = new TransportAppFactory().create("", transport -> new ByteMessageSendingApplication(transport, host, port, dataToSend, IGNORE_EVENTS));
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
-        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Listen.class).set(1, port));
+        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Listen.class).set(1, port, RAW_STREAMING.type));
         transportApplication.onStart();
         spin.spinUntil(() -> whiteboxApplication.events().contains(ConnectionAccepted.class));
     }

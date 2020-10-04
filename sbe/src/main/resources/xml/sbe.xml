@@ -110,13 +110,13 @@
         <field name="remotePort" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
         <field name="timeoutMs" id="3" type="int32"/>
-        <data name="encoding" id="4" type="varAsciiEncoding"/>
+        <data name="delineation" id="4" type="varAsciiEncoding"/>
         <data name="remoteHost" id="5" type="varStringEncoding"/>
     </sbe:message>
     <sbe:message name="Listen" id="103">
         <field name="port" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
-        <data name="encoding" id="4" type="varAsciiEncoding"/>
+        <data name="delineation" id="4" type="varAsciiEncoding"/>
     </sbe:message>
     <sbe:message name="SendData" id="104">
         <field name="port" id="1" type="port"/>

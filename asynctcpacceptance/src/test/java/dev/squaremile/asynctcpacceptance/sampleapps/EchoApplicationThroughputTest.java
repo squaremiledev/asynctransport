@@ -21,6 +21,7 @@ import dev.squaremile.asynctcp.transport.setup.TransportApplication;
 import dev.squaremile.asynctcp.transport.testfixtures.Worker;
 import dev.squaremile.asynctcp.transport.testfixtures.app.WhiteboxApplication;
 
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
 import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static java.lang.String.format;
@@ -66,7 +67,7 @@ class EchoApplicationThroughputTest
     void shouldEchoBackTheStream()
     {
         Transport drivingTransport = whiteboxApplication.underlyingtTansport();
-        drivingTransport.handle(drivingTransport.command(Connect.class).set("localhost", port, 1, 50));
+        drivingTransport.handle(drivingTransport.command(Connect.class).set("localhost", port, (long)1, 50, RAW_STREAMING.type));
         Worker.runUntil(() ->
                         {
                             drivingTransport.work();

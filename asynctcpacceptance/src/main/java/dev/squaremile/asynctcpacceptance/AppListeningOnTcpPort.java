@@ -11,6 +11,7 @@ import dev.squaremile.asynctcp.transport.setup.NaiveRoundRobinSingleThreadRunner
 import dev.squaremile.asynctcp.transport.setup.TransportApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.singletonList;
 
@@ -33,7 +34,7 @@ public class AppListeningOnTcpPort
                     public void onStart()
                     {
                         System.out.println("START");
-                        transport.handle(transport.command(Listen.class).set(1, appPort));
+                        transport.handle(transport.command(Listen.class).set((long)1, appPort, RAW_STREAMING.type));
                     }
 
                     @Override

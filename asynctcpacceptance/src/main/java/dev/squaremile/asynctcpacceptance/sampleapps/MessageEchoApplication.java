@@ -11,7 +11,7 @@ import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
-import dev.squaremile.asynctcp.transport.api.values.PredefinedTransportDelineation;
+import dev.squaremile.asynctcp.transport.api.values.DelineationType;
 
 import static java.util.Objects.requireNonNull;
 
@@ -20,7 +20,7 @@ public class MessageEchoApplication implements Application
     private final Transport transport;
     private final int listeningPort;
     private final EventListener eventListener;
-    private final PredefinedTransportDelineation delineation;
+    private final DelineationType delineation;
     private boolean listening = false;
     private int nextCommandId;
 
@@ -28,7 +28,7 @@ public class MessageEchoApplication implements Application
             final Transport transport,
             final int listeningPort,
             final EventListener eventListener,
-            final PredefinedTransportDelineation delineation,
+            final DelineationType delineation,
             final int initialCommandId
     )
     {
