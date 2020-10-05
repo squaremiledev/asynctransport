@@ -141,7 +141,8 @@ public class SerializingApplication implements Application
             StartedListening event = (StartedListening)unknownEvent;
             startedListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(event.port())
-                    .commandId(event.commandId());
+                    .commandId(event.commandId())
+                    .delineation("" + event.delineation().fixedLength());
             serializedEventListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + startedListeningEncoder.encodedLength());
         }
 

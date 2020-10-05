@@ -72,7 +72,7 @@ class TcpOverRingBufferTest
         // Given
         userFacingApp.onStart();
         runUntil(thingsOnDuty.reached(() -> !userFacingAppEvents.received().isEmpty()));
-        assertEqual(userFacingAppEvents.received(), new StartedListening(port, 100));
+        assertEqual(userFacingAppEvents.received(), new StartedListening(port, 100, SINGLE_BYTE.type));
 
         // When
         runUntil(thingsOnDuty.reached(completed(() -> sampleClient.connectedTo(port))));

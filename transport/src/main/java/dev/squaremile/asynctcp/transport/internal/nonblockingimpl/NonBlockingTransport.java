@@ -280,7 +280,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             final ServerSocketChannel serverSocketChannel = server.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
             selectionKey.attach(new ListeningSocketConductor(server.port()));
-            eventListener.onEvent(new StartedListening(command.port(), command.commandId()));
+            eventListener.onEvent(new StartedListening(command.port(), command.commandId(), command.delineation()));
         }
         catch (IOException e)
         {

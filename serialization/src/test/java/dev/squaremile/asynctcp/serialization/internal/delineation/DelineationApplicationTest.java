@@ -66,7 +66,7 @@ class DelineationApplicationTest
         app.onStop();
         app.work();
         app.handle(new Listen().set((long)99, connectionId().port(), SINGLE_BYTE.type));
-        app.onEvent(new StartedListening(8888, 5));
+        app.onEvent(new StartedListening(8888, 5, SINGLE_BYTE.type));
 
         // Then
         assertEquals(
@@ -74,7 +74,7 @@ class DelineationApplicationTest
                 "onStart",
                 "onStop",
                 "work",
-                new StartedListening(8888, 5)
+                new StartedListening(8888, 5, SINGLE_BYTE.type)
         );
     }
 
@@ -98,7 +98,7 @@ class DelineationApplicationTest
     {
         final DelineationApplication app = new DelineationApplication(spy);
         app.handle(new Listen().set((long)99, connectionId().port(), RAW_STREAMING.type));
-        app.onEvent(new StartedListening(connectionId().port(), 99));
+        app.onEvent(new StartedListening(connectionId().port(), 99, RAW_STREAMING.type));
         app.onEvent(connectionAccepted(connectionId()));
 
         // When
@@ -108,7 +108,7 @@ class DelineationApplicationTest
         // Then
         assertEquals(
                 spy.all(),
-                new StartedListening(connectionId().port(), 99),
+                new StartedListening(connectionId().port(), 99, RAW_STREAMING.type),
                 connectionAccepted(connectionId()),
                 new MessageReceived(connectionId()).set(wrapDirect(new byte[]{5, 7}), 2).copy(),
                 new MessageReceived(new ConnectionIdValue(8809, 5)).set(wrapDirect(new byte[]{6}), 1).copy()
@@ -120,7 +120,7 @@ class DelineationApplicationTest
     {
         final DelineationApplication app = new DelineationApplication(spy);
         app.handle(new Listen().set((long)99, connectionId().port(), SINGLE_BYTE.type));
-        app.onEvent(new StartedListening(connectionId().port(), 99));
+        app.onEvent(new StartedListening(connectionId().port(), 99, SINGLE_BYTE.type));
         app.onEvent(connectionAccepted(connectionId()));
 
         // When
@@ -130,7 +130,7 @@ class DelineationApplicationTest
         // Then
         assertEquals(
                 spy.all(),
-                new StartedListening(connectionId().port(), 99),
+                new StartedListening(connectionId().port(), 99, SINGLE_BYTE.type),
                 connectionAccepted(connectionId()),
                 new MessageReceived(connectionId()).set(wrapDirect(new byte[]{5}), 1).copy(),
                 new MessageReceived(new ConnectionIdValue(8809, 5)).set(wrapDirect(new byte[]{6}), 1).copy()
@@ -142,7 +142,7 @@ class DelineationApplicationTest
     {
         final DelineationApplication app = new DelineationApplication(spy);
         app.handle(new Listen().set((long)99, connectionId().port(), SINGLE_BYTE.type));
-        app.onEvent(new StartedListening(connectionId().port(), 99));
+        app.onEvent(new StartedListening(connectionId().port(), 99, SINGLE_BYTE.type));
         app.onEvent(new ConnectionAccepted(connectionId().port(), 100, "localhost", 33160, 6, 65536, 1313280));
 
         // When
@@ -152,7 +152,7 @@ class DelineationApplicationTest
         // Then
         assertEquals(
                 spy.all(),
-                new StartedListening(connectionId().port(), 99),
+                new StartedListening(connectionId().port(), 99, SINGLE_BYTE.type),
                 new ConnectionAccepted(connectionId().port(), 100, "localhost", 33160, 6, 65536, 1313280),
                 new MessageReceived(event).set(wrapDirect(new byte[]{1}), 1).copy(),
                 new MessageReceived(event).set(wrapDirect(new byte[]{2}), 1).copy(),
@@ -165,10 +165,10 @@ class DelineationApplicationTest
     {
         final DelineationApplication app = new DelineationApplication(spy);
         app.handle(new Listen().set((long)100, connectionId().port(), SINGLE_BYTE.type));
-        app.onEvent(new StartedListening(connectionId().port(), 100));
+        app.onEvent(new StartedListening(connectionId().port(), 100, SINGLE_BYTE.type));
         app.onEvent(new ConnectionAccepted(connectionId().port(), 100, "localhost", 33160, 8, 65536, 1313280));
         app.handle(new Listen().set((long)200, 8809, SINGLE_BYTE.type));
-        app.onEvent(new StartedListening(8809, 200));
+        app.onEvent(new StartedListening(8809, 200, SINGLE_BYTE.type));
         app.onEvent(new ConnectionAccepted(8809, 200, "127.0.0.1", 33170, 9, 1234, 5678));
 
         // When
@@ -213,7 +213,7 @@ class DelineationApplicationTest
         ConnectionIdValue anotherConnectionId = new ConnectionIdValue(resetConnectionId.port(), resetConnectionId.connectionId() + 2);
         final DelineationApplication app = new DelineationApplication(spy);
         app.handle(new Listen().set((long)99, resetConnectionId.port(), LONGS.type));
-        app.onEvent(new StartedListening(resetConnectionId.port(), 99));
+        app.onEvent(new StartedListening(resetConnectionId.port(), 99, LONGS.type));
         app.onEvent(connectionAccepted(resetConnectionId));
         app.onEvent(connectionResetByPeer(resetConnectionId));
         app.onEvent(connectionAccepted(reconnectedId));
@@ -237,7 +237,7 @@ class DelineationApplicationTest
         ConnectionId resetConnectionId = connectionId();
         final DelineationApplication app = new DelineationApplication(spy);
         app.handle(new Listen().set((long)99, resetConnectionId.port(), LONGS.type));
-        app.onEvent(new StartedListening(resetConnectionId.port(), 99));
+        app.onEvent(new StartedListening(resetConnectionId.port(), 99, LONGS.type));
         app.onEvent(connectionAccepted(resetConnectionId));
         app.onEvent(connectionResetByPeer(resetConnectionId));
 
@@ -253,7 +253,7 @@ class DelineationApplicationTest
     {
         final DelineationApplication app = new DelineationApplication(spy);
         app.handle(new Listen().set((long)99, connectionId().port(), INTEGERS.type));
-        app.onEvent(new StartedListening(connectionId().port(), 99));
+        app.onEvent(new StartedListening(connectionId().port(), 99, INTEGERS.type));
         app.onEvent(connectionAccepted(connectionId()));
 
         // When
@@ -272,7 +272,7 @@ class DelineationApplicationTest
         ConnectionIdValue noLongerListeningPortConnectionId = new ConnectionIdValue(connectionId().port(), connectionId().connectionId() + 1);
         final DelineationApplication app = new DelineationApplication(spy);
         app.handle(new Listen().set((long)99, connectionId().port(), LONGS.type));
-        app.onEvent(new StartedListening(connectionId().port(), 99));
+        app.onEvent(new StartedListening(connectionId().port(), 99, LONGS.type));
         app.onEvent(connectionAccepted(connectionId()));
         app.onEvent(new StoppedListening(connectionId().port(), 100));
         app.onEvent(connectionAccepted(noLongerListeningPortConnectionId));
@@ -324,15 +324,15 @@ class DelineationApplicationTest
         ConnectionIdValue acceptedIntegersConnectionId = new ConnectionIdValue(8803, 3);
         app.handle(new Connect().set("localhost1", 5551, (long)201, 500, SINGLE_BYTE.type));
         app.handle(new Listen().set((long)101, acceptedSingleByteConnectionId.port(), SINGLE_BYTE.type));
-        app.onEvent(new StartedListening(acceptedSingleByteConnectionId.port(), 101));
+        app.onEvent(new StartedListening(acceptedSingleByteConnectionId.port(), 101, SINGLE_BYTE.type));
         app.handle(new Connect().set("localhost2", 5552, (long)202, 500, LONGS.type));
         app.onEvent(new Connected(connectedSingleByteConnectionId.port(), 201, "remoteHost1", 5551, connectedSingleByteConnectionId.connectionId(), 56000, 80000));
         app.onEvent(connectionAccepted(acceptedSingleByteConnectionId));
         app.handle(new Listen().set((long)102, acceptedLongsConnectionId.port(), LONGS.type));
         app.handle(new Listen().set((long)103, acceptedIntegersConnectionId.port(), INTEGERS.type));
         app.handle(new Connect().set("localhost3", 5553, (long)203, 500, INTEGERS.type));
-        app.onEvent(new StartedListening(acceptedLongsConnectionId.port(), 102));
-        app.onEvent(new StartedListening(acceptedIntegersConnectionId.port(), 103));
+        app.onEvent(new StartedListening(acceptedLongsConnectionId.port(), 102, LONGS.type));
+        app.onEvent(new StartedListening(acceptedIntegersConnectionId.port(), 103, INTEGERS.type));
         app.onEvent(connectionAccepted(acceptedLongsConnectionId));
         app.onEvent(new Connected(connectedIntegersConnectionId.port(), 203, "remoteHost3", 5553, connectedIntegersConnectionId.connectionId(), 56000, 80000));
         app.onEvent(new Connected(connectedLongsConnectionId.port(), 202, "remoteHost2", 5552, connectedLongsConnectionId.connectionId(), 56000, 80000));

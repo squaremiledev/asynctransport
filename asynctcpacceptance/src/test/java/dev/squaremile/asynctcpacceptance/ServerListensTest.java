@@ -19,6 +19,7 @@ import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.transport.internal.domain.NumberOfConnectionsChanged;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.INTEGERS;
 import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
@@ -36,7 +37,7 @@ class ServerListensTest extends TransportTestBase
         // Given
         serverTransport.handle(serverTransport.command(Listen.class).set((long)102, port, RAW_STREAMING.type));
         serverTransport.workUntil(() -> serverTransport.events().contains(StartedListening.class));
-        assertEqual(serverTransport.events().all(StartedListening.class), new StartedListening(port, 102));
+        assertEqual(serverTransport.events().all(StartedListening.class), new StartedListening(port, 102, RAW_STREAMING.type));
 
         // When
         serverTransport.workUntil(completed(() -> clients.client(1).connectedTo(port)));
@@ -230,10 +231,15 @@ class ServerListensTest extends TransportTestBase
         assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port3));
 
         serverTransport.handle(serverTransport.command(Listen.class).set((long)5, port1, RAW_STREAMING.type));
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)6, port2, RAW_STREAMING.type));
+        serverTransport.handle(serverTransport.command(Listen.class).set((long)6, port2, INTEGERS.type));
         serverTransport.handle(serverTransport.command(Listen.class).set((long)7, port3, RAW_STREAMING.type));
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 3);
-        assertEqual(serverTransport.events().all(StartedListening.class), new StartedListening(port1, 5), new StartedListening(port2, 6), new StartedListening(port3, 7));
+        assertEqual(
+                serverTransport.events().all(StartedListening.class),
+                new StartedListening(port1, 5, RAW_STREAMING.type),
+                new StartedListening(port2, 6, INTEGERS.type),
+                new StartedListening(port3, 7, RAW_STREAMING.type)
+        );
 
         // When
         serverTransport.handle(serverTransport.command(StopListening.class).set(9, port2));

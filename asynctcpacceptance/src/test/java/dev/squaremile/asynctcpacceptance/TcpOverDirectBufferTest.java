@@ -69,7 +69,7 @@ class TcpOverDirectBufferTest
         // the confirmation is written to the returning buffer
         userFacingApp.onSerialized(networkToUserWrites.buffer(), networkToUserWrites.entry(0).offset, networkToUserWrites.entry(0).length);
         // and the echo app receives confirmation that is started listening
-        assertEqual(userFacingAppEvents.received(), new StartedListening(port, 100));
+        assertEqual(userFacingAppEvents.received(), new StartedListening(port, 100, PredefinedTransportDelineation.SINGLE_BYTE.type));
 
 
         // When

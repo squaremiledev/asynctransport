@@ -41,6 +41,7 @@
     <sbe:message name="StartedListening" id="1">
         <field name="port" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
+        <data name="delineation" id="3" type="varAsciiEncoding"/>
     </sbe:message>
     <sbe:message name="TransportCommandFailed" id="2">
         <field name="port" id="1" type="port"/>
@@ -56,6 +57,7 @@
         <field name="inboundPduLimit" id="5" type="int32"/>
         <field name="outboundPduLimit" id="6" type="int32"/>
         <data name="remoteHost" id="7" type="varStringEncoding"/>
+        <!--        <data name="delineation" id="8" type="varAsciiEncoding"/>-->
     </sbe:message>
     <sbe:message name="ConnectionAccepted" id="4">
         <field name="port" id="1" type="port"/>

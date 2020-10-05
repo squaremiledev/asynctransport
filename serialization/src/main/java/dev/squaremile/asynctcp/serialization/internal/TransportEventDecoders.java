@@ -16,6 +16,7 @@ import dev.squaremile.asynctcp.sbe.StartedListeningDecoder;
 import dev.squaremile.asynctcp.sbe.StoppedListeningDecoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
+import dev.squaremile.asynctcp.serialization.api.delineation.FixedLengthDelineationType;
 import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
@@ -28,6 +29,8 @@ import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+
+import static java.lang.Integer.parseInt;
 
 // TODO [perf]: avoid garbage
 public class TransportEventDecoders
@@ -240,7 +243,7 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    StartedListening result = new StartedListening(decoder.port(), decoder.commandId());
+                    StartedListening result = new StartedListening(decoder.port(), decoder.commandId(), new FixedLengthDelineationType(parseInt(decoder.delineation())));
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }
