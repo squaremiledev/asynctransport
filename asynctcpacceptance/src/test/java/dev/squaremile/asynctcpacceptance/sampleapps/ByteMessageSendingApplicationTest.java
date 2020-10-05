@@ -47,7 +47,7 @@ class ByteMessageSendingApplicationTest
         port = freePort();
         transportApplication = new TransportAppFactory().create("", transport -> new ByteMessageSendingApplication(transport, host, port, dataToSend, IGNORE_EVENTS));
         spin = new Spin(whiteboxApplication, drivingApplication, transportApplication);
-        whiteboxApplication.underlyingtTansport().handle(whiteboxApplication.underlyingtTansport().command(Listen.class).set(1, port, RAW_STREAMING.type));
+        whiteboxApplication.underlyingTransport().handle(whiteboxApplication.underlyingTransport().command(Listen.class).set(1, port, RAW_STREAMING.type));
         transportApplication.onStart();
         spin.spinUntil(() -> whiteboxApplication.events().contains(ConnectionAccepted.class));
     }

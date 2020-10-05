@@ -30,7 +30,7 @@ public class WhiteboxApplication<L extends TransportEventsListener> implements A
         eventsRedirect.onEvent(event);
     }
 
-    public Transport underlyingtTansport()
+    public Transport underlyingTransport()
     {
         return transport;
     }

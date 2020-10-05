@@ -68,7 +68,7 @@ class EchoApplicationThroughputTest
     @Test
     void shouldEchoBackTheStream()
     {
-        Transport drivingTransport = whiteboxApplication.underlyingtTansport();
+        Transport drivingTransport = whiteboxApplication.underlyingTransport();
         drivingTransport.handle(drivingTransport.command(Connect.class).set("localhost", port, (long)1, 50, RAW_STREAMING.type));
         Worker.runUntil(() ->
                         {
