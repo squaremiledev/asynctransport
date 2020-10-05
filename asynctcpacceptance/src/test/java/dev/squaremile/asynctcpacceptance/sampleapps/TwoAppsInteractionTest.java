@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 
+import dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
@@ -35,7 +36,8 @@ public class TwoAppsInteractionTest
                 dataToSend,
                 new TransportEventsRedirect(eventsReceivedByStreamingApplication)
         ));
-        echoApplication = new TransportAppFactory().create("echoApplication", transport -> new EchoApplication(transport, port, new TransportEventsRedirect(eventsReceivedByEchoApplication), 101));
+        echoApplication = new TransportAppFactory().create("echoApplication", transport -> new MessageEchoApplication(
+                transport, port, new TransportEventsRedirect(eventsReceivedByEchoApplication), PredefinedTransportDelineation.SINGLE_BYTE.type, 101));
         spin = new Spin(streamingApplication, echoApplication);
     }
 
