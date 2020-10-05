@@ -18,18 +18,20 @@ public class SendMessage implements ConnectionUserCommand
     private final ByteBuffer data;
     private final MutableDirectBuffer buffer;
     private final int offset;
+    private final int capacity;
     private int length;
     private long commandId;
 
-    public SendMessage(final ConnectionId connectionId)
+    public SendMessage(final ConnectionId connectionId, final int capacity)
     {
-        this(connectionId.port(), connectionId.connectionId());
+        this(connectionId.port(), connectionId.connectionId(), capacity);
     }
 
-    public SendMessage(final int port, final long connectionId)
+    public SendMessage(final int port, final long connectionId, final int capacity)
     {
+        this.capacity = capacity;
         this.connectionId = new ConnectionIdValue(port, connectionId);
-        this.data = ByteBuffer.allocate(1024);  // TODO: real capacity based on the connection settings
+        this.data = ByteBuffer.allocate(capacity);
         this.buffer = new UnsafeBuffer(data);
         this.length = 0;
         this.commandId = CommandId.NO_COMMAND_ID;
@@ -97,7 +99,7 @@ public class SendMessage implements ConnectionUserCommand
     @Override
     public SendMessage copy()
     {
-        SendMessage copy = new SendMessage(connectionId);
+        SendMessage copy = new SendMessage(connectionId, capacity);
         buffer.getBytes(offset, copy.prepare(), copy.offset(), length);
         copy.commit(length);
         return copy;

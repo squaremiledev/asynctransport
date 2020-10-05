@@ -55,18 +55,19 @@ public class DelineationApplication implements Application, TransportCommandHand
     @Override
     public void onEvent(final Event event)
     {
-        if (event instanceof StartedListening)
-        {
-            StartedListening startedListening = (StartedListening)event;
-            delineationTypePerListeningPort.put(startedListening.port(), startedListening.delineation());
-        }
         if (event instanceof DataReceived)
         {
             DataReceived dataReceived = (DataReceived)event;
             if (delineationPerConnection.containsKey(dataReceived.connectionId()))
             {
-                delineationPerConnection.get(dataReceived.connectionId()).onData(dataReceived.buffer(), dataReceived.offset(), dataReceived.length());
+                DelineationHandler delineationHandler = delineationPerConnection.get(dataReceived.connectionId());
+                delineationHandler.onData(dataReceived.buffer(), dataReceived.offset(), dataReceived.length());
             }
+        }
+        else if (event instanceof StartedListening)
+        {
+            StartedListening startedListening = (StartedListening)event;
+            delineationTypePerListeningPort.put(startedListening.port(), startedListening.delineation());
         }
         else if (event instanceof StoppedListening)
         {

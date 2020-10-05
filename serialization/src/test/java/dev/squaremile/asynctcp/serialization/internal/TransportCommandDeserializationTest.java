@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
+import dev.squaremile.asynctcp.transport.testfixtures.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.transport.testfixtures.TransportCommandSpy;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
@@ -18,7 +19,7 @@ import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEq
 class TransportCommandDeserializationTest
 {
     private static final int OFFSET = 6;
-    private final TransportCommandSpy commandsSpy = new TransportCommandSpy();
+    private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(Fixtures.connectedEvent().outboundPduLimit()));
 
     static Stream<Function<Transport, TransportUserCommand>> commands()
     {

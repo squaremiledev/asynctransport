@@ -236,9 +236,9 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                 selector,
                 SelectionKey.OP_READ,
                 new ConnectionConductor(
-                        commandFactory.create(connection, ReadData.class),
-                        commandFactory.create(connection, SendData.class),
-                        commandFactory.create(connection, NoOpCommand.class)
+                        new ReadData(connection),
+                        new SendData(connection, 0),
+                        new NoOpCommand(connection)
                 )
         ));
         return connection.connectionId();

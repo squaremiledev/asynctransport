@@ -11,16 +11,16 @@ public class TransportCommandSpy extends Spy<TransportCommand> implements Transp
     private final CapturedItems<TransportCommand> items;
     private final Transport transport;
 
-    public TransportCommandSpy()
+    public TransportCommandSpy(final Transport transport)
     {
-        this(new CapturedItems<>());
+        this(new CapturedItems<>(), transport);
     }
 
-    private TransportCommandSpy(final CapturedItems<TransportCommand> items)
+    private TransportCommandSpy(final CapturedItems<TransportCommand> items, final Transport transport)
     {
         super(items);
         this.items = items;
-        this.transport = new CommandsProvidingTransport();
+        this.transport = transport;
     }
 
     @Override

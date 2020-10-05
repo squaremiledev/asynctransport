@@ -28,8 +28,8 @@ class SerializingTransportTest
     private static final int OFFSET = 6;
     private static final Connected CONNECTED_EVENT = Fixtures.connectedEvent();
 
-    private final TransportCommandSpy commandsSpy = new TransportCommandSpy();
-    private final TransportCommandDecoders decoders = new TransportCommandDecoders(new CommandsProvidingTransport());
+    private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(1024));
+    private final TransportCommandDecoders decoders = new TransportCommandDecoders(new CommandsProvidingTransport(CONNECTED_EVENT.outboundPduLimit()));
 
     static Stream<Function<Transport, TransportUserCommand>> commands()
     {

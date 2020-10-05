@@ -5,7 +5,6 @@ import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 
 public class ConnectionCommands
 {
@@ -15,10 +14,9 @@ public class ConnectionCommands
 
     public ConnectionCommands(final ConnectionIdValue connectionId, final int initialSenderBufferSize)
     {
-        CommandFactory commandFactory = new CommandFactory();
         this.sendDataCommand = new SendData(connectionId, initialSenderBufferSize);
-        this.sendMessageCommand = new SendMessage(connectionId);
-        this.closeConnection = commandFactory.create(connectionId, CloseConnection.class);
+        this.sendMessageCommand = new SendMessage(connectionId, initialSenderBufferSize);
+        this.closeConnection = new CloseConnection(connectionId);
     }
 
     public <C extends ConnectionUserCommand> C command(final Class<C> commandType)
