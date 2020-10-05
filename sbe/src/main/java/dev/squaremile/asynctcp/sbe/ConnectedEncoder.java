@@ -510,6 +510,105 @@ public class ConnectedEncoder
         return this;
     }
 
+    public static int delineationId()
+    {
+        return 8;
+    }
+
+    public static String delineationCharacterEncoding()
+    {
+        return "ASCII";
+    }
+
+    public static String delineationMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "unix";
+            case TIME_UNIT: return "nanosecond";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public static int delineationHeaderLength()
+    {
+        return 4;
+    }
+
+    public ConnectedEncoder putDelineation(final DirectBuffer src, final int srcOffset, final int length)
+    {
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+
+        return this;
+    }
+
+    public ConnectedEncoder putDelineation(final byte[] src, final int srcOffset, final int length)
+    {
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+
+        return this;
+    }
+
+    public ConnectedEncoder delineation(final String value)
+    {
+        final int length = null == value ? 0 : value.length();
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putStringWithoutLengthAscii(limit + headerLength, value);
+
+        return this;
+    }
+
+    public ConnectedEncoder delineation(final CharSequence value)
+    {
+        final int length = null == value ? 0 : value.length();
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        for (int i = 0; i < length; ++i)
+        {
+            final char charValue = value.charAt(i);
+            final byte byteValue = charValue > 127 ? (byte)'?' : (byte)charValue;
+            buffer.putByte(limit + headerLength + i, byteValue);
+        }
+
+        return this;
+    }
+
 
     public String toString()
     {

@@ -2,6 +2,7 @@ package dev.squaremile.asynctcp.transport.internal.nonblockingimpl;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.transport.api.values.DelineationType;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.Channel;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.Connection;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionConfiguration;
@@ -15,7 +16,12 @@ public class ConnectionImpl implements AutoCloseable, Connection
 
     private Connection delegate;
 
-    ConnectionImpl(final ConnectionConfiguration configuration, final Channel channel, final ConnectionEventsListener eventsListener)
+    ConnectionImpl(
+            final ConnectionConfiguration configuration,
+            final Channel channel,
+            final DelineationType delineation,
+            final ConnectionEventsListener eventsListener
+    )
     {
         delegate = new ValidatedConnection(
                 configuration.connectionId,
@@ -28,6 +34,7 @@ public class ConnectionImpl implements AutoCloseable, Connection
                 new ChannelBackedConnection(
                         configuration,
                         channel,
+                        delineation,
                         new SingleConnectionEvents(
                                 eventsListener,
                                 configuration.connectionId.port(),

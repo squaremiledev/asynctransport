@@ -1,8 +1,8 @@
 /* Generated SBE (Simple Binary Encoding) message codec */
 package dev.squaremile.asynctcp.sbe;
 
-import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
+import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
 public class StartedListeningEncoder
@@ -66,15 +66,14 @@ public class StartedListeningEncoder
     }
 
     public StartedListeningEncoder wrapAndApplyHeader(
-            final MutableDirectBuffer buffer, final int offset, final MessageHeaderEncoder headerEncoder
-    )
+        final MutableDirectBuffer buffer, final int offset, final MessageHeaderEncoder headerEncoder)
     {
         headerEncoder
-                .wrap(buffer, offset)
-                .blockLength(BLOCK_LENGTH)
-                .templateId(TEMPLATE_ID)
-                .schemaId(SCHEMA_ID)
-                .version(SCHEMA_VERSION);
+            .wrap(buffer, offset)
+            .blockLength(BLOCK_LENGTH)
+            .templateId(TEMPLATE_ID)
+            .schemaId(SCHEMA_ID)
+            .version(SCHEMA_VERSION);
 
         return wrap(buffer, offset + MessageHeaderEncoder.ENCODED_LENGTH);
     }
@@ -118,14 +117,10 @@ public class StartedListeningEncoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "";
-            case TIME_UNIT:
-                return "";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";
@@ -177,14 +172,10 @@ public class StartedListeningEncoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "";
-            case TIME_UNIT:
-                return "";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";
@@ -226,14 +217,10 @@ public class StartedListeningEncoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "unix";
-            case TIME_UNIT:
-                return "nanosecond";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "unix";
+            case TIME_UNIT: return "nanosecond";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";

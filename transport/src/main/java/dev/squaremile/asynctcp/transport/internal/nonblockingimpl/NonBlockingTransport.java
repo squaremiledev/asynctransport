@@ -101,10 +101,11 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                     }
                     if (key.isAcceptable())
                     {
-                        int port = ((ListeningSocketConductor)key.attachment()).port();
+                        ListeningSocketContext listeningSocketContext = (ListeningSocketContext)key.attachment();
+                        int port = listeningSocketContext.port();
                         final Server server = servers.serverListeningOn(port);
                         final SocketChannel acceptedSocketChannel = server.acceptChannel();
-                        long connectionId = registerConnection(acceptedSocketChannel, server.createConnection(acceptedSocketChannel));
+                        long connectionId = registerConnection(acceptedSocketChannel, server.createConnection(acceptedSocketChannel, listeningSocketContext.delineation()));
                         connections.get(connectionId).accepted(server.commandIdThatTriggeredListening());
                     }
                     else if (key.isConnectable())
@@ -142,6 +143,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
                                     new ConnectionImpl(
                                             configuration,
                                             new SocketBackedChannel(socketChannel),
+                                            connectedNotification.command.delineation(),
                                             eventListener::onEvent
                                     )
                             );
@@ -279,7 +281,7 @@ public class NonBlockingTransport implements AutoCloseable, Transport
             Server server = servers.serverListeningOn(command.port());
             final ServerSocketChannel serverSocketChannel = server.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-            selectionKey.attach(new ListeningSocketConductor(server.port()));
+            selectionKey.attach(new ListeningSocketContext(server.port(), command.delineation()));
             eventListener.onEvent(new StartedListening(command.port(), command.commandId(), command.delineation()));
         }
         catch (IOException e)

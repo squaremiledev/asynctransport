@@ -16,6 +16,7 @@ import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.values.CommandId;
+import dev.squaremile.asynctcp.transport.api.values.DelineationType;
 import dev.squaremile.asynctcp.transport.internal.domain.NoOpCommand;
 import dev.squaremile.asynctcp.transport.internal.domain.ReadData;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.Channel;
@@ -30,6 +31,7 @@ import static dev.squaremile.asynctcp.transport.internal.domain.connection.Conne
 public class ChannelBackedConnection implements AutoCloseable, Connection
 {
     private final Channel channel;
+    private final DelineationType delineation;
     private final SingleConnectionEvents singleConnectionEvents;
     private final ConnectionCommands connectionCommands;
     private final ConnectionConfiguration configuration;
@@ -41,11 +43,13 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     ChannelBackedConnection(
             final ConnectionConfiguration configuration,
             final Channel channel,
+            final DelineationType delineation,
             final SingleConnectionEvents singleConnectionEvents
     )
     {
         this.configuration = configuration;
         this.channel = channel;
+        this.delineation = delineation;
         this.singleConnectionEvents = singleConnectionEvents;
         this.connectionCommands = new ConnectionCommands(configuration.connectionId, configuration.outboundPduLimit);
         this.outgoingStream = new OutgoingStream(this.singleConnectionEvents, configuration.sendBufferSize);
@@ -132,7 +136,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
                 configuration.remotePort,
                 configuration.connectionId.connectionId(),
                 configuration.inboundPduLimit,
-                configuration.outboundPduLimit
+                configuration.outboundPduLimit,
+                delineation
         ));
     }
 

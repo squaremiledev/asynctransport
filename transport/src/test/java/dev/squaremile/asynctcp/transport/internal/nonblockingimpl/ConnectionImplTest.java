@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.values.CommandId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
@@ -344,12 +344,13 @@ class ConnectionImplTest
 
     private ConnectionImpl newConnection(final FakeChannel channel)
     {
-        return new ConnectionImpl(config(), channel, events);
+        // TODO: delineation should not be null, it suggests missing value type in this package
+        return new ConnectionImpl(config(), channel, null, events);
     }
 
     private ConnectionImpl newConnection(final ConnectionConfiguration config)
     {
-        return new ConnectionImpl(config, new FakeChannel(), events);
+        return new ConnectionImpl(config, new FakeChannel(), null, events);
     }
 
     private ConnectionConfiguration config()

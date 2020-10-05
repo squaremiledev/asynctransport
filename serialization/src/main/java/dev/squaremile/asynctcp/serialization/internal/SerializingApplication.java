@@ -80,7 +80,8 @@ public class SerializingApplication implements Application
                     .remotePort(event.remotePort())
                     .inboundPduLimit(event.inboundPduLimit())
                     .outboundPduLimit(event.outboundPduLimit())
-                    .remoteHost(event.remoteHost());
+                    .remoteHost(event.remoteHost())
+                    .delineation("" + event.delineation().fixedLength());
             serializedEventListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + connectedEncoder.encodedLength());
         }
         else if (unknownEvent instanceof ConnectionAccepted)

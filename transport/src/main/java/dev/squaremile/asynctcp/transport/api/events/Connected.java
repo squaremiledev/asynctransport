@@ -2,6 +2,7 @@ package dev.squaremile.asynctcp.transport.api.events;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.TransportCorrelatedEvent;
+import dev.squaremile.asynctcp.transport.api.values.DelineationType;
 
 public class Connected implements ConnectionEvent, TransportCorrelatedEvent
 {
@@ -12,6 +13,7 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
     private final long connectionId;
     private final int inboundPduLimit;
     private final int outboundPduLimit;
+    private final DelineationType delineation;
 
     public Connected(
             final int port,
@@ -20,7 +22,8 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
             final int remotePort,
             final long connectionId,
             final int inboundPduLimit,
-            final int outboundPduLimit
+            final int outboundPduLimit,
+            final DelineationType delineation
     )
     {
         this.port = port;
@@ -30,6 +33,7 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
         this.connectionId = connectionId;
         this.inboundPduLimit = inboundPduLimit;
         this.outboundPduLimit = outboundPduLimit;
+        this.delineation = delineation;
     }
 
     @Override
@@ -70,6 +74,11 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
         return outboundPduLimit;
     }
 
+    public DelineationType delineation()
+    {
+        return delineation;
+    }
+
     @Override
     public String toString()
     {
@@ -79,6 +88,7 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
                ", remoteHost='" + remoteHost + '\'' +
                ", remotePort=" + remotePort +
                ", connectionId=" + connectionId +
+               ", delineation=" + delineation +
                ", inboundPduLimit=" + inboundPduLimit +
                ", outboundPduLimit=" + outboundPduLimit +
                '}';
@@ -87,6 +97,6 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
     @Override
     public Connected copy()
     {
-        return new Connected(port, commandId, remoteHost, remotePort, connectionId, inboundPduLimit, outboundPduLimit);
+        return new Connected(port, commandId, remoteHost, remotePort, connectionId, inboundPduLimit, outboundPduLimit, delineation);
     }
 }

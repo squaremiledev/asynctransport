@@ -107,7 +107,8 @@ public class TransportEventDecoders
                             decoder.remotePort(),
                             decoder.connectionId(),
                             decoder.inboundPduLimit(),
-                            decoder.outboundPduLimit()
+                            decoder.outboundPduLimit(),
+                            new FixedLengthDelineationType(parseInt(decoder.delineation()))
                     );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;

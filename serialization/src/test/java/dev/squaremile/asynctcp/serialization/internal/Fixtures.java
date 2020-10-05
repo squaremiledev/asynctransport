@@ -24,6 +24,8 @@ import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
 
+import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
+
 class Fixtures
 {
     /**
@@ -38,7 +40,7 @@ class Fixtures
     static Stream<TransportEvent> oneToOneSerializableEvents()
     {
         return Stream.of(
-                new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000),
+                new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000, PredefinedTransportDelineation.LONGS.type),
                 new ConnectionAccepted(9881, 4, "remote", 9882, 5, 46000, 30000),
                 new ConnectionClosed(7888, 1, 2),
                 new ConnectionCommandFailed(8884, 103, "some details", 6),
@@ -65,7 +67,7 @@ class Fixtures
 
     public static Connected connectedEvent()
     {
-        return new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000);
+        return new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000, RAW_STREAMING.type);
     }
 
     private static SendMessage set(final SendMessage command, final int index, byte[] src, final int offset, final int length)

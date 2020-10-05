@@ -51,7 +51,8 @@ class ClientConnectsTest extends TransportTestBase
                         serverStartedListening.port(),
                         connected.connectionId(),
                         connected.inboundPduLimit(),
-                        connected.outboundPduLimit()
+                        connected.outboundPduLimit(),
+                        RAW_STREAMING.type
                 )
         );
         assertEqual(clientTransport.statusEvents().all(), singletonList(new NumberOfConnectionsChanged(1)));
