@@ -2,8 +2,6 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 
 import java.util.concurrent.TimeUnit;
 
-import org.agrona.collections.MutableLong;
-import org.agrona.collections.MutableReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,18 +10,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.serialization.api.delineation.FixedLengthDelineationType;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
-import dev.squaremile.asynctcp.transport.api.app.Application;
-import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
-import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.setup.TransportAppFactory;
 import dev.squaremile.asynctcp.transport.setup.TransportApplication;
 import dev.squaremile.asynctcp.transport.testfixtures.Worker;
 
-import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.SINGLE_BYTE;
 import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static java.lang.String.format;
@@ -33,47 +26,18 @@ class EchoApplicationThroughputTest
     private static final int BYTES_CAP = 20_000_000;
     private static final int MESSAGE_SIZE_IN_BYTES = 4 * 1024;
 
-    private final TransportApplication testDrivingApp;
+    private final TransportApplication testDrivingTransportApplication;
     private final TransportApplication appUnderTest;
-    private final MutableReference<Connected> connectedEventHolder = new MutableReference<>();
-    private final MutableReference<Transport> transportHolder = new MutableReference<>();
-    private final MutableLong totalBytesReceived = new MutableLong(0);
-    private final int port = freePort();
+    private final int port;
+    private final ThroughputTestDrivingApp testDrivingApp;
 
 
     EchoApplicationThroughputTest()
     {
-        testDrivingApp = new TransportAppFactory().create(
-                "testDrivingApp",
-                transport ->
-                {
-                    transportHolder.set(transport);
-                    return new Application()
-                    {
-                        @Override
-                        public void work()
-                        {
-                            transport.work();
-                        }
-
-                        @Override
-                        public void onEvent(final Event event)
-                        {
-                            if (event instanceof Connected)
-                            {
-                                Connected connectedEvent = (Connected)event;
-                                connectedEventHolder.set(connectedEvent.copy());
-                            }
-                            else if (event instanceof DataReceived)
-                            {
-                                DataReceived dataReceivedEvent = (DataReceived)event;
-                                totalBytesReceived.set(dataReceivedEvent.totalBytesReceived());
-                            }
-                        }
-                    };
-                }
-        );
-        testDrivingApp.onStart();
+        port = freePort();
+        testDrivingApp = new ThroughputTestDrivingApp(port, new FixedLengthDelineationType(MESSAGE_SIZE_IN_BYTES));
+        testDrivingTransportApplication = new TransportAppFactory().create("testDrivingApp", testDrivingApp);
+        testDrivingTransportApplication.onStart();
         appUnderTest = new TransportAppFactory().create(
                 "appUnderTest",
                 transport -> new DelineationApplication(
@@ -91,39 +55,41 @@ class EchoApplicationThroughputTest
     @Test
     void shouldEchoBackTheStream()
     {
-        Transport drivingTransport = transportHolder.get();
-        drivingTransport.handle(drivingTransport.command(Connect.class).set("localhost", port, (long)1, 50, SINGLE_BYTE.type));
+        Transport drivingTransport = testDrivingApp.transport();
+        testDrivingApp.app().onStart();
         Worker.runUntil(() ->
                         {
                             drivingTransport.work();
                             appUnderTest.work();
-                            return connectedEventHolder.get() != null;
+                            return testDrivingApp.connectedEvent() != null;
                         });
-        Connected connected = connectedEventHolder.get();
-        SendData sendDataCommand = drivingTransport.command(connected, SendData.class);
+        Connected connected = testDrivingApp.connectedEvent();
+        SendMessage sendMessageCommand = drivingTransport.command(connected, SendMessage.class);
         int numberOfMessagesSentDuringOneIteration = connected.outboundPduLimit() / MESSAGE_SIZE_IN_BYTES;
 
         long startTimeMs = System.currentTimeMillis();
-        Worker.runWithoutTimeoutUntil(() ->
-                                      {
-                                          for (int i = 0; i < numberOfMessagesSentDuringOneIteration; i++)
-                                          {
-                                              sendDataCommand.prepare().putLong(i);
-                                              sendDataCommand.commit(MESSAGE_SIZE_IN_BYTES);
-                                              drivingTransport.handle(sendDataCommand);
-                                              drivingTransport.work();
-                                              appUnderTest.work();
-                                              if (totalBytesReceived.get() >= BYTES_CAP)
-                                              {
-                                                  break;
-                                              }
-                                          }
-                                          return totalBytesReceived.get() >= BYTES_CAP;
-                                      });
+
+        while (testDrivingApp.totalBytesReceived() < BYTES_CAP)
+        {
+            for (int i = 0; i < numberOfMessagesSentDuringOneIteration; i++)
+            {
+                // Not sure to what extent not setting all the data and leaving what's in the buffer affects the result
+                sendMessageCommand.prepare().putLong(sendMessageCommand.offset(), i);
+                sendMessageCommand.commit(MESSAGE_SIZE_IN_BYTES);
+                drivingTransport.handle(sendMessageCommand);
+                drivingTransport.work();
+                appUnderTest.work();
+                if (testDrivingApp.totalBytesReceived() >= BYTES_CAP)
+                {
+                    break;
+                }
+            }
+        }
+
         long endTimeMs = System.currentTimeMillis();
-        long bitsReceived = totalBytesReceived.get() * 8;
-        long bytesReceived = totalBytesReceived.get();
-        long messagesReceived = totalBytesReceived.get() / MESSAGE_SIZE_IN_BYTES;
+        long bitsReceived = testDrivingApp.totalBytesReceived() * 8;
+        long bytesReceived = testDrivingApp.totalBytesReceived();
+        long messagesReceived = testDrivingApp.totalBytesReceived() / MESSAGE_SIZE_IN_BYTES;
         long timeElapsedMs = endTimeMs - startTimeMs;
         long _bps = (bitsReceived * TimeUnit.SECONDS.toMillis(1)) / timeElapsedMs;
         long _Mbps = _bps / 1_000_000;
@@ -144,8 +110,8 @@ class EchoApplicationThroughputTest
     @AfterEach
     void tearDown()
     {
-        testDrivingApp.onStop();
-        testDrivingApp.work();
+        testDrivingTransportApplication.onStop();
+        testDrivingTransportApplication.work();
         appUnderTest.onStop();
         appUnderTest.work();
     }
