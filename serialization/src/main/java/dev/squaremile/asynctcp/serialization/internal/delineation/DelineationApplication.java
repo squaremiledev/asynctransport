@@ -16,6 +16,7 @@ import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.DelineationType;
@@ -27,7 +28,6 @@ public class DelineationApplication implements Application, TransportCommandHand
     private final Long2ObjectHashMap<DelineationHandler> delineationPerConnection = new Long2ObjectHashMap<>();
     private final DelineationHandlerFactory delineationHandlerFactory = new DelineationHandlerFactory();
     private final Int2ObjectHashMap<DelineationType> delineationTypePerListeningPort = new Int2ObjectHashMap<>();
-    private final Long2ObjectHashMap<DelineationType> delineationTypePerConnectingCommandId = new Long2ObjectHashMap<>();
 
     public DelineationApplication(final Application delegate)
     {
@@ -55,6 +55,11 @@ public class DelineationApplication implements Application, TransportCommandHand
     @Override
     public void onEvent(final Event event)
     {
+        if (event instanceof StartedListening)
+        {
+            StartedListening startedListening = (StartedListening)event;
+            delineationTypePerListeningPort.put(startedListening.port(), startedListening.delineation());
+        }
         if (event instanceof DataReceived)
         {
             DataReceived dataReceived = (DataReceived)event;
@@ -86,7 +91,7 @@ public class DelineationApplication implements Application, TransportCommandHand
             delineationPerConnection.put(
                     connectionIdValue.connectionId(),
                     delineationHandlerFactory.create(
-                            delineationTypePerConnectingCommandId.remove(connected.commandId()),
+                            connected.delineation(),
                             (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, buffer, offset, length))
                     )
             );
@@ -122,13 +127,11 @@ public class DelineationApplication implements Application, TransportCommandHand
         {
             Listen listen = (Listen)command;
             validateDelineation(listen.delineation());
-            delineationTypePerListeningPort.put(listen.port(), listen.delineation());
         }
         else if (command instanceof Connect)
         {
             Connect connect = (Connect)command;
             validateDelineation(connect.delineation());
-            delineationTypePerConnectingCommandId.put(connect.commandId(), connect.delineation());
         }
     }
 
