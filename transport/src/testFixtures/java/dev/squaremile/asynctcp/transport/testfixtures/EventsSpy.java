@@ -1,20 +1,23 @@
-package dev.squaremile.asynctcp.fixtures;
-
-import java.util.ArrayList;
-import java.util.List;
-
+package dev.squaremile.asynctcp.transport.testfixtures;
 
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 
-public final class EventsSpy implements EventListener
+public final class EventsSpy extends Spy<Event> implements EventListener
 {
-    private final List<Event> received = new ArrayList<>();
     private final EventListener delegate;
+    private final CapturedItems<Event> items;
 
     private EventsSpy(final EventListener delegate)
     {
+        this(delegate, new CapturedItems<>());
+    }
+
+    private EventsSpy(final EventListener delegate, final CapturedItems<Event> items)
+    {
+        super(items);
         this.delegate = delegate;
+        this.items = items;
     }
 
     public static EventsSpy spy()
@@ -33,12 +36,9 @@ public final class EventsSpy implements EventListener
     @Override
     public void onEvent(final Event event)
     {
-        received.add(event.copy());
+        items.add(event.copy());
         delegate.onEvent(event);
     }
 
-    public List<Event> received()
-    {
-        return received;
-    }
+
 }

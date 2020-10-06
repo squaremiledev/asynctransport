@@ -17,12 +17,4 @@ public class Worker
             parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
         }
     }
-
-    public static void runWithoutTimeoutUntil(final BooleanSupplier stopCondition)
-    {
-        while (!stopCondition.getAsBoolean())
-        {
-            parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
-        }
-    }
 }

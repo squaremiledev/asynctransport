@@ -309,7 +309,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
         {
             SocketChannel socketChannel = SocketChannel.open();
             socketChannel.configureBlocking(false);
-            long connectionId = connectionIdSource.newId();
             socketChannel.connect(new InetSocketAddress(command.remoteHost(), command.remotePort()));
             final SelectionKey selectionKey = socketChannel.register(selector, SelectionKey.OP_CONNECT);
             pendingConnections.add(new ConnectedNotification(socketChannel, command, clock.time() + command.timeoutMs(), selectionKey, command.delineation()));

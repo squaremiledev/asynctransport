@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportFactory;
-import dev.squaremile.asynctcp.fixtures.EventsSpy;
 import dev.squaremile.asynctcp.fixtures.SerializedMessagesSpy;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
@@ -18,13 +17,14 @@ import dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransport
 import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.asynctcpacceptance.sampleapps.MessageEchoApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.fixtures.EventsSpy.spy;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
+import static dev.squaremile.asynctcp.transport.testfixtures.EventsSpy.spy;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 
@@ -69,7 +69,7 @@ class TcpOverDirectBufferTest
         // the confirmation is written to the returning buffer
         userFacingApp.onSerialized(networkToUserWrites.buffer(), networkToUserWrites.entry(0).offset, networkToUserWrites.entry(0).length);
         // and the echo app receives confirmation that is started listening
-        assertEqual(userFacingAppEvents.received(), new StartedListening(port, 100, PredefinedTransportDelineation.SINGLE_BYTE.type));
+        assertEqual(userFacingAppEvents.all(), new StartedListening(port, 100, PredefinedTransportDelineation.SINGLE_BYTE.type));
 
 
         // When
@@ -78,8 +78,8 @@ class TcpOverDirectBufferTest
         userFacingApp.onSerialized(networkToUserWrites.buffer(), networkToUserWrites.entry(1).offset, networkToUserWrites.entry(1).length);
 
         // Then
-        assertThat(userFacingAppEvents.received()).hasSize(2);
-        ConnectionAccepted connectionAccepted = (ConnectionAccepted)userFacingAppEvents.received().get(1);
+        assertThat(userFacingAppEvents.all()).hasSize(2);
+        ConnectionAccepted connectionAccepted = (ConnectionAccepted)userFacingAppEvents.all().get(1);
         assertThat(connectionAccepted.port()).isEqualTo(port);
     }
 }

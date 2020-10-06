@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportFactory;
-import dev.squaremile.asynctcp.fixtures.EventsSpy;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
 import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferApplication;
@@ -22,14 +21,15 @@ import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferBacked
 import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferWriter;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.asynctcpacceptance.sampleapps.MessageEchoApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.fixtures.EventsSpy.spyAndDelegateTo;
 import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.SINGLE_BYTE;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
+import static dev.squaremile.asynctcp.transport.testfixtures.EventsSpy.spyAndDelegateTo;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 import static java.lang.System.arraycopy;
@@ -71,15 +71,15 @@ class TcpOverRingBufferTest
 
         // Given
         userFacingApp.onStart();
-        runUntil(thingsOnDuty.reached(() -> !userFacingAppEvents.received().isEmpty()));
-        assertEqual(userFacingAppEvents.received(), new StartedListening(port, 100, SINGLE_BYTE.type));
+        runUntil(thingsOnDuty.reached(() -> userFacingAppEvents.contains(StartedListening.class)));
+        assertEqual(userFacingAppEvents.all(), new StartedListening(port, 100, SINGLE_BYTE.type));
 
         // When
         runUntil(thingsOnDuty.reached(completed(() -> sampleClient.connectedTo(port))));
-        runUntil(thingsOnDuty.reached(() -> userFacingAppEvents.received().size() == 2));
+        runUntil(thingsOnDuty.reached(() -> userFacingAppEvents.all().size() >= 2));
 
         // Then
-        assertThat(((ConnectionAccepted)userFacingAppEvents.received().get(1)).port()).isEqualTo(port);
+        assertThat(((ConnectionAccepted)userFacingAppEvents.all().get(1)).port()).isEqualTo(port);
 
         // DATA SENDING PART
 
