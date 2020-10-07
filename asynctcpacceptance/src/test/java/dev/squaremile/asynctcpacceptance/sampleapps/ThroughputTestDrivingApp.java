@@ -75,12 +75,6 @@ class ThroughputTestDrivingApp implements ApplicationFactory
         }
 
         @Override
-        public void work()
-        {
-            transport.work();
-        }
-
-        @Override
         public void onEvent(final Event event)
         {
             if (event instanceof Connected)

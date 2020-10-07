@@ -69,14 +69,9 @@ public class AppListeningOnTcpPort
                                     ).getBytes()));
                         }
                     }
-
-                    @Override
-                    public void work()
-                    {
-                        transport.work();
-                    }
                 }
         );
+
 
         new NaiveRoundRobinSingleThreadRunner().run(singletonList(app));
     }

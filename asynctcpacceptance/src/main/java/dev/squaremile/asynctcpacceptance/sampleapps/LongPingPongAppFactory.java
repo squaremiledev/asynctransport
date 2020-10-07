@@ -78,12 +78,6 @@ class LongPingPongAppFactory implements ApplicationFactory
                     messageListener.accept(newNumber);
                 }
             }
-
-            @Override
-            public void work()
-            {
-                transport.work();
-            }
         };
     }
 }

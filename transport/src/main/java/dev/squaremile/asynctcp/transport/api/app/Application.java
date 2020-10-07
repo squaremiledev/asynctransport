@@ -11,4 +11,10 @@ public interface Application extends EventListener, OnDuty
     {
 
     }
+
+    @Override
+    default void work()
+    {
+
+    }
 }

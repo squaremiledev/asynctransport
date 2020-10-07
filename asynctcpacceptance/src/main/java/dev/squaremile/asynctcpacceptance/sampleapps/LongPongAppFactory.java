@@ -58,12 +58,6 @@ class LongPongAppFactory implements ApplicationFactory
                 }
             }
 
-            @Override
-            public void work()
-            {
-                transport.work();
-            }
-
             private void connect()
             {
                 transport.handle(transport.command(Connect.class).set("localhost", port, CONNECT_COMMAND_ID, 100, new FixedLengthDelineationType(8)));

@@ -27,42 +27,44 @@ It is inspired by the [Aeron Cluster](https://github.com/real-logic/aeron/tree/m
 between the application and the infrastructure (ClusteredService interface).
 However, an attempt has been made to make this library even more composable
 and avoid cycles during the setup phase (problematic onStart(Cluster cluster)).
-The construction of the app is as simple as:
+
+This is all is needed to create an app that listens on appPort TCP port and sends Hi! to whoever connected.
 
 ```java
 
-TransportApplication app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
+Application app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
     "AppListeningOnTcpPort",
     transport -> new Application()
     {
         @Override
         public void onStart()
         {
-            System.out.println("START");
-            transport.handle(transport.command(Listen.class).set(1, appPort));
-        }
-
-        @Override
-        public void onStop()
-        {
-            System.out.println("STOP");
+            transport.handle(transport.command(Listen.class).set(1, appPort, RAW_STREAMING));
         }
 
         @Override
         public void onEvent(final Event event)
         {
             System.out.println(event);
+            if (event instanceof ConnectionAccepted)
+            {
+                ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
+                transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
+            }
         }
 
         @Override
-        public void work()
+        public void onStop()
         {
-            transport.work();
         }
     }
 );
 
-// full version: asynctcpacceptance/src/main/java/dev/squaremile/asynctcpacceptance/AppListeningOnTcpPort.java
+while (true) { app.work(); }
+
+
+
+// more advanced version: asynctcpacceptance/src/main/java/dev/squaremile/asynctcpacceptance/AppListeningOnTcpPort.java
 
 ```
 
