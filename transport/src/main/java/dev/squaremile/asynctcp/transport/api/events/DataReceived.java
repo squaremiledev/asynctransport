@@ -76,8 +76,7 @@ public class DataReceived implements ConnectionEvent
 
     public void copyDataTo(byte[] dst)
     {
-        data.clear().limit(length);
-        data.get(dst, 0, length);
+        System.arraycopy(data.array(), 0, dst, 0, length);
     }
 
     public void copyDataTo(final ByteBuffer dst)
@@ -111,8 +110,6 @@ public class DataReceived implements ConnectionEvent
     @Override
     public DataReceived copy()
     {
-        ByteBuffer byteBufferCopy = ByteBuffer.allocateDirect(data.capacity());
-        byteBufferCopy.put(data.clear());
-        return new DataReceived(port, connectionId, totalBytesReceived, length, inboundPduLimit, byteBufferCopy);
+        return new DataReceived(port, connectionId, totalBytesReceived, length, inboundPduLimit, ByteBuffer.wrap(Arrays.copyOf(data.array(), data.array().length)));
     }
 }

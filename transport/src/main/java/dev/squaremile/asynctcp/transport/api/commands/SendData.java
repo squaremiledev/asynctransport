@@ -28,7 +28,7 @@ public class SendData implements ConnectionUserCommand
 
     public SendData(final int port, final long connectionId, final int capacity)
     {
-        this(new ConnectionIdValue(port, connectionId), ByteBuffer.allocateDirect(capacity), capacity, 0, CommandId.NO_COMMAND_ID);
+        this(new ConnectionIdValue(port, connectionId), ByteBuffer.allocate(capacity), capacity, 0, CommandId.NO_COMMAND_ID);
     }
 
     public SendData(final ConnectionId connectionId, final ByteBuffer buffer, final int capacity, final int length, final long commandId)
