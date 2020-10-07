@@ -30,7 +30,7 @@ class LongPongAppFactory implements ApplicationFactory
     @Override
     public Application create(final Transport transport)
     {
-        return new DelineationApplication(new Application()
+        return new Application()
         {
             private static final int CONNECT_COMMAND_ID = 1;
 
@@ -68,6 +68,6 @@ class LongPongAppFactory implements ApplicationFactory
             {
                 transport.handle(transport.command(Connect.class).set("localhost", port, CONNECT_COMMAND_ID, 100, new FixedLengthDelineationType(8)));
             }
-        });
+        };
     }
 }

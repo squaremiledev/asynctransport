@@ -4,6 +4,7 @@ import org.agrona.collections.MutableLong;
 import org.agrona.collections.MutableReference;
 
 
+import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
@@ -11,6 +12,7 @@ import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
+import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.DelineationType;
 
 class ThroughputTestDrivingApp implements ApplicationFactory
@@ -90,6 +92,11 @@ class ThroughputTestDrivingApp implements ApplicationFactory
             {
                 DataReceived dataReceivedEvent = (DataReceived)event;
                 totalBytesReceived.set(dataReceivedEvent.totalBytesReceived());
+            }
+            else if (event instanceof MessageReceived)
+            {
+                MessageReceived dataReceivedEvent = (MessageReceived)event;
+                totalBytesReceived.addAndGet(dataReceivedEvent.length());
             }
         }
     }

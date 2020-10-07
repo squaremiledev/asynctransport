@@ -40,13 +40,13 @@ class EchoApplicationThroughputTest
         testDrivingTransportApplication.onStart();
         appUnderTest = new NonProdGradeTransportAppFactory().create(
                 "appUnderTest",
-                transport -> new DelineationApplication(
+                transport -> new DelineationApplication(new DelineationApplication(
                         new MessageEchoApplication(
                                 transport,
                                 port,
                                 IGNORE_EVENTS,
                                 new FixedLengthDelineationType(MESSAGE_SIZE_IN_BYTES), 101
-                        ))
+                        )))
         );
         appUnderTest.onStart();
         appUnderTest.work();

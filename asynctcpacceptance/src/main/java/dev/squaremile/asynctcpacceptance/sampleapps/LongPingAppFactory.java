@@ -29,7 +29,7 @@ class LongPingAppFactory implements ApplicationFactory
     @Override
     public Application create(final Transport transport)
     {
-        return new DelineationApplication(new Application()
+        return new Application()
         {
             private ConnectionIdValue connectionId;
             private int numberCount = 0;
@@ -71,6 +71,6 @@ class LongPingAppFactory implements ApplicationFactory
                 }
                 transport.work();
             }
-        });
+        };
     }
 }

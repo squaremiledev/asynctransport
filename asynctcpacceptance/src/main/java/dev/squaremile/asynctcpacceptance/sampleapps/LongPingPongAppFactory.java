@@ -4,7 +4,6 @@ import java.util.function.LongConsumer;
 
 
 import dev.squaremile.asynctcp.serialization.api.delineation.FixedLengthDelineationType;
-import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
@@ -34,7 +33,7 @@ class LongPingPongAppFactory implements ApplicationFactory
     @Override
     public Application create(final Transport transport)
     {
-        return new DelineationApplication(new Application()
+        return new Application()
         {
             private int numberCount = 0;
 
@@ -85,6 +84,6 @@ class LongPingPongAppFactory implements ApplicationFactory
             {
                 transport.work();
             }
-        });
+        };
     }
 }
