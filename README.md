@@ -33,36 +33,38 @@ This is all is needed to create an app that listens on appPort TCP port and send
 ```java
 
 Application app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
-    "AppListeningOnTcpPort",
-    transport -> new Application()
-    {
-        @Override
-        public void onStart()
+        "MyApp",
+        transport -> new Application()
         {
-            transport.handle(transport.command(Listen.class).set(1, appPort, RAW_STREAMING));
-        }
-
-        @Override
-        public void onEvent(final Event event)
-        {
-            System.out.println(event);
-            if (event instanceof ConnectionAccepted)
+            @Override
+            public void onStart()
             {
-                ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
-                transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
+                transport.handle(transport.command(Listen.class).set(1, 8889, RAW_STREAMING.type));
+            }
+
+            @Override
+            public void onEvent(final Event event)
+            {
+                System.out.println(event);
+                if (event instanceof ConnectionAccepted)
+                {
+                    ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
+                    transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
+                }
+            }
+
+            @Override
+            public void onStop()
+            {
             }
         }
-
-        @Override
-        public void onStop()
-        {
-        }
-    }
 );
 
-while (true) { app.work(); }
-
-
+app.onStart();
+while (true)
+{
+    app.work();
+}
 
 // more advanced version: asynctcpacceptance/src/main/java/dev/squaremile/asynctcpacceptance/AppListeningOnTcpPort.java
 
