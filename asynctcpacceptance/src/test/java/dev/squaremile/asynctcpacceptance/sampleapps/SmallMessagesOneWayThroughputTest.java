@@ -55,8 +55,7 @@ class SmallMessagesOneWayThroughputTest
 
         // Then
         assertThat(numbersReceivedCount).isEqualTo(MESSAGES_CAP);
-        assertThat(timeElapsedMs).isLessThan(10_000);
-        assertThat(msgsPerSecond).isGreaterThan(30_000);
+        assertThat(msgsPerSecond).isGreaterThan(80_000);
         System.out.println("Time elapsed: " + timeElapsedMs);
         System.out.println("msg/s: " + msgsPerSecond);
     }
