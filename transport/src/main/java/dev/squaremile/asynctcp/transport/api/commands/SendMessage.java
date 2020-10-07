@@ -31,7 +31,7 @@ public class SendMessage implements ConnectionUserCommand
     {
         this.capacity = capacity;
         this.connectionId = new ConnectionIdValue(port, connectionId);
-        this.data = ByteBuffer.allocate(capacity);
+        this.data = ByteBuffer.allocateDirect(capacity);
         this.buffer = new UnsafeBuffer(data);
         this.length = 0;
         this.commandId = CommandId.NO_COMMAND_ID;

@@ -25,7 +25,7 @@ public class SingleConnectionEvents implements ConnectionEventsListener
         this.eventsListener = eventsListener;
         this.port = port;
         this.connectionId = connectionId;
-        this.dataReceivedEvent = new DataReceived(port, connectionId, 0, 0, inboundPduLimit, ByteBuffer.wrap(new byte[inboundPduLimit]));
+        this.dataReceivedEvent = new DataReceived(port, connectionId, 0, 0, inboundPduLimit, ByteBuffer.allocateDirect(inboundPduLimit));
         this.dataSentEvent = new DataSent(this.port, this.connectionId);
     }
 

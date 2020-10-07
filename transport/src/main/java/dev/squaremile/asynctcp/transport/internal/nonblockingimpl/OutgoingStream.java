@@ -22,7 +22,7 @@ public class OutgoingStream
 
     OutgoingStream(final SingleConnectionEvents events, final int bufferSize)
     {
-        this.buffer = ByteBuffer.allocate(bufferSize * 2);
+        this.buffer = ByteBuffer.allocateDirect(bufferSize * 2);
         this.events = events;
         this.state = ConnectionState.NO_OUTSTANDING_DATA;
     }
