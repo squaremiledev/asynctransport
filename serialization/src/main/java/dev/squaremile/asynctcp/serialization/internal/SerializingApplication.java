@@ -134,7 +134,8 @@ public class SerializingApplication implements Application
                     .connectionId(event.connectionId())
                     .bytesSent(event.bytesSent())
                     .totalBytesSent(event.totalBytesSent())
-                    .totalBytesBuffered(event.totalBytesBuffered());
+                    .totalBytesBuffered(event.totalBytesBuffered())
+                    .sendBufferSize(event.sendBufferSize());
             serializedEventListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + dataSentEncoder.encodedLength());
         }
         else if (unknownEvent instanceof StartedListening)

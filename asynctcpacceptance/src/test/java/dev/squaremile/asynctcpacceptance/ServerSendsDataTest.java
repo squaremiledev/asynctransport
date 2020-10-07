@@ -63,7 +63,10 @@ class ServerSendsDataTest extends TransportTestBase
         // Then
         serverTransport.workUntil(completed(() -> clients.client(1).read(3, 10, dataConsumer)));
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("foo");
-        assertEqual(serverTransport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), 3, 3, 3));
+        assertEqual(
+                serverTransport.events().all(DataSent.class),
+                new DataSent(conn.port(), conn.connectionId(), 3, 3, 3, serverTransport.events().last(DataSent.class).sendBufferSize())
+        );
     }
 
     @Test
@@ -84,8 +87,8 @@ class ServerSendsDataTest extends TransportTestBase
         assertThat(new String(dataConsumer.dataRead(), US_ASCII)).isEqualTo("fooBA");
         assertEqual(
                 serverTransport.events().all(DataSent.class),
-                new DataSent(conn.port(), conn.connectionId(), 3, 3, 3),
-                new DataSent(conn.port(), conn.connectionId(), 2, 5, 5)
+                new DataSent(conn.port(), conn.connectionId(), 3, 3, 3, serverTransport.events().all(DataSent.class).get(0).sendBufferSize()),
+                new DataSent(conn.port(), conn.connectionId(), 2, 5, 5, serverTransport.events().all(DataSent.class).get(0).sendBufferSize())
         );
     }
 
@@ -102,7 +105,8 @@ class ServerSendsDataTest extends TransportTestBase
         serverTransport.workUntil(() -> serverTransport.connectionEvents().contains(DataSent.class, conn.connectionId()));
 
         // Then
-        assertEqual(serverTransport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), 0, 0, 0, 100));
+        DataSent last = serverTransport.events().last(DataSent.class);
+        assertEqual(serverTransport.events().all(DataSent.class), new DataSent(conn.port(), conn.connectionId(), 0, 0, 0, 100, last.sendBufferSize()));
     }
 
     @Test
@@ -153,7 +157,7 @@ class ServerSendsDataTest extends TransportTestBase
         assertThat(serverTransport.events().last(CommandFailed.class).port()).isEqualTo(conn.port() + 1);
         assertThat(serverTransport.events().last(CommandFailed.class).details()).containsIgnoringCase("port");
         assertThat(serverTransport.events().last(DataSent.class)).usingRecursiveComparison()
-                .isEqualTo(new DataSent(conn.port(), conn.connectionId(), 3, 3, 3));
+                .isEqualTo(new DataSent(conn.port(), conn.connectionId(), 3, 3, 3, serverTransport.events().last(DataSent.class).sendBufferSize()));
     }
 
     @Test
@@ -191,25 +195,26 @@ class ServerSendsDataTest extends TransportTestBase
         serverTransport.workUntil(completed(() -> clients.client(1).read(10, 100, dataConsumer1)));
         assertThat(new String(dataConsumer1.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S1 -> C1 ", 10));
         assertThat(serverTransport.connectionEvents().last(DataSent.class, connS1C1.connectionId())).usingRecursiveComparison()
-                .isEqualTo(new DataSent(connS1C1.port(), connS1C1.connectionId(), 10, 10, 10));
+                .isEqualTo(new DataSent(connS1C1.port(), connS1C1.connectionId(), 10, 10, 10, serverTransport.events().last(DataSent.class).sendBufferSize()));
 
         final ThreadSafeReadDataSpy dataConsumer2 = new ThreadSafeReadDataSpy();
         serverTransport.workUntil(completed(() -> clients.client(2).read(20, 100, dataConsumer2)));
         assertThat(new String(dataConsumer2.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C2 ", 20));
         assertThat(serverTransport.connectionEvents().last(DataSent.class, connS2C2.connectionId())).usingRecursiveComparison()
-                .isEqualTo(new DataSent(connS2C2.port(), connS2C2.connectionId(), 20, 20, 20));
+                .isEqualTo(new DataSent(connS2C2.port(), connS2C2.connectionId(), 20, 20, 20, serverTransport.events().last(DataSent.class).sendBufferSize()));
 
         final ThreadSafeReadDataSpy dataConsumer3 = new ThreadSafeReadDataSpy();
         serverTransport.workUntil(completed(() -> clients.client(3).read(30, 100, dataConsumer3)));
         assertThat(new String(dataConsumer3.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S1 -> C3 ", 30));
         assertThat(serverTransport.connectionEvents().last(DataSent.class, connS1C3.connectionId())).usingRecursiveComparison()
-                .isEqualTo(new DataSent(connS1C3.port(), connS1C3.connectionId(), 30, 30, 30));
+                .isEqualTo(new DataSent(connS1C3.port(), connS1C3.connectionId(), 30, 30, 30, serverTransport.events().last(DataSent.class).sendBufferSize()));
 
         final ThreadSafeReadDataSpy dataConsumer4 = new ThreadSafeReadDataSpy();
         serverTransport.workUntil(completed(() -> clients.client(4).read(40, 100, dataConsumer4)));
         assertThat(new String(dataConsumer4.dataRead(), US_ASCII)).isEqualTo(fixedLengthStringStartingWith("S2 -> C4 ", 40));
         assertThat(serverTransport.connectionEvents().last(DataSent.class, connS2C4.connectionId())).usingRecursiveComparison()
-                .isEqualTo(new DataSent(connS2C4.port(), connS2C4.connectionId(), 40, 40, 40));
+                .isEqualTo(new DataSent(connS2C4.port(), connS2C4.connectionId(), 40, 40, 40, serverTransport.events().last(DataSent.class).sendBufferSize()));
+
     }
 
     @Test
@@ -236,7 +241,7 @@ class ServerSendsDataTest extends TransportTestBase
         assertThat(stringWith(dataConsumer.dataRead())).isEqualTo(stringWith(data));
         final DataSent dataSentEvent = serverTransport.connectionEvents().last(DataSent.class, conn.connectionId());
         assertThat(dataSentEvent).usingRecursiveComparison()
-                .isEqualTo(new DataSent(conn.port(), conn.connectionId(), dataSentEvent.bytesSent(), data.length, data.length));
+                .isEqualTo(new DataSent(conn.port(), conn.connectionId(), dataSentEvent.bytesSent(), data.length, data.length, dataSentEvent.sendBufferSize()));
 
     }
 

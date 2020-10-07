@@ -224,7 +224,9 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    DataSent result = new DataSent(decoder.port(), decoder.connectionId(), decoder.bytesSent(), decoder.totalBytesSent(), decoder.totalBytesBuffered(), decoder.commandId());
+                    DataSent result = new DataSent(decoder.port(), decoder.connectionId(), decoder.bytesSent(), decoder.totalBytesSent(), decoder.totalBytesBuffered(), decoder.commandId(),
+                                                   decoder.sendBufferSize()
+                    );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }

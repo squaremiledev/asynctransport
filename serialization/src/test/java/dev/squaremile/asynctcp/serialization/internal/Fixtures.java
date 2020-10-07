@@ -45,7 +45,7 @@ class Fixtures
                 new ConnectionClosed(7888, 1, 2),
                 new ConnectionCommandFailed(8884, 103, "some details", 6),
                 new ConnectionResetByPeer(5888, 4, 6),
-                new DataSent(5888, 4, 1, 9, 18, 104),
+                new DataSent(5888, 4, 1, 9, 18, 104, 45_000),
                 new StartedListening(8888, 5, PredefinedTransportDelineation.INTEGERS.type),
                 new StoppedListening(8988, 6),
                 new TransportCommandFailed(8001, 101L, "some details", Listen.class)

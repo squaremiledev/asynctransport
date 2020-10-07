@@ -85,6 +85,7 @@
         <field name="bytesSent" id="4" type="int32"/>
         <field name="totalBytesSent" id="5" type="int64"/>
         <field name="totalBytesBuffered" id="6" type="int64"/>
+        <field name="sendBufferSize" id="7" type="int32"/>
     </sbe:message>
     <sbe:message name="MessageReceived" id="8">
         <field name="port" id="1" type="port"/>

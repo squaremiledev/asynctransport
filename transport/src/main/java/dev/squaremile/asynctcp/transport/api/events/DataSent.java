@@ -14,10 +14,12 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
     private long totalBytesSent;
     private long totalBytesBuffered;
     private long commandId;
+    private int sendBufferSize;
+    private long windowSizeInBytes;
 
-    public DataSent(final ConnectionId connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered)
+    public DataSent(final ConnectionId connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final int sendBufferSize)
     {
-        this(connectionId, bytesSent, totalBytesSent, totalBytesBuffered, CommandId.NO_COMMAND_ID);
+        this(connectionId, bytesSent, totalBytesSent, totalBytesBuffered, CommandId.NO_COMMAND_ID, sendBufferSize);
     }
 
     public DataSent(
@@ -25,23 +27,24 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
             final int bytesSent,
             final long totalBytesSent,
             final long totalBytesBuffered,
-            final long commandId
+            final long commandId,
+            final int sendBufferSize
     )
     {
-        this(connectionId.port(), connectionId.connectionId(), bytesSent, totalBytesSent, totalBytesBuffered, commandId);
+        this(connectionId.port(), connectionId.connectionId(), bytesSent, totalBytesSent, totalBytesBuffered, commandId, sendBufferSize);
     }
 
-    public DataSent(final int port, final long connectionId)
+    public DataSent(final int port, final long connectionId, final int sendBufferSize)
     {
-        this(port, connectionId, -1, -1, -1, CommandId.NO_COMMAND_ID);
+        this(port, connectionId, -1, -1, -1, sendBufferSize);
     }
 
-    public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered)
+    public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final int sendBufferSize)
     {
-        this(port, connectionId, bytesSent, totalBytesSent, totalBytesBuffered, CommandId.NO_COMMAND_ID);
+        this(port, connectionId, bytesSent, totalBytesSent, totalBytesBuffered, CommandId.NO_COMMAND_ID, sendBufferSize);
     }
 
-    public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final long commandId)
+    public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final long commandId, final int sendBufferSize)
     {
         this.port = port;
         this.connectionId = connectionId;
@@ -49,6 +52,8 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
         this.totalBytesSent = totalBytesSent;
         this.commandId = commandId;
         this.totalBytesBuffered = totalBytesBuffered;
+        this.sendBufferSize = sendBufferSize;
+        this.windowSizeInBytes = sendBufferSize + totalBytesSent - totalBytesBuffered;
     }
 
     public DataSent set(final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final long commandId)
@@ -57,6 +62,7 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
         this.totalBytesSent = totalBytesSent;
         this.commandId = commandId;
         this.totalBytesBuffered = totalBytesBuffered;
+        this.windowSizeInBytes = sendBufferSize + totalBytesSent - totalBytesBuffered;
         return this;
     }
 
@@ -75,6 +81,11 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
     public long totalBytesSent()
     {
         return totalBytesSent;
+    }
+
+    public int sendBufferSize()
+    {
+        return sendBufferSize;
     }
 
     public long totalBytesBuffered()
@@ -103,12 +114,14 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
                ", totalBytesSent=" + totalBytesSent +
                ", totalBytesBuffered=" + totalBytesBuffered +
                ", commandId=" + commandId +
+               ", sendBufferSize=" + sendBufferSize +
+               ", windowSizeInBytes=" + windowSizeInBytes +
                '}';
     }
 
     @Override
     public TransportEvent copy()
     {
-        return new DataSent(port, connectionId, bytesSent, totalBytesSent, totalBytesBuffered, commandId);
+        return new DataSent(port, connectionId, bytesSent, totalBytesSent, totalBytesBuffered, commandId, sendBufferSize);
     }
 }

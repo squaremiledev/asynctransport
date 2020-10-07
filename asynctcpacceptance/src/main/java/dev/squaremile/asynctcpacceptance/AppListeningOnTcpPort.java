@@ -6,7 +6,7 @@ import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.transport.api.events.DataReceived;
+import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
@@ -60,11 +60,13 @@ public class AppListeningOnTcpPort
                                     ).getBytes()));
 
                         }
-                        if (event instanceof DataReceived)
+                        if (event instanceof MessageReceived)
                         {
-                            DataReceived dataReceived = (DataReceived)event;
+                            MessageReceived dataReceived = (MessageReceived)event;
                             transport.handle(transport.command(dataReceived, SendData.class).set(
-                                    ("You have sent me so far " + dataReceived.totalBytesReceived() + " bytes\n").getBytes()));
+                                    (
+                                            "You have sent me " + dataReceived.length() + " bytes\n"
+                                    ).getBytes()));
                         }
                     }
 

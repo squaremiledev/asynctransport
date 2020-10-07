@@ -7,7 +7,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public class DataSentEncoder
 {
-    public static final int BLOCK_LENGTH = 40;
+    public static final int BLOCK_LENGTH = 44;
     public static final int TEMPLATE_ID = 7;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
@@ -419,6 +419,61 @@ public class DataSentEncoder
     public DataSentEncoder totalBytesBuffered(final long value)
     {
         buffer.putLong(offset + 32, value, java.nio.ByteOrder.LITTLE_ENDIAN);
+        return this;
+    }
+
+
+    public static int sendBufferSizeId()
+    {
+        return 7;
+    }
+
+    public static int sendBufferSizeSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int sendBufferSizeEncodingOffset()
+    {
+        return 40;
+    }
+
+    public static int sendBufferSizeEncodingLength()
+    {
+        return 4;
+    }
+
+    public static String sendBufferSizeMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public static int sendBufferSizeNullValue()
+    {
+        return -2147483648;
+    }
+
+    public static int sendBufferSizeMinValue()
+    {
+        return -2147483647;
+    }
+
+    public static int sendBufferSizeMaxValue()
+    {
+        return 2147483647;
+    }
+
+    public DataSentEncoder sendBufferSize(final int value)
+    {
+        buffer.putInt(offset + 40, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
     }
 
