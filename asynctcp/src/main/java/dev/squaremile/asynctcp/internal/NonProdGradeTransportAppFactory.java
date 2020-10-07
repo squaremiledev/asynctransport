@@ -10,14 +10,13 @@ import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
-import dev.squaremile.asynctcp.internal.TransportApplication;
 
 import static dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler.NO_HANDLER;
 
 public class NonProdGradeTransportAppFactory implements TransportApplicationFactory
 {
     @Override
-    public TransportApplication create(final String role, ApplicationFactory applicationFactory)
+    public Application create(final String role, ApplicationFactory applicationFactory)
     {
         try
         {
@@ -25,7 +24,7 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
             Transport transport = new NonBlockingTransport(listeningApplication, NO_HANDLER, System::currentTimeMillis, role);
             Application app = applicationFactory.create(transport);
             listeningApplication.set(app);
-            return new TransportApplication(transport, app);
+            return new TransportPoweredApplication(transport, app);
         }
         catch (IOException e)
         {

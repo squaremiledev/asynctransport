@@ -8,13 +8,13 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import dev.squaremile.asynctcp.internal.NonProdGradeTransportAppFactory;
 import dev.squaremile.asynctcp.serialization.api.delineation.FixedLengthDelineationType;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
+import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
-import dev.squaremile.asynctcp.internal.NonProdGradeTransportAppFactory;
-import dev.squaremile.asynctcp.internal.TransportApplication;
 import dev.squaremile.asynctcp.transport.testfixtures.Worker;
 
 import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
@@ -26,8 +26,8 @@ class EchoApplicationThroughputTest
     private static final int BYTES_CAP = 20_000_000;
     private static final int MESSAGE_SIZE_IN_BYTES = 4 * 1024;
 
-    private final TransportApplication testDrivingTransportApplication;
-    private final TransportApplication appUnderTest;
+    private final Application testDrivingTransportApplication;
+    private final Application appUnderTest;
     private final int port;
     private final ThroughputTestDrivingApp testDrivingApp;
 

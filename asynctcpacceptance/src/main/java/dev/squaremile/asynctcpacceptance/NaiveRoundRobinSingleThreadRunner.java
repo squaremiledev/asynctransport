@@ -13,11 +13,11 @@ import org.agrona.concurrent.status.AtomicCounter;
 import static org.agrona.concurrent.AgentRunner.startOnThread;
 
 
-import dev.squaremile.asynctcp.internal.TransportApplication;
+import dev.squaremile.asynctcp.transport.api.app.Application;
 
 public class NaiveRoundRobinSingleThreadRunner
 {
-    public void run(final List<TransportApplication> transportApplication)
+    public void run(final List<Application> transportApplication)
     {
         startOnThread(new AgentRunner(
                 new SleepingIdleStrategy(),
@@ -29,9 +29,9 @@ public class NaiveRoundRobinSingleThreadRunner
 
     private static class RoundRobinTransportAppAgent implements Agent
     {
-        private final List<TransportApplication> transportApplications;
+        private final List<Application> transportApplications;
 
-        RoundRobinTransportAppAgent(final List<TransportApplication> transportApplications)
+        RoundRobinTransportAppAgent(final List<Application> transportApplications)
         {
             this.transportApplications = new ArrayList<>(transportApplications);
         }
@@ -39,7 +39,7 @@ public class NaiveRoundRobinSingleThreadRunner
         @Override
         public void onStart()
         {
-            for (final TransportApplication application : transportApplications)
+            for (final Application application : transportApplications)
             {
                 application.onStart();
             }
@@ -48,7 +48,7 @@ public class NaiveRoundRobinSingleThreadRunner
         @Override
         public int doWork()
         {
-            for (final TransportApplication application : transportApplications)
+            for (final Application application : transportApplications)
             {
                 application.work();
             }
@@ -58,7 +58,7 @@ public class NaiveRoundRobinSingleThreadRunner
         @Override
         public void onClose()
         {
-            for (final TransportApplication application : transportApplications)
+            for (final Application application : transportApplications)
             {
                 application.onStop();
             }

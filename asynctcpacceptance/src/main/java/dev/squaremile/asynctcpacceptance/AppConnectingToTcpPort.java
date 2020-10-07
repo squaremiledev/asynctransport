@@ -5,7 +5,6 @@ import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.internal.TransportApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
@@ -27,7 +26,7 @@ public class AppConnectingToTcpPort implements Application
     {
         if (args.length == 1)
         {
-            TransportApplication transportApplication = new AsyncTcp().transportAppFactory(NON_PROD_GRADE)
+            Application transportApplication = new AsyncTcp().transportAppFactory(NON_PROD_GRADE)
                     .create("", transport -> new AppConnectingToTcpPort(transport, parseInt(args[0])));
 
             new NaiveRoundRobinSingleThreadRunner().run(singletonList(transportApplication));

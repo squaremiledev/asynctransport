@@ -7,11 +7,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
+import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.internal.TransportApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
@@ -29,8 +29,8 @@ class SmallMessagesOneWayThroughputTest
     @Test
     void shouldSendLongs()
     {
-        TransportApplication pingApp = transportApplicationFactory.create("ping", new LongPingAppFactory(MESSAGES_CAP, port, stateListener));
-        TransportApplication pongApp = transportApplicationFactory.create("pong", new LongPongAppFactory(port, stateListener, number -> numbersReceivedCount++));
+        Application pingApp = transportApplicationFactory.create("ping", new LongPingAppFactory(MESSAGES_CAP, port, stateListener));
+        Application pongApp = transportApplicationFactory.create("pong", new LongPongAppFactory(port, stateListener, number -> numbersReceivedCount++));
         Apps apps = new Apps(pingApp, pongApp);
         pingApp.onStart();
         apps.runUntil(stateListener::hasStartedListening);

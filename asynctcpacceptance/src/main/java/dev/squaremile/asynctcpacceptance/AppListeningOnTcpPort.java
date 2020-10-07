@@ -7,7 +7,6 @@ import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
-import dev.squaremile.asynctcp.internal.TransportApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
@@ -25,7 +24,7 @@ public class AppListeningOnTcpPort
         }
         final int appPort = parseInt(args[0]);
 
-        TransportApplication app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
+        Application app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
                 "AppListeningOnTcpPort",
                 transport -> new Application()
                 {
