@@ -16,7 +16,7 @@ import dev.squaremile.asynctcp.transport.setup.TransportApplication;
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
-class SmallMessagesThroughputTest
+class SmallMessagesTwoWayThroughputTest
 {
     private static final int WARM_UP = 100_000;
     private static final int MESSAGES_EXCHANGED_WHEN_MEASURED = 500_000;
@@ -29,7 +29,7 @@ class SmallMessagesThroughputTest
     @Test
     void shouldExchangeLongs()
     {
-        TransportApplication pingApp = transportApplicationFactory.create("ping", new LongPingAppFactory(MESSAGES_CAP, port, stateListener, number -> numbersExchangedCount++));
+        TransportApplication pingApp = transportApplicationFactory.create("ping", new LongPingPongAppFactory(MESSAGES_CAP, port, stateListener, number -> numbersExchangedCount++));
         TransportApplication pongApp = transportApplicationFactory.create("pong", new LongPongAppFactory(port, stateListener, number -> numbersExchangedCount++));
         Apps apps = new Apps(pingApp, pongApp);
         pingApp.onStart();

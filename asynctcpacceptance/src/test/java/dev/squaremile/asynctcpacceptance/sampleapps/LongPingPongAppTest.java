@@ -27,7 +27,7 @@ class LongPingPongAppTest
     @Test
     void shouldExchangeLongs()
     {
-        TransportApplication pingApp = transportApplicationFactory.create("ping", new LongPingAppFactory(MESSAGES_CAP, port, pingSpy, number -> numbersExchangedCount++));
+        TransportApplication pingApp = transportApplicationFactory.create("ping", new LongPingPongAppFactory(MESSAGES_CAP, port, pingSpy, number -> numbersExchangedCount++));
         TransportApplication pongApp = transportApplicationFactory.create("pong", new LongPongAppFactory(port, pongSpy, number -> numbersExchangedCount++));
         Apps apps = new Apps(pingApp, pongApp);
         pingApp.onStart();
