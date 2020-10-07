@@ -9,7 +9,7 @@ import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.setup.TransportApplication;
+import dev.squaremile.asynctcp.internal.TransportApplication;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;

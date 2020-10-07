@@ -11,7 +11,7 @@ import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.setup.TransportApplication;
+import dev.squaremile.asynctcp.internal.TransportApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;

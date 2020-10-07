@@ -5,8 +5,7 @@ import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.transport.setup.NaiveRoundRobinSingleThreadRunner;
-import dev.squaremile.asynctcp.transport.setup.TransportApplication;
+import dev.squaremile.asynctcp.internal.TransportApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;

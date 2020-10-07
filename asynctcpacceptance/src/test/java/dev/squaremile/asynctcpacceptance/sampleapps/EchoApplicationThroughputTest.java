@@ -13,8 +13,8 @@ import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApp
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
-import dev.squaremile.asynctcp.transport.setup.TransportAppFactory;
-import dev.squaremile.asynctcp.transport.setup.TransportApplication;
+import dev.squaremile.asynctcp.internal.NonProdGradeTransportAppFactory;
+import dev.squaremile.asynctcp.internal.TransportApplication;
 import dev.squaremile.asynctcp.transport.testfixtures.Worker;
 
 import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
@@ -36,9 +36,9 @@ class EchoApplicationThroughputTest
     {
         port = freePort();
         testDrivingApp = new ThroughputTestDrivingApp(port, new FixedLengthDelineationType(MESSAGE_SIZE_IN_BYTES));
-        testDrivingTransportApplication = new TransportAppFactory().create("testDrivingApp", testDrivingApp);
+        testDrivingTransportApplication = new NonProdGradeTransportAppFactory().create("testDrivingApp", testDrivingApp);
         testDrivingTransportApplication.onStart();
-        appUnderTest = new TransportAppFactory().create(
+        appUnderTest = new NonProdGradeTransportAppFactory().create(
                 "appUnderTest",
                 transport -> new DelineationApplication(
                         new MessageEchoApplication(

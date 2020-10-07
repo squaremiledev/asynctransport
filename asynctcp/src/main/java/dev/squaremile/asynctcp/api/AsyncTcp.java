@@ -1,13 +1,14 @@
 package dev.squaremile.asynctcp.api;
 
 import dev.squaremile.asynctcp.internal.NonProdGradeTransportFactory;
+import dev.squaremile.asynctcp.internal.NonProdGradeTransportAppFactory;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 
 public class AsyncTcp
 {
     private final TransportFactory nonProdGradeTransportFactory = new NonProdGradeTransportFactory();
-    private final TransportApplicationFactory nonProdGradeTransportApplicationFactory = new dev.squaremile.asynctcp.transport.setup.TransportAppFactory()::create;
+    private final TransportApplicationFactory nonProdGradeTransportApplicationFactory = new NonProdGradeTransportAppFactory();
 
     private static void checkType(final FactoryType type)
     {

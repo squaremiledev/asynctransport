@@ -1,19 +1,22 @@
-package dev.squaremile.asynctcp.transport.setup;
+package dev.squaremile.asynctcp.internal;
 
 import java.io.IOException;
 
 
+import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
+import dev.squaremile.asynctcp.internal.TransportApplication;
 
 import static dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler.NO_HANDLER;
 
-public class TransportAppFactory
+public class NonProdGradeTransportAppFactory implements TransportApplicationFactory
 {
+    @Override
     public TransportApplication create(final String role, ApplicationFactory applicationFactory)
     {
         try

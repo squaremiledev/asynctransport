@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.transport.setup;
+package dev.squaremile.asynctcp.internal;
 
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
@@ -8,7 +8,7 @@ public class TransportApplication
     private final Transport transport;
     private final Application app;
 
-    TransportApplication(final Transport transport, final Application app)
+    public TransportApplication(final Transport transport, final Application app)
     {
         this.transport = transport;
         this.app = app;
