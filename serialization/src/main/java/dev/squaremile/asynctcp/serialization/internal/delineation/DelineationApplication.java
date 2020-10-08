@@ -19,7 +19,7 @@ import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 public class DelineationApplication implements Application, TransportCommandHandler
 {
@@ -27,7 +27,7 @@ public class DelineationApplication implements Application, TransportCommandHand
     private final Application delegate;
     private final Long2ObjectHashMap<DelineationHandler> delineationPerConnection = new Long2ObjectHashMap<>();
     private final DelineationHandlerFactory delineationHandlerFactory = new DelineationHandlerFactory();
-    private final Int2ObjectHashMap<DelineationType> delineationTypePerListeningPort = new Int2ObjectHashMap<>();
+    private final Int2ObjectHashMap<Delineation> delineationTypePerListeningPort = new Int2ObjectHashMap<>();
 
     public DelineationApplication(final Application delegate)
     {
@@ -136,7 +136,7 @@ public class DelineationApplication implements Application, TransportCommandHand
         }
     }
 
-    private void validateDelineation(final DelineationType delineation)
+    private void validateDelineation(final Delineation delineation)
     {
         if (!delineationHandlerFactory.isSupported(delineation))
         {

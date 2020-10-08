@@ -2,7 +2,7 @@ package dev.squaremile.asynctcp.transport.api.events;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.TransportCorrelatedEvent;
-import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 public class Connected implements ConnectionEvent, TransportCorrelatedEvent
 {
@@ -13,7 +13,7 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
     private final long connectionId;
     private final int inboundPduLimit;
     private final int outboundPduLimit;
-    private final DelineationType delineation;
+    private final Delineation delineation;
 
     public Connected(
             final int port,
@@ -23,7 +23,7 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
             final long connectionId,
             final int inboundPduLimit,
             final int outboundPduLimit,
-            final DelineationType delineation
+            final Delineation delineation
     )
     {
         this.port = port;
@@ -74,7 +74,7 @@ public class Connected implements ConnectionEvent, TransportCorrelatedEvent
         return outboundPduLimit;
     }
 
-    public DelineationType delineation()
+    public Delineation delineation()
     {
         return delineation;
     }

@@ -13,7 +13,7 @@ import org.agrona.CloseHelper;
 
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.Connection;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionConfiguration;
@@ -72,7 +72,7 @@ public class Server implements AutoCloseable
         return serverSocketChannel;
     }
 
-    public Connection createConnection(final SocketChannel acceptedSocketChannel, final DelineationType delineation) throws SocketException
+    public Connection createConnection(final SocketChannel acceptedSocketChannel, final Delineation delineation) throws SocketException
     {
         final Socket acceptedSocket = acceptedSocketChannel.socket();
 

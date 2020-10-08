@@ -2,15 +2,15 @@ package dev.squaremile.asynctcp.transport.api.events;
 
 import dev.squaremile.asynctcp.transport.api.app.TransportCorrelatedEvent;
 import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
-import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 public class StartedListening implements TransportCorrelatedEvent
 {
     private final int port;
     private final long commandId;
-    private final DelineationType delineation;
+    private final Delineation delineation;
 
-    public StartedListening(final int port, final long commandId, final DelineationType delineation)
+    public StartedListening(final int port, final long commandId, final Delineation delineation)
     {
         this.port = port;
         this.commandId = commandId;
@@ -23,7 +23,7 @@ public class StartedListening implements TransportCorrelatedEvent
         return port;
     }
 
-    public DelineationType delineation()
+    public Delineation delineation()
     {
         return delineation;
     }

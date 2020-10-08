@@ -4,7 +4,6 @@ import org.agrona.collections.MutableLong;
 import org.agrona.collections.MutableReference;
 
 
-import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
@@ -13,7 +12,7 @@ import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 class ThroughputTestDrivingApp implements ApplicationFactory
 {
@@ -22,9 +21,9 @@ class ThroughputTestDrivingApp implements ApplicationFactory
     private final int port;
     private Transport transport;
     private App app;
-    private DelineationType delineation;
+    private Delineation delineation;
 
-    public ThroughputTestDrivingApp(final int port, final DelineationType delineation)
+    public ThroughputTestDrivingApp(final int port, final Delineation delineation)
     {
         this.port = port;
         this.delineation = delineation;

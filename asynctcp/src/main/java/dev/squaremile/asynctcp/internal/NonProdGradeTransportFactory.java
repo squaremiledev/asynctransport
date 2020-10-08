@@ -12,7 +12,7 @@ import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
 import dev.squaremile.asynctcp.serialization.internal.NonBLockingMessageDrivenTransport;
 import dev.squaremile.asynctcp.serialization.internal.SerializingApplication;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
-import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
 
 public class NonProdGradeTransportFactory implements TransportFactory
@@ -20,7 +20,7 @@ public class NonProdGradeTransportFactory implements TransportFactory
     @Override
     public MessageDrivenTransport createMessageDrivenTransport(
             final String role,
-            final DelineationType predefinedTransportDelineation,
+            final Delineation predefinedTransportDelineation,
             final SerializedEventListener serializedEventListener
     ) throws IOException
     {

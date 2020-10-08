@@ -22,7 +22,7 @@ import dev.squaremile.asynctcp.transport.testfixtures.TransportUnderTest;
 import dev.squaremile.asynctcp.transport.testfixtures.Worker;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 
-import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.RAW_STREAMING;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortOtherThan;

@@ -16,7 +16,6 @@ import dev.squaremile.asynctcp.sbe.StartedListeningDecoder;
 import dev.squaremile.asynctcp.sbe.StoppedListeningDecoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
-import dev.squaremile.asynctcp.serialization.api.delineation.FixedLengthDelineationType;
 import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
@@ -29,8 +28,9 @@ import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static java.lang.Integer.parseInt;
+import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXED_LENGTH;
 
 // TODO [perf]: avoid garbage
 public class TransportEventDecoders
@@ -108,7 +108,7 @@ public class TransportEventDecoders
                             decoder.connectionId(),
                             decoder.inboundPduLimit(),
                             decoder.outboundPduLimit(),
-                            new FixedLengthDelineationType(parseInt(decoder.delineation()))
+                            new Delineation(FIXED_LENGTH, decoder.delineationKnownLength())
                     );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
@@ -246,7 +246,7 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    StartedListening result = new StartedListening(decoder.port(), decoder.commandId(), new FixedLengthDelineationType(parseInt(decoder.delineation())));
+                    StartedListening result = new StartedListening(decoder.port(), decoder.commandId(), new Delineation(FIXED_LENGTH, decoder.delineationKnownLength()));
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }

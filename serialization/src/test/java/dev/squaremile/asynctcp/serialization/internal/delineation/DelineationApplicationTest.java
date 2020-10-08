@@ -27,10 +27,10 @@ import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
-import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.INTEGERS;
-import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.LONGS;
-import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
-import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.SINGLE_BYTE;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.INTEGERS;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.LONGS;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.RAW_STREAMING;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.SINGLE_BYTE;
 import static java.nio.ByteBuffer.wrap;
 import static java.util.Arrays.asList;
 

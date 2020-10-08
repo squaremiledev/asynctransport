@@ -7,7 +7,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public class ListenDecoder
 {
-    public static final int BLOCK_LENGTH = 12;
+    public static final int BLOCK_LENGTH = 16;
     public static final int TEMPLATE_ID = 103;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
@@ -196,27 +196,32 @@ public class ListenDecoder
     }
 
 
-    public static int delineationId()
+    public static int delineationKnownLengthId()
     {
         return 4;
     }
 
-    public static int delineationSinceVersion()
+    public static int delineationKnownLengthSinceVersion()
     {
         return 0;
     }
 
-    public static String delineationCharacterEncoding()
+    public static int delineationKnownLengthEncodingOffset()
     {
-        return "ASCII";
+        return 12;
     }
 
-    public static String delineationMetaAttribute(final MetaAttribute metaAttribute)
+    public static int delineationKnownLengthEncodingLength()
+    {
+        return 4;
+    }
+
+    public static String delineationKnownLengthMetaAttribute(final MetaAttribute metaAttribute)
     {
         switch (metaAttribute)
         {
-            case EPOCH: return "unix";
-            case TIME_UNIT: return "nanosecond";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
             case SEMANTIC_TYPE: return "";
             case PRESENCE: return "required";
         }
@@ -224,102 +229,26 @@ public class ListenDecoder
         return "";
     }
 
-    public static int delineationHeaderLength()
+    public static int delineationKnownLengthNullValue()
     {
-        return 4;
+        return -2147483648;
     }
 
-    public int delineationLength()
+    public static int delineationKnownLengthMinValue()
     {
-        final int limit = parentMessage.limit();
-        return (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        return -2147483647;
     }
 
-    public int skipDelineation()
+    public static int delineationKnownLengthMaxValue()
     {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int dataOffset = limit + headerLength;
-
-        parentMessage.limit(dataOffset + dataLength);
-
-        return dataLength;
+        return 2147483647;
     }
 
-    public int getDelineation(final MutableDirectBuffer dst, final int dstOffset, final int length)
+    public int delineationKnownLength()
     {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int bytesCopied = Math.min(length, dataLength);
-        parentMessage.limit(limit + headerLength + dataLength);
-        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
-
-        return bytesCopied;
+        return buffer.getInt(offset + 12, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
-    public int getDelineation(final byte[] dst, final int dstOffset, final int length)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int bytesCopied = Math.min(length, dataLength);
-        parentMessage.limit(limit + headerLength + dataLength);
-        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
-
-        return bytesCopied;
-    }
-
-    public void wrapDelineation(final DirectBuffer wrapBuffer)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        parentMessage.limit(limit + headerLength + dataLength);
-        wrapBuffer.wrap(buffer, limit + headerLength, dataLength);
-    }
-
-    public String delineation()
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        parentMessage.limit(limit + headerLength + dataLength);
-
-        if (0 == dataLength)
-        {
-            return "";
-        }
-
-        final byte[] tmp = new byte[dataLength];
-        buffer.getBytes(limit + headerLength, tmp, 0, dataLength);
-
-        final String value;
-        try
-        {
-            value = new String(tmp, "ASCII");
-        }
-        catch (final java.io.UnsupportedEncodingException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-
-        return value;
-    }
-
-    public int getDelineation(final Appendable appendable)
-    {
-        final int headerLength = 4;
-        final int limit = parentMessage.limit();
-        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
-        final int dataOffset = limit + headerLength;
-
-        parentMessage.limit(dataOffset + dataLength);
-        buffer.getStringWithoutLengthAscii(dataOffset, dataLength, appendable);
-
-        return dataLength;
-    }
 
 
     public String toString()
@@ -356,10 +285,8 @@ public class ListenDecoder
         builder.append("commandId=");
         builder.append(commandId());
         builder.append('|');
-        builder.append("delineation=");
-        builder.append('\'');
-        getDelineation(builder);
-        builder.append('\'');
+        builder.append("delineationKnownLength=");
+        builder.append(delineationKnownLength());
 
         limit(originalLimit);
 

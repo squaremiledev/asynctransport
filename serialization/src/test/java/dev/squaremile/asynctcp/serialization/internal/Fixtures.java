@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 
-import dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation;
+import dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
@@ -24,7 +24,7 @@ import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
 
-import static dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation.RAW_STREAMING;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.RAW_STREAMING;
 
 class Fixtures
 {

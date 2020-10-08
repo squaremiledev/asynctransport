@@ -1,17 +1,16 @@
 package dev.squaremile.asynctcp.serialization.internal.delineation;
 
-import dev.squaremile.asynctcp.serialization.api.delineation.FixedLengthDelineationType;
-import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 class DelineationHandlerFactory
 {
-    DelineationHandler create(final DelineationType delineation, final DelineationHandler delineatedDataHandler)
+    DelineationHandler create(final Delineation delineation, final DelineationHandler delineatedDataHandler)
     {
         if (!isSupported(delineation))
         {
             throw new IllegalArgumentException(delineation + " is not supported yet");
         }
-        switch (delineation.fixedLength())
+        switch (delineation.knownLength())
         {
             case 0:
                 return delineatedDataHandler;
@@ -22,13 +21,13 @@ class DelineationHandlerFactory
             case 8:
                 return new LongsDelineation(delineatedDataHandler);
             default:
-                return new FixedLengthDelineation(delineatedDataHandler, delineation.fixedLength());
+                return new FixedLengthDelineation(delineatedDataHandler, delineation.knownLength());
         }
 
     }
 
-    boolean isSupported(final DelineationType delineation)
+    boolean isSupported(final Delineation delineation)
     {
-        return delineation instanceof FixedLengthDelineationType && delineation.fixedLength() >= 0;
+        return delineation instanceof Delineation && delineation.knownLength() >= 0;
     }
 }

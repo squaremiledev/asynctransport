@@ -3,8 +3,6 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 import java.util.function.LongConsumer;
 
 
-import dev.squaremile.asynctcp.serialization.api.delineation.FixedLengthDelineationType;
-import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
@@ -13,6 +11,9 @@ import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
+
+import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXED_LENGTH;
 
 class LongPongAppFactory implements ApplicationFactory
 {
@@ -60,7 +61,7 @@ class LongPongAppFactory implements ApplicationFactory
 
             private void connect()
             {
-                transport.handle(transport.command(Connect.class).set("localhost", port, CONNECT_COMMAND_ID, 100, new FixedLengthDelineationType(8)));
+                transport.handle(transport.command(Connect.class).set("localhost", port, CONNECT_COMMAND_ID, 100, new Delineation(FIXED_LENGTH, 8)));
             }
         };
     }

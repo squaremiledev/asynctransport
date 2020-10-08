@@ -12,7 +12,6 @@ import dev.squaremile.asynctcp.sbe.SendDataDecoder;
 import dev.squaremile.asynctcp.sbe.SendMessageDecoder;
 import dev.squaremile.asynctcp.sbe.StopListeningDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
-import dev.squaremile.asynctcp.serialization.api.delineation.FixedLengthDelineationType;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
@@ -22,9 +21,9 @@ import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static java.lang.Integer.parseInt;
+import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXED_LENGTH;
 
 // TODO [perf]: avoid garbage
 public class TransportCommandDecoders
@@ -90,7 +89,7 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    DelineationType delineation = new FixedLengthDelineationType(parseInt(decoder.delineation()));
+                    Delineation delineation = new Delineation(FIXED_LENGTH, decoder.delineationKnownLength());
                     String remoteHost = decoder.remoteHost();
                     Connect result = new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), delineation);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
@@ -112,7 +111,7 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    Listen result = new Listen().set(decoder.commandId(), decoder.port(), new FixedLengthDelineationType(parseInt(decoder.delineation())));
+                    Listen result = new Listen().set(decoder.commandId(), decoder.port(), new Delineation(FIXED_LENGTH, decoder.delineationKnownLength()));
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }

@@ -5,7 +5,7 @@ import java.nio.channels.SocketChannel;
 
 
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 class ConnectedNotification
 {
@@ -17,7 +17,7 @@ class ConnectedNotification
     final SelectionKey selectionKey;
     final Connect command;
 
-    ConnectedNotification(final SocketChannel socketChannel, final Connect command, final long deadlineMs, final SelectionKey selectionKey, final DelineationType delineation)
+    ConnectedNotification(final SocketChannel socketChannel, final Connect command, final long deadlineMs, final SelectionKey selectionKey, final Delineation delineation)
     {
         this.command = new Connect().set(command.remoteHost(), command.remotePort(), command.commandId(), 1_000, delineation);
         this.socketChannel = socketChannel;

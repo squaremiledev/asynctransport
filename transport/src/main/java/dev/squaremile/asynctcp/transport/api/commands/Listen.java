@@ -2,16 +2,16 @@ package dev.squaremile.asynctcp.transport.api.commands;
 
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.values.CommandId;
-import dev.squaremile.asynctcp.transport.api.values.DelineationType;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.api.values.TransportId;
 
 public class Listen implements TransportUserCommand
 {
     private int port = TransportId.NO_PORT;
     private long commandId = CommandId.NO_COMMAND_ID;
-    private DelineationType delineation;
+    private Delineation delineation;
 
-    public Listen set(final long commandId, final int port, final DelineationType delineation)
+    public Listen set(final long commandId, final int port, final Delineation delineation)
     {
         this.port = port;
         this.commandId = commandId;
@@ -31,7 +31,7 @@ public class Listen implements TransportUserCommand
         return commandId;
     }
 
-    public DelineationType delineation()
+    public Delineation delineation()
     {
         return delineation;
     }

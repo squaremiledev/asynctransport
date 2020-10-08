@@ -13,7 +13,7 @@ import dev.squaremile.asynctcp.api.TransportFactory;
 import dev.squaremile.asynctcp.fixtures.SerializedMessagesSpy;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
-import dev.squaremile.asynctcp.serialization.api.delineation.PredefinedTransportDelineation;
+import dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
