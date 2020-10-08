@@ -84,6 +84,13 @@ public class SendMessage implements ConnectionUserCommand
         return length;
     }
 
+    public SendMessage commandId(long commandId)
+    {
+        this.commandId = commandId;
+        return this;
+    }
+
+
     @Override
     public String toString()
     {

@@ -5,10 +5,11 @@ import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
@@ -46,18 +47,16 @@ class LongPingAppFactory implements ApplicationFactory
             {
                 if (connectionId != null)
                 {
-                    if (numberCount >= messagesCap)
-                    {
-                        transport.handle(transport.command(connectionId, CloseConnection.class));
-                        return;
-                    }
                     for (int i = 0; i < 1000; i++)
                     {
-                        SendMessage sendMessage = transport.command(connectionId, SendMessage.class);
-                        sendMessage.prepare().putLong(sendMessage.offset(), numberCount);
-                        sendMessage.commit(8);
-                        transport.handle(sendMessage);
-                        numberCount++;
+                        if (numberCount < messagesCap)
+                        {
+                            SendMessage sendMessage = transport.command(connectionId, SendMessage.class).commandId(numberCount);
+                            sendMessage.prepare().putLong(sendMessage.offset(), numberCount);
+                            sendMessage.commit(8);
+                            transport.handle(sendMessage);
+                            numberCount++;
+                        }
                     }
                 }
                 transport.work();
@@ -70,6 +69,10 @@ class LongPingAppFactory implements ApplicationFactory
                 if (event instanceof ConnectionAccepted)
                 {
                     connectionId = new ConnectionIdValue((ConnectionAccepted)event);
+                }
+                else if (event instanceof ConnectionClosed || event instanceof ConnectionResetByPeer)
+                {
+                    connectionId = null;
                 }
             }
         };

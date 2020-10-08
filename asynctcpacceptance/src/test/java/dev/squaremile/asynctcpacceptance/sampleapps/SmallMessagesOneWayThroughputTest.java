@@ -43,7 +43,7 @@ class SmallMessagesOneWayThroughputTest
             pongApp.work();
         }
         long timeBeforeMs = System.currentTimeMillis();
-        while (!stateListener.hasClosedConnection())
+        while (numbersReceivedCount < MESSAGES_CAP)
         {
             pingApp.work();
             pongApp.work();

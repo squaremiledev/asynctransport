@@ -180,7 +180,11 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
     {
         Connection connection = connections.get(connectionId.connectionId());
-        return connection != null ? connection.command(commandType) : null;
+        if (connection == null)
+        {
+            throw new IllegalArgumentException("There is no connection " + connectionId);
+        }
+        return connection.command(commandType);
     }
 
     @Override
@@ -188,7 +192,6 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     {
         commandHandler.handle(command);
         tryHandle(command);
-        work();
     }
 
     private void tryHandle(final TransportCommand command)
