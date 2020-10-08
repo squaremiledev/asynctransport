@@ -23,8 +23,6 @@ import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXED_LENGTH;
-
 // TODO [perf]: avoid garbage
 public class TransportCommandDecoders
 {
@@ -89,7 +87,7 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    Delineation delineation = new Delineation(FIXED_LENGTH, decoder.delineationKnownLength());
+                    Delineation delineation = new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), decoder.delineationKnownLength(), decoder.delineationPattern());
                     String remoteHost = decoder.remoteHost();
                     Connect result = new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), delineation);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
@@ -111,7 +109,11 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    Listen result = new Listen().set(decoder.commandId(), decoder.port(), new Delineation(FIXED_LENGTH, decoder.delineationKnownLength()));
+                    Listen result = new Listen().set(
+                            decoder.commandId(),
+                            decoder.port(),
+                            new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), decoder.delineationKnownLength(), decoder.delineationPattern())
+                    );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }

@@ -40,13 +40,15 @@ class Fixtures
     static Stream<TransportEvent> oneToOneSerializableEvents()
     {
         return Stream.of(
-                new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000, PredefinedTransportDelineation.LONGS.type),
+                new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000, PredefinedTransportDelineation.FIX_MESSAGES.type),
+                new Connected(8882, 4, "remoteHost2", 8882, 4, 16000, 20000, PredefinedTransportDelineation.LONGS.type),
                 new ConnectionAccepted(9881, 4, "remote", 9882, 5, 46000, 30000),
                 new ConnectionClosed(7888, 1, 2),
                 new ConnectionCommandFailed(8884, 103, "some details", 6),
                 new ConnectionResetByPeer(5888, 4, 6),
                 new DataSent(5888, 4, 1, 9, 18, 104, 45_000),
-                new StartedListening(8888, 5, PredefinedTransportDelineation.INTEGERS.type),
+                new StartedListening(8888, 5, PredefinedTransportDelineation.FIX_MESSAGES.type),
+                new StartedListening(8881, 4, PredefinedTransportDelineation.LONGS.type),
                 new StoppedListening(8988, 6),
                 new TransportCommandFailed(8001, 101L, "some details", Listen.class)
 
@@ -58,7 +60,9 @@ class Fixtures
         return Stream.of(
                 transport -> transport.command(connectedEvent(), CloseConnection.class).set(201),
                 transport -> transport.command(Connect.class).set("remoteHost", 8899, (long)202, 10, PredefinedTransportDelineation.SINGLE_BYTE.type),
+                transport -> transport.command(Connect.class).set("remoteHost2", 8898, (long)203, 11, PredefinedTransportDelineation.FIX_MESSAGES.type),
                 transport -> transport.command(Listen.class).set((long)203, 6688, PredefinedTransportDelineation.LONGS.type),
+                transport -> transport.command(Listen.class).set((long)204, 6689, PredefinedTransportDelineation.FIX_MESSAGES.type),
                 transport -> transport.command(connectedEvent(), SendData.class).set(new byte[]{1, 2, 3, 4, 5, 6}, 205),
                 transport -> set(transport.command(connectedEvent(), SendMessage.class), 0, new byte[]{1, 2, 3, 4, 5, 6}, 2, 3),
                 transport -> transport.command(StopListening.class).set(204, 7788)

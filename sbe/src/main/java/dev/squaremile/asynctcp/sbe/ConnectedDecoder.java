@@ -7,7 +7,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public class ConnectedDecoder
 {
-    public static final int BLOCK_LENGTH = 36;
+    public static final int BLOCK_LENGTH = 37;
     public static final int TEMPLATE_ID = 3;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
@@ -412,9 +412,48 @@ public class ConnectedDecoder
     }
 
 
-    public static int delineationKnownLengthId()
+    public static int delineationTypeId()
     {
         return 7;
+    }
+
+    public static int delineationTypeSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int delineationTypeEncodingOffset()
+    {
+        return 32;
+    }
+
+    public static int delineationTypeEncodingLength()
+    {
+        return 1;
+    }
+
+    public static String delineationTypeMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public DelineationType delineationType()
+    {
+        return DelineationType.get(buffer.getByte(offset + 32));
+    }
+
+
+    public static int delineationKnownLengthId()
+    {
+        return 8;
     }
 
     public static int delineationKnownLengthSinceVersion()
@@ -424,7 +463,7 @@ public class ConnectedDecoder
 
     public static int delineationKnownLengthEncodingOffset()
     {
-        return 32;
+        return 33;
     }
 
     public static int delineationKnownLengthEncodingLength()
@@ -462,13 +501,125 @@ public class ConnectedDecoder
 
     public int delineationKnownLength()
     {
-        return buffer.getInt(offset + 32, java.nio.ByteOrder.LITTLE_ENDIAN);
+        return buffer.getInt(offset + 33, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
 
+    public static int delineationPatternId()
+    {
+        return 9;
+    }
+
+    public static int delineationPatternSinceVersion()
+    {
+        return 0;
+    }
+
+    public static String delineationPatternCharacterEncoding()
+    {
+        return "UTF-8";
+    }
+
+    public static String delineationPatternMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "unix";
+            case TIME_UNIT: return "nanosecond";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public static int delineationPatternHeaderLength()
+    {
+        return 4;
+    }
+
+    public int delineationPatternLength()
+    {
+        final int limit = parentMessage.limit();
+        return (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+    }
+
+    public int skipDelineationPattern()
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int dataOffset = limit + headerLength;
+
+        parentMessage.limit(dataOffset + dataLength);
+
+        return dataLength;
+    }
+
+    public int getDelineationPattern(final MutableDirectBuffer dst, final int dstOffset, final int length)
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int bytesCopied = Math.min(length, dataLength);
+        parentMessage.limit(limit + headerLength + dataLength);
+        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
+
+        return bytesCopied;
+    }
+
+    public int getDelineationPattern(final byte[] dst, final int dstOffset, final int length)
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        final int bytesCopied = Math.min(length, dataLength);
+        parentMessage.limit(limit + headerLength + dataLength);
+        buffer.getBytes(limit + headerLength, dst, dstOffset, bytesCopied);
+
+        return bytesCopied;
+    }
+
+    public void wrapDelineationPattern(final DirectBuffer wrapBuffer)
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        parentMessage.limit(limit + headerLength + dataLength);
+        wrapBuffer.wrap(buffer, limit + headerLength, dataLength);
+    }
+
+    public String delineationPattern()
+    {
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        final int dataLength = (int)(buffer.getInt(limit, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF_FFFFL);
+        parentMessage.limit(limit + headerLength + dataLength);
+
+        if (0 == dataLength)
+        {
+            return "";
+        }
+
+        final byte[] tmp = new byte[dataLength];
+        buffer.getBytes(limit + headerLength, tmp, 0, dataLength);
+
+        final String value;
+        try
+        {
+            value = new String(tmp, "UTF-8");
+        }
+        catch (final java.io.UnsupportedEncodingException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+
+        return value;
+    }
+
     public static int remoteHostId()
     {
-        return 8;
+        return 10;
     }
 
     public static int remoteHostSinceVersion()
@@ -625,8 +776,14 @@ public class ConnectedDecoder
         builder.append("outboundPduLimit=");
         builder.append(outboundPduLimit());
         builder.append('|');
+        builder.append("delineationType=");
+        builder.append(delineationType());
+        builder.append('|');
         builder.append("delineationKnownLength=");
         builder.append(delineationKnownLength());
+        builder.append('|');
+        builder.append("delineationPattern=");
+        builder.append('\'').append(delineationPattern()).append('\'');
         builder.append('|');
         builder.append("remoteHost=");
         builder.append('\'').append(remoteHost()).append('\'');

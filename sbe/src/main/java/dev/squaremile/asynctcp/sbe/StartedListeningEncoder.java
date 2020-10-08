@@ -7,7 +7,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public class StartedListeningEncoder
 {
-    public static final int BLOCK_LENGTH = 16;
+    public static final int BLOCK_LENGTH = 17;
     public static final int TEMPLATE_ID = 1;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
@@ -203,9 +203,48 @@ public class StartedListeningEncoder
     }
 
 
-    public static int delineationKnownLengthId()
+    public static int delineationTypeId()
     {
         return 3;
+    }
+
+    public static int delineationTypeSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int delineationTypeEncodingOffset()
+    {
+        return 12;
+    }
+
+    public static int delineationTypeEncodingLength()
+    {
+        return 1;
+    }
+
+    public static String delineationTypeMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public StartedListeningEncoder delineationType(final DelineationType value)
+    {
+        buffer.putByte(offset + 12, value.value());
+        return this;
+    }
+
+    public static int delineationKnownLengthId()
+    {
+        return 4;
     }
 
     public static int delineationKnownLengthSinceVersion()
@@ -215,7 +254,7 @@ public class StartedListeningEncoder
 
     public static int delineationKnownLengthEncodingOffset()
     {
-        return 12;
+        return 13;
     }
 
     public static int delineationKnownLengthEncodingLength()
@@ -253,10 +292,97 @@ public class StartedListeningEncoder
 
     public StartedListeningEncoder delineationKnownLength(final int value)
     {
-        buffer.putInt(offset + 12, value, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putInt(offset + 13, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
     }
 
+
+    public static int delineationPatternId()
+    {
+        return 5;
+    }
+
+    public static String delineationPatternCharacterEncoding()
+    {
+        return "UTF-8";
+    }
+
+    public static String delineationPatternMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "unix";
+            case TIME_UNIT: return "nanosecond";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public static int delineationPatternHeaderLength()
+    {
+        return 4;
+    }
+
+    public StartedListeningEncoder putDelineationPattern(final DirectBuffer src, final int srcOffset, final int length)
+    {
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+
+        return this;
+    }
+
+    public StartedListeningEncoder putDelineationPattern(final byte[] src, final int srcOffset, final int length)
+    {
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+
+        return this;
+    }
+
+    public StartedListeningEncoder delineationPattern(final String value)
+    {
+        final byte[] bytes;
+        try
+        {
+            bytes = null == value || value.isEmpty() ? org.agrona.collections.ArrayUtil.EMPTY_BYTE_ARRAY : value.getBytes("UTF-8");
+        }
+        catch (final java.io.UnsupportedEncodingException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+
+        final int length = bytes.length;
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, bytes, 0, length);
+
+        return this;
+    }
 
 
     public String toString()

@@ -42,7 +42,7 @@ class LongPingPongAppFactory implements ApplicationFactory
             @Override
             public void onStart()
             {
-                transport.handle(transport.command(Listen.class).set(1, port, new Delineation(FIXED_LENGTH, 8)));
+                transport.handle(transport.command(Listen.class).set(1, port, new Delineation(FIXED_LENGTH, 8, "")));
             }
 
             @Override

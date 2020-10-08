@@ -7,7 +7,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public class ConnectEncoder
 {
-    public static final int BLOCK_LENGTH = 20;
+    public static final int BLOCK_LENGTH = 21;
     public static final int TEMPLATE_ID = 102;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
@@ -258,9 +258,48 @@ public class ConnectEncoder
     }
 
 
-    public static int delineationKnownLengthId()
+    public static int delineationTypeId()
     {
         return 4;
+    }
+
+    public static int delineationTypeSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int delineationTypeEncodingOffset()
+    {
+        return 16;
+    }
+
+    public static int delineationTypeEncodingLength()
+    {
+        return 1;
+    }
+
+    public static String delineationTypeMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public ConnectEncoder delineationType(final DelineationType value)
+    {
+        buffer.putByte(offset + 16, value.value());
+        return this;
+    }
+
+    public static int delineationKnownLengthId()
+    {
+        return 5;
     }
 
     public static int delineationKnownLengthSinceVersion()
@@ -270,7 +309,7 @@ public class ConnectEncoder
 
     public static int delineationKnownLengthEncodingOffset()
     {
-        return 16;
+        return 17;
     }
 
     public static int delineationKnownLengthEncodingLength()
@@ -308,14 +347,101 @@ public class ConnectEncoder
 
     public ConnectEncoder delineationKnownLength(final int value)
     {
-        buffer.putInt(offset + 16, value, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putInt(offset + 17, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
     }
 
 
+    public static int delineationPatternId()
+    {
+        return 6;
+    }
+
+    public static String delineationPatternCharacterEncoding()
+    {
+        return "UTF-8";
+    }
+
+    public static String delineationPatternMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "unix";
+            case TIME_UNIT: return "nanosecond";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public static int delineationPatternHeaderLength()
+    {
+        return 4;
+    }
+
+    public ConnectEncoder putDelineationPattern(final DirectBuffer src, final int srcOffset, final int length)
+    {
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+
+        return this;
+    }
+
+    public ConnectEncoder putDelineationPattern(final byte[] src, final int srcOffset, final int length)
+    {
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, src, srcOffset, length);
+
+        return this;
+    }
+
+    public ConnectEncoder delineationPattern(final String value)
+    {
+        final byte[] bytes;
+        try
+        {
+            bytes = null == value || value.isEmpty() ? org.agrona.collections.ArrayUtil.EMPTY_BYTE_ARRAY : value.getBytes("UTF-8");
+        }
+        catch (final java.io.UnsupportedEncodingException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+
+        final int length = bytes.length;
+        if (length > 1073741824)
+        {
+            throw new IllegalStateException("length > maxValue for type: " + length);
+        }
+
+        final int headerLength = 4;
+        final int limit = parentMessage.limit();
+        parentMessage.limit(limit + headerLength + length);
+        buffer.putInt(limit, (int)length, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putBytes(limit + headerLength, bytes, 0, length);
+
+        return this;
+    }
+
     public static int remoteHostId()
     {
-        return 5;
+        return 7;
     }
 
     public static String remoteHostCharacterEncoding()

@@ -30,8 +30,6 @@ import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXED_LENGTH;
-
 // TODO [perf]: avoid garbage
 public class TransportEventDecoders
 {
@@ -108,7 +106,7 @@ public class TransportEventDecoders
                             decoder.connectionId(),
                             decoder.inboundPduLimit(),
                             decoder.outboundPduLimit(),
-                            new Delineation(FIXED_LENGTH, decoder.delineationKnownLength())
+                            new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), decoder.delineationKnownLength(), decoder.delineationPattern())
                     );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
@@ -246,7 +244,11 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    StartedListening result = new StartedListening(decoder.port(), decoder.commandId(), new Delineation(FIXED_LENGTH, decoder.delineationKnownLength()));
+                    StartedListening result = new StartedListening(
+                            decoder.port(),
+                            decoder.commandId(),
+                            new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), decoder.delineationKnownLength(), decoder.delineationPattern())
+                    );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
                 }

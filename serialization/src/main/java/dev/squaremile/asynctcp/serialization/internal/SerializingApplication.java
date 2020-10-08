@@ -81,7 +81,9 @@ public class SerializingApplication implements Application
                     .inboundPduLimit(event.inboundPduLimit())
                     .outboundPduLimit(event.outboundPduLimit())
                     .remoteHost(event.remoteHost())
-                    .delineationKnownLength(event.delineation().knownLength());
+                    .delineationType(DelineationTypeMapping.toWire(event.delineation().type()))
+                    .delineationKnownLength(event.delineation().knownLength())
+                    .delineationPattern(event.delineation().pattern());
             serializedEventListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + connectedEncoder.encodedLength());
         }
         else if (unknownEvent instanceof ConnectionAccepted)
@@ -144,7 +146,9 @@ public class SerializingApplication implements Application
             startedListeningEncoder.wrapAndApplyHeader(buffer, offset, headerEncoder)
                     .port(event.port())
                     .commandId(event.commandId())
-                    .delineationKnownLength(event.delineation().knownLength());
+                    .delineationType(DelineationTypeMapping.toWire(event.delineation().type()))
+                    .delineationKnownLength(event.delineation().knownLength())
+                    .delineationPattern(event.delineation().pattern());
             serializedEventListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + startedListeningEncoder.encodedLength());
         }
 

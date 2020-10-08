@@ -36,7 +36,7 @@ class EchoApplicationThroughputTest
     EchoApplicationThroughputTest()
     {
         port = freePort();
-        testDrivingApp = new ThroughputTestDrivingApp(port, new Delineation(FIXED_LENGTH, MESSAGE_SIZE_IN_BYTES));
+        testDrivingApp = new ThroughputTestDrivingApp(port, new Delineation(FIXED_LENGTH, MESSAGE_SIZE_IN_BYTES, ""));
         testDrivingTransportApplication = new NonProdGradeTransportAppFactory().create("testDrivingApp", testDrivingApp);
         testDrivingTransportApplication.onStart();
         appUnderTest = new NonProdGradeTransportAppFactory().create(
@@ -46,7 +46,7 @@ class EchoApplicationThroughputTest
                                 transport,
                                 port,
                                 IGNORE_EVENTS,
-                                new Delineation(FIXED_LENGTH, MESSAGE_SIZE_IN_BYTES), 101
+                                new Delineation(FIXED_LENGTH, MESSAGE_SIZE_IN_BYTES, ""), 101
                         )))
         );
         appUnderTest.onStart();

@@ -7,6 +7,10 @@
                    description="Example base schema which can be extended."
                    byteOrder="littleEndian">
     <types>
+        <enum name="DelineationType" encodingType="char">
+            <validValue name="FIXED_LENGTH">0</validValue>
+            <validValue name="ASCII_PATTERN">1</validValue>
+        </enum>
         <composite name="messageHeader" description="Message identifiers and length of message root.">
             <type name="blockLength" primitiveType="uint16"/>
             <type name="templateId" primitiveType="uint16"/>
@@ -41,7 +45,9 @@
     <sbe:message name="StartedListening" id="1">
         <field name="port" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
-        <field name="delineationKnownLength" id="3" type="int32"/>
+        <field name="delineationType" id="3" type="DelineationType"/>
+        <field name="delineationKnownLength" id="4" type="int32"/>
+        <data name="delineationPattern" id="5" type="varStringEncoding"/>
     </sbe:message>
     <sbe:message name="TransportCommandFailed" id="2">
         <field name="port" id="1" type="port"/>
@@ -56,8 +62,10 @@
         <field name="remotePort" id="4" type="port"/>
         <field name="inboundPduLimit" id="5" type="int32"/>
         <field name="outboundPduLimit" id="6" type="int32"/>
-        <field name="delineationKnownLength" id="7" type="int32"/>
-        <data name="remoteHost" id="8" type="varStringEncoding"/>
+        <field name="delineationType" id="7" type="DelineationType"/>
+        <field name="delineationKnownLength" id="8" type="int32"/>
+        <data name="delineationPattern" id="9" type="varStringEncoding"/>
+        <data name="remoteHost" id="10" type="varStringEncoding"/>
     </sbe:message>
     <sbe:message name="ConnectionAccepted" id="4">
         <field name="port" id="1" type="port"/>
@@ -113,13 +121,17 @@
         <field name="remotePort" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
         <field name="timeoutMs" id="3" type="int32"/>
-        <field name="delineationKnownLength" id="4" type="int32"/>
-        <data name="remoteHost" id="5" type="varStringEncoding"/>
+        <field name="delineationType" id="4" type="DelineationType"/>
+        <field name="delineationKnownLength" id="5" type="int32"/>
+        <data name="delineationPattern" id="6" type="varStringEncoding"/>
+        <data name="remoteHost" id="7" type="varStringEncoding"/>
     </sbe:message>
     <sbe:message name="Listen" id="103">
         <field name="port" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
+        <field name="delineationType" id="3" type="DelineationType"/>
         <field name="delineationKnownLength" id="4" type="int32"/>
+        <data name="delineationPattern" id="5" type="varStringEncoding"/>
     </sbe:message>
     <sbe:message name="SendData" id="104">
         <field name="port" id="1" type="port"/>
