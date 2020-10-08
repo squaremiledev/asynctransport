@@ -12,8 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
@@ -31,14 +31,14 @@ class SerializingTransportTest
     private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(1024));
     private final TransportCommandDecoders decoders = new TransportCommandDecoders(new CommandsProvidingTransport(CONNECTED_EVENT.outboundPduLimit()));
 
-    static Stream<Function<Transport, TransportUserCommand>> commands()
+    static Stream<Function<TransportOnDuty, TransportUserCommand>> commands()
     {
         return Fixtures.commands();
     }
 
     @ParameterizedTest
     @MethodSource("commands")
-    void shouldSerializeCommands(final Function<Transport, TransportCommand> commandProvider)
+    void shouldSerializeCommands(final Function<TransportOnDuty, TransportCommand> commandProvider)
     {
         // Given
         SerializingTransport transport = new SerializingTransport(

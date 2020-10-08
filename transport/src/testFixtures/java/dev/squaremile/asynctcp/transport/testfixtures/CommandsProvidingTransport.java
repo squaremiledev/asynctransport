@@ -1,8 +1,8 @@
 package dev.squaremile.asynctcp.transport.testfixtures;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
@@ -10,7 +10,7 @@ import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 
-public class CommandsProvidingTransport implements Transport
+public class CommandsProvidingTransport implements TransportOnDuty
 {
     private final CommandFactory commandFactory = new CommandFactory();
     private int capacity;

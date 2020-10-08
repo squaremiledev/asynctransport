@@ -5,8 +5,8 @@ import java.util.stream.Stream;
 
 
 import dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
@@ -55,7 +55,7 @@ class Fixtures
         );
     }
 
-    static Stream<Function<Transport, TransportUserCommand>> commands()
+    static Stream<Function<TransportOnDuty, TransportUserCommand>> commands()
     {
         return Stream.of(
                 transport -> transport.command(connectedEvent(), CloseConnection.class).set(201),

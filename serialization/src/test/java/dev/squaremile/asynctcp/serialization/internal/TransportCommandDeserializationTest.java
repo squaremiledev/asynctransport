@@ -8,8 +8,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.testfixtures.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.transport.testfixtures.TransportCommandSpy;
@@ -21,14 +21,14 @@ class TransportCommandDeserializationTest
     private static final int OFFSET = 6;
     private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(Fixtures.connectedEvent().outboundPduLimit()));
 
-    static Stream<Function<Transport, TransportUserCommand>> commands()
+    static Stream<Function<TransportOnDuty, TransportUserCommand>> commands()
     {
         return Fixtures.commands();
     }
 
     @ParameterizedTest
     @MethodSource("commands")
-    void shouldSerializeCommands(final Function<Transport, TransportCommand> commandProvider)
+    void shouldSerializeCommands(final Function<TransportOnDuty, TransportCommand> commandProvider)
     {
         // Given
         SerializingTransport transport = notifyingAboutSerializedCommand(new TransportCommandDeserialization(commandsSpy));

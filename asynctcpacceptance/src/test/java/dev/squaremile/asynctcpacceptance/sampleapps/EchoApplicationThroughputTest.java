@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.internal.NonProdGradeTransportAppFactory;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
 import dev.squaremile.asynctcp.transport.api.app.Application;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
@@ -56,7 +56,7 @@ class EchoApplicationThroughputTest
     @Test
     void shouldEchoBackTheStream()
     {
-        Transport drivingTransport = testDrivingApp.transport();
+        TransportOnDuty drivingTransport = testDrivingApp.transport();
         testDrivingApp.app().onStart();
         Worker.runUntil(() ->
                         {

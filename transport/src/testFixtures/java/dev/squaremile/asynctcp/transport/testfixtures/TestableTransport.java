@@ -5,9 +5,9 @@ import java.util.function.BooleanSupplier;
 
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportEventsListener;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.internal.domain.StatusEventListener;
@@ -16,9 +16,9 @@ import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTra
 import static dev.squaremile.asynctcp.transport.testfixtures.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
 import static java.util.concurrent.locks.LockSupport.parkNanos;
 
-public class TestableTransport<E extends TransportEventsListener> implements Transport
+public class TestableTransport<E extends TransportEventsListener> implements TransportOnDuty
 {
-    private final Transport delegate;
+    private final TransportOnDuty delegate;
     private final E events;
 
     TestableTransport(final E events, final StatusEventListener statusEventListener)

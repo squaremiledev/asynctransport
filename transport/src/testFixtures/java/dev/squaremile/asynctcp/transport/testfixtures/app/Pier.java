@@ -1,21 +1,21 @@
 package dev.squaremile.asynctcp.transport.testfixtures.app;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportCorrelatedEvent;
 import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.testfixtures.Spy;
 
-public class Pier implements Transport
+public class Pier implements TransportOnDuty
 {
 
-    private final Transport transport;
+    private final TransportOnDuty transport;
     private final Spy<TransportEvent> eventsSpy;
 
-    public Pier(final Transport transport, final Spy<TransportEvent> eventsSpy)
+    public Pier(final TransportOnDuty transport, final Spy<TransportEvent> eventsSpy)
     {
         this.transport = transport;
         this.eventsSpy = eventsSpy;

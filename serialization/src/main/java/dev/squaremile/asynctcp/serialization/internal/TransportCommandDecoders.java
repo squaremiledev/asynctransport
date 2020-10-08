@@ -12,8 +12,8 @@ import dev.squaremile.asynctcp.sbe.SendDataDecoder;
 import dev.squaremile.asynctcp.sbe.SendMessageDecoder;
 import dev.squaremile.asynctcp.sbe.StopListeningDecoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
@@ -28,10 +28,10 @@ public class TransportCommandDecoders
 {
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final Int2ObjectHashMap<TransportCommandDecoder> commandDecoders = new Int2ObjectHashMap<>();
-    private final Transport transport;
+    private final TransportOnDuty transport;
     private int decodedLength;
 
-    public TransportCommandDecoders(final Transport transport)
+    public TransportCommandDecoders(final TransportOnDuty transport)
     {
         this.transport = transport;
         registerCloseConnection(commandDecoders, headerDecoder);

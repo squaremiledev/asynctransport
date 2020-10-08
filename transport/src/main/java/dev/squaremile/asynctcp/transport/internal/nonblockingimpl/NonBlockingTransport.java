@@ -19,9 +19,9 @@ import org.agrona.concurrent.EpochClock;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
@@ -40,7 +40,7 @@ import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionCo
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionState;
 
 // TODO [perf]: make sure all commands and events can be used without generating garbage
-public class NonBlockingTransport implements AutoCloseable, Transport
+public class NonBlockingTransport implements AutoCloseable, TransportOnDuty
 {
     private final ConnectionIdSource connectionIdSource;
     private final Selector selector = Selector.open();

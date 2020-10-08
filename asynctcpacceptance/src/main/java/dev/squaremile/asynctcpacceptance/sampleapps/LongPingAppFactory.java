@@ -59,7 +59,6 @@ class LongPingAppFactory implements ApplicationFactory
                         }
                     }
                 }
-                transport.work();
             }
 
             @Override

@@ -18,6 +18,7 @@ import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
@@ -55,7 +56,7 @@ public class ValidationTest
         );
     }
 
-    static Stream<Function<Transport, TransportUserCommand>> commandsWithUnsupportedDelineation()
+    static Stream<Function<TransportOnDuty, TransportUserCommand>> commandsWithUnsupportedDelineation()
     {
         Delineation unsupportedDelineation = new Delineation(Delineation.Type.ASCII_PATTERN, 1, "invalidPattern");
         return Stream.of(

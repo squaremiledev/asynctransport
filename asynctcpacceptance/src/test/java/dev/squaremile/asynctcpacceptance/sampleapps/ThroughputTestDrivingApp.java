@@ -8,6 +8,7 @@ import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
@@ -38,9 +39,9 @@ class ThroughputTestDrivingApp implements ApplicationFactory
         return app;
     }
 
-    public Transport transport()
+    public TransportOnDuty transport()
     {
-        return transport;
+        return (TransportOnDuty)transport;
     }
 
     public App app()
