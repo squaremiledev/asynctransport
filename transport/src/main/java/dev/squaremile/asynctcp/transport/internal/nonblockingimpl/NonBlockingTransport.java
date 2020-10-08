@@ -186,15 +186,8 @@ public class NonBlockingTransport implements AutoCloseable, Transport
     @Override
     public void handle(final TransportCommand command)
     {
-        try
-        {
-            commandHandler.handle(command);
-            tryHandle(command);
-        }
-        catch (Exception e)
-        {
-            eventListener.onEvent(new TransportCommandFailed(command, e.getMessage() == null || e.getMessage().isEmpty() ? e.getClass().getSimpleName() : e.getMessage()));
-        }
+        commandHandler.handle(command);
+        tryHandle(command);
         work();
     }
 
