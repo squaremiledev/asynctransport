@@ -26,12 +26,14 @@ public class TransportPoweredApplication implements Application
     public void onStart()
     {
         app.onStart();
+        transport.work();
     }
 
     @Override
     public void onStop()
     {
         app.onStop();
+        transport.work();
     }
 
     @Override
