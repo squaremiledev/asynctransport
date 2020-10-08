@@ -4,6 +4,7 @@ import java.io.IOException;
 
 
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
+import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationValidatingTransport;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
@@ -22,7 +23,7 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
         try
         {
             ListeningApplication listeningApplication = new ListeningApplication();
-            Transport transport = new NonBlockingTransport(listeningApplication, NO_HANDLER, System::currentTimeMillis, role);
+            Transport transport = new DelineationValidatingTransport(listeningApplication, new NonBlockingTransport(listeningApplication, NO_HANDLER, System::currentTimeMillis, role));
             Application app = new DelineationApplication(applicationFactory.create(transport));
             listeningApplication.set(app);
             return new TransportPoweredApplication(transport, app);
