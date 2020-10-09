@@ -45,8 +45,14 @@ public class FixTransportApp implements Application
     @Override
     public void onStop()
     {
-//        System.out.println("Exchanged " + messagesExchanged + " messages");
         initiator.disconnect();
+    }
+
+    @Override
+    public void work()
+    {
+        acceptor.work();
+        initiator.work();
     }
 
     @Override

@@ -7,6 +7,7 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionEventsListener;
 
@@ -16,6 +17,8 @@ public class Acceptor implements ConnectionEventsListener
     private final byte[] logoutMessage = asciiFix("8=FIX.4.2^9=84^35=5^49=SellSide^" +
                                                   "56=BuySide^34=3^52=20190606-09:25:34.329^" +
                                                   "58=Logout acknowledgement^10=049^");
+
+    private long lastSeenWindowSizeInBytes = -1;
 
     public Acceptor(final Transport transport)
     {
@@ -30,6 +33,15 @@ public class Acceptor implements ConnectionEventsListener
     @Override
     public void onEvent(final ConnectionEvent event)
     {
+        if (event instanceof DataSent)
+        {
+            DataSent dataSent = (DataSent)event;
+            if (lastSeenWindowSizeInBytes != dataSent.windowSizeInBytes())
+            {
+                System.out.println("Acceptor's updated outbound window size: " + dataSent.windowSizeInBytes());
+                lastSeenWindowSizeInBytes = dataSent.windowSizeInBytes();
+            }
+        }
 //        System.out.println("SERVER: " + event);
         if (event instanceof MessageReceived)
         {
@@ -42,5 +54,10 @@ public class Acceptor implements ConnectionEventsListener
 
     public void onConnectionAccepted(final ConnectionAccepted connectionAccepted)
     {
+    }
+
+    public void work()
+    {
+
     }
 }

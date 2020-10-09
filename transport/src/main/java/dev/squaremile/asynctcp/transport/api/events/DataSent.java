@@ -93,6 +93,11 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
         return totalBytesBuffered;
     }
 
+    public long windowSizeInBytes()
+    {
+        return windowSizeInBytes;
+    }
+
     public int bytesSent()
     {
         return bytesSent;

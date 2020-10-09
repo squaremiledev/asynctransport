@@ -1,6 +1,6 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
-import org.agrona.collections.MutableInteger;
+import org.agrona.collections.MutableLong;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +17,7 @@ import static java.util.concurrent.locks.LockSupport.parkNanos;
 public class FixTransportAppTest
 {
     private static final int NUMBER_OF_CYCLES = 100_000;
-    private final MutableInteger messageCount = new MutableInteger();
+    private final MutableLong messageCount = new MutableLong();
 
     @Test
     void shouldExchangeMessages()
