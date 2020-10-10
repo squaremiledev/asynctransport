@@ -28,6 +28,7 @@ import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
+import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static java.util.Arrays.stream;
@@ -51,7 +52,7 @@ public class ValidationTest
     static Stream<Delineation> supportedDelineation()
     {
         return concat(
-                Stream.of(new Delineation(Delineation.Type.FIXED_LENGTH, 8, "")),
+                Stream.of(fixedLengthDelineation(8)),
                 stream(PredefinedTransportDelineation.values()).map(predefined -> predefined.type)
         );
     }

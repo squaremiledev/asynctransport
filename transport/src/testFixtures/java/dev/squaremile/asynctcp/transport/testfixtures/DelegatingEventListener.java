@@ -1,11 +1,11 @@
 package dev.squaremile.asynctcp.transport.testfixtures;
 
-import dev.squaremile.asynctcp.transport.api.app.EventListener;
-import dev.squaremile.asynctcp.transport.api.app.TransportEventsListener;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventListener;
+import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
+import dev.squaremile.asynctcp.transport.api.app.TransportEventsListener;
 import dev.squaremile.asynctcp.transport.internal.domain.StatusEvent;
 import dev.squaremile.asynctcp.transport.internal.domain.StatusEventListener;
-import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
 
 public class DelegatingEventListener implements EventListener
 {

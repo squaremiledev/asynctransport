@@ -13,8 +13,6 @@ import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXED_LENGTH;
-
 class LongPingAppFactory implements ApplicationFactory
 {
     private final int port;
@@ -39,7 +37,7 @@ class LongPingAppFactory implements ApplicationFactory
             @Override
             public void onStart()
             {
-                transport.handle(transport.command(Listen.class).set(1, port, new Delineation(FIXED_LENGTH, 8, "")));
+                transport.handle(transport.command(Listen.class).set(1, port, Delineation.fixedLengthDelineation(8)));
             }
 
             @Override

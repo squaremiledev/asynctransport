@@ -13,9 +13,8 @@ import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXED_LENGTH;
+import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
 
 class LongPingPongAppFactory implements ApplicationFactory
 {
@@ -42,7 +41,7 @@ class LongPingPongAppFactory implements ApplicationFactory
             @Override
             public void onStart()
             {
-                transport.handle(transport.command(Listen.class).set(1, port, new Delineation(FIXED_LENGTH, 8, "")));
+                transport.handle(transport.command(Listen.class).set(1, port, fixedLengthDelineation(8)));
             }
 
             @Override

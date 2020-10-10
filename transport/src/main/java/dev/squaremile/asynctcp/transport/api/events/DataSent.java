@@ -10,11 +10,11 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
 {
     private final int port;
     private final long connectionId;
+    private final int sendBufferSize;
     private int bytesSent;
     private long totalBytesSent;
     private long totalBytesBuffered;
     private long commandId;
-    private int sendBufferSize;
     private long windowSizeInBytes;
 
     public DataSent(final ConnectionId connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final int sendBufferSize)

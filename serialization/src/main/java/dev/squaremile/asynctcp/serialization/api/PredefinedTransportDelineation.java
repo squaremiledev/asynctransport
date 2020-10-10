@@ -2,17 +2,17 @@ package dev.squaremile.asynctcp.serialization.api;
 
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.ASCII_PATTERN;
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXED_LENGTH;
+import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
+import static dev.squaremile.asynctcp.transport.api.values.Delineation.patternBasedLengthDelineation;
 
 public enum PredefinedTransportDelineation
 {
-    RAW_STREAMING(new Delineation(FIXED_LENGTH, 0, "")),
-    SINGLE_BYTE(new Delineation(FIXED_LENGTH, 1, "")),
-    INTEGERS(new Delineation(FIXED_LENGTH, 4, "")),
-    LONGS(new Delineation(FIXED_LENGTH, 8, "")),
-    FOUR_KB(new Delineation(FIXED_LENGTH, 4 * 1024, "")),
-    FIX_MESSAGES(new Delineation(ASCII_PATTERN, 7 /*additional checksum size*/, "8=[^\\u0001]+\\u00019=([0-9]+)\\u0001"));
+    RAW_STREAMING(fixedLengthDelineation(0)),
+    SINGLE_BYTE(fixedLengthDelineation(1)),
+    INTEGERS(fixedLengthDelineation(4)),
+    LONGS(fixedLengthDelineation(8)),
+    FOUR_KB(fixedLengthDelineation(4 * 1024)),
+    FIX_MESSAGES(patternBasedLengthDelineation("8=[^\\u0001]+\\u00019=([0-9]+)\\u0001", 7 /*additional checksum size*/));
 
     public final Delineation type;
 

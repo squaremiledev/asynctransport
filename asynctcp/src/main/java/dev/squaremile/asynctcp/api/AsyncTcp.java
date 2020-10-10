@@ -1,7 +1,7 @@
 package dev.squaremile.asynctcp.api;
 
-import dev.squaremile.asynctcp.internal.NonProdGradeTransportFactory;
 import dev.squaremile.asynctcp.internal.NonProdGradeTransportAppFactory;
+import dev.squaremile.asynctcp.internal.NonProdGradeTransportFactory;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 

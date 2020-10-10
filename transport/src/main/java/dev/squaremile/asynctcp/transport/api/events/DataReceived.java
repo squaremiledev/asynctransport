@@ -17,9 +17,9 @@ public class DataReceived implements ConnectionEvent
     private final long connectionId;
     private final ByteBuffer data;
     private final MutableDirectBuffer directBuffer;
+    private final int inboundPduLimit;
     private long totalBytesReceived;
     private int length;
-    private int inboundPduLimit;
 
     public DataReceived(final ConnectionId connectionId, final long totalBytesReceived, final int length, final int inboundPduLimit, final ByteBuffer data)
     {

@@ -8,6 +8,16 @@ public class Delineation
     private final int knownLength;
     private final String pattern;
 
+    public static Delineation fixedLengthDelineation(final int length)
+    {
+        return new Delineation(Type.FIXED_LENGTH, length, "");
+    }
+
+    public static Delineation patternBasedLengthDelineation(final String lengthValuePattern, final int additionalLength)
+    {
+        return new Delineation(Type.ASCII_PATTERN, additionalLength, lengthValuePattern);
+    }
+
     /**
      * Prescribes a delineation of data (how to turn stream into messages).
      *

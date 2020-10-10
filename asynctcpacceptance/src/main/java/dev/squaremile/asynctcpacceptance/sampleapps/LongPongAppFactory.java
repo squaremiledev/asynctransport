@@ -11,9 +11,8 @@ import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXED_LENGTH;
+import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
 
 class LongPongAppFactory implements ApplicationFactory
 {
@@ -61,7 +60,7 @@ class LongPongAppFactory implements ApplicationFactory
 
             private void connect()
             {
-                transport.handle(transport.command(Connect.class).set("localhost", port, CONNECT_COMMAND_ID, 100, new Delineation(FIXED_LENGTH, 8, "")));
+                transport.handle(transport.command(Connect.class).set("localhost", port, CONNECT_COMMAND_ID, 100, fixedLengthDelineation(8)));
             }
         };
     }
