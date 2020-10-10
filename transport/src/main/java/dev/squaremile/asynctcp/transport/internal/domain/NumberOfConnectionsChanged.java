@@ -15,6 +15,12 @@ public class NumberOfConnectionsChanged implements StatusEvent
     }
 
     @Override
+    public boolean occursInSteadyState()
+    {
+        return false;
+    }
+
+    @Override
     public String toString()
     {
         return "NumberOfConnectionsChanged{" +

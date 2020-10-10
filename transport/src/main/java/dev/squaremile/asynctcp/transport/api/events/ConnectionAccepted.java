@@ -85,6 +85,12 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     }
 
     @Override
+    public boolean occursInSteadyState()
+    {
+        return false;
+    }
+
+    @Override
     public String toString()
     {
         return "ConnectionAccepted{" +

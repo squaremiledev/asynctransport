@@ -35,6 +35,12 @@ public class StartedListening implements TransportCorrelatedEvent
     }
 
     @Override
+    public boolean occursInSteadyState()
+    {
+        return false;
+    }
+
+    @Override
     public String toString()
     {
         return "StartedListening{" +

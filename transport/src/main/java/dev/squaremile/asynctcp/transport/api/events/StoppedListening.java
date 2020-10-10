@@ -27,6 +27,12 @@ public class StoppedListening implements TransportCorrelatedEvent
     }
 
     @Override
+    public boolean occursInSteadyState()
+    {
+        return false;
+    }
+
+    @Override
     public String toString()
     {
         return "StoppedListening{" +

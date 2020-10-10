@@ -17,7 +17,7 @@ class SingleLocalConnectionApplicationTest
     void measureRoundTripTime()
     {
         Application app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
-                "roundTripTime", transport -> new SingleLocalConnectionApplication(transport, fixedLengthDelineation(16), lifecycleListener));
+                "roundTripTime", transport -> new SingleLocalConnectionApplication(transport, fixedLengthDelineation(16), lifecycleListener, System.out::println));
         app.onStart();
 
         while (!lifecycleListener.isUp())

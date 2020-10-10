@@ -36,6 +36,11 @@ public class ConnectionClosed implements ConnectionEvent, TransportCorrelatedEve
         return connectionId;
     }
 
+    @Override
+    public boolean occursInSteadyState()
+    {
+        return false;
+    }
 
     @Override
     public String toString()

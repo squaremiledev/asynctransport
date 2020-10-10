@@ -1,6 +1,9 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
 
+import java.util.function.Consumer;
+
+
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.Event;
@@ -29,27 +32,29 @@ public class SingleLocalConnectionApplication implements Application
     private int listeningPort;
     private ConnectionIdValue acceptorConnectionId;
     private ConnectionIdValue initiatorConnectionId;
+    private final Consumer<String> log;
 
-    public SingleLocalConnectionApplication(final Transport transport, final Delineation delineation, final LifecycleListener lifecycleListener)
+    public SingleLocalConnectionApplication(final Transport transport, final Delineation delineation, final LifecycleListener lifecycleListener, final Consumer<String> log)
     {
         this.t = transport;
         this.lifecycleListener = lifecycleListener;
         this.delineation = delineation;
+        this.log = log;
     }
 
     @Override
     public void onStart()
     {
-        System.out.println("enter onStart() " + state);
+        log.accept("enter onStart() " + state);
         state(State.STARTING_UP);
         t.handle(t.command(Listen.class).set(1, freePort(), delineation));
-        System.out.println("exit  onStart() " + state);
+        log.accept("exit  onStart() " + state);
     }
 
     @Override
     public void onStop()
     {
-        System.out.println("enter onStop() " + state);
+        log.accept("enter onStop() " + state);
         state(State.TEARING_DOWN);
 
         if (initiatorConnectionId != null)
@@ -60,7 +65,7 @@ public class SingleLocalConnectionApplication implements Application
         {
             t.handle(t.command(acceptorConnectionId, CloseConnection.class).set(5));
         }
-        System.out.println("exit  onStop() " + state);
+        log.accept("exit  onStop() " + state);
     }
 
     @Override
@@ -75,7 +80,7 @@ public class SingleLocalConnectionApplication implements Application
         this.state = newState;
         if (state != previousState)
         {
-            System.out.println("transition " + previousState + " -> " + newState);
+            log.accept("transition " + previousState + " -> " + newState);
             if (state == State.UP)
             {
                 lifecycleListener.onUp();
@@ -90,7 +95,10 @@ public class SingleLocalConnectionApplication implements Application
     @Override
     public void onEvent(final Event event)
     {
-        System.out.println("enter onEvent() " + state + " " + event);
+        if (!event.occursInSteadyState())
+        {
+            log.accept("enter onEvent() " + state + " " + event);
+        }
         if (event instanceof StartedListening)
         {
             StartedListening startedListening = (StartedListening)event;
@@ -142,7 +150,10 @@ public class SingleLocalConnectionApplication implements Application
                 listeningPort = 0;
             }
         }
-        System.out.println("exit  onEvent() " + state);
+        if (!event.occursInSteadyState())
+        {
+            log.accept("exit  onEvent() " + state);
+        }
     }
 
     enum State

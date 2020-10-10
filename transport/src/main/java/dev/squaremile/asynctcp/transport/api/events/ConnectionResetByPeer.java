@@ -36,6 +36,11 @@ public class ConnectionResetByPeer implements ConnectionEvent, TransportCorrelat
         return connectionId;
     }
 
+    @Override
+    public boolean occursInSteadyState()
+    {
+        return false;
+    }
 
     @Override
     public String toString()
