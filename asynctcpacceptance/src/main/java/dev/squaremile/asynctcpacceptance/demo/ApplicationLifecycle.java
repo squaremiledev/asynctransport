@@ -1,6 +1,6 @@
-package dev.squaremile.asynctcpacceptance.sampleapps;
+package dev.squaremile.asynctcpacceptance.demo;
 
-class ApplicationLifecycle implements SingleLocalConnectionApplication.LifecycleListener
+public class ApplicationLifecycle implements SingleLocalConnectionDemoApplication.LifecycleListener
 {
     private boolean isUp = false;
 

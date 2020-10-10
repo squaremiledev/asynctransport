@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance.sampleapps;
+package dev.squaremile.asynctcpacceptance.demo;
 
 
 import java.util.function.Consumer;
@@ -26,7 +26,7 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-public class SingleLocalConnectionApplication implements Application
+public class SingleLocalConnectionDemoApplication implements Application
 {
     final LifecycleListener lifecycleListener;
     private final Transport t;
@@ -42,7 +42,7 @@ public class SingleLocalConnectionApplication implements Application
     private ConnectionApplication acceptor;
     private ConnectionApplication initiator;
 
-    public SingleLocalConnectionApplication(
+    public SingleLocalConnectionDemoApplication(
             final Transport transport,
             final Delineation delineation,
             final LifecycleListener lifecycleListener,
@@ -263,4 +263,5 @@ public class SingleLocalConnectionApplication implements Application
             transport.handle(command);
         }
     }
+
 }

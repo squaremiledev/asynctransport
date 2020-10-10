@@ -8,6 +8,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcpacceptance.demo.ApplicationLifecycle;
+import dev.squaremile.asynctcpacceptance.demo.SingleLocalConnectionDemoApplication;
 import dev.squaremile.asynctcpacceptance.sampleapps.fix.RejectLogOn;
 import dev.squaremile.asynctcpacceptance.sampleapps.fix.SendLogOn;
 
@@ -25,7 +27,7 @@ public class FixTransportAppTest
     void shouldExchangeMessages()
     {
         Application application = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create("heartBeating", transport ->
-                new SingleLocalConnectionApplication(
+                new SingleLocalConnectionDemoApplication(
                         transport,
                         FIX_MESSAGES.type,
                         lifecycleListener,
