@@ -33,8 +33,8 @@ public class FixTransportAppTest
                         {
                         },
                         freePort(),
-                        (transport1, connectionId) -> new RejectLogOn(transport, messageCount::increment),
-                        (transport1, connectionId) -> new SendLogOn(transport, messageCount::increment, connectionId, TOTAL_MESSAGES_TO_RECEIVE / 2)
+                        (connectionTransport, connectionId) -> new RejectLogOn(connectionTransport, messageCount::increment),
+                        (connectionTransport, connectionId) -> new SendLogOn(connectionTransport, messageCount::increment, connectionId, TOTAL_MESSAGES_TO_RECEIVE / 2)
                 ));
         application.onStart();
         while (!lifecycleListener.isUp())

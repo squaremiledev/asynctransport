@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
@@ -14,18 +14,18 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 public class SendLogOn implements ConnectionApplication
 {
-    private final Transport transport;
     private final Runnable onMessage;
     private final byte[] logonMessage = asciiFix("8=FIXT.1.1^9=116^35=A^49=BuySide^56=SellSide^34=1^" +
                                                  "52=20190605-11:51:27.848^1128=9^98=0^108=30^141=Y^" +
                                                  "553=Username^554=Password^1137=9^10=079^");
     private final int messageCap;
+    private final ConnectionTransport transport;
     private ConnectionId connectionId;
     private long lastSeenWindowSizeInBytes = -1;
     private long messagesSent = 0;
 
 
-    public SendLogOn(final Transport transport, final Runnable onMessage, final ConnectionId connectionId, final int messageCap)
+    public SendLogOn(final ConnectionTransport transport, final Runnable onMessage, final ConnectionId connectionId, final int messageCap)
     {
         this.transport = transport;
         this.onMessage = onMessage;
@@ -62,9 +62,8 @@ public class SendLogOn implements ConnectionApplication
     {
         if (connectionId != null)
         {
-            ConnectionId connectionToClose = this.connectionId;
+            transport.handle(transport.command(CloseConnection.class));
             connectionId = null;
-            transport.handle(transport.command(connectionToClose, CloseConnection.class));
         }
     }
 
@@ -74,7 +73,7 @@ public class SendLogOn implements ConnectionApplication
         {
             return;
         }
-        SendMessage sendMessage = transport.command(connectionId, SendMessage.class);
+        SendMessage sendMessage = transport.command(SendMessage.class);
         sendMessage.prepare().putBytes(sendMessage.offset(), logonMessage);
         sendMessage.commit(logonMessage.length);
         transport.handle(sendMessage);

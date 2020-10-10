@@ -6,7 +6,10 @@ import java.util.function.Consumer;
 
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
@@ -202,12 +205,12 @@ public class SingleLocalConnectionApplication implements Application
         {
             if (initiator == null)
             {
-                initiator = initiatingConnectionApplicationFactory.create(t, initiatorConnectionId);
+                initiator = initiatingConnectionApplicationFactory.create(new SingleConnectionTransport(t, initiatorConnectionId), initiatorConnectionId);
                 initiator.onStart();
             }
             if (acceptor == null)
             {
-                acceptor = acceptingConnectionApplicationFactory.create(t, acceptorConnectionId);
+                acceptor = acceptingConnectionApplicationFactory.create(new SingleConnectionTransport(t, acceptorConnectionId), acceptorConnectionId);
                 acceptor.onStart();
             }
         }
@@ -223,7 +226,7 @@ public class SingleLocalConnectionApplication implements Application
 
     public interface ConnectionApplicationFactory
     {
-        ConnectionApplication create(Transport transport, ConnectionId connectionId);
+        ConnectionApplication create(ConnectionTransport transport, ConnectionId connectionId);
     }
 
     public interface LifecycleListener
@@ -233,5 +236,31 @@ public class SingleLocalConnectionApplication implements Application
         void onDown();
     }
 
+    public static class SingleConnectionTransport implements ConnectionTransport
+    {
+        private final Transport transport;
+        private final ConnectionId connectionId;
 
+        public SingleConnectionTransport(final Transport transport, final ConnectionId connectionId)
+        {
+            this.transport = transport;
+            this.connectionId = new ConnectionIdValue(connectionId);
+        }
+
+        @Override
+        public <C extends ConnectionUserCommand> C command(final Class<C> commandType)
+        {
+            return transport.command(connectionId, commandType);
+        }
+
+        @Override
+        public void handle(final ConnectionCommand command)
+        {
+            if (command.connectionId() != connectionId.connectionId())
+            {
+                throw new IllegalArgumentException("Connection id mismatch " + command.connectionId() + " vs " + connectionId.connectionId());
+            }
+            transport.handle(command);
+        }
+    }
 }
