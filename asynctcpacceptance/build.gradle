@@ -21,6 +21,7 @@ dependencies {
     implementation project(':serialization')
     implementation testFixtures(project(':asynctcp'))
     implementation 'org.agrona:agrona:1.6.0'
+    implementation "org.hdrhistogram:HdrHistogram:2.1.12"
 
     testImplementation testFixtures(project(':transport'))
     testImplementation testFixtures(project(':asynctcp'))

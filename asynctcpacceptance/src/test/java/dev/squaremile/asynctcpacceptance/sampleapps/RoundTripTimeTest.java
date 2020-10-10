@@ -1,7 +1,9 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import org.HdrHistogram.Histogram;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.MutableBoolean;
 import org.junit.jupiter.api.Test;
@@ -24,12 +26,12 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class RoundTripTimeTest
 {
+    private static final Histogram HISTOGRAM = new Histogram(TimeUnit.SECONDS.toNanos(10), 3);
     private final ApplicationLifecycle applicationLifecycle = new ApplicationLifecycle();
     private final MutableBoolean isDone = new MutableBoolean(false);
     private final Consumer<String> log = s ->
     {
     };
-//    private final Consumer<String> log = System.out::println;
 
     @Test
     void measureRoundTripTime()
@@ -44,7 +46,9 @@ public class RoundTripTimeTest
                         freePort(),
                         (connectionTransport, connectionId) -> new ConnectionApplication()
                         {
-                            final static int WARM_UP = 1000;
+                            final static int WARM_UP = 1_000_000;
+                            final static int TIMES_MEASURED = 10_000_000;
+                            final static int TOTAL = WARM_UP + TIMES_MEASURED;
                             int timesSent = 0;
 
                             @Override
@@ -62,24 +66,26 @@ public class RoundTripTimeTest
                                     long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset());
                                     long responseTimeNs = messageReceived.buffer().getLong(messageReceived.offset() + 8);
                                     long now = nanoTime();
-                                    if (timesSent == WARM_UP)
+                                    if (timesSent > WARM_UP)
                                     {
                                         onResults(timesSent, NANOSECONDS.toMicros(sendTimeNs), NANOSECONDS.toMicros(responseTimeNs), NANOSECONDS.toMicros(now));
-                                        isDone.set(true);
+                                    }
+
+                                    if (timesSent < TOTAL)
+                                    {
+                                        send();
                                     }
                                     else
                                     {
-                                        send();
+                                        isDone.set(true);
                                     }
                                 }
                             }
 
                             private void onResults(final int timesSent, final long sendTimeUs, final long responseTimeUs, final long nowUs)
                             {
-                                System.out.println("Latency of the full TCP round trip of the " + timesSent + "th message:");
-                                System.out.println("time there (micros): " + (responseTimeUs - sendTimeUs));
-                                System.out.println("time back (micros): " + (nowUs - responseTimeUs));
-                                System.out.println("round time (micros): " + (nowUs - sendTimeUs));
+                                long roundTripTimeUs = nowUs - sendTimeUs;
+                                HISTOGRAM.recordValue(roundTripTimeUs);
                             }
 
                             private void send()
@@ -123,5 +129,7 @@ public class RoundTripTimeTest
         {
             app.work();
         }
+
+        HISTOGRAM.outputPercentileDistribution(System.out, 1.0);
     }
 }
