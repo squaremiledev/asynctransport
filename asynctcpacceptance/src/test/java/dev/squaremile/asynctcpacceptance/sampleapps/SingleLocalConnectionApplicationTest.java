@@ -24,7 +24,13 @@ class SingleLocalConnectionApplicationTest
                         fixedLengthDelineation(16),
                         lifecycleListener,
                         System.out::println,
-                        freePort()
+                        freePort(),
+                        (tr, connectionId) -> event ->
+                        {
+                        },
+                        (tr, connectionId) -> event ->
+                        {
+                        }
                 )
         );
 
@@ -42,25 +48,4 @@ class SingleLocalConnectionApplicationTest
         }
     }
 
-    private static class ApplicationLifecycle implements SingleLocalConnectionApplication.LifecycleListener
-    {
-        private boolean isUp = false;
-
-        @Override
-        public void onUp()
-        {
-            isUp = true;
-        }
-
-        @Override
-        public void onDown()
-        {
-            isUp = false;
-        }
-
-        public boolean isUp()
-        {
-            return isUp;
-        }
-    }
 }
