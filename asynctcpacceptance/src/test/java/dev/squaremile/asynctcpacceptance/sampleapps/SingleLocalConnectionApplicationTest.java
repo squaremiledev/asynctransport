@@ -8,6 +8,7 @@ import dev.squaremile.asynctcp.transport.api.app.Application;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
+import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
 class SingleLocalConnectionApplicationTest
 {
@@ -17,9 +18,17 @@ class SingleLocalConnectionApplicationTest
     void measureRoundTripTime()
     {
         Application app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
-                "roundTripTime", transport -> new SingleLocalConnectionApplication(transport, fixedLengthDelineation(16), lifecycleListener, System.out::println));
-        app.onStart();
+                "singleLocalConnectionApplication",
+                transport -> new SingleLocalConnectionApplication(
+                        transport,
+                        fixedLengthDelineation(16),
+                        lifecycleListener,
+                        System.out::println,
+                        freePort()
+                )
+        );
 
+        app.onStart();
         while (!lifecycleListener.isUp())
         {
             app.work();

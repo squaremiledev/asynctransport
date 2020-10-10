@@ -21,25 +21,25 @@ import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
-
 public class SingleLocalConnectionApplication implements Application
 {
     final LifecycleListener lifecycleListener;
     private final Transport t;
     private final Delineation delineation;
+    private final Consumer<String> log;
+    private final int port;
     private State state = State.DOWN;
     private int listeningPort;
     private ConnectionIdValue acceptorConnectionId;
     private ConnectionIdValue initiatorConnectionId;
-    private final Consumer<String> log;
 
-    public SingleLocalConnectionApplication(final Transport transport, final Delineation delineation, final LifecycleListener lifecycleListener, final Consumer<String> log)
+    public SingleLocalConnectionApplication(final Transport transport, final Delineation delineation, final LifecycleListener lifecycleListener, final Consumer<String> log, final int port)
     {
         this.t = transport;
         this.lifecycleListener = lifecycleListener;
         this.delineation = delineation;
         this.log = log;
+        this.port = port;
     }
 
     @Override
@@ -47,7 +47,7 @@ public class SingleLocalConnectionApplication implements Application
     {
         log.accept("enter onStart() " + state);
         state(State.STARTING_UP);
-        t.handle(t.command(Listen.class).set(1, freePort(), delineation));
+        t.handle(t.command(Listen.class).set(1, port, delineation));
         log.accept("exit  onStart() " + state);
     }
 
