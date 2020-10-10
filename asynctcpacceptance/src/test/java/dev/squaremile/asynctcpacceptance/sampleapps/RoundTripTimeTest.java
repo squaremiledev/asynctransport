@@ -46,8 +46,8 @@ public class RoundTripTimeTest
                         freePort(),
                         (connectionTransport, connectionId) -> new ConnectionApplication()
                         {
-                            final static int WARM_UP = 1_000_000;
-                            final static int TIMES_MEASURED = 10_000_000;
+                            final static int WARM_UP = 10_000;
+                            final static int TIMES_MEASURED = 100_000;
                             final static int TOTAL = WARM_UP + TIMES_MEASURED;
                             int timesSent = 0;
 
