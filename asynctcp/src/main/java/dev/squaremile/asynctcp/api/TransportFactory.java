@@ -2,16 +2,23 @@ package dev.squaremile.asynctcp.api;
 
 import java.io.IOException;
 
+import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
+
 
 import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
 import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
-import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 public interface TransportFactory
 {
     MessageDrivenTransport createMessageDrivenTransport(
             final String role,
-            final Delineation predefinedTransportDelineation,
             final SerializedEventListener serializedEventListener
+    ) throws IOException;
+
+    MessageDrivenTransport createRingBufferDrivenTransport(
+            final String role,
+            final OneToOneRingBuffer networkToUserRingBuffer,
+            final OneToOneRingBuffer userToNetworkRingBuffer
+
     ) throws IOException;
 }

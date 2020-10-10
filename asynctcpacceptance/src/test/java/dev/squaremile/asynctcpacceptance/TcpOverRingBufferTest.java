@@ -15,9 +15,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportFactory;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
+import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
 import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
 import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferApplication;
-import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferBackedTransport;
 import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferWriter;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
@@ -62,11 +62,7 @@ class TcpOverRingBufferTest
                 ),
                 networkToUserRingBuffer
         );
-        final RingBufferBackedTransport networkFacingTransport = new RingBufferBackedTransport(
-                transportFactory.createMessageDrivenTransport(
-                        "networkFacing", SINGLE_BYTE.type, new RingBufferWriter("networkToUserRingBuffer", networkToUserRingBuffer)
-                ), userToNetworkRingBuffer
-        );
+        final MessageDrivenTransport networkFacingTransport = transportFactory.createRingBufferDrivenTransport("networkFacing", networkToUserRingBuffer, userToNetworkRingBuffer);
         final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(networkFacingTransport, userFacingApp);
 
         // Given
