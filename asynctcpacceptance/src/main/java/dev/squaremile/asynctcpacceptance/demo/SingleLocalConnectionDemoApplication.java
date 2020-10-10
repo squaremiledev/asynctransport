@@ -226,7 +226,7 @@ public class SingleLocalConnectionDemoApplication implements Application
 
     public interface ConnectionApplicationFactory
     {
-        ConnectionApplication create(ConnectionTransport transport, ConnectionId connectionId);
+        ConnectionApplication create(ConnectionTransport connectionTransport, ConnectionId connectionId);
     }
 
     public interface LifecycleListener

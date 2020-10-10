@@ -16,7 +16,7 @@ class SingleLocalConnectionDemoApplicationTest
 {
     private static final Consumer<String> LOGGER = System.out::println;
 
-    private final ApplicationLifecycle lifecycleListener = new ApplicationLifecycle();
+    private final ApplicationLifecycle applicationLifecycle = new ApplicationLifecycle();
 
     @Test
     void printTheLifecycle()
@@ -26,7 +26,7 @@ class SingleLocalConnectionDemoApplicationTest
                 transport -> new SingleLocalConnectionDemoApplication(
                         transport,
                         fixedLengthDelineation(8),
-                        lifecycleListener,
+                        applicationLifecycle,
                         LOGGER,
                         freePort(),
                         (connectionTransport, connectionId) -> new LoggingConnectedDemoActor("Alice", connectionTransport, connectionId, LOGGER),
@@ -35,14 +35,14 @@ class SingleLocalConnectionDemoApplicationTest
         );
 
         app.onStart();
-        while (!lifecycleListener.isUp())
+        while (!applicationLifecycle.isUp())
         {
             app.work();
         }
 
         app.onStop();
 
-        while (lifecycleListener.isUp())
+        while (applicationLifecycle.isUp())
         {
             app.work();
         }
