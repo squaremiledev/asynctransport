@@ -232,11 +232,6 @@ public class SingleLocalConnectionDemoApplication implements Application
         TEARING_DOWN
     }
 
-    public interface ConnectionApplicationFactory
-    {
-        ConnectionApplication create(ConnectionTransport connectionTransport, ConnectionId connectionId);
-    }
-
     public interface LifecycleListener
     {
         void onUp();
