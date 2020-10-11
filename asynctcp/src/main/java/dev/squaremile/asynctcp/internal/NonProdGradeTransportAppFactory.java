@@ -3,7 +3,7 @@ package dev.squaremile.asynctcp.internal;
 import java.io.IOException;
 
 import org.agrona.ExpandableArrayBuffer;
-import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
+import org.agrona.concurrent.ringbuffer.RingBuffer;
 
 
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
@@ -13,7 +13,6 @@ import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationVal
 import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferApplication;
 import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferWriter;
 import dev.squaremile.asynctcp.transport.api.app.Application;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationEmittingEventsFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
@@ -42,22 +41,10 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
     }
 
     @Override
-    public Application create(
-            final String role,
-            final OneToOneRingBuffer networkToUserRingBuffer,
-            final OneToOneRingBuffer userToNetworkRingBuffer,
-            final ApplicationEmittingEventsFactory applicationFactory
-    )
+    public Application create(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory)
     {
-        SerializingTransport serializingTransport = new SerializingTransport(
-                new ExpandableArrayBuffer(),
-                32,
-                new RingBufferWriter("userToNetworkRingBuffer", userToNetworkRingBuffer)
-        );
-        return new RingBufferApplication(
-                applicationFactory.create(serializingTransport, serializingTransport),
-                networkToUserRingBuffer
-        );
+        SerializingTransport serializingTransport = new SerializingTransport(new ExpandableArrayBuffer(), 0, new RingBufferWriter("userToNetworkRingBuffer", userToNetwork));
+        return new RingBufferApplication(serializingTransport, applicationFactory.create(serializingTransport), networkToUser);
     }
 
     private static class ListeningApplication implements EventListener

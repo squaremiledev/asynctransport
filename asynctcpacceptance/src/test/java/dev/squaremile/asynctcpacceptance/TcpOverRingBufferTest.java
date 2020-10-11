@@ -27,7 +27,6 @@ import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.SINGLE_BYTE;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.transport.testfixtures.EventsSpy.spyAndDelegateTo;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 import static java.lang.System.arraycopy;
@@ -41,7 +40,7 @@ class TcpOverRingBufferTest
     private final OneToOneRingBuffer userToNetworkRingBuffer = createRingBuffer();
     private final TransportFactory transportFactory = new AsyncTcp().transportFactory(NON_PROD_GRADE);
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
-    private EventsSpy userFacingAppEvents;
+    private final EventsSpy userFacingAppEvents = EventsSpy.spy();
 
     @Test
     void shouldAcceptConnectionAndSendDataUsingTcpOverRingBuffer() throws IOException
@@ -50,19 +49,16 @@ class TcpOverRingBufferTest
                 "userFacing",
                 networkToUserRingBuffer,
                 userToNetworkRingBuffer,
-                (serializingTransport, eventListener) ->
-                {
-                    userFacingAppEvents = spyAndDelegateTo(eventListener);
-                    return new MessageEchoApplication(
-                            serializingTransport,
-                            port,
-                            userFacingAppEvents,
-                            SINGLE_BYTE.type,
-                            100
-                    );
-                }
+                (transport) ->
+                        new MessageEchoApplication(
+                                transport,
+                                port,
+                                userFacingAppEvents,
+                                SINGLE_BYTE.type,
+                                100
+                        )
         );
-        final MessageDrivenTransport transport = transportFactory.createRingBufferDrivenTransport(
+        final MessageDrivenTransport transport = transportFactory.create(
                 "networkFacing",
                 networkToUserRingBuffer,
                 userToNetworkRingBuffer

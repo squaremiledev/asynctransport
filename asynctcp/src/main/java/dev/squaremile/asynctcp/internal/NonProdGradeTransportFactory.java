@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.SystemEpochClock;
-import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
+import org.agrona.concurrent.ringbuffer.RingBuffer;
 
 
 import dev.squaremile.asynctcp.api.TransportFactory;
@@ -20,32 +20,32 @@ import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTra
 public class NonProdGradeTransportFactory implements TransportFactory
 {
     @Override
-    public MessageDrivenTransport createRingBufferDrivenTransport(
+    public MessageDrivenTransport create(
             final String role,
-            final OneToOneRingBuffer networkToUserRingBuffer,
-            final OneToOneRingBuffer userToNetworkRingBuffer
+            final RingBuffer networkToUser,
+            final RingBuffer userToNetwork
 
     ) throws IOException
     {
         return new RingBufferBackedTransport(
-                createMessageDrivenTransport(
+                create(
                         role,
-                        new RingBufferWriter("networkToUserRingBuffer", networkToUserRingBuffer)
+                        new RingBufferWriter("networkToUserRingBuffer", networkToUser)
                 ),
-                userToNetworkRingBuffer
+                userToNetwork
         );
     }
 
     @Override
-    public MessageDrivenTransport createMessageDrivenTransport(
-            final String role, final SerializedEventListener serializedEventListener
+    public MessageDrivenTransport create(
+            final String role, final SerializedEventListener eventListener
     ) throws IOException
     {
         DelineationApplication delineationApplication = new DelineationApplication(
                 new SerializingApplication(
                         new ExpandableArrayBuffer(),
                         0,
-                        serializedEventListener
+                        eventListener
                 )
         );
         return new NonBLockingMessageDrivenTransport(

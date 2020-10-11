@@ -41,7 +41,7 @@ class TcpOverDirectBufferTest
         final SerializedMessagesSpy networkToUserWrites = new SerializedMessagesSpy();
         final SerializedMessagesSpy userToNetworkWrites = new SerializedMessagesSpy();
         final EventsSpy userFacingAppEvents = spy();
-        final MessageDrivenTransport networkFacingTransport = asyncTcpTransportFactory.createMessageDrivenTransport(
+        final MessageDrivenTransport networkFacingTransport = asyncTcpTransportFactory.create(
                 "networkFacing", networkToUserWrites);
         final MessageOnlyDrivenApplication userFacingApp = new MessageOnlyDrivenApplication(
                 new MessageEchoApplication(
