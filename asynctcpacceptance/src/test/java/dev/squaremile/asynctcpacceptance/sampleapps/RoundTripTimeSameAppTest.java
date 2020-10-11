@@ -79,7 +79,7 @@ public class RoundTripTimeSameAppTest
                         startedNanos,
                         stoppedNanos,
                         isDone,
-                        HISTOGRAM
+                        HISTOGRAM, false
                 ),
                 EchoConnectionApplication::new
         ));

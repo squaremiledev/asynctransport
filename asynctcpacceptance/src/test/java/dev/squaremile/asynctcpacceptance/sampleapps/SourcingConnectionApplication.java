@@ -25,6 +25,7 @@ class SourcingConnectionApplication implements ConnectionApplication
     private final MutableLong stoppedNanos;
     private final MutableBoolean isDone;
     private final Histogram histogram;
+    private final boolean waitForAMessageBeforeSendingNext;
     int timesSent = 0;
     int timesReceived = 0;
 
@@ -36,7 +37,8 @@ class SourcingConnectionApplication implements ConnectionApplication
             final MutableLong startedNanos,
             final MutableLong stoppedNanos,
             final MutableBoolean isDone,
-            final Histogram histogram
+            final Histogram histogram,
+            final boolean waitForAMessageBeforeSendingNext
     )
     {
         this.connectionTransport = connectionTransport;
@@ -47,16 +49,7 @@ class SourcingConnectionApplication implements ConnectionApplication
         this.stoppedNanos = stoppedNanos;
         this.isDone = isDone;
         this.histogram = histogram;
-    }
-
-    @Override
-    public void work()
-    {
-        if (timesSent < total)
-        {
-            send();
-            timesSent++;
-        }
+        this.waitForAMessageBeforeSendingNext = waitForAMessageBeforeSendingNext;
     }
 
     @Override
@@ -65,6 +58,11 @@ class SourcingConnectionApplication implements ConnectionApplication
         if (event instanceof MessageReceived)
         {
             timesReceived++;
+            if (waitForAMessageBeforeSendingNext && timesSent < total)
+            {
+                send();
+                timesSent++;
+            }
             MessageReceived messageReceived = (MessageReceived)event;
             long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset());
             long responseTimeNs = messageReceived.buffer().getLong(messageReceived.offset() + 8);
@@ -87,6 +85,25 @@ class SourcingConnectionApplication implements ConnectionApplication
                 stoppedNanos.set(nanoTime());
                 isDone.set(true);
             }
+        }
+    }
+
+    @Override
+    public void onStart()
+    {
+        if (waitForAMessageBeforeSendingNext)
+        {
+            send();
+        }
+    }
+
+    @Override
+    public void work()
+    {
+        if (!waitForAMessageBeforeSendingNext && timesSent < total)
+        {
+            send();
+            timesSent++;
         }
     }
 

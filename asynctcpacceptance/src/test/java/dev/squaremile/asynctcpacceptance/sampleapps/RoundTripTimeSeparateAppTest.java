@@ -35,9 +35,11 @@ public class RoundTripTimeSeparateAppTest
     @Test
     void measureRoundTripTime()
     {
-        int port = freePort(8889);
-        MutableBoolean isReady = new MutableBoolean(false);
-        Application source = sourceApplication(port, isReady);
+        final int port = freePort(8889);
+        final boolean waitForAMessageBeforeSendingNext = true;
+
+        final MutableBoolean isReady = new MutableBoolean(false);
+        final Application source = sourceApplication(port, isReady, waitForAMessageBeforeSendingNext);
 //        echo = echoApplication(port);
         echo = noOpApplication(port);
 
@@ -114,7 +116,7 @@ public class RoundTripTimeSeparateAppTest
         );
     }
 
-    private Application sourceApplication(final int port, final MutableBoolean isReady)
+    private Application sourceApplication(final int port, final MutableBoolean isReady, final boolean waitForAMessageBeforeSendingNext)
     {
         return new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
                 "source",
@@ -131,7 +133,8 @@ public class RoundTripTimeSeparateAppTest
                                 startedNanos,
                                 stoppedNanos,
                                 isDone,
-                                HISTOGRAM
+                                HISTOGRAM,
+                                waitForAMessageBeforeSendingNext
                         )
                 )
         );
