@@ -28,26 +28,16 @@ between the application and the infrastructure (ClusteredService interface).
 However, an attempt has been made to make this library even more composable
 and avoid cycles during the setup phase (problematic onStart(Cluster cluster)).
 
-The current performance should be acceptable for most use cases. For localhost (to show the library overhead and ignore out network card/network impact)
+The current performance should be acceptable for most use cases.
+For localhost (to show the library overhead and ignore out network card/network impact)
 the round trip end to end (a message send via the library, received on
-the other end by the library, echoed back and received at source) mean time is 11 microseconds, and 81 microseconds for a 99.999th percentile.
-
-There are a few optimization tasks in the back log. Tests will need to be repeated on various networks.
-RoundTripTimeTest was used. Values are in microseconds, on localhost.
+the other end by the library, echoed back and received at source) mean time was 111 microseconds for a 99.999th percentile.
+running at the rate of 50 000 small msg /s RoundTripTimeSeparateAppTest was used. Coordinated omission was taken into account.
+Numbers should improve when allocation rate is reduced.
 
 ```
-Value     Percentile TotalCount 1/(1-Percentile)
-
-11.000 0.900000000000    9503668          10.00
-20.000 0.990625000000    9908793         106.67
-26.000 0.999023437500    9990277        1024.00
-39.000 0.999902343750    9999087       10240.00
-81.000 0.999990844727    9999910      109226.67
-2587.000 0.999999046326    9999991     1048576.00
-3279.000 0.999999904633   10000000    10485760.00
-3279.000 1.000000000000   10000000
-#[Mean    =       11.071, StdDeviation   =        3.120]
-#[Max     =     3279.000, Total count    =     10000000]
+Exchanged 4000000 messages at a rate of 47975 messages per second which took 83 seconds
+99.99th percentile is 111 microseconds
 ```
 
 ## Usage
