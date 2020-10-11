@@ -14,7 +14,7 @@ public interface TransportApplicationFactory
      * Creates a wired TCP Application that is ready to use.
      * <p>
      * Use this factory if you want transport commands and events to be serialized and exchanged via buffers,
-     * and nod directly by a method invocations. I the overhead is acceptable, this can be used a default
+     * and nod directly by a method invocations. If the overhead is acceptable, this can be used a default
      * method of communication for audit purposes.
      *
      * @param role               A simple label, no other special meaning at the moment
@@ -49,9 +49,10 @@ public interface TransportApplicationFactory
 
     /**
      * Creates a wired TCP Application that requires a buffer-backed transport counterparty to work.
-     *
-     * Use this factory along with a corresponding TransportFactory::create method to have full control over how
-     * a transport and an application interact via ring buffers.
+     * <p>
+     * Use this factory along with a corresponding {@link TransportFactory#create(String, RingBuffer, RingBuffer)}
+     * method to have an application that is independent from the transport, or to run
+     * the application and the transport in separate threads or processes.
      *
      * @param role               A simple label, no other special meaning at the moment
      * @param networkToUser      a buffer containing events sent from the transport (network) to the application
