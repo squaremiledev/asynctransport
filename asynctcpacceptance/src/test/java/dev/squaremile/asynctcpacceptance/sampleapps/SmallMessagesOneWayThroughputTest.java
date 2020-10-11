@@ -83,10 +83,5 @@ class SmallMessagesOneWayThroughputTest
         {
             return hasStartedListening;
         }
-
-        public boolean hasClosedConnection()
-        {
-            return hasClosedConnection;
-        }
     }
 }

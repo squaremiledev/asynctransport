@@ -21,7 +21,7 @@ class LongPingPongAppFactory implements ApplicationFactory
     private final int port;
     private final EventListener pingSpy;
     private final LongConsumer messageListener;
-    private int messagesCap;
+    private final int messagesCap;
 
     public LongPingPongAppFactory(final int messagesCap, final int port, final EventListener pingSpy, final LongConsumer messageListener)
     {

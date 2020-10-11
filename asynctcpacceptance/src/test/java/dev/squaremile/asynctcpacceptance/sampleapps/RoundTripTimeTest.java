@@ -23,8 +23,10 @@ import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcpacceptance.demo.ApplicationLifecycle;
 import dev.squaremile.asynctcpacceptance.demo.SingleLocalConnectionDemoApplication;
 
@@ -32,6 +34,7 @@ import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static java.lang.System.nanoTime;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class RoundTripTimeTest
@@ -44,6 +47,7 @@ public class RoundTripTimeTest
     private final MutableBoolean isDone = new MutableBoolean(false);
     private final MutableLong startedNanos = new MutableLong(-1);
     private final MutableLong stoppedNanos = new MutableLong(-1);
+    private final MutableLong completeRoundTrips = new MutableLong(0);
     private final Consumer<String> log = s ->
     {
     };
@@ -75,77 +79,8 @@ public class RoundTripTimeTest
                 applicationLifecycle,
                 log,
                 freePort(),
-                (connectionTransport, connectionId) -> new ConnectionApplication()
-                {
-                    int timesSent = 0;
-
-                    @Override
-                    public void onStart()
-                    {
-                        send();
-                    }
-
-                    @Override
-                    public void onEvent(final ConnectionEvent event)
-                    {
-                        if (event instanceof MessageReceived)
-                        {
-                            MessageReceived messageReceived = (MessageReceived)event;
-                            long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset());
-                            long responseTimeNs = messageReceived.buffer().getLong(messageReceived.offset() + 8);
-                            long now = nanoTime();
-                            if (timesSent == WARM_UP)
-                            {
-                                startedNanos.set(nanoTime());
-                            }
-                            if (timesSent > WARM_UP)
-                            {
-                                onResults(timesSent, NANOSECONDS.toMicros(sendTimeNs), NANOSECONDS.toMicros(responseTimeNs), NANOSECONDS.toMicros(now));
-                            }
-
-                            if (timesSent < TOTAL)
-                            {
-                                send();
-                            }
-                            else
-                            {
-                                stoppedNanos.set(nanoTime());
-                                isDone.set(true);
-                            }
-                        }
-                    }
-
-                    private void onResults(final int timesSent, final long sendTimeUs, final long responseTimeUs, final long nowUs)
-                    {
-                        long roundTripTimeUs = nowUs - sendTimeUs;
-                        HISTOGRAM.recordValue(roundTripTimeUs);
-                    }
-
-                    private void send()
-                    {
-                        SendMessage message = connectionTransport.command(SendMessage.class);
-                        MutableDirectBuffer buffer = message.prepare();
-                        buffer.putLong(message.offset(), nanoTime());
-                        buffer.putLong(message.offset() + 8, -1L);
-                        message.commit(16);
-                        connectionTransport.handle(message);
-                        timesSent++;
-                    }
-                },
-                (connectionTransport, connectionId) -> event ->
-                {
-                    if (event instanceof MessageReceived)
-                    {
-                        MessageReceived messageReceived = (MessageReceived)event;
-                        long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset());
-                        SendMessage message = connectionTransport.command(SendMessage.class);
-                        MutableDirectBuffer buffer = message.prepare();
-                        buffer.putLong(message.offset(), sendTimeNs);
-                        buffer.putLong(message.offset() + 8, nanoTime());
-                        message.commit(16);
-                        connectionTransport.handle(message);
-                    }
-                }
+                (connectionTransport, connectionId) -> new SourcingApplication(connectionTransport, completeRoundTrips::incrementAndGet),
+                EchoApplication::new
         ));
 
         app.onStart();
@@ -162,17 +97,113 @@ public class RoundTripTimeTest
             app.work();
         }
 
-        long tookSeconds = NANOSECONDS.toSeconds(stoppedNanos.get() - startedNanos.get());
-        long _msgps = TIMES_MEASURED * 1000L / NANOSECONDS.toMillis(stoppedNanos.get() - startedNanos.get());
-        int totalNumberOfMessagesAfterWarmUp = TIMES_MEASURED * 2;
+        long messagesExchanged = completeRoundTrips.get() * 2;
+        long tookMs = NANOSECONDS.toMillis(stoppedNanos.get() - startedNanos.get());
+        long _msgps = messagesExchanged * 1000L / tookMs;
 
         HISTOGRAM.outputPercentileDistribution(System.out, 1.0);
         System.out.println();
-        System.out.print("Exchanged " + totalNumberOfMessagesAfterWarmUp + " messages ");
+        System.out.print("Exchanged " + messagesExchanged + " messages ");
         System.out.print("at a rate of " + _msgps + " messages per second ");
-        System.out.print(" which took " + tookSeconds + " seconds");
+        System.out.print(" which took " + MILLISECONDS.toSeconds(tookMs) + " seconds");
         System.out.println();
         System.out.println("99.99th percentile is " + HISTOGRAM.getValueAtPercentile(99.99) + " microseconds");
     }
 
+    private static class EchoApplication implements ConnectionApplication
+    {
+        private final ConnectionTransport connectionTransport;
+
+        public EchoApplication(final ConnectionTransport connectionTransport, final ConnectionId connectionId)
+        {
+            this.connectionTransport = connectionTransport;
+        }
+
+        @Override
+        public void onEvent(final ConnectionEvent event)
+        {
+            if (event instanceof MessageReceived)
+            {
+                MessageReceived messageReceived = (MessageReceived)event;
+                long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset());
+                SendMessage message = connectionTransport.command(SendMessage.class);
+                MutableDirectBuffer buffer = message.prepare();
+                buffer.putLong(message.offset(), sendTimeNs);
+                buffer.putLong(message.offset() + 8, nanoTime());
+                message.commit(16);
+                connectionTransport.handle(message);
+            }
+        }
+    }
+
+    private class SourcingApplication implements ConnectionApplication
+    {
+        private final ConnectionTransport connectionTransport;
+        int timesSent = 0;
+        int timesReceived = 0;
+        private final Runnable onRoundTripComplete;
+
+        public SourcingApplication(final ConnectionTransport connectionTransport, final Runnable onRoundTripComplete)
+        {
+            this.connectionTransport = connectionTransport;
+            this.onRoundTripComplete = onRoundTripComplete;
+        }
+
+        @Override
+        public void work()
+        {
+            if (timesSent < TOTAL)
+            {
+                send();
+                timesSent++;
+            }
+        }
+
+        @Override
+        public void onEvent(final ConnectionEvent event)
+        {
+            if (event instanceof MessageReceived)
+            {
+                timesReceived++;
+                MessageReceived messageReceived = (MessageReceived)event;
+                long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset());
+                long responseTimeNs = messageReceived.buffer().getLong(messageReceived.offset() + 8);
+                long now = nanoTime();
+                if (timesReceived == WARM_UP)
+                {
+                    startedNanos.set(nanoTime());
+                }
+                if (timesReceived > WARM_UP)
+                {
+                    onRoundTripComplete.run();
+                    onResults(timesReceived, NANOSECONDS.toMicros(sendTimeNs), NANOSECONDS.toMicros(responseTimeNs), NANOSECONDS.toMicros(now));
+                }
+                if (timesReceived == TOTAL)
+                {
+                    if (timesReceived != timesSent)
+                    {
+                        throw new IllegalStateException();
+                    }
+                    stoppedNanos.set(nanoTime());
+                    isDone.set(true);
+                }
+            }
+        }
+
+        private void onResults(final int timesSent, final long sendTimeUs, final long responseTimeUs, final long nowUs)
+        {
+            long roundTripTimeUs = nowUs - sendTimeUs;
+            HISTOGRAM.recordValue(roundTripTimeUs);
+        }
+
+        private void send()
+        {
+            SendMessage message = connectionTransport.command(SendMessage.class);
+            MutableDirectBuffer buffer = message.prepare();
+            buffer.putLong(message.offset(), nanoTime());
+            buffer.putLong(message.offset() + 8, -1L);
+            message.commit(16);
+            connectionTransport.handle(message);
+        }
+    }
 }
