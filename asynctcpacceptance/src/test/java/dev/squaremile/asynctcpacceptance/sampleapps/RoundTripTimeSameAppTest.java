@@ -31,8 +31,8 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class RoundTripTimeSameAppTest
 {
-    private static final int WARM_UP = 10_000;
-    private static final int TIMES_MEASURED = 100_000;
+    private static final int WARM_UP = 100_000;
+    private static final int TIMES_MEASURED = 40_000;
     private static final int TOTAL = WARM_UP + TIMES_MEASURED;
     private static final Histogram HISTOGRAM = new Histogram(TimeUnit.SECONDS.toNanos(10), 3);
     private final ApplicationLifecycle applicationLifecycle = new ApplicationLifecycle();
@@ -63,6 +63,8 @@ public class RoundTripTimeSameAppTest
 
     @ParameterizedTest
     @MethodSource("applicationSuppliers")
+    // run with -XX:+PrintGCDetails to correlate GC pauses with latency outliers
+    // watch out for the GCs during the second test from the method source that are caused by the first test!
     void measureRoundTripTime(final Function<ApplicationFactory, Application> applicationSupplier)
     {
         Application app = applicationSupplier.apply(transport -> new SingleLocalConnectionDemoApplication(
@@ -79,7 +81,8 @@ public class RoundTripTimeSameAppTest
                         startedNanos,
                         stoppedNanos,
                         isDone,
-                        HISTOGRAM, false
+                        HISTOGRAM,
+                        20_000
                 ),
                 EchoConnectionApplication::new
         ));

@@ -1,5 +1,7 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
+import java.util.concurrent.TimeUnit;
+
 import org.HdrHistogram.Histogram;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.MutableBoolean;
@@ -21,11 +23,12 @@ class SourcingConnectionApplication implements ConnectionApplication
     private final Runnable onRoundTripComplete;
     private final int total;
     private final int warmUp;
-    private final MutableLong startedNanos;
-    private final MutableLong stoppedNanos;
+    private final MutableLong startedMeasuringNanos;
+    private final MutableLong stoppedMeasuringNanos;
+    private final MutableLong sentFirstTimeNanos = new MutableLong();
     private final MutableBoolean isDone;
     private final Histogram histogram;
-    private final boolean waitForAMessageBeforeSendingNext;
+    private final long messageDelayNs;
     int timesSent = 0;
     int timesReceived = 0;
 
@@ -34,22 +37,22 @@ class SourcingConnectionApplication implements ConnectionApplication
             final Runnable onRoundTripComplete,
             final int total,
             final int warmUp,
-            final MutableLong startedNanos,
-            final MutableLong stoppedNanos,
+            final MutableLong startedMeasuringNanos,
+            final MutableLong stoppedMeasuringNanos,
             final MutableBoolean isDone,
             final Histogram histogram,
-            final boolean waitForAMessageBeforeSendingNext
+            final int sendingRatePerSecond
     )
     {
         this.connectionTransport = connectionTransport;
         this.onRoundTripComplete = onRoundTripComplete;
         this.total = total;
         this.warmUp = warmUp;
-        this.startedNanos = startedNanos;
-        this.stoppedNanos = stoppedNanos;
+        this.startedMeasuringNanos = startedMeasuringNanos;
+        this.stoppedMeasuringNanos = stoppedMeasuringNanos;
         this.isDone = isDone;
         this.histogram = histogram;
-        this.waitForAMessageBeforeSendingNext = waitForAMessageBeforeSendingNext;
+        this.messageDelayNs = sendingRatePerSecond == -1 ? -1 : TimeUnit.SECONDS.toNanos(1) / sendingRatePerSecond;
     }
 
     @Override
@@ -58,10 +61,9 @@ class SourcingConnectionApplication implements ConnectionApplication
         if (event instanceof MessageReceived)
         {
             timesReceived++;
-            if (waitForAMessageBeforeSendingNext && timesSent < total)
+            if (messageDelayNs == -1 && timesSent < total)
             {
-                send();
-                timesSent++;
+                send(nanoTime());
             }
             MessageReceived messageReceived = (MessageReceived)event;
             long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset());
@@ -69,7 +71,7 @@ class SourcingConnectionApplication implements ConnectionApplication
             long now = nanoTime();
             if (timesReceived == warmUp)
             {
-                startedNanos.set(nanoTime());
+                startedMeasuringNanos.set(nanoTime());
             }
             if (timesReceived > warmUp)
             {
@@ -82,7 +84,7 @@ class SourcingConnectionApplication implements ConnectionApplication
                 {
                     throw new IllegalStateException();
                 }
-                stoppedNanos.set(nanoTime());
+                stoppedMeasuringNanos.set(nanoTime());
                 isDone.set(true);
             }
         }
@@ -91,19 +93,30 @@ class SourcingConnectionApplication implements ConnectionApplication
     @Override
     public void onStart()
     {
-        if (waitForAMessageBeforeSendingNext)
+        if (messageDelayNs == -1)
         {
-            send();
+            send(nanoTime());
         }
     }
 
     @Override
     public void work()
     {
-        if (!waitForAMessageBeforeSendingNext && timesSent < total)
+        if (messageDelayNs >= 0 && timesSent < total)
         {
-            send();
-            timesSent++;
+            if (timesSent == 0)
+            {
+                send(nanoTime());
+            }
+            else
+            {
+                long nowNs = nanoTime();
+                long expectedTimestampNsToSendThisMessage = sentFirstTimeNanos.get() + timesSent * messageDelayNs;
+                if (nowNs >= expectedTimestampNsToSendThisMessage)
+                {
+                    send(expectedTimestampNsToSendThisMessage);
+                }
+            }
         }
     }
 
@@ -113,13 +126,18 @@ class SourcingConnectionApplication implements ConnectionApplication
         histogram.recordValue(roundTripTimeUs);
     }
 
-    private void send()
+    private void send(final long supposedSendingTimestampNs)
     {
         SendMessage message = connectionTransport.command(SendMessage.class);
         MutableDirectBuffer buffer = message.prepare();
-        buffer.putLong(message.offset(), nanoTime());
+        buffer.putLong(message.offset(), supposedSendingTimestampNs);
         buffer.putLong(message.offset() + 8, -1L);
         message.commit(16);
         connectionTransport.handle(message);
+        timesSent++;
+        if (timesSent == 1)
+        {
+            sentFirstTimeNanos.set(nanoTime());
+        }
     }
 }

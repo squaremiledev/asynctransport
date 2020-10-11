@@ -22,8 +22,8 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 @Disabled
 public class RoundTripTimeSeparateAppTest
 {
-    private static final int WARM_UP = 100_000;
-    private static final int TIMES_MEASURED = 1_000_000;
+    private static final int WARM_UP = 400_000;
+    private static final int TIMES_MEASURED = 4_000_000;
     private static final int TOTAL = WARM_UP + TIMES_MEASURED;
     private static final Histogram HISTOGRAM = new Histogram(TimeUnit.SECONDS.toNanos(10), 3);
     private final MutableBoolean isDone = new MutableBoolean(false);
@@ -33,13 +33,16 @@ public class RoundTripTimeSeparateAppTest
     private Application echo;
 
     @Test
+    // run as first, when started run, runSeparateJvmEchoApplication.
+    // when this one passes, kill runSeparateJvmEchoApplication
+    // for a quick check, uncomment `echo = echoApplication(port);` and run only this method
     void measureRoundTripTime()
     {
         final int port = freePort(8889);
-        final boolean waitForAMessageBeforeSendingNext = true;
+        final int sendingRatePerSecond = 48_000; // 0 - send in a response to the received messages
 
         final MutableBoolean isReady = new MutableBoolean(false);
-        final Application source = sourceApplication(port, isReady, waitForAMessageBeforeSendingNext);
+        final Application source = sourceApplication(port, isReady, sendingRatePerSecond);
 //        echo = echoApplication(port);
         echo = noOpApplication(port);
 
@@ -116,7 +119,7 @@ public class RoundTripTimeSeparateAppTest
         );
     }
 
-    private Application sourceApplication(final int port, final MutableBoolean isReady, final boolean waitForAMessageBeforeSendingNext)
+    private Application sourceApplication(final int port, final MutableBoolean isReady, final int sendingRatePerSecond)
     {
         return new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
                 "source",
@@ -134,7 +137,7 @@ public class RoundTripTimeSeparateAppTest
                                 stoppedNanos,
                                 isDone,
                                 HISTOGRAM,
-                                waitForAMessageBeforeSendingNext
+                                sendingRatePerSecond
                         )
                 )
         );
