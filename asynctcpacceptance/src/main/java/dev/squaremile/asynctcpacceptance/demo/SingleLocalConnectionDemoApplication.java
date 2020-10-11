@@ -78,10 +78,12 @@ public class SingleLocalConnectionDemoApplication implements Application
         if (initiator != null)
         {
             initiator.onStop();
+            initiator = null;
         }
         if (acceptor != null)
         {
             acceptor.onStop();
+            acceptor = null;
         }
 
         if (initiatorConnectionId != null)

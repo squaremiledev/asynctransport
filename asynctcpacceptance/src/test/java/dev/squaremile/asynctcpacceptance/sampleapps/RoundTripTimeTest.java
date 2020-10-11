@@ -163,7 +163,7 @@ public class RoundTripTimeTest
         }
 
         long tookSeconds = NANOSECONDS.toSeconds(stoppedNanos.get() - startedNanos.get());
-        long _msgps = TIMES_MEASURED * 1000 / NANOSECONDS.toMillis(stoppedNanos.get() - startedNanos.get());
+        long _msgps = TIMES_MEASURED * 1000L / NANOSECONDS.toMillis(stoppedNanos.get() - startedNanos.get());
         int totalNumberOfMessagesAfterWarmUp = TIMES_MEASURED * 2;
 
         HISTOGRAM.outputPercentileDistribution(System.out, 1.0);
