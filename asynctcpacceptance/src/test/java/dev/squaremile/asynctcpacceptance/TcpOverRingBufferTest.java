@@ -3,7 +3,6 @@ package dev.squaremile.asynctcpacceptance;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.junit.jupiter.api.Test;
@@ -13,12 +12,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
+import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.api.TransportFactory;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
-import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
-import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferApplication;
-import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferWriter;
+import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
@@ -42,31 +40,37 @@ class TcpOverRingBufferTest
     private final OneToOneRingBuffer networkToUserRingBuffer = createRingBuffer();
     private final OneToOneRingBuffer userToNetworkRingBuffer = createRingBuffer();
     private final TransportFactory transportFactory = new AsyncTcp().transportFactory(NON_PROD_GRADE);
+    private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
+    private EventsSpy userFacingAppEvents;
 
     @Test
     void shouldAcceptConnectionAndSendDataUsingTcpOverRingBuffer() throws IOException
     {
-        SerializingTransport serializingTransport = new SerializingTransport(
-                new ExpandableArrayBuffer(),
-                32,
-                new RingBufferWriter("userToNetworkRingBuffer", userToNetworkRingBuffer)
+        final Application app = transportApplicationFactory.create(
+                "userFacing",
+                networkToUserRingBuffer,
+                userToNetworkRingBuffer,
+                (serializingTransport, eventListener) ->
+                {
+                    userFacingAppEvents = spyAndDelegateTo(eventListener);
+                    return new MessageEchoApplication(
+                            serializingTransport,
+                            port,
+                            userFacingAppEvents,
+                            SINGLE_BYTE.type,
+                            100
+                    );
+                }
         );
-        final EventsSpy userFacingAppEvents = spyAndDelegateTo(serializingTransport);
-        final RingBufferApplication userFacingApp = new RingBufferApplication(
-                new MessageEchoApplication(
-                        serializingTransport,
-                        port,
-                        userFacingAppEvents,
-                        SINGLE_BYTE.type,
-                        100
-                ),
-                networkToUserRingBuffer
+        final MessageDrivenTransport transport = transportFactory.createRingBufferDrivenTransport(
+                "networkFacing",
+                networkToUserRingBuffer,
+                userToNetworkRingBuffer
         );
-        final MessageDrivenTransport networkFacingTransport = transportFactory.createRingBufferDrivenTransport("networkFacing", networkToUserRingBuffer, userToNetworkRingBuffer);
-        final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(networkFacingTransport, userFacingApp);
+        final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(transport, app);
 
         // Given
-        userFacingApp.onStart();
+        app.onStart();
         runUntil(thingsOnDuty.reached(() -> userFacingAppEvents.contains(StartedListening.class)));
         assertEqual(userFacingAppEvents.all(), new StartedListening(port, 100, SINGLE_BYTE.type));
 

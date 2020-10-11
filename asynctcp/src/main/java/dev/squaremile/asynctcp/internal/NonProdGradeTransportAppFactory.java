@@ -2,11 +2,18 @@ package dev.squaremile.asynctcp.internal;
 
 import java.io.IOException;
 
+import org.agrona.ExpandableArrayBuffer;
+import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
+
 
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
+import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationValidatingTransport;
+import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferApplication;
+import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferWriter;
 import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationEmittingEventsFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
@@ -32,6 +39,25 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
         {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Application create(
+            final String role,
+            final OneToOneRingBuffer networkToUserRingBuffer,
+            final OneToOneRingBuffer userToNetworkRingBuffer,
+            final ApplicationEmittingEventsFactory applicationFactory
+    )
+    {
+        SerializingTransport serializingTransport = new SerializingTransport(
+                new ExpandableArrayBuffer(),
+                32,
+                new RingBufferWriter("userToNetworkRingBuffer", userToNetworkRingBuffer)
+        );
+        return new RingBufferApplication(
+                applicationFactory.create(serializingTransport, serializingTransport),
+                networkToUserRingBuffer
+        );
     }
 
     private static class ListeningApplication implements EventListener
