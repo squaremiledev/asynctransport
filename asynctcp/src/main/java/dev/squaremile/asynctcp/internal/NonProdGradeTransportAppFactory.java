@@ -23,6 +23,27 @@ import static dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler.
 
 public class NonProdGradeTransportAppFactory implements TransportApplicationFactory
 {
+
+    private final NonProdGradeTransportFactory transportFactory = new NonProdGradeTransportFactory();
+
+    @Override
+    public Application create(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory) throws IOException
+    {
+        return new ApplicationWithThingsOnDuty(
+                createWithoutTransport(
+                        role,
+                        networkToUser,
+                        userToNetwork,
+                        applicationFactory
+                ),
+                transportFactory.create(
+                        "networkFacing",
+                        networkToUser,
+                        userToNetwork
+                )
+        );
+    }
+
     @Override
     public Application create(final String role, ApplicationFactory applicationFactory)
     {
@@ -41,11 +62,12 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
     }
 
     @Override
-    public Application create(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory)
+    public Application createWithoutTransport(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory)
     {
         SerializingTransport serializingTransport = new SerializingTransport(new ExpandableArrayBuffer(), 0, new RingBufferWriter("userToNetworkRingBuffer", userToNetwork));
         return new RingBufferApplication(serializingTransport, applicationFactory.create(serializingTransport), networkToUser);
     }
+
 
     private static class ListeningApplication implements EventListener
     {

@@ -13,9 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
-import dev.squaremile.asynctcp.api.TransportFactory;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
-import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
 import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
@@ -38,44 +36,38 @@ class TcpOverRingBufferTest
     private final SampleClient sampleClient = new SampleClient();
     private final OneToOneRingBuffer networkToUserRingBuffer = createRingBuffer();
     private final OneToOneRingBuffer userToNetworkRingBuffer = createRingBuffer();
-    private final TransportFactory transportFactory = new AsyncTcp().transportFactory(NON_PROD_GRADE);
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
-    private final EventsSpy userFacingAppEvents = EventsSpy.spy();
+    private final EventsSpy events = EventsSpy.spy();
 
     @Test
     void shouldAcceptConnectionAndSendDataUsingTcpOverRingBuffer() throws IOException
     {
-        final Application app = transportApplicationFactory.create(
-                "userFacing",
+        Application application = transportApplicationFactory.create(
+                "test",
                 networkToUserRingBuffer,
                 userToNetworkRingBuffer,
                 (transport) ->
                         new MessageEchoApplication(
                                 transport,
                                 port,
-                                userFacingAppEvents,
+                                events,
                                 SINGLE_BYTE.type,
                                 100
                         )
         );
-        final MessageDrivenTransport transport = transportFactory.create(
-                "networkFacing",
-                networkToUserRingBuffer,
-                userToNetworkRingBuffer
-        );
-        final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(transport, app);
+        final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(application);
 
         // Given
-        app.onStart();
-        runUntil(thingsOnDuty.reached(() -> userFacingAppEvents.contains(StartedListening.class)));
-        assertEqual(userFacingAppEvents.all(), new StartedListening(port, 100, SINGLE_BYTE.type));
+        application.onStart();
+        runUntil(thingsOnDuty.reached(() -> events.contains(StartedListening.class)));
+        assertEqual(events.all(), new StartedListening(port, 100, SINGLE_BYTE.type));
 
         // When
         runUntil(thingsOnDuty.reached(completed(() -> sampleClient.connectedTo(port))));
-        runUntil(thingsOnDuty.reached(() -> userFacingAppEvents.all().size() >= 2));
+        runUntil(thingsOnDuty.reached(() -> events.all().size() >= 2));
 
         // Then
-        assertThat(((ConnectionAccepted)userFacingAppEvents.all().get(1)).port()).isEqualTo(port);
+        assertThat(((ConnectionAccepted)events.all().get(1)).port()).isEqualTo(port);
 
         // DATA SENDING PART
 
