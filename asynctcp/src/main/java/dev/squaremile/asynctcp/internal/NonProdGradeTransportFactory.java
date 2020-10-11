@@ -1,7 +1,5 @@
 package dev.squaremile.asynctcp.internal;
 
-import java.io.IOException;
-
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.SystemEpochClock;
 import org.agrona.concurrent.ringbuffer.RingBuffer;
@@ -21,25 +19,8 @@ public class NonProdGradeTransportFactory implements TransportFactory
 {
     @Override
     public MessageDrivenTransport create(
-            final String role,
-            final RingBuffer networkToUser,
-            final RingBuffer userToNetwork
-
-    ) throws IOException
-    {
-        return new RingBufferBackedTransport(
-                create(
-                        role,
-                        new RingBufferWriter("networkToUserRingBuffer", networkToUser)
-                ),
-                userToNetwork
-        );
-    }
-
-    @Override
-    public MessageDrivenTransport create(
             final String role, final SerializedEventListener eventListener
-    ) throws IOException
+    )
     {
         DelineationApplication delineationApplication = new DelineationApplication(
                 new SerializingApplication(
@@ -55,5 +36,21 @@ public class NonProdGradeTransportFactory implements TransportFactory
                         new SystemEpochClock(),
                         role
                 ));
+    }
+
+    @Override
+    public MessageDrivenTransport create(
+            final String role,
+            final RingBuffer networkToUser,
+            final RingBuffer userToNetwork
+    )
+    {
+        return new RingBufferBackedTransport(
+                create(
+                        role,
+                        new RingBufferWriter("networkToUserRingBuffer", networkToUser)
+                ),
+                userToNetwork
+        );
     }
 }

@@ -43,7 +43,7 @@ import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionSt
 public class NonBlockingTransport implements AutoCloseable, TransportOnDuty
 {
     private final ConnectionIdSource connectionIdSource;
-    private final Selector selector = Selector.open();
+    private final Selector selector;
     private final CommandFactory commandFactory = new CommandFactory();
     private final EventListener eventListener;
     private final Connections connections;
@@ -53,7 +53,7 @@ public class NonBlockingTransport implements AutoCloseable, TransportOnDuty
     private final TransportCommandHandler commandHandler;
     private final String role;
 
-    public NonBlockingTransport(final EventListener eventListener, final TransportCommandHandler commandHandler, final EpochClock clock, final String role) throws IOException
+    public NonBlockingTransport(final EventListener eventListener, final TransportCommandHandler commandHandler, final EpochClock clock, final String role)
     {
         this.role = role;
         this.clock = clock;
@@ -62,7 +62,15 @@ public class NonBlockingTransport implements AutoCloseable, TransportOnDuty
         this.eventListener = eventListener;
         this.commandHandler = commandHandler;
         this.pendingConnections = new PendingConnections(clock, eventListener);
-        connectionIdSource = new ConnectionIdSource();
+        this.connectionIdSource = new ConnectionIdSource();
+        try
+        {
+            this.selector = Selector.open();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private void handle(final ConnectionUserCommand command)

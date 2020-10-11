@@ -1,7 +1,5 @@
 package dev.squaremile.asynctcp.internal;
 
-import java.io.IOException;
-
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.ringbuffer.RingBuffer;
 
@@ -27,7 +25,7 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
     private final NonProdGradeTransportFactory transportFactory = new NonProdGradeTransportFactory();
 
     @Override
-    public Application create(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory) throws IOException
+    public Application create(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory)
     {
         return new ApplicationWithThingsOnDuty(
                 createWithoutTransport(
@@ -47,18 +45,11 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
     @Override
     public Application create(final String role, ApplicationFactory applicationFactory)
     {
-        try
-        {
-            ListeningApplication listeningApplication = new ListeningApplication();
-            TransportOnDuty transport = new DelineationValidatingTransport(listeningApplication, new NonBlockingTransport(listeningApplication, NO_HANDLER, System::currentTimeMillis, role));
-            Application app = new DelineationApplication(applicationFactory.create(transport));
-            listeningApplication.set(app);
-            return new TransportPoweredApplication(transport, app);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        ListeningApplication listeningApplication = new ListeningApplication();
+        TransportOnDuty transport = new DelineationValidatingTransport(listeningApplication, new NonBlockingTransport(listeningApplication, NO_HANDLER, System::currentTimeMillis, role));
+        Application app = new DelineationApplication(applicationFactory.create(transport));
+        listeningApplication.set(app);
+        return new TransportPoweredApplication(transport, app);
     }
 
     @Override

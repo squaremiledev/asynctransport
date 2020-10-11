@@ -1,7 +1,5 @@
 package dev.squaremile.asynctcp.api;
 
-import java.io.IOException;
-
 import org.agrona.concurrent.ringbuffer.RingBuffer;
 
 
@@ -22,9 +20,8 @@ public interface TransportApplicationFactory
      * @param userToNetwork      a buffer containing commands sent from the application to the transport (network)
      * @param applicationFactory a user provided application
      * @return a wired application ready to be started and used
-     * @throws IOException
      */
-    Application create(String role, RingBuffer networkToUser, RingBuffer userToNetwork, ApplicationFactory applicationFactory) throws IOException;
+    Application create(String role, RingBuffer networkToUser, RingBuffer userToNetwork, ApplicationFactory applicationFactory);
 
     /**
      * Creates a wired TCP Application that is ready to use.
@@ -59,7 +56,6 @@ public interface TransportApplicationFactory
      * @param userToNetwork      a buffer containing commands sent from the application to the transport (network)
      * @param applicationFactory a user provided application
      * @return a wired application ready to be started and used
-     * @throws IOException
      */
     Application createWithoutTransport(String role, RingBuffer networkToUser, RingBuffer userToNetwork, ApplicationFactory applicationFactory);
 }
