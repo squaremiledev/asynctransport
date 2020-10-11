@@ -157,7 +157,7 @@ public class TransportCommandDecoders
                     byte[] dstArray = new byte[(int)srcData.length()];
                     srcData.buffer().getBytes(srcData.offset() + srcData.encodedLength(), dstArray);
                     SendData result = new SendData(decoder.port(), decoder.connectionId(), decoder.capacity()).set(dstArray, decoder.commandId());
-                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength() + (int)srcData.length();
                     return result;
                 }
         );
@@ -180,7 +180,7 @@ public class TransportCommandDecoders
                     SendMessage result = transport.command(new ConnectionIdValue(decoder.port(), decoder.connectionId()), SendMessage.class);
                     result.prepare().putBytes(result.offset(), decoder.data().buffer(), decoder.data().offset() + decoder.data().encodedLength(), dataLength);
                     result.commit(dataLength);
-                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength() + dataLength;
                     return result;
                 }
         );

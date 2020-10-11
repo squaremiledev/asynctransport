@@ -98,8 +98,14 @@ public class SingleLocalConnectionDemoApplication implements Application
     @Override
     public void work()
     {
-        initiator.work();
-        acceptor.work();
+        if (initiator != null)
+        {
+            initiator.work();
+        }
+        if (acceptor != null)
+        {
+            acceptor.work();
+        }
     }
 
     private void state(final State newState)

@@ -174,7 +174,7 @@ public class SerializingApplication implements Application
             int offset = dstData.offset();
             dstData.buffer().putBytes(offset + dstData.encodedLength(), srcBuffer, event.offset(), srcLength);
 
-            serializedEventListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + messageReceivedEncoder.encodedLength());
+            serializedEventListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + messageReceivedEncoder.encodedLength() + srcLength);
         }
     }
 

@@ -274,7 +274,7 @@ public class TransportEventDecoders
                     int dataLength = (int)srcData.length();
                     MessageReceived result = new MessageReceived(new ConnectionIdValue(decoder.port(), decoder.connectionId()))
                             .set(dataBuffer, dataOffset, dataLength);
-                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength() + dataLength;
                     return result;
                 }
         );

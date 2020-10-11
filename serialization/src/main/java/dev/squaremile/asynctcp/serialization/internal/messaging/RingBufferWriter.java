@@ -21,10 +21,7 @@ public class RingBufferWriter implements SerializedEventListener, SerializedComm
     @Override
     public void onSerialized(final DirectBuffer sourceBuffer, final int sourceOffset, final int length)
     {
-        // TODO: not quite clear why I have to add 4 here, but if I don't add anything it does not read write whole message
-        // TODO: the root cause is probably wrong length calculation in the layer above for 2 messages with var data encoding
-        // TODO: but it is not clear to me how exactly it should look like
-        ringBuffer.write(1, sourceBuffer, sourceOffset, length + 4);
+        ringBuffer.write(1, sourceBuffer, sourceOffset, length);
     }
 
     @Override

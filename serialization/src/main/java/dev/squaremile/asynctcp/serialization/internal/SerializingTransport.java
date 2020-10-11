@@ -158,7 +158,7 @@ public class SerializingTransport implements TransportOnDuty, EventListener
 
             encoder.data().length(command.length());
             encoder.data().buffer().putBytes(encoder.data().offset() + encoder.data().encodedLength(), command.buffer(), command.offset(), command.length());
-            serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + encoder.encodedLength());
+            serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + encoder.encodedLength() + command.length());
         }
         else if (unknownCommand instanceof SendMessage)
         {
@@ -171,8 +171,9 @@ public class SerializingTransport implements TransportOnDuty, EventListener
                     .commandId(command.commandId());
 
             encoder.data().length(command.length());
-            encoder.data().buffer().putBytes(encoder.data().offset() + encoder.data().encodedLength(), command.buffer(), command.offset(), command.length());
-            serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + encoder.encodedLength());
+            int dstDataOffset = encoder.data().offset() + encoder.data().encodedLength();
+            encoder.data().buffer().putBytes(dstDataOffset, command.buffer(), command.offset(), command.length());
+            serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + encoder.encodedLength() + command.length());
         }
         else
         {

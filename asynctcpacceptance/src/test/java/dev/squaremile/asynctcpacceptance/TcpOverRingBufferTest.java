@@ -34,8 +34,8 @@ class TcpOverRingBufferTest
 
     private final int port = freePort();
     private final SampleClient sampleClient = new SampleClient();
-    private final OneToOneRingBuffer networkToUserRingBuffer = createRingBuffer();
-    private final OneToOneRingBuffer userToNetworkRingBuffer = createRingBuffer();
+    private final OneToOneRingBuffer networkToUser = new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH]));
+    private final OneToOneRingBuffer userToNetwork = new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH]));
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
     private final EventsSpy events = EventsSpy.spy();
 
@@ -44,8 +44,8 @@ class TcpOverRingBufferTest
     {
         Application application = transportApplicationFactory.create(
                 "test",
-                networkToUserRingBuffer,
-                userToNetworkRingBuffer,
+                networkToUser,
+                userToNetwork,
                 (transport) ->
                         new MessageEchoApplication(
                                 transport,
@@ -94,8 +94,4 @@ class TcpOverRingBufferTest
         return content;
     }
 
-    private OneToOneRingBuffer createRingBuffer()
-    {
-        return new OneToOneRingBuffer(new UnsafeBuffer(new byte[2048 + TRAILER_LENGTH]));
-    }
 }

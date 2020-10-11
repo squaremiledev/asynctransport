@@ -17,8 +17,7 @@ public class RingBufferReader
         this.role = role;
         this.ringBuffer = ringBuffer;
         this.messageHandler = (msgTypeId, buffer, index, length) ->
-                // see the corresponding writer for -4 explanation
-                serializedMessageListener.onSerialized(buffer, index, length - 4);
+                serializedMessageListener.onSerialized(buffer, index, length);
     }
 
     public int read()
