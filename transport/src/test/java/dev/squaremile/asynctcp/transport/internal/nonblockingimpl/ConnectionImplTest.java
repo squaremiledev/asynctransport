@@ -23,7 +23,8 @@ import static java.util.Collections.singletonList;
 class ConnectionImplTest
 {
 
-    private ConnectionEventsSpy events = new ConnectionEventsSpy();
+    private static final int SAMPLE_SEND_BUFFER_SIZE = 30;
+    private final ConnectionEventsSpy events = new ConnectionEventsSpy();
 
     private static byte[] bytes(final String s)
     {
@@ -91,7 +92,7 @@ class ConnectionImplTest
 
         // Then
         assertThat(channel.attemptedToWrite()).isEqualTo(emptyList());
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 0, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 0, SAMPLE_SEND_BUFFER_SIZE));
         assertTotalNumberOfEvents(1);
     }
 
@@ -107,7 +108,7 @@ class ConnectionImplTest
 
         // Then
         assertThat(channel.attemptedToWrite()).isEqualTo(singletonList(""));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 3, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 3, SAMPLE_SEND_BUFFER_SIZE));
         assertTotalNumberOfEvents(1);
     }
 
@@ -124,7 +125,7 @@ class ConnectionImplTest
 
         // Then
         assertThat(channel.attemptedToWrite()).isEqualTo(singletonList("fooBAR"));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, content.length, content.length, content.length, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, content.length, content.length, content.length, SAMPLE_SEND_BUFFER_SIZE));
         assertTotalNumberOfEvents(1);
     }
 
@@ -141,7 +142,7 @@ class ConnectionImplTest
 
         // Then
         assertThat(channel.attemptedToWrite()).isEqualTo(singletonList("foo"));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8, SAMPLE_SEND_BUFFER_SIZE));
         assertTotalNumberOfEvents(1);
     }
 
@@ -151,7 +152,7 @@ class ConnectionImplTest
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
         final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("fooBA")));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 5, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 5, SAMPLE_SEND_BUFFER_SIZE));
 
         // When
         connection.handle(connection.command(SendData.class).set(new byte[0]));
@@ -160,7 +161,7 @@ class ConnectionImplTest
         // Then
         assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BA"));
         assertTotalNumberOfEvents(2);
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 5, -1), new DataSent(connection, 2, 5, 5, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 5, SAMPLE_SEND_BUFFER_SIZE), new DataSent(connection, 2, 5, 5, SAMPLE_SEND_BUFFER_SIZE));
     }
 
     @Test
@@ -169,7 +170,7 @@ class ConnectionImplTest
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
         final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("fooBARba")));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8, SAMPLE_SEND_BUFFER_SIZE));
 
         // When
         connection.handle(connection.command(SendData.class).set(new byte[0]));
@@ -178,7 +179,7 @@ class ConnectionImplTest
         // Then
         assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BAR"));
         assertTotalNumberOfEvents(2);
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8, -1), new DataSent(connection, 3, 6, 8, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 8, SAMPLE_SEND_BUFFER_SIZE), new DataSent(connection, 3, 6, 8, SAMPLE_SEND_BUFFER_SIZE));
     }
 
     @Test
@@ -195,7 +196,7 @@ class ConnectionImplTest
 
         // Then
         assertThat(channel.attemptedToWrite()).isEqualTo(emptyList());
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 0, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 0, 0, 0, SAMPLE_SEND_BUFFER_SIZE));
         assertTotalNumberOfEvents(1);
     }
 
@@ -205,14 +206,14 @@ class ConnectionImplTest
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(3);
         final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("fooBAR")));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 6, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 6, SAMPLE_SEND_BUFFER_SIZE));
 
         // When
         connection.handle(connection.command(SendData.class));
 
         // Then
         assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "BAR"));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 6, -1), new DataSent(connection, 3, 6, 6, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 6, SAMPLE_SEND_BUFFER_SIZE), new DataSent(connection, 3, 6, 6, SAMPLE_SEND_BUFFER_SIZE));
         assertTotalNumberOfEvents(2);
     }
 
@@ -228,7 +229,7 @@ class ConnectionImplTest
 
         // Then
         assertThat(channel.attemptedToWrite()).isEqualTo(asList("foo", "bar"));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 3, -1), new DataSent(connection, 3, 6, 6, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 3, 3, 3, SAMPLE_SEND_BUFFER_SIZE), new DataSent(connection, 3, 6, 6, SAMPLE_SEND_BUFFER_SIZE));
         assertTotalNumberOfEvents(2);
     }
 
@@ -238,7 +239,7 @@ class ConnectionImplTest
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(2);
         final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("0123456"), 100));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 2, 2, 7, 100, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 2, 2, 7, 100, SAMPLE_SEND_BUFFER_SIZE));
 
         // When
         connection.handle(connection.command(SendData.class).set(new byte[0], 101));
@@ -251,11 +252,11 @@ class ConnectionImplTest
         assertTotalNumberOfEvents(5);
         assertEqual(
                 events.all(DataSent.class),
-                new DataSent(connection, 2, 2, 7, 100, -1),
-                new DataSent(connection, 2, 4, 7, 101, -1),
-                new DataSent(connection, 2, 6, 7, 102, -1),
-                new DataSent(connection, 1, 7, 7, 103, -1),
-                new DataSent(connection, 0, 7, 7, 104, -1)
+                new DataSent(connection, 2, 2, 7, 100, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 2, 4, 7, 101, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 2, 6, 7, 102, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 1, 7, 7, 103, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 0, 7, 7, 104, SAMPLE_SEND_BUFFER_SIZE)
         );
     }
 
@@ -265,7 +266,7 @@ class ConnectionImplTest
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(5);
         final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("1234567"), 100));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 5, 5, 7, 100, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 5, 5, 7, 100, SAMPLE_SEND_BUFFER_SIZE));
 
         // When
         connection.handle(connection.command(SendData.class).set(bytes("89"), 101));
@@ -275,8 +276,8 @@ class ConnectionImplTest
         assertTotalNumberOfEvents(2);
         assertEqual(
                 events.all(DataSent.class),
-                new DataSent(connection, 5, 5, 7, 100, -1),
-                new DataSent(connection, 4, 9, 9, 101, -1)
+                new DataSent(connection, 5, 5, 7, 100, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 4, 9, 9, 101, SAMPLE_SEND_BUFFER_SIZE)
         );
     }
 
@@ -286,7 +287,7 @@ class ConnectionImplTest
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(5);
         final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("1234567"), 100));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 5, 5, 7, 100, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 5, 5, 7, 100, SAMPLE_SEND_BUFFER_SIZE));
 
         // When
         connection.handle(connection.command(SendData.class).set(bytes("8901234"), 101));
@@ -297,9 +298,9 @@ class ConnectionImplTest
         assertTotalNumberOfEvents(3);
         assertEqual(
                 events.all(DataSent.class),
-                new DataSent(connection, 5, 5, 7, 100, -1),
-                new DataSent(connection, 7, 12, 14, 101, -1),
-                new DataSent(connection, 3, 15, 15, 102, -1)
+                new DataSent(connection, 5, 5, 7, 100, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 7, 12, 14, 101, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 3, 15, 15, 102, SAMPLE_SEND_BUFFER_SIZE)
         );
     }
 
@@ -309,7 +310,7 @@ class ConnectionImplTest
         final FakeChannel channel = new FakeChannel().maxBytesWrittenInOneGo(2);
         final ConnectionImpl connection = newConnection(channel);
         connection.handle(connection.command(SendData.class).set(bytes("012345"), 100));
-        assertEqual(events.all(DataSent.class), new DataSent(connection, 2, 2, 6, 100, -1));
+        assertEqual(events.all(DataSent.class), new DataSent(connection, 2, 2, 6, 100, SAMPLE_SEND_BUFFER_SIZE));
 
         // When
         connection.handle(connection.command(SendData.class).set(bytes("67"), 101));
@@ -323,12 +324,12 @@ class ConnectionImplTest
         assertTotalNumberOfEvents(6);
         assertEqual(
                 events.all(DataSent.class),
-                new DataSent(connection, 2, 2, 6, 100, -1),
-                new DataSent(connection, 2, 4, 8, 101, -1),
-                new DataSent(connection, 2, 6, 9, 102, -1),
-                new DataSent(connection, 2, 8, 9, 103, -1),
-                new DataSent(connection, 1, 9, 9, 104, -1),
-                new DataSent(connection, 0, 9, 9, 105, -1)
+                new DataSent(connection, 2, 2, 6, 100, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 2, 4, 8, 101, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 2, 6, 9, 102, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 2, 8, 9, 103, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 1, 9, 9, 104, SAMPLE_SEND_BUFFER_SIZE),
+                new DataSent(connection, 0, 9, 9, 105, SAMPLE_SEND_BUFFER_SIZE)
         );
     }
 
@@ -355,6 +356,6 @@ class ConnectionImplTest
 
     private ConnectionConfiguration config()
     {
-        return new ConnectionConfiguration(new ConnectionIdValue(8080, 51), "localhost", 9090, 10, 20, 30);
+        return new ConnectionConfiguration(new ConnectionIdValue(8080, 51), "localhost", 9090, 10, SAMPLE_SEND_BUFFER_SIZE, 30);
     }
 }

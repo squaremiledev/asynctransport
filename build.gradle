@@ -14,14 +14,3 @@ allprojects {
     group property('dev.squaremile.asynctransport.group')
     version property('dev.squaremile.asynctransport.version')
 }
-
-subprojects {
-    java {
-        modularity.inferModulePath = true
-    }
-    test {
-        useJUnitPlatform {
-//        excludeTags 'tcperror' // uncomment not to run tests that produce tcp errors (expected)
-        }
-    }
-}

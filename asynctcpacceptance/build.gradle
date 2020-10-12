@@ -12,6 +12,10 @@ distZip {
     archiveFileName = 'asynctcpacceptance.zip'
 }
 
+java {
+    modularity.inferModulePath = true
+}
+
 test {
     useJUnitPlatform()
 }

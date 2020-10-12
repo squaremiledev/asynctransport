@@ -4,8 +4,13 @@ plugins {
 }
 
 java {
+    modularity.inferModulePath = true
     withJavadocJar()
     withSourcesJar()
+}
+
+test {
+    useJUnitPlatform()
 }
 
 
