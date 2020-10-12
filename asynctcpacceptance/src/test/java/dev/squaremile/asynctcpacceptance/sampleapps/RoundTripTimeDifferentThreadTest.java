@@ -8,6 +8,7 @@ import org.agrona.collections.MutableBoolean;
 import org.agrona.collections.MutableLong;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
@@ -43,6 +44,7 @@ public class RoundTripTimeDifferentThreadTest
     };
 
     @Test
+    @Disabled
     void measureRoundTripTime()
     {
         final OneToOneRingBuffer networkToUser = createBufer();
