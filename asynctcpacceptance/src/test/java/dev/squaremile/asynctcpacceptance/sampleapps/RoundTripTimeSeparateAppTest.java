@@ -71,7 +71,7 @@ public class RoundTripTimeSeparateAppTest
         System.out.print("at a rate of " + _msgps + " messages per second ");
         System.out.print(" which took " + MILLISECONDS.toSeconds(tookMs) + " seconds");
         System.out.println();
-        System.out.println("99.99th percentile is " + HISTOGRAM.getValueAtPercentile(99.99) + " microseconds");
+        System.out.println("99.99th percentile is " + HISTOGRAM.getValueAtPercentile(99.99) + " microseconds for a round trip");
     }
 
     @Test

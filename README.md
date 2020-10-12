@@ -2,6 +2,15 @@
 
 [![Tests_Java_8_11 Build Status](https://github.com/squaremiledev/asynctransport/workflows/Tests_Java_8_11/badge.svg)](https://github.com/squaremiledev/asynctransport/actions?query=workflow%3ATests_Java_8_11)
 
+This library is an attempt to build a fully composable, library-style (read, non-framework style),
+message-driven, high performance, single threaded tcp server/client.
+
+This library is best suited for event sourced systems that must provide a predictable latency
+even at a high rate of messages and that part of its communication is done via TCP.
+
+The current overhead of the library that has been measured is ~5 microseconds one way for most of the messages
+and ~50 microseconds one way at 99.99th percentile at the rate of ~100 000 small messages a second.
+
 To build:
 
 make
@@ -36,8 +45,8 @@ running at the rate of 50 000 small msg /s RoundTripTimeSeparateAppTest was used
 Numbers should improve when allocation rate is reduced.
 
 ```
-Exchanged 4000000 messages at a rate of 47975 messages per second which took 83 seconds
-99.99th percentile is 111 microseconds
+Exchanged 8000000 messages at a rate of 95947 messages per second  which took 83 seconds
+99.99th percentile is 105 microseconds for a round trip
 ```
 
 ## Usage
