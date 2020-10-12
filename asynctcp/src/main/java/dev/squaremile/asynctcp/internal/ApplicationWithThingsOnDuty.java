@@ -1,15 +1,15 @@
 package dev.squaremile.asynctcp.internal;
 
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.OnDuty;
 
-public class ApplicationWithThingsOnDuty implements Application
+public class ApplicationWithThingsOnDuty implements EventDrivenApplication
 {
-    private final Application delegate;
+    private final EventDrivenApplication delegate;
     private final OnDuty additionalThingOnDuty;
 
-    public ApplicationWithThingsOnDuty(final Application delegate, final OnDuty additionalThingOnDuty)
+    public ApplicationWithThingsOnDuty(final EventDrivenApplication delegate, final OnDuty additionalThingOnDuty)
     {
         this.delegate = delegate;
         this.additionalThingOnDuty = additionalThingOnDuty;

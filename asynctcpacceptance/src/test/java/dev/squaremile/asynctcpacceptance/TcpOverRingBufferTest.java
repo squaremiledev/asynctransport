@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
@@ -42,7 +42,7 @@ class TcpOverRingBufferTest
     @Test
     void shouldAcceptConnectionAndSendDataUsingTcpOverRingBuffer() throws IOException
     {
-        Application application = transportApplicationFactory.create(
+        ApplicationOnDuty application = transportApplicationFactory.create(
                 "test",
                 networkToUser,
                 userToNetwork,

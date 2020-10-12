@@ -10,11 +10,11 @@ import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApp
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationValidatingTransport;
 import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferApplication;
 import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferWriter;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
-import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
 
 import static dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler.NO_HANDLER;
@@ -25,7 +25,7 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
     private final NonProdGradeTransportFactory transportFactory = new NonProdGradeTransportFactory();
 
     @Override
-    public Application create(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory)
+    public EventDrivenApplication create(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory)
     {
         return new ApplicationWithThingsOnDuty(
                 createWithoutTransport(
@@ -43,17 +43,17 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
     }
 
     @Override
-    public Application create(final String role, ApplicationFactory applicationFactory)
+    public EventDrivenApplication create(final String role, ApplicationFactory applicationFactory)
     {
         ListeningApplication listeningApplication = new ListeningApplication();
-        TransportOnDuty transport = new DelineationValidatingTransport(listeningApplication, new NonBlockingTransport(listeningApplication, NO_HANDLER, System::currentTimeMillis, role));
-        Application app = new DelineationApplication(applicationFactory.create(transport));
+        Transport transport = new DelineationValidatingTransport(listeningApplication, new NonBlockingTransport(listeningApplication, NO_HANDLER, System::currentTimeMillis, role));
+        EventDrivenApplication app = new DelineationApplication(applicationFactory.create(transport));
         listeningApplication.set(app);
         return new TransportPoweredApplication(transport, app);
     }
 
     @Override
-    public Application createWithoutTransport(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory)
+    public EventDrivenApplication createWithoutTransport(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory)
     {
         SerializingTransport serializingTransport = new SerializingTransport(new ExpandableArrayBuffer(), 0, new RingBufferWriter("userToNetworkRingBuffer", userToNetwork));
         return new RingBufferApplication(serializingTransport, applicationFactory.create(serializingTransport), networkToUser);
@@ -62,7 +62,7 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
 
     private static class ListeningApplication implements EventListener
     {
-        private Application listeningApplication;
+        private EventDrivenApplication listeningApplication;
 
         @Override
         public void onEvent(final Event event)
@@ -70,7 +70,7 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
             listeningApplication.onEvent(event);
         }
 
-        public void set(final Application app)
+        public void set(final EventDrivenApplication app)
         {
             listeningApplication = app;
         }

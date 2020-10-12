@@ -1,6 +1,6 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.Event;
@@ -13,7 +13,7 @@ import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcpacceptance.demo.ConnectionApplicationFactory;
 import dev.squaremile.asynctcpacceptance.demo.SingleLocalConnectionDemoApplication;
 
-class ConnectingApplication implements Application
+class ConnectingApplication implements EventDrivenApplication
 {
 
     private final Transport transport;

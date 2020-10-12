@@ -2,8 +2,8 @@ package dev.squaremile.asynctcp.serialization.internal.delineation;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
-import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
@@ -11,13 +11,13 @@ import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-public class DelineationValidatingTransport implements TransportOnDuty
+public class DelineationValidatingTransport implements Transport
 {
     private final DelineationHandlerFactory delineationHandlerFactory = new DelineationHandlerFactory();
     private final EventListener eventListener;
-    private final TransportOnDuty delegate;
+    private final Transport delegate;
 
-    public DelineationValidatingTransport(final EventListener eventListener, final TransportOnDuty delegate)
+    public DelineationValidatingTransport(final EventListener eventListener, final Transport delegate)
     {
         this.eventListener = eventListener;
         this.delegate = delegate;

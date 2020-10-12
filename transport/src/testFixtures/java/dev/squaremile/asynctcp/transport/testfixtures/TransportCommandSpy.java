@@ -1,22 +1,22 @@
 package dev.squaremile.asynctcp.transport.testfixtures;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
-import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
-public class TransportCommandSpy extends Spy<TransportCommand> implements TransportOnDuty
+public class TransportCommandSpy extends Spy<TransportCommand> implements Transport
 {
     private final CapturedItems<TransportCommand> items;
-    private final TransportOnDuty transport;
+    private final Transport transport;
 
-    public TransportCommandSpy(final TransportOnDuty transport)
+    public TransportCommandSpy(final Transport transport)
     {
         this(new CapturedItems<>(), transport);
     }
 
-    private TransportCommandSpy(final CapturedItems<TransportCommand> items, final TransportOnDuty transport)
+    private TransportCommandSpy(final CapturedItems<TransportCommand> items, final Transport transport)
     {
         super(items);
         this.items = items;

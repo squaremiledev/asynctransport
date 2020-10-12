@@ -17,7 +17,7 @@ import dev.squaremile.asynctcp.sbe.StoppedListeningEncoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedEncoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingEncoder;
 import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
@@ -30,7 +30,7 @@ import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
 
-public class SerializingApplication implements Application
+public class SerializingApplication implements EventDrivenApplication
 {
     private final MutableDirectBuffer buffer;
     private final int offset;

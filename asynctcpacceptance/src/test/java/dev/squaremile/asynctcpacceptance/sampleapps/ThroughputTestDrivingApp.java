@@ -4,11 +4,10 @@ import org.agrona.collections.MutableLong;
 import org.agrona.collections.MutableReference;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
@@ -32,16 +31,16 @@ class ThroughputTestDrivingApp implements ApplicationFactory
 
 
     @Override
-    public Application create(final Transport transport)
+    public EventDrivenApplication create(final Transport transport)
     {
         this.transport = transport;
         app = new App(transport);
         return app;
     }
 
-    public TransportOnDuty transport()
+    public Transport transport()
     {
-        return (TransportOnDuty)transport;
+        return transport;
     }
 
     public App app()
@@ -59,7 +58,7 @@ class ThroughputTestDrivingApp implements ApplicationFactory
         return totalBytesReceived.get();
     }
 
-    class App implements Application
+    class App implements EventDrivenApplication
     {
         private final Transport transport;
 

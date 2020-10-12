@@ -1,12 +1,14 @@
 package dev.squaremile.asynctcp.transport.api.app;
 
-public interface Application extends EventListener, OnDuty
+public interface EventDrivenApplication extends ApplicationOnDuty, EventListener
 {
+    @Override
     default void onStart()
     {
 
     }
 
+    @Override
     default void onStop()
     {
 

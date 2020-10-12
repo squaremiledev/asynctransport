@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
@@ -27,8 +27,8 @@ class LongPingPongAppTest
     @Test
     void shouldExchangeLongs()
     {
-        Application pingApp = transportApplicationFactory.create("ping", new LongPingPongAppFactory(MESSAGES_CAP, port, pingSpy, number -> numbersExchangedCount++));
-        Application pongApp = transportApplicationFactory.create("pong", new LongPongAppFactory(port, pongSpy, number -> numbersExchangedCount++));
+        ApplicationOnDuty pingApp = transportApplicationFactory.create("ping", new LongPingPongAppFactory(MESSAGES_CAP, port, pingSpy, number -> numbersExchangedCount++));
+        ApplicationOnDuty pongApp = transportApplicationFactory.create("pong", new LongPongAppFactory(port, pongSpy, number -> numbersExchangedCount++));
         Apps apps = new Apps(pingApp, pongApp);
         pingApp.onStart();
         apps.runUntil(() -> pingSpy.contains(StartedListening.class));

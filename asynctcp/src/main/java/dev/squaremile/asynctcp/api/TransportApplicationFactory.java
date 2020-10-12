@@ -3,8 +3,8 @@ package dev.squaremile.asynctcp.api;
 import org.agrona.concurrent.ringbuffer.RingBuffer;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Application;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 
 public interface TransportApplicationFactory
 {
@@ -21,7 +21,7 @@ public interface TransportApplicationFactory
      * @param applicationFactory a user provided application
      * @return a wired application ready to be started and used
      */
-    Application create(String role, RingBuffer networkToUser, RingBuffer userToNetwork, ApplicationFactory applicationFactory);
+    ApplicationOnDuty create(String role, RingBuffer networkToUser, RingBuffer userToNetwork, ApplicationFactory applicationFactory);
 
     /**
      * Creates a wired TCP Application that is ready to use.
@@ -42,7 +42,7 @@ public interface TransportApplicationFactory
      * @param applicationFactory a user provided application
      * @return a wired application ready to be started and used
      */
-    Application create(String role, ApplicationFactory applicationFactory);
+    ApplicationOnDuty create(String role, ApplicationFactory applicationFactory);
 
     /**
      * Creates a wired TCP Application that requires a buffer-backed transport counterparty to work.
@@ -57,5 +57,5 @@ public interface TransportApplicationFactory
      * @param applicationFactory a user provided application
      * @return a wired application ready to be started and used
      */
-    Application createWithoutTransport(String role, RingBuffer networkToUser, RingBuffer userToNetwork, ApplicationFactory applicationFactory);
+    ApplicationOnDuty createWithoutTransport(String role, RingBuffer networkToUser, RingBuffer userToNetwork, ApplicationFactory applicationFactory);
 }

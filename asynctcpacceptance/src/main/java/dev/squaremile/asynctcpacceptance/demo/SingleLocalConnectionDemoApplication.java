@@ -4,7 +4,7 @@ package dev.squaremile.asynctcpacceptance.demo;
 import java.util.function.Consumer;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
@@ -26,7 +26,7 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-public class SingleLocalConnectionDemoApplication implements Application
+public class SingleLocalConnectionDemoApplication implements EventDrivenApplication
 {
     final LifecycleListener lifecycleListener;
     private final Transport t;

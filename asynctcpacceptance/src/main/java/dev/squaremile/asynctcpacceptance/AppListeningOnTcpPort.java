@@ -1,7 +1,8 @@
 package dev.squaremile.asynctcpacceptance;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
@@ -24,9 +25,9 @@ public class AppListeningOnTcpPort
         }
         final int appPort = parseInt(args[0]);
 
-        Application app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
+        ApplicationOnDuty app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
                 "AppListeningOnTcpPort",
-                transport -> new Application()
+                transport -> new EventDrivenApplication()
                 {
                     @Override
                     public void onStart()

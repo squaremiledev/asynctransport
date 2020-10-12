@@ -1,7 +1,7 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
@@ -15,7 +15,7 @@ import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static java.util.Objects.requireNonNull;
 
-public class MessageEchoApplication implements Application
+public class MessageEchoApplication implements EventDrivenApplication
 {
     private final Transport transport;
     private final int listeningPort;

@@ -5,15 +5,15 @@ import org.agrona.DirectBuffer;
 
 import dev.squaremile.asynctcp.serialization.internal.MessageDrivenApplication;
 import dev.squaremile.asynctcp.serialization.internal.TransportEventsDeserialization;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 
 public class MessageOnlyDrivenApplication implements MessageDrivenApplication
 {
-    private final Application application;
+    private final EventDrivenApplication application;
     private final TransportEventsDeserialization deserialization;
 
-    public MessageOnlyDrivenApplication(final Application application)
+    public MessageOnlyDrivenApplication(final EventDrivenApplication application)
     {
         this.application = application;
         this.deserialization = new TransportEventsDeserialization(application::onEvent);

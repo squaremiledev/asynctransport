@@ -13,12 +13,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
-import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
@@ -57,7 +57,7 @@ public class ValidationTest
         );
     }
 
-    static Stream<Function<TransportOnDuty, TransportUserCommand>> commandsWithUnsupportedDelineation()
+    static Stream<Function<Transport, TransportUserCommand>> commandsWithUnsupportedDelineation()
     {
         Delineation unsupportedDelineation = new Delineation(Delineation.Type.ASCII_PATTERN, 1, "invalidPattern");
         return Stream.of(
@@ -115,7 +115,7 @@ public class ValidationTest
 
     private void whenApplicationStarting(final EventsSpy eventsSpy, final Consumer<Transport> onStart)
     {
-        Application application = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create("test", transport -> new Application()
+        ApplicationOnDuty application = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create("test", transport -> new EventDrivenApplication()
         {
             @Override
             public void onStart()

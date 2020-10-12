@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
@@ -395,7 +395,7 @@ class DelineationApplicationTest
         return new ConnectionAccepted(connectionId, 51, "localhost", 33160, 65536, 1313280);
     }
 
-    private static class ApplicationSpy implements Application
+    private static class ApplicationSpy implements EventDrivenApplication
     {
 
         private final List<Object> invoked = new ArrayList<>();

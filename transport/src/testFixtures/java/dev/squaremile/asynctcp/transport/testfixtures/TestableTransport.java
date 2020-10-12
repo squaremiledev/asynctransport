@@ -5,9 +5,10 @@ import java.util.function.BooleanSupplier;
 
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
+import dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler;
 import dev.squaremile.asynctcp.transport.api.app.TransportEventsListener;
-import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.internal.domain.StatusEventListener;
@@ -16,9 +17,9 @@ import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTra
 import static dev.squaremile.asynctcp.transport.testfixtures.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
 import static java.util.concurrent.locks.LockSupport.parkNanos;
 
-public class TestableTransport<E extends TransportEventsListener> implements TransportOnDuty
+public class TestableTransport<E extends TransportEventsListener> implements Transport
 {
-    private final TransportOnDuty delegate;
+    private final Transport delegate;
     private final E events;
 
     TestableTransport(final E events, final StatusEventListener statusEventListener)
@@ -26,7 +27,7 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
         this.events = events;
         try
         {
-            this.delegate = new NonBlockingTransport(new DelegatingEventListener(events, statusEventListener), NO_HANDLER, System::currentTimeMillis, "");
+            this.delegate = new NonBlockingTransport(new DelegatingEventListener(events, statusEventListener), TransportCommandHandler.NO_HANDLER, System::currentTimeMillis, "");
         }
         catch (Exception e)
         {
@@ -64,12 +65,6 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
     }
 
     @Override
-    public void close()
-    {
-        delegate.close();
-    }
-
-    @Override
     public <C extends TransportUserCommand> C command(final Class<C> commandType)
     {
         return delegate.command(commandType);
@@ -79,6 +74,12 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
     public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
     {
         return delegate.command(connectionId, commandType);
+    }
+
+    @Override
+    public void close()
+    {
+        delegate.close();
     }
 
     @Override

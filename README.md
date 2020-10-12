@@ -53,44 +53,63 @@ Exchanged 8000000 messages at a rate of 95947 messages per second  which took 83
 
 This is all is needed to create an app that listens on appPort TCP port and sends Hi! to whoever connected.
 
+You can go to asynctcpacceptance/src/main/java/dev/squaremile/asynctcpacceptance/demo/AppFromReadme.java and run the example.
+
 ```java
+package dev.squaremile.asynctcpacceptance.demo;
 
-Application app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
-        "MyApp",
-        transport -> new Application()
-        {
-            @Override
-            public void onStart()
-            {
-                transport.handle(transport.command(Listen.class).set(1, 8889, RAW_STREAMING.type));
-            }
+import dev.squaremile.asynctcp.api.AsyncTcp;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.transport.api.commands.Listen;
+import dev.squaremile.asynctcp.transport.api.commands.SendData;
+import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 
-            @Override
-            public void onEvent(final Event event)
-            {
-                System.out.println(event);
-                if (event instanceof ConnectionAccepted)
-                {
-                    ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
-                    transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
-                }
-            }
+import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.RAW_STREAMING;
 
-            @Override
-            public void onStop()
-            {
-            }
-        }
-);
-
-app.onStart();
-while (true)
+public class AppFromReadme
 {
-    app.work();
+    public static void main(String[] args)
+    {
+        ApplicationOnDuty app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
+                "MyApp",
+                transport -> new EventDrivenApplication()
+                {
+
+                    @Override
+                    public void onStart()
+                    {
+                        transport.handle(transport.command(Listen.class).set(1, 8889, RAW_STREAMING.type));
+                        System.out.println("now you can run `telnet localhost 8889` in the terminal");
+                    }
+
+                    @Override
+                    public void onStop()
+                    {
+                    }
+
+                    @Override
+                    public void onEvent(final Event event)
+                    {
+                        System.out.println(event);
+                        if (event instanceof ConnectionAccepted)
+                        {
+                            ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
+                            transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
+                        }
+                    }
+                }
+        );
+
+        app.onStart();
+        while (true)
+        {
+            app.work();
+        }
+    }
 }
-
-// more advanced version: asynctcpacceptance/src/main/java/dev/squaremile/asynctcpacceptance/AppListeningOnTcpPort.java
-
 ```
 
 The user provided implementation can be passed using a factory to the launcher.

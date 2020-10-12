@@ -1,17 +1,14 @@
 package dev.squaremile.asynctcpacceptance;
 
-import java.io.IOException;
-
 import org.agrona.ExpandableArrayBuffer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.api.AsyncTcp;
-import dev.squaremile.asynctcp.api.TransportFactory;
 import dev.squaremile.asynctcp.fixtures.SerializedMessagesSpy;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
+import dev.squaremile.asynctcp.internal.NonProdGradeTransportFactory;
 import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
 import dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
@@ -21,7 +18,6 @@ import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.asynctcpacceptance.sampleapps.MessageEchoApplication;
 
-import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.transport.testfixtures.EventsSpy.spy;
@@ -31,10 +27,10 @@ import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 class TcpOverDirectBufferTest
 {
 
-    private final TransportFactory asyncTcpTransportFactory = new AsyncTcp().transportFactory(NON_PROD_GRADE);
+    private final NonProdGradeTransportFactory asyncTcpTransportFactory = new NonProdGradeTransportFactory();
 
     @Test
-    void shouldAcceptConnectionUsingTcpOverDirectBuffer() throws IOException
+    void shouldAcceptConnectionUsingTcpOverDirectBuffer()
     {
         final int port = freePort();
         final SampleClient sampleClient = new SampleClient();

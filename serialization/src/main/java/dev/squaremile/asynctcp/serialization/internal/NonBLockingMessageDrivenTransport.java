@@ -4,14 +4,14 @@ import org.agrona.DirectBuffer;
 
 
 import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
-import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.Transport;
 
 public class NonBLockingMessageDrivenTransport implements MessageDrivenTransport
 {
-    private final TransportOnDuty transport;
+    private final Transport transport;
     private final TransportCommandDeserialization deserialization;
 
-    public NonBLockingMessageDrivenTransport(final TransportOnDuty transport)
+    public NonBLockingMessageDrivenTransport(final Transport transport)
     {
         this.transport = transport;
         this.deserialization = new TransportCommandDeserialization(transport);

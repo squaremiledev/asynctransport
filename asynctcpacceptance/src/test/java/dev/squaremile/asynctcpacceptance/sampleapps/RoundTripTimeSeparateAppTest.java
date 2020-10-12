@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
@@ -30,7 +31,7 @@ public class RoundTripTimeSeparateAppTest
     private final MutableLong startedNanos = new MutableLong(-1);
     private final MutableLong stoppedNanos = new MutableLong(-1);
     private final MutableLong completeRoundTrips = new MutableLong(0);
-    private Application echo;
+    private ApplicationOnDuty echo;
 
     @Test
     // run as first, when started run, runSeparateJvmEchoApplication.
@@ -42,7 +43,7 @@ public class RoundTripTimeSeparateAppTest
         final int sendingRatePerSecond = 48_000; // 0 - send in a response to the received messages
 
         final MutableBoolean isReady = new MutableBoolean(false);
-        final Application source = sourceApplication(port, isReady, sendingRatePerSecond);
+        final ApplicationOnDuty source = sourceApplication(port, isReady, sendingRatePerSecond);
 //        echo = echoApplication(port);
         echo = noOpApplication(port);
 
@@ -98,7 +99,7 @@ public class RoundTripTimeSeparateAppTest
         }
     }
 
-    private Application noOpApplication(final int port)
+    private EventDrivenApplication noOpApplication(final int port)
     {
         return event ->
         {
@@ -106,7 +107,7 @@ public class RoundTripTimeSeparateAppTest
         };
     }
 
-    private Application echoApplication(final int port)
+    private ApplicationOnDuty echoApplication(final int port)
     {
         return new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
                 "echo",
@@ -119,7 +120,7 @@ public class RoundTripTimeSeparateAppTest
         );
     }
 
-    private Application sourceApplication(final int port, final MutableBoolean isReady, final int sendingRatePerSecond)
+    private ApplicationOnDuty sourceApplication(final int port, final MutableBoolean isReady, final int sendingRatePerSecond)
     {
         return new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
                 "source",

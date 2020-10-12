@@ -4,16 +4,16 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.testfixtures.Worker;
 
 import static java.util.Arrays.asList;
 
 class Apps
 {
-    private final List<Application> apps;
+    private final List<ApplicationOnDuty> apps;
 
-    public Apps(final Application... apps)
+    public Apps(final ApplicationOnDuty... apps)
     {
         this.apps = asList(apps);
     }
@@ -23,7 +23,7 @@ class Apps
         Worker.runUntil(
                 () ->
                 {
-                    for (Application app : apps)
+                    for (ApplicationOnDuty app : apps)
                     {
                         app.work();
                     }

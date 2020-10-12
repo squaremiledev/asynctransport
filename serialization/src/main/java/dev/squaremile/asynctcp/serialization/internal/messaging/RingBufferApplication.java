@@ -4,16 +4,16 @@ import org.agrona.concurrent.ringbuffer.RingBuffer;
 
 
 import dev.squaremile.asynctcp.serialization.internal.TransportEventsDeserialization;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 
-public class RingBufferApplication implements Application
+public class RingBufferApplication implements EventDrivenApplication
 {
-    private final Application application;
+    private final EventDrivenApplication application;
     private final RingBufferReader ringBufferReader;
 
-    public RingBufferApplication(final EventListener eventListener, final Application application, final RingBuffer ringBuffer)
+    public RingBufferApplication(final EventListener eventListener, final EventDrivenApplication application, final RingBuffer ringBuffer)
     {
         this.application = application;
         this.ringBufferReader = new RingBufferReader("fromNetwork", ringBuffer, new TransportEventsDeserialization(

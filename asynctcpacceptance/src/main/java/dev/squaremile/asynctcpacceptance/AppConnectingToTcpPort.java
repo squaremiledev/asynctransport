@@ -1,7 +1,8 @@
 package dev.squaremile.asynctcpacceptance;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
@@ -11,7 +12,7 @@ import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelin
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.singletonList;
 
-public class AppConnectingToTcpPort implements Application
+public class AppConnectingToTcpPort implements EventDrivenApplication
 {
     private final Transport transport;
     private int port;
@@ -26,7 +27,7 @@ public class AppConnectingToTcpPort implements Application
     {
         if (args.length == 1)
         {
-            Application transportApplication = new AsyncTcp().transportAppFactory(NON_PROD_GRADE)
+            ApplicationOnDuty transportApplication = new AsyncTcp().transportAppFactory(NON_PROD_GRADE)
                     .create("", transport -> new AppConnectingToTcpPort(transport, parseInt(args[0])));
 
             new NaiveRoundRobinSingleThreadRunner().run(singletonList(transportApplication));

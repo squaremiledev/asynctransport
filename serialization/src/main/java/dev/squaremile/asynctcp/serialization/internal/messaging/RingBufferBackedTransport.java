@@ -31,7 +31,7 @@ public class RingBufferBackedTransport implements MessageDrivenTransport
     }
 
     @Override
-    public void close() throws Exception
+    public void close()
     {
         messageDrivenTransport.close();
     }

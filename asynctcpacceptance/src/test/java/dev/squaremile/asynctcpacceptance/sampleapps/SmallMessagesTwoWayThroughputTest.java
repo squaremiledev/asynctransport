@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
@@ -29,8 +29,8 @@ class SmallMessagesTwoWayThroughputTest
     @Test
     void shouldExchangeLongs()
     {
-        Application pingApp = transportApplicationFactory.create("ping", new LongPingPongAppFactory(MESSAGES_CAP, port, stateListener, number -> numbersExchangedCount++));
-        Application pongApp = transportApplicationFactory.create("pong", new LongPongAppFactory(port, stateListener, number -> numbersExchangedCount++));
+        ApplicationOnDuty pingApp = transportApplicationFactory.create("ping", new LongPingPongAppFactory(MESSAGES_CAP, port, stateListener, number -> numbersExchangedCount++));
+        ApplicationOnDuty pongApp = transportApplicationFactory.create("pong", new LongPongAppFactory(port, stateListener, number -> numbersExchangedCount++));
         Apps apps = new Apps(pingApp, pongApp);
         pingApp.onStart();
         apps.runUntil(stateListener::hasStartedListening);

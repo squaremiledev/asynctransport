@@ -3,7 +3,7 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 import java.util.function.LongConsumer;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Application;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
@@ -32,9 +32,9 @@ class LongPingPongAppFactory implements ApplicationFactory
     }
 
     @Override
-    public Application create(final Transport transport)
+    public EventDrivenApplication create(final Transport transport)
     {
-        return new Application()
+        return new EventDrivenApplication()
         {
             private int numberCount = 0;
 
