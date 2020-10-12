@@ -9,11 +9,11 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 
 import org.agrona.CloseHelper;
 import org.agrona.LangUtil;
 import org.agrona.concurrent.EpochClock;
+import org.agrona.nio.TransportPoller;
 
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
@@ -40,7 +40,7 @@ import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionCo
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionState;
 
 // TODO [perf]: make sure all commands and events can be used without generating garbage
-public class NonBlockingTransport implements AutoCloseable, TransportOnDuty
+public class NonBlockingTransport extends TransportPoller implements AutoCloseable, TransportOnDuty
 {
     private final ConnectionIdSource connectionIdSource;
     private final Selector selector;
@@ -66,8 +66,10 @@ public class NonBlockingTransport implements AutoCloseable, TransportOnDuty
         try
         {
             this.selector = Selector.open();
+            SELECTED_KEYS_FIELD.set(selector, selectedKeySet);
+            PUBLIC_SELECTED_KEYS_FIELD.set(selector, selectedKeySet);
         }
-        catch (IOException e)
+        catch (IOException | IllegalAccessException e)
         {
             throw new RuntimeException(e);
         }
@@ -97,12 +99,10 @@ public class NonBlockingTransport implements AutoCloseable, TransportOnDuty
         {
             if (selector.selectNow() > 0)
             {
-                // TODO [perf]: replace this iteration with a zero allocation solution
-                final Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
-                while (keyIterator.hasNext())
+                final SelectionKey[] keys = selectedKeySet.keys();
+                for (int i = 0, length = selectedKeySet.size(); i < length; i++)
                 {
-                    final SelectionKey key = keyIterator.next();
-                    keyIterator.remove();
+                    final SelectionKey key = keys[i];
                     if (!key.isValid())
                     {
                         continue;
@@ -170,6 +170,7 @@ public class NonBlockingTransport implements AutoCloseable, TransportOnDuty
                         }
                     }
                 }
+                selectedKeySet.reset();
             }
         }
         catch (IOException e)
