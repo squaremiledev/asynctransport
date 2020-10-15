@@ -11,6 +11,7 @@ import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 public class SendLogOn implements ConnectionApplication
 {
@@ -29,7 +30,7 @@ public class SendLogOn implements ConnectionApplication
     {
         this.transport = transport;
         this.onMessage = onMessage;
-        this.connectionId = connectionId;
+        this.connectionId = new ConnectionIdValue(connectionId);
         this.messageCap = messageCap;
     }
 
@@ -39,22 +40,9 @@ public class SendLogOn implements ConnectionApplication
     }
 
     @Override
-    public void onEvent(final ConnectionEvent event)
+    public ConnectionId connectionId()
     {
-        if (event instanceof MessageReceived)
-        {
-            onMessage.run();
-        }
-
-        if (event instanceof DataSent)
-        {
-            DataSent dataSent = (DataSent)event;
-            if (lastSeenWindowSizeInBytes != dataSent.windowSizeInBytes())
-            {
-                System.out.println("Initiators's updated outbound window size: " + dataSent.windowSizeInBytes());
-                lastSeenWindowSizeInBytes = dataSent.windowSizeInBytes();
-            }
-        }
+        return connectionId;
     }
 
     @Override
@@ -78,5 +66,24 @@ public class SendLogOn implements ConnectionApplication
         sendMessage.commit(logonMessage.length);
         transport.handle(sendMessage);
         messagesSent++;
+    }
+
+    @Override
+    public void onEvent(final ConnectionEvent event)
+    {
+        if (event instanceof MessageReceived)
+        {
+            onMessage.run();
+        }
+
+        if (event instanceof DataSent)
+        {
+            DataSent dataSent = (DataSent)event;
+            if (lastSeenWindowSizeInBytes != dataSent.windowSizeInBytes())
+            {
+                System.out.println("Initiators's updated outbound window size: " + dataSent.windowSizeInBytes());
+                lastSeenWindowSizeInBytes = dataSent.windowSizeInBytes();
+            }
+        }
     }
 }

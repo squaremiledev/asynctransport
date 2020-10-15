@@ -1,9 +1,10 @@
-package dev.squaremile.asynctcpacceptance.sampleapps;
+package dev.squaremile.asynctcpacceptance;
 
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
@@ -13,17 +14,19 @@ import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcpacceptance.demo.ConnectionApplicationFactory;
 import dev.squaremile.asynctcpacceptance.demo.SingleLocalConnectionDemoApplication;
 
-class ConnectingApplication implements EventDrivenApplication
+public class ConnectingApplication implements EventDrivenApplication
 {
 
     private final Transport transport;
     private final ConnectionApplicationFactory connectionApplicationFactory;
     private final int remotePort;
     private final Delineation delineation;
+    private final String remoteHost;
     private ConnectionApplication connectionApplication;
 
     public ConnectingApplication(
             final Transport transport,
+            final String remoteHost,
             final int remotePort,
             final Delineation delineation,
             final ConnectionApplicationFactory connectionApplicationFactory
@@ -33,12 +36,13 @@ class ConnectingApplication implements EventDrivenApplication
         this.connectionApplicationFactory = connectionApplicationFactory;
         this.remotePort = remotePort;
         this.delineation = delineation;
+        this.remoteHost = remoteHost;
     }
 
     @Override
     public void onStart()
     {
-        transport.handle(transport.command(Connect.class).set("localhost", remotePort, 2, 1000, delineation));
+        transport.handle(transport.command(Connect.class).set(remoteHost, remotePort, 2, 1000, delineation));
     }
 
     @Override
@@ -63,6 +67,10 @@ class ConnectingApplication implements EventDrivenApplication
     @Override
     public void onEvent(final Event event)
     {
+        if (event instanceof CommandFailed)
+        {
+            throw new IllegalStateException(event.toString());
+        }
         if (event instanceof Connected)
         {
             Connected connected = (Connected)event;

@@ -1,12 +1,16 @@
-package dev.squaremile.asynctcpacceptance.sampleapps;
+package dev.squaremile.asynctcpacceptance;
 
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import java.util.ArrayList;
+import java.util.List;
+
+
+import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
-import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
@@ -15,7 +19,7 @@ import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcpacceptance.demo.ConnectionApplicationFactory;
 import dev.squaremile.asynctcpacceptance.demo.SingleLocalConnectionDemoApplication;
 
-class ListeningApplication implements EventDrivenApplication
+public class ListeningApplication implements EventDrivenApplication
 {
 
     private final Transport transport;
@@ -23,7 +27,7 @@ class ListeningApplication implements EventDrivenApplication
     private final ConnectionApplicationFactory connectionApplicationFactory;
     private final int port;
     private final Delineation delineation;
-    private ConnectionApplication connectionApplication;
+    private final List<ConnectionApplication> connectionApplications = new ArrayList<>(2);
 
     public ListeningApplication(
             final Transport transport,
@@ -40,6 +44,11 @@ class ListeningApplication implements EventDrivenApplication
         this.delineation = delineation;
     }
 
+    private static boolean matches(final ConnectionApplication connectedApplication, final ConnectionEvent event)
+    {
+        return connectedApplication.connectionId().connectionId() == event.connectionId();
+    }
+
     @Override
     public void onStart()
     {
@@ -49,50 +58,64 @@ class ListeningApplication implements EventDrivenApplication
     @Override
     public void onStop()
     {
-        if (connectionApplication != null)
-        {
-            connectionApplication.onStop();
-            connectionApplication = null;
-        }
+        connectionApplications.forEach(ConnectionApplication::onStop);
+        connectionApplications.clear();
     }
 
     @Override
     public void work()
     {
-        if (connectionApplication != null)
+        for (ConnectionApplication connectedApplication : connectionApplications)
         {
-            connectionApplication.work();
+            connectedApplication.work();
         }
     }
 
     @Override
     public void onEvent(final Event event)
     {
+        if (event instanceof CommandFailed)
+        {
+            throw new IllegalStateException(event.toString());
+        }
         if (event instanceof StartedListening)
         {
             onReady.run();
         }
         if (event instanceof ConnectionAccepted)
         {
-            transport.handle(transport.command(StopListening.class).set(3, port));
+            System.out.println("Accepted connection " + event);
             ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
-            connectionApplication = connectionApplicationFactory.create(
+            ConnectionApplication newConnectionApplication = connectionApplicationFactory.create(
                     new SingleLocalConnectionDemoApplication.SingleConnectionTransport(transport, connectionAccepted),
                     connectionAccepted
             );
-            connectionApplication.onStart();
+            connectionApplications.add(newConnectionApplication);
+            newConnectionApplication.onStart();
         }
         else if (event instanceof ConnectionResetByPeer || event instanceof ConnectionClosed)
         {
-            if (connectionApplication != null)
+            System.out.println("Connection closed " + event);
+            ConnectionEvent closingEvent = (ConnectionEvent)event;
+            for (final ConnectionApplication connectionApplication : connectionApplications)
             {
-                connectionApplication.onStop();
-                connectionApplication = null;
+                if (matches(connectionApplication, closingEvent))
+                {
+                    connectionApplication.onStop();
+                }
             }
+            connectionApplications.removeIf(connectionApplication -> matches(connectionApplication, closingEvent));
         }
-        else if (connectionApplication != null && event instanceof ConnectionEvent)
+        else if (event instanceof ConnectionEvent)
         {
-            connectionApplication.onEvent((ConnectionEvent)event);
+            ConnectionEvent connectionEvent = (ConnectionEvent)event;
+            for (final ConnectionApplication connectionApplication : connectionApplications)
+            {
+                if (matches(connectionApplication, connectionEvent))
+                {
+                    connectionApplication.onEvent(connectionEvent);
+                }
+            }
         }
     }
 }

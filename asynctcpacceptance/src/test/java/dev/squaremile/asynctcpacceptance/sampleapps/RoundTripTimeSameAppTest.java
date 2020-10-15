@@ -18,9 +18,11 @@ import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENG
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcpacceptance.EchoConnectionApplication;
+import dev.squaremile.asynctcpacceptance.SourcingConnectionApplication;
 import dev.squaremile.asynctcpacceptance.demo.ApplicationLifecycle;
 import dev.squaremile.asynctcpacceptance.demo.SingleLocalConnectionDemoApplication;
 
@@ -64,8 +66,8 @@ public class RoundTripTimeSameAppTest
 
     @ParameterizedTest
     @MethodSource("applicationSuppliers")
-    // run with -XX:+PrintGCDetails to correlate GC pauses with latency outliers
-    // watch out for the GCs during the second test from the method source that are caused by the first test!
+        // run with -XX:+PrintGCDetails to correlate GC pauses with latency outliers
+        // watch out for the GCs during the second test from the method source that are caused by the first test!
     void measureRoundTripTime(final Function<ApplicationFactory, EventDrivenApplication> applicationSupplier)
     {
         EventDrivenApplication app = applicationSupplier.apply(transport -> new SingleLocalConnectionDemoApplication(
@@ -75,6 +77,7 @@ public class RoundTripTimeSameAppTest
                 log,
                 freePort(),
                 (connectionTransport, connectionId) -> new SourcingConnectionApplication(
+                        connectionId,
                         connectionTransport,
                         completeRoundTrips::incrementAndGet,
                         TOTAL,

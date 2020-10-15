@@ -9,10 +9,13 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 public class RejectLogOn implements ConnectionApplication
 {
     private final Runnable onMessage;
+    private final ConnectionId connectionId;
     private final ConnectionTransport transport;
     private final byte[] logoutMessage = asciiFix("8=FIX.4.2^9=84^35=5^49=SellSide^" +
                                                   "56=BuySide^34=3^52=20190606-09:25:34.329^" +
@@ -20,15 +23,27 @@ public class RejectLogOn implements ConnectionApplication
 
     private long lastSeenWindowSizeInBytes = -1;
 
-    public RejectLogOn(final ConnectionTransport transport, final Runnable onMessage)
+    public RejectLogOn(final ConnectionTransport transport, final Runnable onMessage, final ConnectionId connectionId)
     {
         this.transport = transport;
         this.onMessage = onMessage;
+        this.connectionId = new ConnectionIdValue(connectionId);
     }
 
     private static byte[] asciiFix(final String content)
     {
         return content.replaceAll("\\^", "\u0001").getBytes(StandardCharsets.US_ASCII);
+    }
+
+    @Override
+    public ConnectionId connectionId()
+    {
+        return connectionId;
+    }
+
+    public void work()
+    {
+
     }
 
     @Override
@@ -55,10 +70,5 @@ public class RejectLogOn implements ConnectionApplication
             sendMessage.commit(logoutMessage.length);
             transport.handle(sendMessage);
         }
-    }
-
-    public void work()
-    {
-
     }
 }

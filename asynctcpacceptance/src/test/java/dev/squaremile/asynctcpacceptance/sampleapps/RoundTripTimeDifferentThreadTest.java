@@ -19,6 +19,8 @@ import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.OnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
+import dev.squaremile.asynctcpacceptance.EchoConnectionApplication;
+import dev.squaremile.asynctcpacceptance.SourcingConnectionApplication;
 import dev.squaremile.asynctcpacceptance.demo.ApplicationLifecycle;
 import dev.squaremile.asynctcpacceptance.demo.SingleLocalConnectionDemoApplication;
 
@@ -99,6 +101,7 @@ public class RoundTripTimeDifferentThreadTest
                 log,
                 freePort(),
                 (connectionTransport, connectionId) -> new SourcingConnectionApplication(
+                        connectionId,
                         connectionTransport,
                         completeRoundTrips::incrementAndGet,
                         TOTAL,
