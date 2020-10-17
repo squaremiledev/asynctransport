@@ -127,7 +127,11 @@ public class SourcingConnectionApplication implements ConnectionApplication
         source.onStop();
 
         long messagesExchanged = completeRoundTrips.get() * 2;
+        System.out.print("Exchanged " + messagesExchanged + " messages ");
+        System.out.println("startedNanos = " + startedNanos.get());
+        System.out.println("stoppedNanos = " + stoppedNanos.get());
         long tookMs = NANOSECONDS.toMillis(stoppedNanos.get() - startedNanos.get());
+        System.out.println("tookMs = " + tookMs);
         long _msgps = messagesExchanged * 1000L / tookMs;
 
         histogram.outputPercentileDistribution(System.out, 1.0);
