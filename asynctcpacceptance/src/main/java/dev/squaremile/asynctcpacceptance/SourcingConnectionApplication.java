@@ -87,36 +87,34 @@ public class SourcingConnectionApplication implements ConnectionApplication
         start(remoteHost, remotePort, sendingRatePerSecond, warmUpMessages, measuredMessages);
     }
 
-    public static void start(final String remoteHost, final int remotePort, final int sendingRatePerSecond, final int warmUp, final int total)
+    public static void start(final String remoteHost, final int remotePort, final int sendingRatePerSecond, final int warmUp, final int measuredMessages)
     {
         final Histogram histogram = new Histogram(TimeUnit.SECONDS.toNanos(10), 3);
         final MutableLong startedNanos = new MutableLong(-1);
         final MutableLong stoppedNanos = new MutableLong(-1);
         final MutableLong completeRoundTrips = new MutableLong(0);
         final MutableBoolean isDone = new MutableBoolean(false);
+        final int total = warmUp + measuredMessages;
         final ApplicationOnDuty source = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
                 "source",
-                transport ->
-                {
-                    return new ConnectingApplication(
-                            transport,
-                            remoteHost,
-                            remotePort,
-                            fixedLengthDelineation(16),
-                            (connectionTransport, connectionId) -> new SourcingConnectionApplication(
-                                    connectionId,
-                                    connectionTransport,
-                                    completeRoundTrips::incrementAndGet,
-                                    total,
-                                    warmUp,
-                                    startedNanos,
-                                    stoppedNanos,
-                                    isDone,
-                                    histogram,
-                                    sendingRatePerSecond
-                            )
-                    );
-                }
+                transport -> new ConnectingApplication(
+                        transport,
+                        remoteHost,
+                        remotePort,
+                        fixedLengthDelineation(16),
+                        (connectionTransport, connectionId) -> new SourcingConnectionApplication(
+                                connectionId,
+                                connectionTransport,
+                                completeRoundTrips::incrementAndGet,
+                                total,
+                                warmUp,
+                                startedNanos,
+                                stoppedNanos,
+                                isDone,
+                                histogram,
+                                sendingRatePerSecond
+                        )
+                )
         );
 
         source.onStart();
@@ -147,6 +145,36 @@ public class SourcingConnectionApplication implements ConnectionApplication
     public ConnectionId connectionId()
     {
         return connectionId;
+    }
+
+    @Override
+    public void onStart()
+    {
+        if (messageDelayNs == -1)
+        {
+            send(nanoTime());
+        }
+    }
+
+    @Override
+    public void work()
+    {
+        if (messageDelayNs >= 0 && timesSent < total)
+        {
+            if (timesSent == 0)
+            {
+                send(nanoTime());
+            }
+            else
+            {
+                long nowNs = nanoTime();
+                long expectedTimestampNsToSendThisMessage = sentFirstTimeNanos.get() + timesSent * messageDelayNs;
+                if (nowNs >= expectedTimestampNsToSendThisMessage)
+                {
+                    send(expectedTimestampNsToSendThisMessage);
+                }
+            }
+        }
     }
 
     @Override
@@ -184,36 +212,6 @@ public class SourcingConnectionApplication implements ConnectionApplication
                 }
                 stoppedMeasuringNanos.set(nanoTime());
                 isDone.set(true);
-            }
-        }
-    }
-
-    @Override
-    public void onStart()
-    {
-        if (messageDelayNs == -1)
-        {
-            send(nanoTime());
-        }
-    }
-
-    @Override
-    public void work()
-    {
-        if (messageDelayNs >= 0 && timesSent < total)
-        {
-            if (timesSent == 0)
-            {
-                send(nanoTime());
-            }
-            else
-            {
-                long nowNs = nanoTime();
-                long expectedTimestampNsToSendThisMessage = sentFirstTimeNanos.get() + timesSent * messageDelayNs;
-                if (nowNs >= expectedTimestampNsToSendThisMessage)
-                {
-                    send(expectedTimestampNsToSendThisMessage);
-                }
             }
         }
     }
