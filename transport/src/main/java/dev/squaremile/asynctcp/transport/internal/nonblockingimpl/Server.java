@@ -93,6 +93,7 @@ public class Server implements AutoCloseable
     SocketChannel acceptChannel() throws IOException
     {
         final SocketChannel acceptedSocketChannel = serverSocketChannel.accept();
+        acceptedSocketChannel.socket().setTcpNoDelay(true);
         acceptedSocketChannel.configureBlocking(false);
         return acceptedSocketChannel;
     }

@@ -120,6 +120,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
                     {
                         ConnectedNotification connectedNotification = pendingConnections.pendingConnection(key);
                         SocketChannel socketChannel = connectedNotification.socketChannel;
+                        socketChannel.socket().setTcpNoDelay(true);
                         try
                         {
                             socketChannel.finishConnect();
@@ -135,6 +136,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
                         if (socketChannel.isConnected())
                         {
                             Socket socket = socketChannel.socket();
+                            socket.setTcpNoDelay(true);
                             // TODO [perf]: size buffers correctly
                             ConnectionIdValue connectionId = new ConnectionIdValue(socket.getLocalPort(), connectionIdSource.newId());
                             final ConnectionConfiguration configuration = new ConnectionConfiguration(
