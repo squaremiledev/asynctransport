@@ -12,7 +12,17 @@ The current end to end latency when using the library has been measured to be ~5
 , ~50 microseconds one way at 99.99th percentile at the rate of ~100 000 small messages a second and
 ~90 microseconds one way for 2 concurrent connections with total ~200 000 messages exchanged a second.
 This is measured on the same box to rule out all factors beyond the control of the library, such as network
-topology. End to end latencies between hosts on the Internet must be for obvious reasons much higher.
+topology. End to end latencies between hosts on the Internet must be for obvious reasons higher.
+
+More realistic use case with a reliable connection (same data center) yields results closer to double digit microseconds latency for 99.9th percentile
+with ping between boxes being in a double digit microseconds range as well.
+
+When measured against the ping and netperf benchmarks, on a AWS EC2 c5n.xlarge box
+
+- at a rate of ~ 100 000 messages a second using the library is virtually free (unable to detect any overhead)
+- at a rate of ~ 200 000 messages a second the overhead starts being visible, with still double digit microseconds latency for 99th percentile but triple digit microseconds latency for 99.9th
+
+Detailed [test results for AWS EC2 boxes are available here.](docs/aws.md)
 
 To build:
 
@@ -67,6 +77,8 @@ Exchanged 72000000 messages at a rate of 95995 messages per second  which took 7
 Exchanged 72000000 messages at a rate of 95996 messages per second  which took 750 seconds
 99.99th percentile is 166 microseconds for a round trip
 ```
+
+For cloud deployments see [test results for AWS EC2 boxes](docs/aws.md).
 
 ## Usage
 
