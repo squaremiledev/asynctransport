@@ -124,21 +124,28 @@ public class SourcingConnectionApplication implements ConnectionApplication
         }
         source.onStop();
 
-        long messagesExchanged = completeRoundTrips.get() * 2;
-        System.out.print("Exchanged " + messagesExchanged + " messages ");
-        System.out.println("startedNanos = " + startedNanos.get());
-        System.out.println("stoppedNanos = " + stoppedNanos.get());
-        long tookMs = NANOSECONDS.toMillis(stoppedNanos.get() - startedNanos.get());
-        System.out.println("tookMs = " + tookMs);
-        long _msgps = messagesExchanged * 1000L / tookMs;
+        final long transactions = completeRoundTrips.get();
+        final long messagesExchanged = transactions * 2;
+        final long tookMs = NANOSECONDS.toMillis(stoppedNanos.get() - startedNanos.get());
+        final long _msgps = messagesExchanged * 1000L / tookMs;
+        final long _trps = transactions * 1000L / tookMs;
 
-        histogram.outputPercentileDistribution(System.out, 1.0);
+        //histogram.outputPercentileDistribution(System.out, 1.0);
         System.out.println();
         System.out.print("Exchanged " + messagesExchanged + " messages ");
         System.out.print("at a rate of " + _msgps + " messages per second ");
-        System.out.print(" which took " + MILLISECONDS.toSeconds(tookMs) + " seconds");
+        System.out.print(" which took " + tookMs + " milliseconds");
         System.out.println();
+        System.out.print("Performed " + transactions + " transactions ");
+        System.out.print("at a rate of " + _trps + " transactions per second ");
+        System.out.print(" which took " + tookMs + " milliseconds");
+        System.out.println();
+        System.out.println("mean is               " + histogram.getMean() + " microseconds for a round trip");
+        System.out.println("99th percentile is    " + histogram.getValueAtPercentile(99) + " microseconds for a round trip");
+        System.out.println("99.9th percentile is  " + histogram.getValueAtPercentile(99.9) + " microseconds for a round trip");
         System.out.println("99.99th percentile is " + histogram.getValueAtPercentile(99.99) + " microseconds for a round trip");
+        System.out.println("worst is              " + histogram.getMaxValue() + " microseconds for a round trip");
+        System.out.println("std deviation is      " + String.format("%.5g", histogram.getStdDeviation()) + " microseconds");
     }
 
     @Override
