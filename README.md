@@ -146,44 +146,44 @@ import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelin
 
 public class AppFromReadme
 {
-public static void main(String[] args)
-{
-ApplicationOnDuty app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
-"MyApp",
-transport -> new EventDrivenApplication()
-{
+    public static void main(String[] args)
+    {
+        ApplicationOnDuty app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
+                "MyApp",
+                transport -> new EventDrivenApplication()
+                {
 
-@Override
-public void onStart()
-{
-transport.handle(transport.command(Listen.class).set(1, 8889, RAW_STREAMING.type));
-System.out.println("now you can run `telnet localhost 8889` in the terminal");
-}
+                    @Override
+                    public void onStart()
+                    {
+                        transport.handle(transport.command(Listen.class).set(1, 8889, RAW_STREAMING.type));
+                        System.out.println("now you can run `telnet localhost 8889` in the terminal");
+                    }
 
-@Override
-public void onStop()
-{
-}
+                    @Override
+                    public void onStop()
+                    {
+                    }
 
-@Override
-public void onEvent(final Event event)
-{
-System.out.println(event);
-if (event instanceof ConnectionAccepted)
-{
-ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
-transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
-}
-}
-}
-);
+                    @Override
+                    public void onEvent(final Event event)
+                    {
+                        System.out.println(event);
+                        if (event instanceof ConnectionAccepted)
+                        {
+                            ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
+                            transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
+                        }
+                    }
+                }
+        );
 
-app.onStart();
-while (true)
-{
-app.work();
-}
-}
+        app.onStart();
+        while (true)
+        {
+            app.work();
+        }
+    }
 }
 ```
 
