@@ -2,10 +2,8 @@ package dev.squaremile.asynctcpacceptance;
 
 import java.util.concurrent.TimeUnit;
 
-import org.HdrHistogram.Histogram;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.MutableBoolean;
-import org.agrona.collections.MutableLong;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
@@ -21,50 +19,44 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
+import static dev.squaremile.asynctcpacceptance.AdHocProtocol.NO_OPTIONS;
+import static dev.squaremile.asynctcpacceptance.AdHocProtocol.PLEASE_RESPOND_FLAG;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.nanoTime;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class SourcingConnectionApplication implements ConnectionApplication
 {
+
     private final ConnectionId connectionId;
     private final ConnectionTransport connectionTransport;
-    private final Runnable onRoundTripComplete;
-    private final int total;
-    private final int warmUp;
-    private final MutableLong startedMeasuringNanos;
-    private final MutableLong stoppedMeasuringNanos;
-    private final MutableLong sentFirstTimeNanos = new MutableLong();
+    private final int totalMessagesToSend;
+    private final int totalMessagesToReceive;
     private final MutableBoolean isDone;
-    private final Histogram histogram;
     private final long messageDelayNs;
-    int timesSent = 0;
-    int timesReceived = 0;
+    private final OnMessageReceived onMessageReceived;
+    private final SelectiveResponseRequest selectiveResponseRequest = new SelectiveResponseRequest(1);
+    long messagesSentCount = 0;
+    long awaitingResponsesInFlight = 0;
+    long messagesReceivedCount = 0;
+    private long startedSendingTimestampNanos = Long.MIN_VALUE;
 
     public SourcingConnectionApplication(
             final ConnectionId connectionId,
             final ConnectionTransport connectionTransport,
-            final Runnable onRoundTripComplete,
-            final int total,
-            final int warmUp,
-            final MutableLong startedMeasuringNanos,
-            final MutableLong stoppedMeasuringNanos,
+            final int totalMessagesToSend,
+            final int totalMessagesToReceive,
             final MutableBoolean isDone,
-            final Histogram histogram,
-            final int sendingRatePerSecond
+            final int sendingRatePerSecond,
+            final OnMessageReceived onMessageReceived
     )
     {
         this.connectionId = new ConnectionIdValue(connectionId);
         this.connectionTransport = connectionTransport;
-        this.onRoundTripComplete = onRoundTripComplete;
-        this.total = total;
-        this.warmUp = warmUp;
-        this.startedMeasuringNanos = startedMeasuringNanos;
-        this.stoppedMeasuringNanos = stoppedMeasuringNanos;
+        this.totalMessagesToSend = totalMessagesToSend;
+        this.totalMessagesToReceive = totalMessagesToReceive;
         this.isDone = isDone;
-        this.histogram = histogram;
-        this.messageDelayNs = sendingRatePerSecond == -1 ? -1 : TimeUnit.SECONDS.toNanos(1) / sendingRatePerSecond;
+        this.messageDelayNs = TimeUnit.SECONDS.toNanos(1) / sendingRatePerSecond;
+        this.onMessageReceived = onMessageReceived;
     }
 
     public static void main(String[] args)
@@ -76,25 +68,24 @@ public class SourcingConnectionApplication implements ConnectionApplication
             return;
         }
         String remoteHost = args[0];
-        int remotePort = parseInt(args[1]);
-        int sendingRatePerSecond = parseInt(args[2]);
-        int warmUpMessages = parseInt(args[3]);
-        int measuredMessages = parseInt(args[4]);
-        System.out.printf(
-                "Starting with remoteHost %s, remotePort %d, sendingRatePerSecond %d, warmUpMessages %d , measuredMessages %d%n",
+        final int remotePort = parseInt(args[1]);
+        final int sendingRatePerSecond = parseInt(args[2]);
+        final int warmUpMessages = parseInt(args[3]);
+        final int measuredMessages = parseInt(args[4]);
+        final String description = String.format(
+                "remoteHost %s, remotePort %d, sendingRatePerSecond %d, warmUpMessages %d , measuredMessages %d",
                 remoteHost, remotePort, sendingRatePerSecond, warmUpMessages, measuredMessages
         );
-        start(remoteHost, remotePort, sendingRatePerSecond, warmUpMessages, measuredMessages);
+        System.out.println("Starting with " + description);
+        start(description, remoteHost, remotePort, sendingRatePerSecond, warmUpMessages, measuredMessages);
     }
 
-    public static void start(final String remoteHost, final int remotePort, final int sendingRatePerSecond, final int warmUp, final int measuredMessages)
+    public static void start(final String description, final String remoteHost, final int remotePort, final int sendingRatePerSecond, final int warmUp, final int measuredMessages)
     {
-        final Histogram histogram = new Histogram(TimeUnit.SECONDS.toNanos(10), 3);
-        final MutableLong startedNanos = new MutableLong(-1);
-        final MutableLong stoppedNanos = new MutableLong(-1);
-        final MutableLong completeRoundTrips = new MutableLong(0);
+        final Measurements measurements = new Measurements(description, warmUp + 1);
         final MutableBoolean isDone = new MutableBoolean(false);
-        final int total = warmUp + measuredMessages;
+        final int totalMessagesToSend = warmUp + measuredMessages;
+        final int totalMessagesToReceive = totalMessagesToSend;
         final ApplicationOnDuty source = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
                 "source",
                 transport -> new ConnectingApplication(
@@ -105,14 +96,11 @@ public class SourcingConnectionApplication implements ConnectionApplication
                         (connectionTransport, connectionId) -> new SourcingConnectionApplication(
                                 connectionId,
                                 connectionTransport,
-                                completeRoundTrips::incrementAndGet,
-                                total,
-                                warmUp,
-                                startedNanos,
-                                stoppedNanos,
+                                totalMessagesToSend,
+                                totalMessagesToReceive,
                                 isDone,
-                                histogram,
-                                sendingRatePerSecond
+                                sendingRatePerSecond,
+                                measurements
                         )
                 )
         );
@@ -124,28 +112,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
         }
         source.onStop();
 
-        final long transactions = completeRoundTrips.get();
-        final long messagesExchanged = transactions * 2;
-        final long tookMs = NANOSECONDS.toMillis(stoppedNanos.get() - startedNanos.get());
-        final long _msgps = messagesExchanged * 1000L / tookMs;
-        final long _trps = transactions * 1000L / tookMs;
-
-        //histogram.outputPercentileDistribution(System.out, 1.0);
-        System.out.println();
-        System.out.print("Exchanged " + messagesExchanged + " messages ");
-        System.out.print("at a rate of " + _msgps + " messages per second ");
-        System.out.print(" which took " + tookMs + " milliseconds");
-        System.out.println();
-        System.out.print("Performed " + transactions + " transactions ");
-        System.out.print("at a rate of " + _trps + " transactions per second ");
-        System.out.print(" which took " + tookMs + " milliseconds");
-        System.out.println();
-        System.out.println("mean is               " + histogram.getMean() + " microseconds for a round trip");
-        System.out.println("99th percentile is    " + histogram.getValueAtPercentile(99) + " microseconds for a round trip");
-        System.out.println("99.9th percentile is  " + histogram.getValueAtPercentile(99.9) + " microseconds for a round trip");
-        System.out.println("99.99th percentile is " + histogram.getValueAtPercentile(99.99) + " microseconds for a round trip");
-        System.out.println("worst is              " + histogram.getMaxValue() + " microseconds for a round trip");
-        System.out.println("std deviation is      " + String.format("%.5g", histogram.getStdDeviation()) + " microseconds");
+        measurements.printResults();
     }
 
     @Override
@@ -157,29 +124,30 @@ public class SourcingConnectionApplication implements ConnectionApplication
     @Override
     public void onStart()
     {
-        if (messageDelayNs == -1)
-        {
-            send(nanoTime());
-        }
     }
 
     @Override
     public void work()
     {
-        if (messageDelayNs >= 0 && timesSent < total)
+        if (messagesSentCount < totalMessagesToSend)
         {
-            if (timesSent == 0)
+            final long nowNs = nanoTime();
+            final long expectedTimestampNsToSendThisMessage;
+            if (startedSendingTimestampNanos != Long.MIN_VALUE)
             {
-                send(nanoTime());
+                expectedTimestampNsToSendThisMessage = startedSendingTimestampNanos + messagesSentCount * messageDelayNs;
             }
             else
             {
-                long nowNs = nanoTime();
-                long expectedTimestampNsToSendThisMessage = sentFirstTimeNanos.get() + timesSent * messageDelayNs;
-                if (nowNs >= expectedTimestampNsToSendThisMessage)
-                {
-                    send(expectedTimestampNsToSendThisMessage);
-                }
+                expectedTimestampNsToSendThisMessage = nowNs;
+                startedSendingTimestampNanos = nowNs;
+            }
+            if (nowNs >= expectedTimestampNsToSendThisMessage)
+            {
+                boolean askToRespond = selectiveResponseRequest.shouldRespond(messagesSentCount);
+                send(expectedTimestampNsToSendThisMessage, askToRespond);
+                messagesSentCount++;
+                awaitingResponsesInFlight += askToRespond ? 1 : 0;
             }
         }
     }
@@ -193,54 +161,37 @@ public class SourcingConnectionApplication implements ConnectionApplication
         }
         if (event instanceof MessageReceived)
         {
-            timesReceived++;
-            if (messageDelayNs == -1 && timesSent < total)
-            {
-                send(nanoTime());
-            }
+            long receivedTimeNs = nanoTime();
+            messagesReceivedCount++;
+            awaitingResponsesInFlight--;
             MessageReceived messageReceived = (MessageReceived)event;
-            long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset());
-            long responseTimeNs = messageReceived.buffer().getLong(messageReceived.offset() + 8);
-            long now = nanoTime();
-            if (timesReceived == warmUp)
+            long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset() + 8);
+            onMessageReceived.onMessageReceived(messagesSentCount, messagesReceivedCount, sendTimeNs, receivedTimeNs);
+            if (messagesReceivedCount == totalMessagesToReceive)
             {
-                startedMeasuringNanos.set(nanoTime());
-            }
-            if (timesReceived > warmUp)
-            {
-                onRoundTripComplete.run();
-                onResults(timesReceived, NANOSECONDS.toMicros(sendTimeNs), NANOSECONDS.toMicros(responseTimeNs), NANOSECONDS.toMicros(now));
-            }
-            if (timesReceived == total)
-            {
-                if (timesReceived != timesSent)
-                {
-                    throw new IllegalStateException("Received " + timesReceived + " times, but sent " + timesSent + " times");
-                }
-                stoppedMeasuringNanos.set(nanoTime());
                 isDone.set(true);
+                if (awaitingResponsesInFlight != 0)
+                {
+                    throw new IllegalStateException("At this point we should have received all expected responses, " +
+                                                    "but " + awaitingResponsesInFlight + " are still in flight");
+                }
             }
         }
     }
 
-    private void onResults(final int timesSent, final long sendTimeUs, final long responseTimeUs, final long nowUs)
-    {
-        long roundTripTimeUs = nowUs - sendTimeUs;
-        histogram.recordValue(roundTripTimeUs);
-    }
-
-    private void send(final long supposedSendingTimestampNs)
+    private void send(final long supposedSendingTimestampNs, final boolean expectResponse)
     {
         SendMessage message = connectionTransport.command(SendMessage.class);
         MutableDirectBuffer buffer = message.prepare();
-        buffer.putLong(message.offset(), supposedSendingTimestampNs);
-        buffer.putLong(message.offset() + 8, -1L);
+        buffer.putLong(message.offset(), expectResponse ? PLEASE_RESPOND_FLAG : NO_OPTIONS);
+        buffer.putLong(message.offset() + 8, supposedSendingTimestampNs);
         message.commit(16);
         connectionTransport.handle(message);
-        timesSent++;
-        if (timesSent == 1)
-        {
-            sentFirstTimeNanos.set(nanoTime());
-        }
     }
+
+    public interface OnMessageReceived
+    {
+        void onMessageReceived(long messagesSentCount, long messagesReceivedCount, long messageSentTimeNs, long messageReceivedTimeNs);
+    }
+
 }

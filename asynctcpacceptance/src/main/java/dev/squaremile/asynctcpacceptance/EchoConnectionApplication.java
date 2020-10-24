@@ -1,5 +1,6 @@
 package dev.squaremile.asynctcpacceptance;
 
+import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
 
@@ -15,13 +16,20 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
+import static dev.squaremile.asynctcpacceptance.AdHocProtocol.NO_OPTIONS;
+import static dev.squaremile.asynctcpacceptance.AdHocProtocol.PLEASE_RESPOND_FLAG;
 import static java.lang.Integer.parseInt;
-import static java.lang.System.nanoTime;
 
 public class EchoConnectionApplication implements ConnectionApplication
 {
     private final ConnectionTransport connectionTransport;
     private final ConnectionId connectionId;
+
+    public EchoConnectionApplication(final ConnectionTransport connectionTransport, final ConnectionId connectionId)
+    {
+        this.connectionTransport = connectionTransport;
+        this.connectionId = new ConnectionIdValue(connectionId);
+    }
 
     public static void main(String[] args)
     {
@@ -54,12 +62,6 @@ public class EchoConnectionApplication implements ConnectionApplication
         );
     }
 
-    public EchoConnectionApplication(final ConnectionTransport connectionTransport, final ConnectionId connectionId)
-    {
-        this.connectionTransport = connectionTransport;
-        this.connectionId = new ConnectionIdValue(connectionId);
-    }
-
     @Override
     public ConnectionId connectionId()
     {
@@ -72,13 +74,18 @@ public class EchoConnectionApplication implements ConnectionApplication
         if (event instanceof MessageReceived)
         {
             MessageReceived messageReceived = (MessageReceived)event;
-            long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset());
-            SendMessage message = connectionTransport.command(SendMessage.class);
-            MutableDirectBuffer buffer = message.prepare();
-            buffer.putLong(message.offset(), sendTimeNs);
-            buffer.putLong(message.offset() + 8, nanoTime());
-            message.commit(16);
-            connectionTransport.handle(message);
+            DirectBuffer readBuffer = messageReceived.buffer();
+            boolean shouldRespond = readBuffer.getLong(messageReceived.offset()) == PLEASE_RESPOND_FLAG;
+            if (shouldRespond)
+            {
+                long sendTimeNs = readBuffer.getLong(messageReceived.offset() + 8);
+                SendMessage message = connectionTransport.command(SendMessage.class);
+                MutableDirectBuffer buffer = message.prepare();
+                buffer.putLong(message.offset(), NO_OPTIONS);
+                buffer.putLong(message.offset() + 8, sendTimeNs);
+                message.commit(16);
+                connectionTransport.handle(message);
+            }
         }
     }
 }

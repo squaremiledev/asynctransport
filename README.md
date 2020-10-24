@@ -5,14 +5,64 @@
 This library is an attempt to build a fully composable, library-style (read, non-framework style),
 message-driven, high performance, single threaded tcp server/client.
 
-This library is best suited for event sourced systems that must provide a predictable latency
-even at a high rate of messages and that part of its communication is done via TCP.
+It has been primarily designed to be used as a building block for other tools that require some audit
+capabilities, such as test spies and that should not slow down systems under test.
 
-The current end to end latency when using the library has been measured to be ~5 microseconds one way for most of the messages
-, ~50 microseconds one way at 99.99th percentile at the rate of ~100 000 small messages a second and
-~90 microseconds one way for 2 concurrent connections with total ~200 000 messages exchanged a second.
-This is measured on the same box to rule out all factors beyond the control of the library, such as network
-topology. End to end latencies between hosts on the Internet must be for obvious reasons higher.
+However, because of a relatively low latency even at higher message rates, it can be also used as a building block for
+event sourced systems where part of its communication is done via TCP.
+
+To start write your own application, see dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort class.
+
+To use TCP in a message-driven fashion, look at `dev.squaremile.asynctcpacceptance.TcpOverRingBufferTest`
+
+The easiest way to start evaluating if the library can be of some use is to
+
+1. Check if it works
+
+To build:
+
+`make`
+
+To run sample app after built:
+
+```
+./asynctcpacceptance/build/distributions/asynctcpacceptance/bin/asynctcpacceptance 9999
+# In the new shell:
+telnet localhost 9999
+```
+
+
+2. confirm that this design style is applicable to a particular context.
+
+Go to dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort or try to implement your own Application
+
+3. confirm that the overhead is acceptable to be used in a specific context
+
+build it with `make` and then on one box (or locally) run
+
+`java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.EchoConnectionApplication  9998`
+
+and on another box run
+
+`java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication localhost 9998 1000 2000 8000`
+
+Where localhost 9998 1000 2000 8000 is remote_host port messageSendingRatePerSecond numberOfWarmUpMessages numberOfMeasuredMessages
+
+```
+Scenario: remoteHost localhost, remotePort 8889, sendingRatePerSecond 48000, warmUpMessages 480000 , measuredMessages 2880000
+Results:
+---------------------------------------------------------
+latency (microseconds) |     ~ one way |     round trip |
+mean                   |             6 |             11 |
+99th percentile        |            10 |             19 |
+99.9th percentile      |            14 |             28 |
+99.99th percentile     |            37 |             73 |
+99.999th percentile    |            70 |            140 |
+worst                  |           120 |            239 |
+
+Based on 2880000 measurements.
+It took 59999 ms between the first measured message sent and the last received
+```
 
 More realistic use case with a reliable connection (same data center) yields results closer to double digit microseconds latency for 99.9th percentile
 with ping between boxes being in a double digit microseconds range as well.
@@ -23,22 +73,6 @@ When measured against the ping and netperf benchmarks, on a AWS EC2 c5n.xlarge b
 - at a rate of ~ 200 000 messages a second the overhead starts being visible, with still double digit microseconds latency for 99th percentile but triple digit microseconds latency for 99.9th
 
 Detailed [test results for AWS EC2 boxes are available here.](docs/aws.md)
-
-To build:
-
-make
-
-To run sample app after built:
-
-```
-./asynctcpacceptance/build/distributions/asynctcpacceptance/bin/asynctcpacceptance 9999
-# In the new shell:
-telnet localhost 9999
-```
-
-To write your own application, see dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort class.
-
-To use TCP in a message-driven fashion, look at `dev.squaremile.asynctcpacceptance.TcpOverRingBufferTest`
 
 ## Design objectives
 
