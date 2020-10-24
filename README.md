@@ -15,9 +15,11 @@ To start write your own application, see dev.squaremile.asynctcpacceptance.AppLi
 
 To use TCP in a message-driven fashion, look at `dev.squaremile.asynctcpacceptance.TcpOverRingBufferTest`
 
+## Evaluation
+
 The easiest way to start evaluating if the library can be of some use is to
 
-1. Check if it works
+### 1. Check if it works
 
 To build:
 
@@ -32,36 +34,44 @@ telnet localhost 9999
 ```
 
 
-2. confirm that this design style is applicable to a particular context.
+### 2. confirm that this design style is applicable to a particular context.
 
 Go to dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort or try to implement your own Application
 
-3. confirm that the overhead is acceptable to be used in a specific context
+### 3. confirm that the overhead is acceptable to be used in a specific context
 
-build it with `make` and then on one box (or locally) run
+Let's say you want to test what kind o latency you should expect when sending 100 000 small messages a second on you local machine.
+
+build the library with
+
+`make`
+
+Run the echo server
 
 `java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.EchoConnectionApplication  9998`
 
-and on another box run
+Run the message source server
 
-`java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication localhost 9998 1000 2000 8000`
+`java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication localhost 9998 100_000 31250 6000000 32`
 
-Where localhost 9998 1000 2000 8000 is remote_host port messageSendingRatePerSecond numberOfWarmUpMessages numberOfMeasuredMessages
+Where localhost 9998 100000 31250 6000000 32 is remote_host port messageSendingRatePerSecond skippedWarmUpResponses messagesSent sendToReceiveRatio
+
+On my machine, for 100 000 messages a second I got the following results (coordinated omission taken into account)
 
 ```
-Scenario: remoteHost localhost, remotePort 8889, sendingRatePerSecond 48000, warmUpMessages 480000 , measuredMessages 2880000
+Scenario: remoteHost localhost, remotePort 9998, sendingRatePerSecond 100000, skippedWarmUpResponses 31250 , messagesSent 6000000, 187500 expected responses with a response rate 1 for 32
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |             6 |             11 |
-99th percentile        |            10 |             19 |
-99.9th percentile      |            14 |             28 |
-99.99th percentile     |            37 |             73 |
-99.999th percentile    |            70 |            140 |
-worst                  |           120 |            239 |
+mean                   |             8 |             15 |
+99th percentile        |            15 |             29 |
+99.9th percentile      |            29 |             58 |
+99.99th percentile     |            63 |            126 |
+99.999th percentile    |           132 |            264 |
+worst                  |           143 |            285 |
 
-Based on 2880000 measurements.
-It took 59999 ms between the first measured message sent and the last received
+Based on 156250 measurements.
+It took 49999 ms between the first measured message sent and the last received
 ```
 
 More realistic use case with a reliable connection (same data center) yields results closer to double digit microseconds latency for 99.9th percentile
@@ -136,44 +146,44 @@ import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelin
 
 public class AppFromReadme
 {
-    public static void main(String[] args)
-    {
-        ApplicationOnDuty app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
-                "MyApp",
-                transport -> new EventDrivenApplication()
-                {
+public static void main(String[] args)
+{
+ApplicationOnDuty app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
+"MyApp",
+transport -> new EventDrivenApplication()
+{
 
-                    @Override
-                    public void onStart()
-                    {
-                        transport.handle(transport.command(Listen.class).set(1, 8889, RAW_STREAMING.type));
-                        System.out.println("now you can run `telnet localhost 8889` in the terminal");
-                    }
+@Override
+public void onStart()
+{
+transport.handle(transport.command(Listen.class).set(1, 8889, RAW_STREAMING.type));
+System.out.println("now you can run `telnet localhost 8889` in the terminal");
+}
 
-                    @Override
-                    public void onStop()
-                    {
-                    }
+@Override
+public void onStop()
+{
+}
 
-                    @Override
-                    public void onEvent(final Event event)
-                    {
-                        System.out.println(event);
-                        if (event instanceof ConnectionAccepted)
-                        {
-                            ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
-                            transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
-                        }
-                    }
-                }
-        );
+@Override
+public void onEvent(final Event event)
+{
+System.out.println(event);
+if (event instanceof ConnectionAccepted)
+{
+ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
+transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
+}
+}
+}
+);
 
-        app.onStart();
-        while (true)
-        {
-            app.work();
-        }
-    }
+app.onStart();
+while (true)
+{
+app.work();
+}
+}
 }
 ```
 

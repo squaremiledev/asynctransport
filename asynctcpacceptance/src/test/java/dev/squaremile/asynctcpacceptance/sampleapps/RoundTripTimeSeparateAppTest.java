@@ -23,16 +23,18 @@ public class RoundTripTimeSeparateAppTest
     @Test
     void measureRoundTripTime()
     {
-        String remoteHost = "localhost";
-        int sendingRatePerSecond = 48_000;
-        int warmUpMessages = 48_000 * 10;
-        int measuredMessages = 48_000 * 60;
+        final String remoteHost = "localhost";
+        final int sendingRatePerSecond = 100_000;
+        final int respondToNth = 32;
+        final int skippedWarmUpResponses = (sendingRatePerSecond * 10) / respondToNth;
+        final int messagesSent = sendingRatePerSecond * 60;
         SourcingConnectionApplication.main(new String[]{
                 remoteHost,
                 Integer.toString(PORT),
                 Integer.toString(sendingRatePerSecond),
-                Integer.toString(warmUpMessages),
-                Integer.toString(measuredMessages)
+                Integer.toString(skippedWarmUpResponses),
+                Integer.toString(messagesSent),
+                Integer.toString(respondToNth)
         });
     }
 

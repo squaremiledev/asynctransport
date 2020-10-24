@@ -30,11 +30,10 @@ public class SourcingConnectionApplication implements ConnectionApplication
     private final ConnectionId connectionId;
     private final ConnectionTransport connectionTransport;
     private final int totalMessagesToSend;
-    private final int totalMessagesToReceive;
     private final MutableBoolean isDone;
     private final long messageDelayNs;
     private final OnMessageReceived onMessageReceived;
-    private final SelectiveResponseRequest selectiveResponseRequest = new SelectiveResponseRequest(1);
+    private final SelectiveResponseRequest selectiveResponseRequest;
     long messagesSentCount = 0;
     long awaitingResponsesInFlight = 0;
     long messagesReceivedCount = 0;
@@ -44,16 +43,16 @@ public class SourcingConnectionApplication implements ConnectionApplication
             final ConnectionId connectionId,
             final ConnectionTransport connectionTransport,
             final int totalMessagesToSend,
-            final int totalMessagesToReceive,
             final MutableBoolean isDone,
             final int sendingRatePerSecond,
-            final OnMessageReceived onMessageReceived
+            final OnMessageReceived onMessageReceived,
+            final int respondToEveryNthRequest
     )
     {
         this.connectionId = new ConnectionIdValue(connectionId);
         this.connectionTransport = connectionTransport;
         this.totalMessagesToSend = totalMessagesToSend;
-        this.totalMessagesToReceive = totalMessagesToReceive;
+        this.selectiveResponseRequest = new SelectiveResponseRequest(totalMessagesToSend, respondToEveryNthRequest);
         this.isDone = isDone;
         this.messageDelayNs = TimeUnit.SECONDS.toNanos(1) / sendingRatePerSecond;
         this.onMessageReceived = onMessageReceived;
@@ -61,31 +60,45 @@ public class SourcingConnectionApplication implements ConnectionApplication
 
     public static void main(String[] args)
     {
-        if (args.length != 5)
+        if (args.length != 5 && args.length != 6)
         {
-            System.out.println("Usage: remoteHost remotePort sendingRatePerSecond warmUpMessages measuredMessages");
-            System.out.println("e.g. localhost 8889 48000 400000 4000000");
+            System.out.println("Usage: remoteHost remotePort sendingRatePerSecond skippedWarmUpResponses messagesSent [respondOnlyToNthRequest]");
+            System.out.println("e.g. localhost 8889 48000 400000 4000000 2");
             return;
         }
         String remoteHost = args[0];
         final int remotePort = parseInt(args[1]);
         final int sendingRatePerSecond = parseInt(args[2]);
-        final int warmUpMessages = parseInt(args[3]);
-        final int measuredMessages = parseInt(args[4]);
+        final int skippedWarmUpResponses = parseInt(args[3]);
+        final int messagesSent = parseInt(args[4]);
+        final int respondToEveryNthRequest = args.length > 5 ? parseInt(args[5]) : 1;
+
+        final int expectedResponses = messagesSent / respondToEveryNthRequest;
         final String description = String.format(
-                "remoteHost %s, remotePort %d, sendingRatePerSecond %d, warmUpMessages %d , measuredMessages %d",
-                remoteHost, remotePort, sendingRatePerSecond, warmUpMessages, measuredMessages
+                "remoteHost %s, remotePort %d, sendingRatePerSecond %d, skippedWarmUpResponses %d , messagesSent %d, %d expected responses with a response rate 1 for %d",
+                remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, expectedResponses, respondToEveryNthRequest
         );
         System.out.println("Starting with " + description);
-        start(description, remoteHost, remotePort, sendingRatePerSecond, warmUpMessages, measuredMessages);
+        start(description, remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, respondToEveryNthRequest);
     }
 
-    public static void start(final String description, final String remoteHost, final int remotePort, final int sendingRatePerSecond, final int warmUp, final int measuredMessages)
+    public static void start(
+            final String description,
+            final String remoteHost,
+            final int remotePort,
+            final int sendingRatePerSecond,
+            final int skippedWarnUpResponses,
+            final int messagesSent,
+            final int respondToEveryNthRequest
+    )
     {
-        final Measurements measurements = new Measurements(description, warmUp + 1);
+        int expectedResponses = messagesSent / respondToEveryNthRequest;
+        if (skippedWarnUpResponses >= expectedResponses)
+        {
+            throw new IllegalArgumentException("All " + expectedResponses + " responses would be skipped");
+        }
+        final Measurements measurements = new Measurements(description, skippedWarnUpResponses + 1);
         final MutableBoolean isDone = new MutableBoolean(false);
-        final int totalMessagesToSend = warmUp + measuredMessages;
-        final int totalMessagesToReceive = totalMessagesToSend;
         final ApplicationOnDuty source = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
                 "source",
                 transport -> new ConnectingApplication(
@@ -96,11 +109,11 @@ public class SourcingConnectionApplication implements ConnectionApplication
                         (connectionTransport, connectionId) -> new SourcingConnectionApplication(
                                 connectionId,
                                 connectionTransport,
-                                totalMessagesToSend,
-                                totalMessagesToReceive,
+                                messagesSent,
                                 isDone,
                                 sendingRatePerSecond,
-                                measurements
+                                measurements,
+                                respondToEveryNthRequest
                         )
                 )
         );
@@ -167,7 +180,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
             MessageReceived messageReceived = (MessageReceived)event;
             long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset() + 8);
             onMessageReceived.onMessageReceived(messagesSentCount, messagesReceivedCount, sendTimeNs, receivedTimeNs);
-            if (messagesReceivedCount == totalMessagesToReceive)
+            if (selectiveResponseRequest.receivedLast(messagesReceivedCount))
             {
                 isDone.set(true);
                 if (awaitingResponsesInFlight != 0)
