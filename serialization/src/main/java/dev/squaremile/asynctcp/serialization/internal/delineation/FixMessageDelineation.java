@@ -15,7 +15,7 @@ public class FixMessageDelineation implements DelineationHandler
     private int bytesBeforeDeclaredLength;
     private int unprocessedLength;
     // TODO #8: decide based on some evidence, such as max inbound buffer size
-    private MutableDirectBuffer unprocessed = new UnsafeBuffer(new byte[1024]);
+    private final MutableDirectBuffer unprocessed = new UnsafeBuffer(new byte[1024]);
 
     public FixMessageDelineation(final DelineationHandler delineatedDataHandler)
     {

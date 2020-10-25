@@ -23,6 +23,12 @@ class IntegersDelineationTest
     private final IntegersDelineation delineation = new IntegersDelineation(delineatedDataSpy);
 
     @Test
+    void foo()
+    {
+        delineation.onData(bufferWith(intInBytes(MAX_VALUE)), 0, 4);
+    }
+
+    @Test
     void shouldNotNotifyAboutPartialData()
     {
         delineation.onData(bufferWith(new byte[]{0, 1, 2, 3, 4}), 0, 3);

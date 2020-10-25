@@ -2,13 +2,13 @@ package dev.squaremile.asynctcp.serialization.internal.delineation;
 
 import org.agrona.DirectBuffer;
 
-class FixedLengthDelineation implements DelineationHandler
+class IntegerLengthFieldDelineation implements DelineationHandler
 {
     private final DelineationHandler delineation;
 
-    FixedLengthDelineation(final DelineationHandler delineatedDataHandler, final int fixedMessageLength)
+    IntegerLengthFieldDelineation(final DelineationHandler delineatedDataHandler)
     {
-        delineation = new LengthBasedDelineation(LengthBasedDelineation.LengthEncoding.FIXED_LENGTH, fixedMessageLength, delineatedDataHandler);
+        this.delineation = new LengthBasedDelineation(LengthBasedDelineation.LengthEncoding.INT_BIG_ENDIAN_FIELD, 0, delineatedDataHandler);
     }
 
     @Override
