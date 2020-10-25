@@ -47,10 +47,10 @@ class LengthBasedDelineation implements DelineationHandler
             mode = Mode.READING_DATA;
             currentMessageLength = value;
         }
-        else if (lengthEncoding == LengthEncoding.INT_BIG_ENDIAN_FIELD)
+        else
         {
             mode = Mode.READING_LENGTH;
-            currentMessageLength = Integer.BYTES;
+            currentMessageLength = lengthEncoding.lengthFieldLength;
         }
 
         short previousDelivered = 0;

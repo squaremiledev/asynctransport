@@ -6,9 +6,9 @@ class IntegerLengthFieldDelineation implements DelineationHandler
 {
     private final DelineationHandler delineation;
 
-    IntegerLengthFieldDelineation(final DelineationHandler delineatedDataHandler)
+    IntegerLengthFieldDelineation(final DelineationHandler delineatedDataHandler, final int lengthFieldOffset)
     {
-        this.delineation = new LengthBasedDelineation(LengthBasedDelineation.LengthEncoding.INT_BIG_ENDIAN_FIELD, 0, delineatedDataHandler);
+        this.delineation = new LengthBasedDelineation(LengthBasedDelineation.LengthEncoding.INT_BIG_ENDIAN_FIELD, lengthFieldOffset, delineatedDataHandler);
     }
 
     @Override
