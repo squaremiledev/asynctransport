@@ -136,6 +136,21 @@ class IntegerLengthProviderFieldDelineationTest
         );
     }
 
+    @Test
+    void shouldUseLengthBrokenDownIntoMultipleBatches()
+    {
+        final IntegerLengthFieldDelineation delineation = new IntegerLengthFieldDelineation(delineatedDataSpy, 0);
+        delineation.onData(bufferWith(b(intInBytes(3)[0])), 0, 1);
+        delineation.onData(bufferWith(b(intInBytes(3)[1], intInBytes(3)[2])), 0, 2);
+        delineation.onData(bufferWith(b(intInBytes(3)[3])), 0, 1);
+        delineation.onData(bufferWith(new byte[]{1, 2, 3}), 0, 3);
+
+        assertEquals(
+                delineatedDataSpy.received(),
+                new byte[]{1, 2, 3}
+        );
+    }
+
     private byte[] intInBytes(final int value)
     {
         byte[] content = new byte[4];
