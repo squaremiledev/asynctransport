@@ -49,6 +49,7 @@ class LengthBasedDelineation implements DelineationHandler
     public void onData(final DirectBuffer buffer, final int offset, final int length)
     {
         int currentMessageLength;
+        int currentMessagePadding = fixedMessagePadding;
         if (lengthEncoding == LengthEncoding.FIXED_LENGTH)
         {
             mode = Mode.READING_DATA;
@@ -81,11 +82,12 @@ class LengthBasedDelineation implements DelineationHandler
         for (int i = previousDelivered; i < length; i++)
         {
             pos++;
-            if (pos == currentMessageLength)
+            if (pos == currentMessagePadding + currentMessageLength)
             {
                 if (mode == Mode.READING_LENGTH)
                 {
                     currentMessageLength = buffer.getInt(offset + i - currentMessageLength + 1, lengthEncoding.byteOrder);
+                    currentMessagePadding = 0;
                     mode = Mode.READING_DATA;
                 }
                 else if (mode == Mode.READING_DATA)
@@ -94,6 +96,7 @@ class LengthBasedDelineation implements DelineationHandler
                     if (lengthEncoding != LengthEncoding.FIXED_LENGTH)
                     {
                         currentMessageLength = lengthEncoding.lengthFieldLength;
+                        currentMessagePadding = fixedMessagePadding;
                         mode = Mode.READING_LENGTH;
                     }
                 }

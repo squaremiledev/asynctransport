@@ -2,7 +2,6 @@ package dev.squaremile.asynctcp.serialization.internal.delineation;
 
 import java.nio.ByteBuffer;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
@@ -71,18 +70,17 @@ class IntegerLengthFieldDelineationTest
     }
 
     @Test
-    @Disabled
     void shouldTakeIntoAccountMessagePadding()
     {
-        final IntegerLengthFieldDelineation delineation = new IntegerLengthFieldDelineation(delineatedDataSpy, 2);
+        final IntegerLengthFieldDelineation delineation = new IntegerLengthFieldDelineation(delineatedDataSpy, 3);
         delineation.onData(bufferWith(bytes(
-                new byte[2], // length field offset
-                intInBytes(2), // length
-                new byte[]{1, 2}, // data
-                new byte[] {99, 98}, // new message, length field offset
-                intInBytes(4), // length
-                new byte[]{3, 4, 5, 6} // data
-        )), 0, Integer.BYTES * 2 + 2 + 4);
+                new byte[3], // padding, 3 bytes
+                intInBytes(2), // length, 4 bytes
+                new byte[]{1, 2}, // data, 2 bytes
+                new byte[]{99, 98, 0}, // new message, padding, 3 bytes
+                intInBytes(4), // length, 4 bytes
+                new byte[]{3, 4, 5, 6} // data, 4 bytes
+        )), 0, 3 + 4 + 2 + 3 + 4 + 4);
 
         assertEquals(
                 delineatedDataSpy.received(),
