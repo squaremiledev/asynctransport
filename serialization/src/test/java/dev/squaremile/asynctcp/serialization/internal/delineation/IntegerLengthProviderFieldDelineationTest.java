@@ -9,7 +9,7 @@ import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFix
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.bufferWith;
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.bytes;
 
-class IntegerLengthFieldDelineationTest
+class IntegerLengthProviderFieldDelineationTest
 {
     private final DelineatedDataSpy delineatedDataSpy = new DelineatedDataSpy();
 

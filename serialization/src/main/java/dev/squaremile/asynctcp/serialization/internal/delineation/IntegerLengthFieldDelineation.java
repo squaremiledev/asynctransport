@@ -3,7 +3,7 @@ package dev.squaremile.asynctcp.serialization.internal.delineation;
 import org.agrona.DirectBuffer;
 
 
-import static dev.squaremile.asynctcp.serialization.internal.delineation.LengthBasedDelineation.LengthEncoding.INT_BIG_ENDIAN_FIELD;
+import static dev.squaremile.asynctcp.serialization.internal.delineation.LengthEncoding.INT_BIG_ENDIAN_FIELD;
 
 class IntegerLengthFieldDelineation implements DelineationHandler
 {

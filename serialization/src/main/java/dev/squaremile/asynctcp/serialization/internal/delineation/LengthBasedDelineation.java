@@ -1,7 +1,5 @@
 package dev.squaremile.asynctcp.serialization.internal.delineation;
 
-import java.nio.ByteOrder;
-
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
@@ -84,15 +82,16 @@ class LengthBasedDelineation implements DelineationHandler
             pos++;
             if (pos == currentMessagePadding + currentMessageLength)
             {
+                int currentOffset = offset + i - currentMessageLength + 1;
                 if (mode == Mode.READING_LENGTH)
                 {
-                    currentMessageLength = buffer.getInt(offset + i - currentMessageLength + 1, lengthEncoding.byteOrder);
+                    currentMessageLength = lengthEncoding.readLength(buffer, currentOffset);
                     currentMessagePadding = 0;
                     mode = Mode.READING_DATA;
                 }
                 else if (mode == Mode.READING_DATA)
                 {
-                    delineatedDataHandler.onData(buffer, offset + i - currentMessageLength + 1, currentMessageLength);
+                    delineatedDataHandler.onData(buffer, currentOffset, currentMessageLength);
                     if (lengthEncoding != LengthEncoding.FIXED_LENGTH)
                     {
                         currentMessageLength = lengthEncoding.lengthFieldLength;
@@ -107,21 +106,6 @@ class LengthBasedDelineation implements DelineationHandler
         if (undeliveredLength > 0)
         {
             buffer.getBytes(offset + (length - undeliveredLength), undeliveredBuffer, 0, undeliveredLength);
-        }
-    }
-
-    enum LengthEncoding
-    {
-        FIXED_LENGTH(ByteOrder.nativeOrder(), 0),
-        INT_BIG_ENDIAN_FIELD(ByteOrder.BIG_ENDIAN, Integer.BYTES);
-
-        private final ByteOrder byteOrder;
-        private final int lengthFieldLength;
-
-        LengthEncoding(final ByteOrder byteOrder, final int lengthFieldLength)
-        {
-            this.byteOrder = byteOrder;
-            this.lengthFieldLength = lengthFieldLength;
         }
     }
 
