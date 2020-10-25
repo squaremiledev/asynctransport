@@ -8,7 +8,7 @@ class FixedLengthDelineation implements DelineationHandler
 
     FixedLengthDelineation(final DelineationHandler delineatedDataHandler, final int fixedMessageLength)
     {
-        delineation = new LengthBasedDelineation(LengthBasedDelineation.LengthEncoding.FIXED_LENGTH, fixedMessageLength, delineatedDataHandler);
+        delineation = new LengthBasedDelineation(LengthBasedDelineation.LengthEncoding.FIXED_LENGTH, 0, fixedMessageLength, delineatedDataHandler);
     }
 
     @Override

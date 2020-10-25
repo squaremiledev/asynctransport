@@ -8,20 +8,26 @@ import org.agrona.concurrent.UnsafeBuffer;
 
 class LengthBasedDelineation implements DelineationHandler
 {
-    private final int value;
+    private final int fixedMessagePadding;
+    private final int fixedMessageLength;
     private final DelineationHandler delineatedDataHandler;
     private final MutableDirectBuffer undeliveredBuffer;
     private final LengthEncoding lengthEncoding;
     private Mode mode;
-    private int currentMessageLength;
     private short undeliveredLength;
 
-    LengthBasedDelineation(final LengthEncoding lengthEncoding, final int value, final DelineationHandler delineatedDataHandler)
+    LengthBasedDelineation(
+            final LengthEncoding lengthEncoding,
+            final int fixedMessagePadding,
+            final int fixedMessageLength,
+            final DelineationHandler delineatedDataHandler
+    )
     {
+        this.fixedMessagePadding = fixedMessagePadding;
         this.lengthEncoding = lengthEncoding;
-        this.value = value;
+        this.fixedMessageLength = fixedMessageLength;
         this.delineatedDataHandler = delineatedDataHandler;
-        this.undeliveredBuffer = createUndeliveredBuffer(lengthEncoding, value);
+        this.undeliveredBuffer = createUndeliveredBuffer(lengthEncoding, fixedMessageLength);
         this.undeliveredLength = 0;
         this.mode = Mode.READING_DATA;
     }
@@ -42,10 +48,11 @@ class LengthBasedDelineation implements DelineationHandler
     @Override
     public void onData(final DirectBuffer buffer, final int offset, final int length)
     {
+        int currentMessageLength;
         if (lengthEncoding == LengthEncoding.FIXED_LENGTH)
         {
             mode = Mode.READING_DATA;
-            currentMessageLength = value;
+            currentMessageLength = fixedMessageLength;
         }
         else
         {
