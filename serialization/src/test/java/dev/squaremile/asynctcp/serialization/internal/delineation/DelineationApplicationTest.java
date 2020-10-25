@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
@@ -97,21 +97,26 @@ class DelineationApplicationTest
     void shouldNotDelineateRawStreaming()
     {
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Listen().set((long)99, connectionId().port(), RAW_STREAMING.type));
+        app.handle(new Listen().set(98, anotherConnectionId().port(), RAW_STREAMING.type));
+        app.onEvent(new StartedListening(anotherConnectionId().port(), 98, RAW_STREAMING.type));
+        app.onEvent(connectionAccepted(anotherConnectionId()));
+        app.handle(new Listen().set(99, connectionId().port(), RAW_STREAMING.type));
         app.onEvent(new StartedListening(connectionId().port(), 99, RAW_STREAMING.type));
         app.onEvent(connectionAccepted(connectionId()));
 
         // When
         app.onEvent(new DataReceived(connectionId(), 2, 2, 30, wrap(new byte[]{5, 7})));
-        app.onEvent(new DataReceived(8809, 5, 1, 1, 30, wrap(new byte[]{6})));
+        app.onEvent(new DataReceived(anotherConnectionId(), 1, 1, 30, wrap(new byte[]{6})));
 
         // Then
         assertEquals(
                 spy.all(),
+                new StartedListening(anotherConnectionId().port(), 98, RAW_STREAMING.type),
+                connectionAccepted(anotherConnectionId()),
                 new StartedListening(connectionId().port(), 99, RAW_STREAMING.type),
                 connectionAccepted(connectionId()),
                 new MessageReceived(connectionId()).set(wrapDirect(new byte[]{5, 7}), 2).copy(),
-                new MessageReceived(new ConnectionIdValue(8809, 5)).set(wrapDirect(new byte[]{6}), 1).copy()
+                new MessageReceived(anotherConnectionId()).set(wrapDirect(new byte[]{6}), 1).copy()
         );
     }
 
@@ -119,21 +124,26 @@ class DelineationApplicationTest
     void shouldEncodeSingleByteDataAsMessage()
     {
         final DelineationApplication app = new DelineationApplication(spy);
-        app.handle(new Listen().set((long)99, connectionId().port(), SINGLE_BYTE.type));
+        app.handle(new Listen().set(98, anotherConnectionId().port(), SINGLE_BYTE.type));
+        app.onEvent(new StartedListening(anotherConnectionId().port(), 98, SINGLE_BYTE.type));
+        app.onEvent(connectionAccepted(anotherConnectionId()));
+        app.handle(new Listen().set(99, connectionId().port(), SINGLE_BYTE.type));
         app.onEvent(new StartedListening(connectionId().port(), 99, SINGLE_BYTE.type));
         app.onEvent(connectionAccepted(connectionId()));
 
         // When
         app.onEvent(new DataReceived(connectionId(), 1, 1, 30, wrap(new byte[]{5})));
-        app.onEvent(new DataReceived(8809, 5, 1, 1, 30, wrap(new byte[]{6})));
+        app.onEvent(new DataReceived(anotherConnectionId(), 1, 1, 30, wrap(new byte[]{6})));
 
         // Then
         assertEquals(
                 spy.all(),
+                new StartedListening(anotherConnectionId().port(), 98, SINGLE_BYTE.type),
+                connectionAccepted(anotherConnectionId()),
                 new StartedListening(connectionId().port(), 99, SINGLE_BYTE.type),
                 connectionAccepted(connectionId()),
                 new MessageReceived(connectionId()).set(wrapDirect(new byte[]{5}), 1).copy(),
-                new MessageReceived(new ConnectionIdValue(8809, 5)).set(wrapDirect(new byte[]{6}), 1).copy()
+                new MessageReceived(anotherConnectionId()).set(wrapDirect(new byte[]{6}), 1).copy()
         );
     }
 
@@ -388,6 +398,11 @@ class DelineationApplicationTest
     ConnectionId connectionId()
     {
         return new ConnectionIdValue(8808, 5);
+    }
+
+    ConnectionId anotherConnectionId()
+    {
+        return new ConnectionIdValue(8809, 6);
     }
 
     private ConnectionAccepted connectionAccepted(final ConnectionId connectionId)

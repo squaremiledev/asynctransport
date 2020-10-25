@@ -4,8 +4,8 @@ import org.agrona.collections.Int2ObjectHashMap;
 import org.agrona.collections.Long2ObjectHashMap;
 
 
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
@@ -93,7 +93,7 @@ public class DelineationApplication implements EventDrivenApplication, Transport
                     connectionIdValue.connectionId(),
                     delineationHandlerFactory.create(
                             connected.delineation(),
-                            (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, buffer, offset, length))
+                            (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue.port(), connectionIdValue.connectionId(), buffer, offset, length))
                     )
             );
         }
@@ -110,7 +110,7 @@ public class DelineationApplication implements EventDrivenApplication, Transport
                     connectionIdValue.connectionId(),
                     delineationHandlerFactory.create(
                             delineationTypePerListeningPort.get(connectionAccepted.port()),
-                            (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue, buffer, offset, length))
+                            (buffer, offset, length) -> delegate.onEvent(messageReceived.set(connectionIdValue.port(), connectionIdValue.connectionId(), buffer, offset, length))
                     )
             );
         }

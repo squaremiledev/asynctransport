@@ -6,35 +6,40 @@ import org.agrona.concurrent.UnsafeBuffer;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 public class MessageReceived implements ConnectionEvent
 {
-    private ConnectionId connectionId;
-    private DirectBuffer data;
-    private int length;
-    private int offset;
+    private int port = -1;
+    private long connectionId = -1;
+    private DirectBuffer data = null;
+    private int length = 0;
+    private int offset = 0;
 
     public MessageReceived()
     {
-
     }
 
     public MessageReceived(final ConnectionId connectionId)
     {
-        this.connectionId = new ConnectionIdValue(connectionId);
+        this(connectionId.port(), connectionId.connectionId());
+    }
+
+    public MessageReceived(final int port, final long connectionId)
+    {
+        this.port = port;
+        this.connectionId = connectionId;
     }
 
     @Override
     public int port()
     {
-        return connectionId.port();
+        return port;
     }
 
     @Override
     public long connectionId()
     {
-        return connectionId.connectionId();
+        return connectionId;
     }
 
     public DirectBuffer buffer()
@@ -54,11 +59,12 @@ public class MessageReceived implements ConnectionEvent
 
     public MessageReceived set(final DirectBuffer data, final int offset, final int length)
     {
-        return set(connectionId, data, offset, length);
+        return set(port, connectionId, data, offset, length);
     }
 
-    public MessageReceived set(final ConnectionId connectionId, final DirectBuffer data, final int offset, final int length)
+    public MessageReceived set(final int port, final long connectionId, final DirectBuffer data, final int offset, final int length)
     {
+        this.port = port;
         this.connectionId = connectionId;
         this.data = data;
         this.offset = offset;
@@ -70,9 +76,11 @@ public class MessageReceived implements ConnectionEvent
     public String toString()
     {
         return "MessageReceived{" +
-               "connectionId=" + connectionId +
+               "port=" + port +
+               ", connectionId=" + connectionId +
                ", data=" + data +
                ", length=" + length +
+               ", offset=" + offset +
                '}';
     }
 
@@ -87,6 +95,6 @@ public class MessageReceived implements ConnectionEvent
     {
         UnsafeBuffer bufferCopy = new UnsafeBuffer(new byte[length]);
         data.getBytes(offset, bufferCopy, 0, length);
-        return new MessageReceived(connectionId).set(bufferCopy, 0, length);
+        return new MessageReceived(port, connectionId).set(bufferCopy, 0, length);
     }
 }

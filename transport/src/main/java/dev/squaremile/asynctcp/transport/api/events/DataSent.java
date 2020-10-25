@@ -8,14 +8,19 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
 {
-    private final int port;
-    private final long connectionId;
-    private final int sendBufferSize;
+    private int port;
+    private long connectionId;
+    private int sendBufferSize;
     private int bytesSent;
     private long totalBytesSent;
     private long totalBytesBuffered;
     private long commandId;
     private long windowSizeInBytes;
+
+    public DataSent()
+    {
+        reset();
+    }
 
     public DataSent(final ConnectionId connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final int sendBufferSize)
     {
@@ -46,6 +51,25 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
 
     public DataSent(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final long commandId, final int sendBufferSize)
     {
+        set(port, connectionId, bytesSent, totalBytesSent, totalBytesBuffered, commandId, sendBufferSize);
+    }
+
+    public DataSent reset()
+    {
+        port = -1;
+        connectionId = -1;
+        sendBufferSize = 0;
+        bytesSent = 0;
+        totalBytesSent = 0;
+        totalBytesBuffered = 0;
+        commandId = CommandId.NO_COMMAND_ID;
+        windowSizeInBytes = 0;
+        return this;
+    }
+
+    public DataSent set(final int port, final long connectionId, final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final long commandId, final int sendBufferSize)
+    {
+        reset();
         this.port = port;
         this.connectionId = connectionId;
         this.bytesSent = bytesSent;
@@ -54,6 +78,7 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
         this.totalBytesBuffered = totalBytesBuffered;
         this.sendBufferSize = sendBufferSize;
         this.windowSizeInBytes = sendBufferSize + totalBytesSent - totalBytesBuffered;
+        return this;
     }
 
     public DataSent set(final int bytesSent, final long totalBytesSent, final long totalBytesBuffered, final long commandId)

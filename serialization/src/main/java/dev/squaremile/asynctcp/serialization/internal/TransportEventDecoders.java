@@ -27,10 +27,8 @@ import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-// TODO [perf]: avoid garbage
 public class TransportEventDecoders
 {
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
@@ -212,6 +210,7 @@ public class TransportEventDecoders
     private void registerDataSent(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
     {
         final DataSentDecoder decoder = new DataSentDecoder();
+        final DataSent dataSent = new DataSent();
         eventDecoders.put(
                 decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
@@ -222,11 +221,11 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    DataSent result = new DataSent(decoder.port(), decoder.connectionId(), decoder.bytesSent(), decoder.totalBytesSent(), decoder.totalBytesBuffered(), decoder.commandId(),
-                                                   decoder.sendBufferSize()
+                    dataSent.set(decoder.port(), decoder.connectionId(), decoder.bytesSent(), decoder.totalBytesSent(), decoder.totalBytesBuffered(), decoder.commandId(),
+                                 decoder.sendBufferSize()
                     );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
-                    return result;
+                    return dataSent;
                 }
         );
     }
@@ -258,6 +257,7 @@ public class TransportEventDecoders
     private void registerMessageReceived(final Int2ObjectHashMap<TransportEventDecoder> eventDecoders, final MessageHeaderDecoder headerDecoder)
     {
         final MessageReceivedDecoder decoder = new MessageReceivedDecoder();
+        final MessageReceived messageReceived = new MessageReceived();
         eventDecoders.put(
                 decoder.sbeTemplateId(), (buffer, offset, length) ->
                 {
@@ -272,10 +272,9 @@ public class TransportEventDecoders
                     DirectBuffer dataBuffer = srcData.buffer();
                     int dataOffset = srcData.offset() + VarDataEncodingDecoder.lengthEncodingLength();
                     int dataLength = (int)srcData.length();
-                    MessageReceived result = new MessageReceived(new ConnectionIdValue(decoder.port(), decoder.connectionId()))
-                            .set(dataBuffer, dataOffset, dataLength);
+                    messageReceived.set(decoder.port(), decoder.connectionId(), dataBuffer, dataOffset, dataLength);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength() + dataLength;
-                    return result;
+                    return messageReceived;
                 }
         );
     }

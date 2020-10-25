@@ -23,7 +23,6 @@ import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-// TODO [perf]: avoid garbage
 public class TransportCommandDecoders
 {
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
