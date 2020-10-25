@@ -4,14 +4,32 @@ import java.nio.ByteBuffer;
 
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
+
+import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.NOISE;
+import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.PADDING;
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.assertEquals;
+import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.b;
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.bufferWith;
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.bytes;
+import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.iValA;
+import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.iValB;
 
 class IntegerLengthProviderFieldDelineationTest
 {
     private final DelineatedDataSpy delineatedDataSpy = new DelineatedDataSpy();
+
+    @Test
+    void shouldNotNotifyAboutPartialData()
+    {
+        final IntegerLengthFieldDelineation delineation = new IntegerLengthFieldDelineation(delineatedDataSpy, 0);
+        delineation.onData(bufferWith(new byte[]{0, 1, 2, 3, 4}), 0, 3);
+        delineation.onData(bufferWith(new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8}), 0, 0);
+        delineation.onData(bufferWith(new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8}), 3, 0);
+
+        assertThat(delineatedDataSpy.received()).isEmpty();
+    }
 
     @Test
     void shouldReadTheLengthAndThenReadTheData()
@@ -86,6 +104,22 @@ class IntegerLengthProviderFieldDelineationTest
                 delineatedDataSpy.received(),
                 new byte[]{1, 2},
                 new byte[]{3, 4, 5, 6}
+        );
+    }
+
+    @Test
+    void shouldUseBytesFromThePreviousBatch()
+    {
+        final IntegerLengthFieldDelineation delineation = new IntegerLengthFieldDelineation(delineatedDataSpy, 1);
+        delineation.onData(bufferWith(bytes(b(NOISE), b(PADDING), intInBytes(4), iValB(), b(PADDING), intInBytes(4), b(iValA()[0], iValA()[1], NOISE))), 1, 4 + 4 + 4 + 2 + 2);
+        delineation.onData(bufferWith(b(NOISE, iValA()[2], iValA()[3])), 1, 2);
+        delineation.onData(bufferWith(bytes(b(PADDING), intInBytes(4), iValB())), 0, 9);
+
+        assertEquals(
+                delineatedDataSpy.received(),
+                iValB(),
+                iValA(),
+                iValB()
         );
     }
 

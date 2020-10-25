@@ -15,6 +15,8 @@ class DataFixtures
 {
     static final byte NOISE = 78;
 
+    static final byte PADDING = 34;
+
     static byte[] b(final byte... bytes)
     {
         return bytes(bytes);
