@@ -4,9 +4,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.MutableBoolean;
+import org.agrona.concurrent.UnsafeBuffer;
+import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
+
+import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
+import dev.squaremile.asynctcp.api.TransportApplicationFactory;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
@@ -60,7 +66,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
 
     public static void main(String[] args)
     {
-        if (args.length != 5 && args.length != 6)
+        if (args.length != 5 && args.length != 6 && args.length != 7)
         {
             System.out.println("Usage: remoteHost remotePort sendingRatePerSecond skippedWarmUpResponses messagesSent [respondOnlyToNthRequest]");
             System.out.println("e.g. localhost 8889 48000 400000 4000000 2");
@@ -72,14 +78,15 @@ public class SourcingConnectionApplication implements ConnectionApplication
         final int skippedWarmUpResponses = parseInt(args[3]);
         final int messagesSent = parseInt(args[4]);
         final int respondToEveryNthRequest = args.length > 5 ? parseInt(args[5]) : 1;
+        final boolean useBuffers = args.length > 6 && parseInt(args[6]) == 1;
 
         final int expectedResponses = messagesSent / respondToEveryNthRequest;
         final String description = String.format(
-                "remoteHost %s, remotePort %d, sendingRatePerSecond %d, skippedWarmUpResponses %d , messagesSent %d, %d expected responses with a response rate 1 for %d",
-                remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, expectedResponses, respondToEveryNthRequest
+                "remoteHost %s, remotePort %d, sendingRatePerSecond %d, skippedWarmUpResponses %d , messagesSent %d, %d expected responses with a response rate 1 for %d, use buffers: %s",
+                remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, expectedResponses, respondToEveryNthRequest, useBuffers
         );
         System.out.println("Starting with " + description);
-        start(description, remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, respondToEveryNthRequest);
+        start(description, remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, respondToEveryNthRequest, useBuffers);
     }
 
     public static void start(
@@ -89,7 +96,8 @@ public class SourcingConnectionApplication implements ConnectionApplication
             final int sendingRatePerSecond,
             final int skippedWarnUpResponses,
             final int messagesSent,
-            final int respondToEveryNthRequest
+            final int respondToEveryNthRequest,
+            final boolean useBuffers
     )
     {
         int expectedResponses = messagesSent / respondToEveryNthRequest;
@@ -99,24 +107,21 @@ public class SourcingConnectionApplication implements ConnectionApplication
         }
         final Measurements measurements = new Measurements(description, skippedWarnUpResponses + 1);
         final MutableBoolean isDone = new MutableBoolean(false);
-        final ApplicationOnDuty source = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
-                "source",
-                transport -> new ConnectingApplication(
-                        transport,
-                        remoteHost,
-                        remotePort,
-                        fixedLengthDelineation(16),
-                        (connectionTransport, connectionId) -> new SourcingConnectionApplication(
-                                connectionId,
-                                connectionTransport,
-                                messagesSent,
-                                isDone,
-                                sendingRatePerSecond,
-                                measurements,
-                                respondToEveryNthRequest
-                        )
+        final ApplicationOnDuty source = createApplication(useBuffers, transport -> new ConnectingApplication(
+                transport,
+                remoteHost,
+                remotePort,
+                fixedLengthDelineation(16),
+                (connectionTransport, connectionId) -> new SourcingConnectionApplication(
+                        connectionId,
+                        connectionTransport,
+                        messagesSent,
+                        isDone,
+                        sendingRatePerSecond,
+                        measurements,
+                        respondToEveryNthRequest
                 )
-        );
+        ));
 
         source.onStart();
         while (!isDone.get())
@@ -126,6 +131,22 @@ public class SourcingConnectionApplication implements ConnectionApplication
         source.onStop();
 
         measurements.printResults();
+    }
+
+    private static ApplicationOnDuty createApplication(final boolean useBuffers, final ApplicationFactory applicationFactory)
+    {
+        final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
+        return useBuffers ?
+               transportApplicationFactory.create(
+                       "source",
+                       applicationFactory
+               ) :
+               transportApplicationFactory.create(
+                       "source",
+                       new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
+                       new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
+                       applicationFactory
+               );
     }
 
     @Override
