@@ -11,7 +11,7 @@ class LengthBasedDelineation implements DelineationHandler
     private final DelineationHandler delineatedDataHandler;
     private final MutableDirectBuffer undeliveredBuffer;
     private final LengthEncoding lengthEncoding;
-    private Mode mode;
+    private boolean readingLength;
     private short undeliveredLength;
 
     LengthBasedDelineation(
@@ -27,7 +27,7 @@ class LengthBasedDelineation implements DelineationHandler
         this.delineatedDataHandler = delineatedDataHandler;
         this.undeliveredBuffer = createUndeliveredBuffer(lengthEncoding, fixedMessageLength);
         this.undeliveredLength = 0;
-        this.mode = Mode.READING_DATA;
+        this.readingLength = false;
     }
 
     private static UnsafeBuffer createUndeliveredBuffer(final LengthEncoding lengthEncoding, final int value)
@@ -50,12 +50,12 @@ class LengthBasedDelineation implements DelineationHandler
         int currentMessagePadding = fixedMessagePadding;
         if (lengthEncoding == LengthEncoding.FIXED_LENGTH)
         {
-            mode = Mode.READING_DATA;
+            readingLength = false;
             currentMessageLength = fixedMessageLength;
         }
         else
         {
-            mode = Mode.READING_LENGTH;
+            readingLength = true;
             currentMessageLength = lengthEncoding.lengthFieldLength;
         }
 
@@ -83,20 +83,20 @@ class LengthBasedDelineation implements DelineationHandler
             if (pos == currentMessagePadding + currentMessageLength)
             {
                 int currentOffset = offset + i - currentMessageLength + 1;
-                if (mode == Mode.READING_LENGTH)
+                if (readingLength)
                 {
                     currentMessageLength = lengthEncoding.readLength(buffer, currentOffset);
                     currentMessagePadding = 0;
-                    mode = Mode.READING_DATA;
+                    readingLength = false;
                 }
-                else if (mode == Mode.READING_DATA)
+                else
                 {
                     delineatedDataHandler.onData(buffer, currentOffset, currentMessageLength);
                     if (lengthEncoding != LengthEncoding.FIXED_LENGTH)
                     {
                         currentMessageLength = lengthEncoding.lengthFieldLength;
                         currentMessagePadding = fixedMessagePadding;
-                        mode = Mode.READING_LENGTH;
+                        readingLength = true;
                     }
                 }
                 pos = 0;
@@ -107,11 +107,5 @@ class LengthBasedDelineation implements DelineationHandler
         {
             buffer.getBytes(offset + (length - undeliveredLength), undeliveredBuffer, 0, undeliveredLength);
         }
-    }
-
-    enum Mode
-    {
-        READING_LENGTH,
-        READING_DATA
     }
 }
