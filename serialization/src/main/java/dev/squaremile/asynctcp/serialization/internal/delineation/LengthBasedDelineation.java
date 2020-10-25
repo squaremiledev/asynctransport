@@ -53,7 +53,7 @@ class LengthBasedDelineation implements DelineationHandler
         short previousDelivered = 0;
         if (undeliveredLength > 0)
         {
-            if (undeliveredLength + length < currentMessageLength)
+            if (undeliveredLength + length < currentMessagePadding + currentMessageLength)
             {
                 buffer.getBytes(offset, undeliveredBuffer, undeliveredLength, length);
                 undeliveredLength += length;
@@ -61,17 +61,17 @@ class LengthBasedDelineation implements DelineationHandler
             }
             else
             {
-                buffer.getBytes(offset, undeliveredBuffer, undeliveredLength, currentMessageLength - undeliveredLength);
-                previousDelivered = (short)(currentMessageLength - undeliveredLength);
+                buffer.getBytes(offset, undeliveredBuffer, undeliveredLength, currentMessageLength + currentMessagePadding - undeliveredLength);
+                previousDelivered = (short)(currentMessageLength + currentMessagePadding - undeliveredLength);
                 if (readingLength)
                 {
-                    currentMessageLength = lengthEncoding.readLength(undeliveredBuffer, 0);
+                    currentMessageLength = lengthEncoding.readLength(undeliveredBuffer, currentMessagePadding);
                     currentMessagePadding = 0;
                     readingLength = false;
                 }
                 else
                 {
-                    delineatedDataHandler.onData(undeliveredBuffer, 0, currentMessageLength);
+                    delineatedDataHandler.onData(undeliveredBuffer, currentMessagePadding, currentMessageLength);
                     if (lengthEncoding != LengthEncoding.FIXED_LENGTH)
                     {
                         currentMessageLength = lengthEncoding.lengthFieldLength;
@@ -81,14 +81,16 @@ class LengthBasedDelineation implements DelineationHandler
                 }
             }
         }
+        undeliveredLength = 0;
 
-        short pos = 0;
+        int currentOffset;
+        int pos = 0;
         for (int i = previousDelivered; i < length; i++)
         {
             pos++;
             if (pos == currentMessagePadding + currentMessageLength)
             {
-                int currentOffset = offset + i - currentMessageLength + 1;
+                currentOffset = offset + i - currentMessageLength + 1;
                 if (readingLength)
                 {
                     currentMessageLength = lengthEncoding.readLength(buffer, currentOffset);
@@ -108,7 +110,7 @@ class LengthBasedDelineation implements DelineationHandler
                 pos = 0;
             }
         }
-        undeliveredLength = pos - currentMessagePadding;
+        undeliveredLength = pos;
         if (undeliveredLength > 0)
         {
             buffer.getBytes(offset + (length - undeliveredLength), undeliveredBuffer, 0, undeliveredLength);

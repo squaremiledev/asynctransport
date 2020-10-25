@@ -2,7 +2,6 @@ package dev.squaremile.asynctcp.serialization.internal.delineation;
 
 import java.nio.ByteBuffer;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -156,14 +155,43 @@ class IntegerLengthProviderFieldDelineationTest
     void shouldUseLengthBrokenDownIntoMultipleBatchesWithPadding()
     {
         final IntegerLengthFieldDelineation delineation = new IntegerLengthFieldDelineation(delineatedDataSpy, 1);
-        delineation.onData(bufferWith(b(PADDING, intInBytes(3)[0])), 0, 2);
-        delineation.onData(bufferWith(b(intInBytes(3)[1], intInBytes(3)[2])), 0, 2);
-        delineation.onData(bufferWith(b(intInBytes(3)[3])), 0, 1);
-        delineation.onData(bufferWith(new byte[]{1, 2, 3}), 0, 3);
+        delineation.onData(bufferWith(b(PADDING, intInBytes(4)[0])), 0, 2);
+        delineation.onData(bufferWith(b(intInBytes(4)[1], intInBytes(4)[2])), 0, 2);
+        delineation.onData(bufferWith(b(intInBytes(4)[3])), 0, 1);
+        delineation.onData(bufferWith(new byte[]{1, 2, 3, 4}), 0, 4);
 
         assertEquals(
                 delineatedDataSpy.received(),
-                new byte[]{1, 2, 3}
+                new byte[]{1, 2, 3, 4}
+        );
+    }
+
+    @Test
+    void shouldHandlePaddingFillingTheWholeBatch()
+    {
+        final IntegerLengthFieldDelineation delineation = new IntegerLengthFieldDelineation(delineatedDataSpy, 3);
+        delineation.onData(bufferWith(b(PADDING, PADDING, PADDING)), 0, 3);
+        delineation.onData(bufferWith(intInBytes(2)), 0, 4);
+        delineation.onData(bufferWith(new byte[]{1, 2}), 0, 2);
+
+        assertEquals(
+                delineatedDataSpy.received(),
+                new byte[]{1, 2}
+        );
+    }
+
+    @Test
+    void shouldHandlePaddingFillingMorThanOneBatch()
+    {
+        final IntegerLengthFieldDelineation delineation = new IntegerLengthFieldDelineation(delineatedDataSpy, 4);
+        delineation.onData(bufferWith(b(NOISE, NOISE, PADDING, PADDING, PADDING)), 2, 3);
+        delineation.onData(bufferWith(bytes(b(NOISE), b(PADDING), intInBytes(6))), 1, 5);
+        delineation.onData(bufferWith(new byte[]{NOISE, NOISE, 1, 2, 3, NOISE}), 2, 3);
+        delineation.onData(bufferWith(new byte[]{NOISE, NOISE, NOISE, NOISE, 4, 5, 6, NOISE}), 4, 4);
+
+        assertEquals(
+                delineatedDataSpy.received(),
+                new byte[]{1, 2, 3, 4, 5, 6}
         );
     }
 
