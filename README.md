@@ -56,7 +56,27 @@ Run the message source server
 
 Where localhost 9998 100000 31250 6000000 32 is remote_host port messageSendingRatePerSecond skippedWarmUpResponses messagesSent sendToReceiveRatio
 
-On my machine, for 100 000 messages a second I got the following results (coordinated omission taken into account)
+## Design objectives
+
+The library is built, and enables applications to be built, according to the Object Oriented Programming paradigm,
+following as closely as possible Alan Kay's definition of "messaging, local retention and protection and hiding of state-process"
+
+It is also inspired by the [Aeron Cluster](https://github.com/real-logic/aeron/tree/master/aeron-cluster)'s boundaries
+between the application and the infrastructure (ClusteredService interface).
+However, an attempt has been made to make this library even more composable
+and avoid cycles during the setup phase (problematic `onStart(Cluster cluster)`).
+
+## Performance
+
+Coordinated omission included in all the results.
+
+### Localhost, round trip
+
+200 000 msg/s, load distributed 50/50 between sending and receiving.
+
+- Intel i7-4770, 16GB RAM DDR3
+
+- (A) 100k msg/s send -> (B) 100k msg/s received -> (B) 100k msg/s send -> (A) 100k msg/s received
 
 ```
 Scenario: remoteHost localhost, remotePort 9998, sendingRatePerSecond 100000, skippedWarmUpResponses 31250 , messagesSent 6000000, 187500 expected responses with a response rate 1 for 32
@@ -74,55 +94,31 @@ Based on 156250 measurements.
 It took 49999 ms between the first measured message sent and the last received
 ```
 
-More realistic use case with a reliable connection (same data center) yields results closer to double digit microseconds latency for 99.9th percentile
-with ping between boxes being in a double digit microseconds range as well.
+### Cloud (AWS EC2)
 
-When measured against the ping and netperf benchmarks, on a AWS EC2 c5n.xlarge box
+264 000 msg/s, load skewed 1/32 (one box mostly sends, another mostly receives)
 
-- at a rate of ~ 100 000 messages a second using the library is virtually free (unable to detect any overhead)
-- at a rate of ~ 200 000 messages a second the overhead starts being visible, with still double digit microseconds latency for 99th percentile but triple digit microseconds latency for 99.9th
+- c5n.xlarge boxes, same availability zone, ping ~50 microseconds between boxes
 
-Detailed [test results for AWS EC2 boxes are available here.](docs/aws.md)
-
-## Design objectives
-
-The library is built, and enables applications to be built, according to the Object Oriented Programming paradigm,
-following as closely as possible Alan Kay's definition of "messaging, local retention and protection and hiding of state-process"
-
-It is also inspired by the [Aeron Cluster](https://github.com/real-logic/aeron/tree/master/aeron-cluster)'s boundaries
-between the application and the infrastructure (ClusteredService interface).
-However, an attempt has been made to make this library even more composable
-and avoid cycles during the setup phase (problematic `onStart(Cluster cluster)`).
-
-## Performance
-
-For localhost (to show the library overhead and ignore out network card/network impact)
-the round trip end to end (a message send via the library, received on
-the other end by the library, echoed back and received at source) mean time was 111 microseconds for a 99.999th percentile.
-running at the rate of 50 000 small msg /s RoundTripTimeSeparateAppTest was used. Coordinated omission was taken into account.
+- (A) 256k msg/s send -> (B) 256k msg/s received -> (B) 8k msg/s send -> (A) 8k msg/s received
 
 ```
-Exchanged 8000000 messages at a rate of 95947 messages per second  which took 83 seconds
-99.99th percentile is 105 microseconds for a round trip
+Scenario: remoteHost 172.31.35.37, remotePort 9998, sendingRatePerSecond 256000, skippedWarmUpResponses 80000 , messagesSent 25600000, 800000 expected responses with a response rate 1 for 32
+Results:
+---------------------------------------------------------
+latency (microseconds) |     ~ one way |     round trip |
+mean                   |            34 |             68 |
+99th percentile        |            48 |             96 |
+99.9th percentile      |            55 |            109 |
+99.99th percentile     |            79 |            157 |
+99.999th percentile    |           112 |            224 |
+worst                  |           419 |            838 |
+
+Based on 720000 measurements.
+It took 89994 ms between the first measured message sent and the last received
 ```
 
-The library should sustain significant load from multiple simultaneous connections.
-A combination of EchoConnectionApplication and SourcingConnectionApplication can be used to measure how the performance
-changes when more connections are added and load increased.
-
-For reference, below can be observed that that 2 clients and one server, with on average total ~200 000 messages
-a second in flight incur 90 microsecond latency one way for 99.99th percentile, sending/receiving 72 000 000 messages
-and running  for ~12 minutes.
-
-```
-Exchanged 72000000 messages at a rate of 95995 messages per second  which took 750 seconds
-99.99th percentile is 198 microseconds for a round trip
-
-Exchanged 72000000 messages at a rate of 95996 messages per second  which took 750 seconds
-99.99th percentile is 166 microseconds for a round trip
-```
-
-For cloud deployments see [test results for AWS EC2 boxes](docs/aws.md).
+For more measurements with different modes, see [test results for AWS EC2 boxes](docs/aws.md).
 
 ## Usage
 

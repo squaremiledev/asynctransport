@@ -91,7 +91,9 @@ user	0m0.930s
 sys	0m5.096s
 ```
 
-### Multiple AsyncTcp runs
+### AsyncTcp
+
+Rate 1/1 fo messages received/sent (doubles the number of messages on the wire and requires constnt  switching between reading and writing from the socket)
 
 ```
 ubuntu@ip-172-31-35-37:$ java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication 172.31.43.169 9998 53000 53000 530000
@@ -149,6 +151,8 @@ std deviation is      3.6119 microseconds
 
 AsyncTCP
 
+1/1 messages received/sent ratio
+
 ```
 java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication 172.31.43.169 9998 100000 1000000 1000000
 Starting with remoteHost 172.31.43.169, remotePort 9998, sendingRatePerSecond 100000, warmUpMessages 1000000 , measuredMessages 1000000
@@ -163,6 +167,27 @@ worst is              1317 microseconds for a round trip
 std deviation is      29.721 microseconds
 ```
 
+~0.25M messages a second, 1/32 messages received/sent ratio (measures a round trip time when the load is skewed in one direction)
+
+```
+java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication 172.31.35.37 9998 256000 80000 25600000 32
+
+Scenario: remoteHost 172.31.35.37, remotePort 9998, sendingRatePerSecond 256000, skippedWarmUpResponses 80000 , messagesSent 25600000, 800000 expected responses with a response rate 1 for 32
+Results:
+---------------------------------------------------------
+latency (microseconds) |     ~ one way |     round trip |
+mean                   |            34 |             68 |
+99th percentile        |            48 |             96 |
+99.9th percentile      |            55 |            109 |
+99.99th percentile     |            79 |            157 |
+99.999th percentile    |           112 |            224 |
+worst                  |           419 |            838 |
+
+Based on 720000 measurements.
+It took 89994 ms between the first measured message sent and the last received
+
+```
+
 Netperf benchmark
 
 ```
@@ -174,3 +199,4 @@ Microseconds Microseconds Microseconds Latency      Microseconds Tran/s
 Microseconds
 39           67.52        517          87           7.94         133132.823
 ```
+
