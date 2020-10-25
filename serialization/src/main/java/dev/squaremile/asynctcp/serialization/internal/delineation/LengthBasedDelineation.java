@@ -13,6 +13,8 @@ class LengthBasedDelineation implements DelineationHandler
     private final LengthEncoding lengthEncoding;
     private boolean readingLength;
     private short undeliveredLength;
+    private int currentMessageLength;
+    private int currentMessagePadding;
 
     LengthBasedDelineation(
             final LengthEncoding lengthEncoding,
@@ -27,7 +29,9 @@ class LengthBasedDelineation implements DelineationHandler
         this.delineatedDataHandler = delineatedDataHandler;
         this.undeliveredBuffer = createUndeliveredBuffer(lengthEncoding, fixedMessageLength);
         this.undeliveredLength = 0;
-        this.readingLength = false;
+        this.readingLength = lengthEncoding != LengthEncoding.FIXED_LENGTH;
+        this.currentMessagePadding = fixedMessagePadding;
+        this.currentMessageLength = lengthEncoding == LengthEncoding.FIXED_LENGTH ? fixedMessageLength : lengthEncoding.lengthFieldLength;
     }
 
     private static UnsafeBuffer createUndeliveredBuffer(final LengthEncoding lengthEncoding, final int value)
@@ -46,19 +50,6 @@ class LengthBasedDelineation implements DelineationHandler
     @Override
     public void onData(final DirectBuffer buffer, final int offset, final int length)
     {
-        int currentMessageLength;
-        int currentMessagePadding = fixedMessagePadding;
-        if (lengthEncoding == LengthEncoding.FIXED_LENGTH)
-        {
-            readingLength = false;
-            currentMessageLength = fixedMessageLength;
-        }
-        else
-        {
-            readingLength = true;
-            currentMessageLength = lengthEncoding.lengthFieldLength;
-        }
-
         short previousDelivered = 0;
         if (undeliveredLength > 0)
         {
@@ -73,6 +64,12 @@ class LengthBasedDelineation implements DelineationHandler
                 buffer.getBytes(offset, undeliveredBuffer, undeliveredLength, currentMessageLength - undeliveredLength);
                 delineatedDataHandler.onData(undeliveredBuffer, 0, currentMessageLength);
                 previousDelivered = (short)(currentMessageLength - undeliveredLength);
+                if (lengthEncoding != LengthEncoding.FIXED_LENGTH)
+                {
+                    currentMessageLength = lengthEncoding.lengthFieldLength;
+                    currentMessagePadding = fixedMessagePadding;
+                    readingLength = true;
+                }
             }
         }
 
