@@ -139,12 +139,12 @@ public class SourcingConnectionApplication implements ConnectionApplication
         return useBuffers ?
                transportApplicationFactory.create(
                        "source",
+                       new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
+                       new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
                        applicationFactory
                ) :
                transportApplicationFactory.create(
                        "source",
-                       new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
-                       new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
                        applicationFactory
                );
     }
