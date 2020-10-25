@@ -12,7 +12,7 @@ class LengthBasedDelineation implements DelineationHandler
     private final MutableDirectBuffer undeliveredBuffer;
     private final LengthEncoding lengthEncoding;
     private boolean readingLength;
-    private short undeliveredLength;
+    private int undeliveredLength;
     private int currentMessageLength;
     private int currentMessagePadding;
 
@@ -108,7 +108,7 @@ class LengthBasedDelineation implements DelineationHandler
                 pos = 0;
             }
         }
-        undeliveredLength = pos;
+        undeliveredLength = pos - currentMessagePadding;
         if (undeliveredLength > 0)
         {
             buffer.getBytes(offset + (length - undeliveredLength), undeliveredBuffer, 0, undeliveredLength);

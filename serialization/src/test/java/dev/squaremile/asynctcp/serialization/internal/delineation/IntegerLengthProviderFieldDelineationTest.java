@@ -153,11 +153,10 @@ class IntegerLengthProviderFieldDelineationTest
     }
 
     @Test
-    @Disabled
     void shouldUseLengthBrokenDownIntoMultipleBatchesWithPadding()
     {
         final IntegerLengthFieldDelineation delineation = new IntegerLengthFieldDelineation(delineatedDataSpy, 1);
-        delineation.onData(bufferWith(b(PADDING, intInBytes(3)[0])), 0, 1);
+        delineation.onData(bufferWith(b(PADDING, intInBytes(3)[0])), 0, 2);
         delineation.onData(bufferWith(b(intInBytes(3)[1], intInBytes(3)[2])), 0, 2);
         delineation.onData(bufferWith(b(intInBytes(3)[3])), 0, 1);
         delineation.onData(bufferWith(new byte[]{1, 2, 3}), 0, 3);
