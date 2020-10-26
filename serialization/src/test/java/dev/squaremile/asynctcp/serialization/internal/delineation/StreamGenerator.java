@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.Random;
 
 
-import static dev.squaremile.asynctcp.serialization.internal.delineation.LengthEncoding.INT_BIG_ENDIAN_FIELD;
-import static dev.squaremile.asynctcp.serialization.internal.delineation.LengthEncoding.INT_LITTLE_ENDIAN_FIELD;
 import static java.nio.ByteOrder.BIG_ENDIAN;
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 
@@ -23,7 +21,7 @@ public class StreamGenerator
         this.padding = new byte[padding];
     }
 
-    static byte[][] messages(final int maxNumberOfMessages, final int maxLengthOfTheMessage)
+    static byte[][] messages(final int maxNumberOfMessages, final short maxLengthOfTheMessage)
     {
         final Random random = new Random();
         final int messagesCount = random.nextInt(maxNumberOfMessages);
@@ -36,9 +34,9 @@ public class StreamGenerator
         return messages;
     }
 
-    private static byte[] message(final Random random, final int maxLengthOfTheMessage)
+    private static byte[] message(final Random random, final short maxLengthOfTheMessage)
     {
-        int length = random.nextInt(maxLengthOfTheMessage) + 1;
+        short length = (short)(random.nextInt(maxLengthOfTheMessage) + 1);
         byte[] bytes = new byte[length];
         random.nextBytes(bytes);
         return bytes;
@@ -63,19 +61,22 @@ public class StreamGenerator
 
     private void encodeLength(final ByteBuffer buffer, final byte[] message)
     {
-        if (lengthEncoding == INT_BIG_ENDIAN_FIELD)
+        switch (lengthEncoding)
         {
-            buffer.order(BIG_ENDIAN);
-            buffer.putInt(message.length);
-        }
-        else if (lengthEncoding == INT_LITTLE_ENDIAN_FIELD)
-        {
-            buffer.order(LITTLE_ENDIAN);
-            buffer.putInt(message.length);
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
+            case SHORT_BIG_ENDIAN_FIELD:
+                buffer.order(BIG_ENDIAN);
+                buffer.putShort((short)message.length);
+                break;
+            case INT_BIG_ENDIAN_FIELD:
+                buffer.order(BIG_ENDIAN);
+                buffer.putInt(message.length);
+                break;
+            case INT_LITTLE_ENDIAN_FIELD:
+                buffer.order(LITTLE_ENDIAN);
+                buffer.putInt(message.length);
+                break;
+            default:
+                throw new UnsupportedOperationException();
         }
     }
 }

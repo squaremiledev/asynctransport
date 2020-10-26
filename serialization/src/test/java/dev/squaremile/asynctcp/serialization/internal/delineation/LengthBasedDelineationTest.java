@@ -22,7 +22,7 @@ class LengthBasedDelineationTest
     void shouldDelineateMessages(final LengthEncoding lengthEncoding)
     {
         final int padding = random.nextInt(20);
-        final byte[][] messages = StreamGenerator.messages(500, 30);
+        final byte[][] messages = StreamGenerator.messages(500, (short)30);
 
         deliverInChunks(
                 new StreamGenerator(lengthEncoding, padding, messages).generate(),
