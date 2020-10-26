@@ -67,6 +67,10 @@ public class StreamGenerator
                 buffer.order(BIG_ENDIAN);
                 buffer.putShort((short)message.length);
                 break;
+            case SHORT_LITTLE_ENDIAN_FIELD:
+                buffer.order(LITTLE_ENDIAN);
+                buffer.putShort((short)message.length);
+                break;
             case INT_BIG_ENDIAN_FIELD:
                 buffer.order(BIG_ENDIAN);
                 buffer.putInt(message.length);
