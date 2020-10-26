@@ -195,6 +195,23 @@ class IntegerLengthProviderFieldDelineationTest
         );
     }
 
+    @Test
+    void shouldHandleZeroLengthMessage()
+    {
+        final IntegerLengthFieldDelineation delineationNoPadding = new IntegerLengthFieldDelineation(delineatedDataSpy, 0);
+        delineationNoPadding.onData(bufferWith(bytes(intInBytes(0), intInBytes(0))), 0, 8);
+        delineationNoPadding.onData(bufferWith(bytes(intInBytes(0), intInBytes(0))), 0, 8);
+        delineationNoPadding.onData(bufferWith(bytes(b(NOISE), intInBytes(0), intInBytes(0))), 1, 8);
+        assertThat(delineatedDataSpy.received()).isEmpty();
+
+        final IntegerLengthFieldDelineation delineationWithPadding = new IntegerLengthFieldDelineation(delineatedDataSpy, 1);
+        delineationWithPadding.onData(bufferWith(bytes(b(PADDING), intInBytes(0), b(PADDING), intInBytes(0))), 0, 10);
+        delineationWithPadding.onData(bufferWith(bytes(b(PADDING), intInBytes(0),b(PADDING), intInBytes(0))), 0, 10);
+        delineationWithPadding.onData(bufferWith(bytes(b(NOISE), b(PADDING), intInBytes(0), b(PADDING), intInBytes(0))), 1, 10);
+        assertThat(delineatedDataSpy.received()).isEmpty();
+
+    }
+
     private byte[] intInBytes(final int value)
     {
         byte[] content = new byte[4];
