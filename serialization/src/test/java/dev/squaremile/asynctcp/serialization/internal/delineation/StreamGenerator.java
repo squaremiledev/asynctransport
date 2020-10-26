@@ -6,7 +6,9 @@ import java.util.Random;
 
 
 import static dev.squaremile.asynctcp.serialization.internal.delineation.LengthEncoding.INT_BIG_ENDIAN_FIELD;
+import static dev.squaremile.asynctcp.serialization.internal.delineation.LengthEncoding.INT_LITTLE_ENDIAN_FIELD;
 import static java.nio.ByteOrder.BIG_ENDIAN;
+import static java.nio.ByteOrder.LITTLE_ENDIAN;
 
 public class StreamGenerator
 {
@@ -64,6 +66,11 @@ public class StreamGenerator
         if (lengthEncoding == INT_BIG_ENDIAN_FIELD)
         {
             buffer.order(BIG_ENDIAN);
+            buffer.putInt(message.length);
+        }
+        else if (lengthEncoding == INT_LITTLE_ENDIAN_FIELD)
+        {
+            buffer.order(LITTLE_ENDIAN);
             buffer.putInt(message.length);
         }
         else
