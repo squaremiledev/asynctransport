@@ -66,8 +66,15 @@ class LengthBasedDelineation implements DelineationHandler
                 if (readingLength)
                 {
                     currentMessageLength = lengthEncoding.readLength(undeliveredBuffer, currentMessagePadding);
-                    currentMessagePadding = 0;
-                    readingLength = false;
+                    if (currentMessageLength == 0)
+                    {
+                        currentMessageLength = lengthEncoding.lengthFieldLength;
+                    }
+                    else
+                    {
+                        currentMessagePadding = 0;
+                        readingLength = false;
+                    }
                 }
                 else
                 {
@@ -98,7 +105,8 @@ class LengthBasedDelineation implements DelineationHandler
                     {
                         currentMessageLength = lengthEncoding.lengthFieldLength;
                     }
-                    else {
+                    else
+                    {
                         currentMessagePadding = 0;
                         readingLength = false;
                     }
