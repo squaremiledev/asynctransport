@@ -53,6 +53,18 @@ class LengthBasedDelineation implements DelineationHandler
     @Override
     public void onData(final DirectBuffer buffer, final int offset, final int length)
     {
+        short previousDelivered = deliverUndelivered(buffer, offset, length);
+        if (previousDelivered >= 0)
+        {
+            storeInUndeliveredBuffer(
+                    buffer, offset, length,
+                    deliverCurrent(buffer, offset + previousDelivered, length - previousDelivered)
+            );
+        }
+    }
+
+    private short deliverUndelivered(final DirectBuffer buffer, final int offset, final int length)
+    {
         short previousDelivered = 0;
         if (undeliveredLength > 0)
         {
@@ -60,7 +72,7 @@ class LengthBasedDelineation implements DelineationHandler
             {
                 buffer.getBytes(offset, undeliveredBuffer, undeliveredLength, length);
                 undeliveredLength += length;
-                return;
+                return -1;
             }
             else
             {
@@ -91,16 +103,20 @@ class LengthBasedDelineation implements DelineationHandler
                 }
             }
         }
-        undeliveredLength = 0;
+        return previousDelivered;
+    }
 
-        int currentOffset;
-        int pos = 0;
-        for (int i = previousDelivered; i < length; i++)
+    private int deliverCurrent(final DirectBuffer buffer, final int offset, final int length)
+    {
+        int undelivered = 0;
+        for (int i = 0; i < length; i++)
         {
-            pos++;
-            if (pos == currentMessagePadding + currentMessageLength)
+            undelivered++;
+            boolean chunkComplete = undelivered == currentMessagePadding + currentMessageLength;
+            if (chunkComplete)
             {
-                currentOffset = offset + i - currentMessageLength + 1;
+                undelivered = 0;
+                int currentOffset = offset + i - currentMessageLength + 1;
                 if (readingLength)
                 {
                     currentMessageLength = lengthEncoding.readLength(buffer, currentOffset) + fixedMessageLength;
@@ -124,13 +140,17 @@ class LengthBasedDelineation implements DelineationHandler
                         readingLength = true;
                     }
                 }
-                pos = 0;
             }
         }
-        undeliveredLength = pos;
+        return undelivered;
+    }
+
+    private void storeInUndeliveredBuffer(final DirectBuffer buffer, final int offset, final int length, final int undeliveredLength)
+    {
         if (undeliveredLength > 0)
         {
             buffer.getBytes(offset + (length - undeliveredLength), undeliveredBuffer, 0, undeliveredLength);
         }
+        this.undeliveredLength = undeliveredLength;
     }
 }
