@@ -68,7 +68,7 @@ class LengthBasedDelineation implements DelineationHandler
                 previousDelivered = (short)(currentMessageLength + currentMessagePadding - undeliveredLength);
                 if (readingLength)
                 {
-                    currentMessageLength = lengthEncoding.readLength(undeliveredBuffer, currentMessagePadding);
+                    currentMessageLength = lengthEncoding.readLength(undeliveredBuffer, currentMessagePadding) + fixedMessageLength;
                     if (currentMessageLength == 0)
                     {
                         currentMessageLength = lengthEncoding.lengthFieldLength;
@@ -103,7 +103,7 @@ class LengthBasedDelineation implements DelineationHandler
                 currentOffset = offset + i - currentMessageLength + 1;
                 if (readingLength)
                 {
-                    currentMessageLength = lengthEncoding.readLength(buffer, currentOffset);
+                    currentMessageLength = lengthEncoding.readLength(buffer, currentOffset) + fixedMessageLength;
                     if (currentMessageLength == 0)
                     {
                         currentMessageLength = lengthEncoding.lengthFieldLength;

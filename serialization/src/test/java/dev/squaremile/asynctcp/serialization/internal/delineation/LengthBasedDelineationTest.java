@@ -22,11 +22,12 @@ class LengthBasedDelineationTest
     void shouldDelineateMessages(final LengthEncoding lengthEncoding)
     {
         final int padding = random.nextInt(20);
-        final byte[][] messages = StreamGenerator.messages(500, (short)30);
+        int fixedMessageLength = random.nextInt(5);
+        final byte[][] messages = StreamGenerator.messages(500, fixedMessageLength, (short)(fixedMessageLength + 30));
 
         deliverInChunks(
-                new StreamGenerator(lengthEncoding, padding, messages).generate(),
-                new LengthBasedDelineation(lengthEncoding, padding, 0, delineatedDataSpy)
+                new StreamGenerator(lengthEncoding, padding, fixedMessageLength, messages).generate(),
+                new LengthBasedDelineation(lengthEncoding, padding, fixedMessageLength, delineatedDataSpy)
         );
         assertEquals(delineatedDataSpy.received(), messages);
     }

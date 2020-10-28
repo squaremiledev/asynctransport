@@ -13,15 +13,17 @@ public class StreamGenerator
     private final LengthEncoding lengthEncoding;
     private final byte[] padding;
     private final byte[][] messages;
+    private final int additionalMessageLength;
 
-    public StreamGenerator(final LengthEncoding lengthEncoding, final int padding, final byte[][] messages)
+    public StreamGenerator(final LengthEncoding lengthEncoding, final int padding, final int additionalMessageLength, final byte[][] messages)
     {
         this.lengthEncoding = lengthEncoding;
         this.messages = messages;
         this.padding = new byte[padding];
+        this.additionalMessageLength = additionalMessageLength;
     }
 
-    static byte[][] messages(final int maxNumberOfMessages, final short maxLengthOfTheMessage)
+    static byte[][] messages(final int maxNumberOfMessages, final int minLengthOfTheMessage, final short maxLengthOfTheMessage)
     {
         final Random random = new Random();
         final int messagesCount = random.nextInt(maxNumberOfMessages);
@@ -29,14 +31,14 @@ public class StreamGenerator
 
         for (int i = 0; i < messagesCount; i++)
         {
-            messages[i] = message(random, maxLengthOfTheMessage);
+            messages[i] = message(random, minLengthOfTheMessage, maxLengthOfTheMessage);
         }
         return messages;
     }
 
-    private static byte[] message(final Random random, final short maxLengthOfTheMessage)
+    private static byte[] message(final Random random, final int minLengthOfTheMessage, final short maxLengthOfTheMessage)
     {
-        short length = (short)(random.nextInt(maxLengthOfTheMessage) + 1);
+        short length = (short)(minLengthOfTheMessage + random.nextInt(maxLengthOfTheMessage - minLengthOfTheMessage) + 1);
         byte[] bytes = new byte[length];
         random.nextBytes(bytes);
         return bytes;
@@ -48,7 +50,8 @@ public class StreamGenerator
         final byte[] stream = new byte[
                 messages.length * padding.length +
                 messages.length * lengthEncoding.lengthFieldLength +
-                rawDataLength];
+                rawDataLength
+                ];
         final ByteBuffer buffer = ByteBuffer.wrap(stream);
         for (byte[] message : messages)
         {
@@ -65,19 +68,19 @@ public class StreamGenerator
         {
             case SHORT_BIG_ENDIAN_FIELD:
                 buffer.order(BIG_ENDIAN);
-                buffer.putShort((short)message.length);
+                buffer.putShort((short)(message.length - additionalMessageLength));
                 break;
             case SHORT_LITTLE_ENDIAN_FIELD:
                 buffer.order(LITTLE_ENDIAN);
-                buffer.putShort((short)message.length);
+                buffer.putShort((short)(message.length - additionalMessageLength));
                 break;
             case INT_BIG_ENDIAN_FIELD:
                 buffer.order(BIG_ENDIAN);
-                buffer.putInt(message.length);
+                buffer.putInt(message.length - additionalMessageLength);
                 break;
             case INT_LITTLE_ENDIAN_FIELD:
                 buffer.order(LITTLE_ENDIAN);
-                buffer.putInt(message.length);
+                buffer.putInt(message.length - additionalMessageLength);
                 break;
             default:
                 throw new UnsupportedOperationException();
