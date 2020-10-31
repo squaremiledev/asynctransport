@@ -192,7 +192,7 @@ public class SerializingTransport implements Transport, EventListener
             Connected event = (Connected)unknownEvent;
             connectionCommandsByConnectionId.put(
                     event.connectionId(),
-                    new ConnectionCommands(new ConnectionIdValue(event.port(), event.connectionId()), event.outboundPduLimit())
+                    new ConnectionCommands(new ConnectionIdValue(event.port(), event.connectionId()), event.outboundPduLimit(), event.delineation())
             );
         }
         if (unknownEvent instanceof ConnectionAccepted)
@@ -200,7 +200,7 @@ public class SerializingTransport implements Transport, EventListener
             ConnectionAccepted event = (ConnectionAccepted)unknownEvent;
             connectionCommandsByConnectionId.put(
                     event.connectionId(),
-                    new ConnectionCommands(new ConnectionIdValue(event.port(), event.connectionId()), event.outboundPduLimit())
+                    new ConnectionCommands(new ConnectionIdValue(event.port(), event.connectionId()), event.outboundPduLimit(), event.delineation())
             );
         }
         if (unknownEvent instanceof ConnectionClosed)

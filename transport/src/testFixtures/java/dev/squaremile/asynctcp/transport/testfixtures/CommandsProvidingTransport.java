@@ -8,16 +8,19 @@ import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 
 public class CommandsProvidingTransport implements Transport
 {
     private final CommandFactory commandFactory = new CommandFactory();
-    private int capacity;
+    private final int capacity;
+    private final Delineation delineation;
 
-    public CommandsProvidingTransport(final int capacity)
+    public CommandsProvidingTransport(final int capacity, final Delineation delineation)
     {
         this.capacity = capacity;
+        this.delineation = delineation;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class CommandsProvidingTransport implements Transport
         }
         if (commandType.equals(SendMessage.class))
         {
-            return commandType.cast(new SendMessage(connectionId, capacity));
+            return commandType.cast(new SendMessage(connectionId, capacity, delineation));
         }
 
         throw new UnsupportedOperationException(commandType.getSimpleName());

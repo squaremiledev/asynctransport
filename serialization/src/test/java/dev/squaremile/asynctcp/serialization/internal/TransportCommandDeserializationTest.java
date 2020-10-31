@@ -14,12 +14,13 @@ import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.testfixtures.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.transport.testfixtures.TransportCommandSpy;
 
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 
 class TransportCommandDeserializationTest
 {
     private static final int OFFSET = 6;
-    private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(Fixtures.connectedEvent().outboundPduLimit()));
+    private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(Fixtures.connectedEvent().outboundPduLimit(), rawStreaming()));
 
     static Stream<Function<Transport, TransportUserCommand>> commands()
     {

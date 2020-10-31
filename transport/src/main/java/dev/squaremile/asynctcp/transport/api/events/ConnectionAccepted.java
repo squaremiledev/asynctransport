@@ -4,6 +4,7 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.TransportCorrelatedEvent;
 import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedEvent
 {
@@ -14,6 +15,7 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
     private final long connectionId;
     private final int inboundPduLimit;
     private final int outboundPduLimit;
+    private final Delineation delineation;
 
     public ConnectionAccepted(
             final ConnectionId connectionId,
@@ -21,10 +23,11 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
             final String remoteHost,
             final int remotePort,
             final int inboundPduLimit,
-            final int outboundPduLimit
+            final int outboundPduLimit,
+            final Delineation delineation
     )
     {
-        this(connectionId.port(), commandId, remoteHost, remotePort, connectionId.connectionId(), inboundPduLimit, outboundPduLimit);
+        this(connectionId.port(), commandId, remoteHost, remotePort, connectionId.connectionId(), inboundPduLimit, outboundPduLimit, delineation);
     }
 
     public ConnectionAccepted(
@@ -34,7 +37,8 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
             final int remotePort,
             final long connectionId,
             final int inboundPduLimit,
-            final int outboundPduLimit
+            final int outboundPduLimit,
+            final Delineation delineation
     )
     {
         this.port = port;
@@ -44,6 +48,7 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
         this.connectionId = connectionId;
         this.inboundPduLimit = inboundPduLimit;
         this.outboundPduLimit = outboundPduLimit;
+        this.delineation = delineation;
     }
 
     @Override
@@ -90,6 +95,11 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
         return false;
     }
 
+    public Delineation delineation()
+    {
+        return delineation;
+    }
+
     @Override
     public String toString()
     {
@@ -101,12 +111,13 @@ public class ConnectionAccepted implements ConnectionEvent, TransportCorrelatedE
                ", connectionId=" + connectionId +
                ", inboundPduLimit=" + inboundPduLimit +
                ", outboundPduLimit=" + outboundPduLimit +
+               ", delineation=" + delineation +
                '}';
     }
 
     @Override
     public TransportEvent copy()
     {
-        return new ConnectionAccepted(port, commandId, remoteHost, remotePort, connectionId, inboundPduLimit, outboundPduLimit);
+        return new ConnectionAccepted(port, commandId, remoteHost, remotePort, connectionId, inboundPduLimit, outboundPduLimit, delineation);
     }
 }

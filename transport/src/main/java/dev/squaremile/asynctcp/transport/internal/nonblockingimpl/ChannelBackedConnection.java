@@ -51,7 +51,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.channel = channel;
         this.delineation = delineation;
         this.singleConnectionEvents = singleConnectionEvents;
-        this.connectionCommands = new ConnectionCommands(configuration.connectionId, configuration.outboundPduLimit);
+        this.connectionCommands = new ConnectionCommands(configuration.connectionId, configuration.outboundPduLimit, delineation);
         this.outgoingStream = new OutgoingStream(this.singleConnectionEvents, configuration.sendBufferSize);
         this.connectionState = outgoingStream.state();
         this.port = configuration.connectionId.port();
@@ -122,7 +122,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
                 configuration.remotePort,
                 configuration.connectionId.connectionId(),
                 configuration.inboundPduLimit,
-                configuration.outboundPduLimit
+                configuration.outboundPduLimit,
+                delineation
         ));
     }
 
@@ -229,12 +230,15 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     public String toString()
     {
         return "ChannelBackedConnection{" +
-               "configuration=" + configuration +
-               ", channel=" + channel +
+               "channel=" + channel +
+               ", delineation=" + delineation +
                ", singleConnectionEvents=" + singleConnectionEvents +
                ", connectionCommands=" + connectionCommands +
+               ", configuration=" + configuration +
                ", outgoingStream=" + outgoingStream +
                ", totalBytesReceived=" + totalBytesReceived +
+               ", connectionState=" + connectionState +
+               ", port=" + port +
                '}';
     }
 }

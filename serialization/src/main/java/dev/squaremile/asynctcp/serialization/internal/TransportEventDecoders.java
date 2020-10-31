@@ -125,16 +125,17 @@ public class TransportEventDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    // got away with out of order variable length decoding as it't the only field of its type
-                    // and only ordering within variable length fields matter
+                    String pattern = decoder.delineationPattern();
+                    String remoteHost = decoder.remoteHost();
                     ConnectionAccepted result = new ConnectionAccepted(
                             decoder.port(),
                             decoder.commandId(),
-                            decoder.remoteHost(),
+                            remoteHost,
                             decoder.remotePort(),
                             decoder.connectionId(),
                             decoder.inboundPduLimit(),
-                            decoder.outboundPduLimit()
+                            decoder.outboundPduLimit(),
+                            new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), decoder.delineationPadding(), decoder.delineationKnownLength(), pattern)
                     );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;

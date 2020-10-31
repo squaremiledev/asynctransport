@@ -61,7 +61,8 @@ class ServerReceivesConnectionsTest extends TransportTestBase
                         clientPort,
                         connectionAcceptedEvent.connectionId(),
                         connectionAcceptedEvent.inboundPduLimit(),
-                        connectionAcceptedEvent.outboundPduLimit()
+                        connectionAcceptedEvent.outboundPduLimit(),
+                        rawStreaming()
                 ));
     }
 

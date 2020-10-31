@@ -80,7 +80,11 @@
         <field name="remotePort" id="4" type="port"/>
         <field name="inboundPduLimit" id="5" type="int32"/>
         <field name="outboundPduLimit" id="6" type="int32"/>
-        <data name="remoteHost" id="7" type="varStringEncoding"/>
+        <field name="delineationType" id="7" type="DelineationType"/>
+        <field name="delineationPadding" id="8" type="int32"/>
+        <field name="delineationKnownLength" id="9" type="int32"/>
+        <data name="delineationPattern" id="10" type="varStringEncoding"/>
+        <data name="remoteHost" id="11" type="varStringEncoding"/>
     </sbe:message>
     <sbe:message name="ConnectionClosed" id="5">
         <field name="port" id="1" type="port"/>

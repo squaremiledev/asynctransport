@@ -11,6 +11,7 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.transport.api.values.CommandId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 public class SendMessage implements ConnectionUserCommand
 {
@@ -18,16 +19,17 @@ public class SendMessage implements ConnectionUserCommand
     private final ByteBuffer data;
     private final MutableDirectBuffer buffer;
     private final int offset;
+    private final Delineation delineation;
     private final int capacity;
     private int length;
     private long commandId;
 
-    public SendMessage(final ConnectionId connectionId, final int capacity)
+    public SendMessage(final ConnectionId connectionId, final int capacity, final Delineation delineation)
     {
-        this(connectionId.port(), connectionId.connectionId(), capacity);
+        this(connectionId.port(), connectionId.connectionId(), capacity, delineation);
     }
 
-    public SendMessage(final int port, final long connectionId, final int capacity)
+    public SendMessage(final int port, final long connectionId, final int capacity, final Delineation delineation)
     {
         this.capacity = capacity;
         this.connectionId = new ConnectionIdValue(port, connectionId);
@@ -36,6 +38,7 @@ public class SendMessage implements ConnectionUserCommand
         this.length = 0;
         this.commandId = CommandId.NO_COMMAND_ID;
         this.offset = 0;
+        this.delineation = delineation;
     }
 
     @Override
@@ -96,8 +99,11 @@ public class SendMessage implements ConnectionUserCommand
     {
         return "SendMessage{" +
                "connectionId=" + connectionId +
+               ", data=" + data +
                ", buffer=" + buffer +
                ", offset=" + offset +
+               ", delineation=" + delineation +
+               ", capacity=" + capacity +
                ", length=" + length +
                ", commandId=" + commandId +
                '}';
@@ -106,7 +112,7 @@ public class SendMessage implements ConnectionUserCommand
     @Override
     public SendMessage copy()
     {
-        SendMessage copy = new SendMessage(connectionId, capacity);
+        SendMessage copy = new SendMessage(connectionId.port(), connectionId.connectionId(), capacity, delineation);
         buffer.getBytes(offset, copy.prepare(), copy.offset(), length);
         copy.commit(length);
         return copy;

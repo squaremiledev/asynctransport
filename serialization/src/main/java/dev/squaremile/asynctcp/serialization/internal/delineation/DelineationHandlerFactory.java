@@ -16,6 +16,11 @@ class DelineationHandlerFactory
         }
         switch (delineation.type())
         {
+            case SHORT_BIG_ENDIAN_FIELD:
+            case SHORT_LITTLE_ENDIAN_FIELD:
+            case INT_BIG_ENDIAN_FIELD:
+            case INT_LITTLE_ENDIAN_FIELD:
+                return new FixedLengthDelineation(delineatedDataHandler, delineation.extraLength());
             case FIXED_LENGTH:
                 return delineation.extraLength() == 0 ? delineatedDataHandler : new FixedLengthDelineation(delineatedDataHandler, delineation.extraLength());
             case ASCII_PATTERN:

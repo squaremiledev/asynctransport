@@ -21,6 +21,7 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.testfixtures.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.transport.testfixtures.TransportCommandSpy;
 
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 
 class SerializingTransportTest
@@ -28,8 +29,8 @@ class SerializingTransportTest
     private static final int OFFSET = 6;
     private static final Connected CONNECTED_EVENT = Fixtures.connectedEvent();
 
-    private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(1024));
-    private final TransportCommandDecoders decoders = new TransportCommandDecoders(new CommandsProvidingTransport(CONNECTED_EVENT.outboundPduLimit()));
+    private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(1024, rawStreaming()));
+    private final TransportCommandDecoders decoders = new TransportCommandDecoders(new CommandsProvidingTransport(CONNECTED_EVENT.outboundPduLimit(), rawStreaming()));
 
     static Stream<Function<Transport, TransportUserCommand>> commands()
     {

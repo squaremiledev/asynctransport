@@ -5,6 +5,7 @@ import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 public class ConnectionCommands
 {
@@ -12,10 +13,10 @@ public class ConnectionCommands
     private final SendMessage sendMessageCommand;
     private final CloseConnection closeConnection;
 
-    public ConnectionCommands(final ConnectionIdValue connectionId, final int initialSenderBufferSize)
+    public ConnectionCommands(final ConnectionIdValue connectionId, final int initialSenderBufferSize, final Delineation delineation)
     {
         this.sendDataCommand = new SendData(connectionId, initialSenderBufferSize);
-        this.sendMessageCommand = new SendMessage(connectionId, initialSenderBufferSize);
+        this.sendMessageCommand = new SendMessage(connectionId, initialSenderBufferSize, delineation);
         this.closeConnection = new CloseConnection(connectionId);
     }
 

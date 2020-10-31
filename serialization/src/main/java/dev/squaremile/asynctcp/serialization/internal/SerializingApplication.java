@@ -97,6 +97,10 @@ public class SerializingApplication implements EventDrivenApplication
                     .remotePort(event.remotePort())
                     .inboundPduLimit(event.inboundPduLimit())
                     .outboundPduLimit(event.outboundPduLimit())
+                    .delineationType(DelineationTypeMapping.toWire(event.delineation().type()))
+                    .delineationPadding(event.delineation().padding())
+                    .delineationKnownLength(event.delineation().extraLength())
+                    .delineationPattern(event.delineation().pattern())
                     .remoteHost(event.remoteHost());
             serializedEventListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + connectionAcceptedEncoder.encodedLength());
         }
