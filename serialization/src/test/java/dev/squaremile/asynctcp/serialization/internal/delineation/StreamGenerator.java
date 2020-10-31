@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Random;
 
 
+import dev.squaremile.asynctcp.transport.api.values.LengthEncoding;
+
 import static java.nio.ByteOrder.BIG_ENDIAN;
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 

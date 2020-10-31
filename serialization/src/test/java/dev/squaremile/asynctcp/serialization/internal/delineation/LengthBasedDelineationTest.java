@@ -15,7 +15,7 @@ import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFix
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.bytes;
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.iValA;
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.iValB;
-import static dev.squaremile.asynctcp.serialization.internal.delineation.LengthEncoding.INT_BIG_ENDIAN_FIELD;
+import static dev.squaremile.asynctcp.transport.api.values.LengthEncoding.INT_BIG_ENDIAN_FIELD;
 
 class LengthBasedDelineationTest
 {

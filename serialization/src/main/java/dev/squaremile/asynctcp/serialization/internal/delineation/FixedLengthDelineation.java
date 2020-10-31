@@ -2,6 +2,9 @@ package dev.squaremile.asynctcp.serialization.internal.delineation;
 
 import org.agrona.DirectBuffer;
 
+
+import dev.squaremile.asynctcp.transport.api.values.LengthEncoding;
+
 class FixedLengthDelineation implements DelineationHandler
 {
     private final DelineationHandler delineation;

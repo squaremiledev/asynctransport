@@ -10,6 +10,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 
+import dev.squaremile.asynctcp.transport.api.values.LengthEncoding;
+
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.assertEquals;
 
 class LengthBasedDelineationPropertyTest

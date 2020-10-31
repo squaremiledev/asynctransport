@@ -4,6 +4,9 @@ import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 
+
+import dev.squaremile.asynctcp.transport.api.values.LengthEncoding;
+
 class LengthBasedDelineation implements DelineationHandler
 {
     private final int fixedMessagePadding;
