@@ -2,9 +2,15 @@ package dev.squaremile.asynctcpacceptance;
 
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
+import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
+
+import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
+import dev.squaremile.asynctcp.api.TransportApplicationFactory;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
@@ -33,33 +39,48 @@ public class EchoConnectionApplication implements ConnectionApplication
 
     public static void main(String[] args)
     {
-        if (args.length != 1)
+        if (args.length != 1 && args.length != 2)
         {
-            System.out.println("Provide a port to listen on");
+            System.out.println("Usage: EchoConnectionApplication port(int) useBuffers(0|1) ");
+            System.out.println("Example: EchoConnectionApplication 9998 1");
             return;
         }
-        ApplicationOnDuty echo = echoApplication(parseInt(args[0]));
-        echo.onStart();
+        final boolean useBuffers = args.length > 1 && parseInt(args[1]) == 1;
+        final ApplicationOnDuty app = echoApplication(parseInt(args[0]), useBuffers);
+        app.onStart();
         while (!Thread.interrupted())
         {
-            echo.work();
+            app.work();
         }
     }
 
-    public static ApplicationOnDuty echoApplication(final int port)
+    public static ApplicationOnDuty echoApplication(final int port, final boolean useBuffers)
     {
-        return new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
-                "echo",
-                transport -> new ListeningApplication(
-                        transport,
-                        new Delineation(Delineation.Type.FIXED_LENGTH, 0, 16, ""),
-                        port,
-                        () ->
-                        {
-                        },
-                        EchoConnectionApplication::new
-                )
-        );
+        return createApplication(useBuffers, transport -> new ListeningApplication(
+                transport,
+                new Delineation(Delineation.Type.FIXED_LENGTH, 0, 16, ""),
+                port,
+                () ->
+                {
+                },
+                EchoConnectionApplication::new
+        ));
+    }
+
+    private static ApplicationOnDuty createApplication(final boolean useBuffers, final ApplicationFactory applicationFactory)
+    {
+        TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
+        return useBuffers ?
+               transportApplicationFactory.create(
+                       "echo",
+                       new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
+                       new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
+                       applicationFactory
+               ) :
+               transportApplicationFactory.create(
+                       "echo",
+                       applicationFactory
+               );
     }
 
     @Override

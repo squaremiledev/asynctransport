@@ -11,13 +11,14 @@ import dev.squaremile.asynctcpacceptance.SourcingConnectionApplication;
 public class RoundTripTimeSeparateAppTest
 {
 
-    private static final int PORT = 8889;
+    private static final String PORT = Integer.toString(8889);
+    private static final String USE_BUFFERS = Integer.toString(1);
 
     // run as first, when started run, measureRoundTripTime
     @Test
     void runEchoApplication()
     {
-        EchoConnectionApplication.main(new String[]{Integer.toString(PORT)});
+        EchoConnectionApplication.main(new String[]{PORT, USE_BUFFERS});
     }
 
     @Test
@@ -26,16 +27,16 @@ public class RoundTripTimeSeparateAppTest
         final String remoteHost = "localhost";
         final int sendingRatePerSecond = 100_000;
         final int respondToNth = 32;
-        final int skippedWarmUpResponses = (sendingRatePerSecond) / respondToNth;
-        final int messagesSent = sendingRatePerSecond * 5;
+        final int skippedWarmUpResponses = (sendingRatePerSecond * 10) / respondToNth;
+        final int messagesSent = sendingRatePerSecond * 60;
         SourcingConnectionApplication.main(new String[]{
                 remoteHost,
-                Integer.toString(PORT),
+                PORT,
                 Integer.toString(sendingRatePerSecond),
                 Integer.toString(skippedWarmUpResponses),
                 Integer.toString(messagesSent),
                 Integer.toString(respondToNth),
-                Integer.toString(1)
+                USE_BUFFERS
         });
     }
 
