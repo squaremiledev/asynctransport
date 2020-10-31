@@ -136,17 +136,24 @@ public class SourcingConnectionApplication implements ConnectionApplication
     private static ApplicationOnDuty createApplication(final boolean useBuffers, final ApplicationFactory applicationFactory)
     {
         final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
-        return useBuffers ?
-               transportApplicationFactory.create(
-                       "source",
-                       new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
-                       new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
-                       applicationFactory
-               ) :
-               transportApplicationFactory.create(
-                       "source",
-                       applicationFactory
-               );
+        if (useBuffers)
+        {
+            System.out.println("Creating an app that uses ring buffers");
+            return transportApplicationFactory.create(
+                    "source",
+                    new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
+                    new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
+                    applicationFactory
+            );
+        }
+        else
+        {
+            System.out.println("Creating an app without ring buffers");
+            return transportApplicationFactory.create(
+                    "source",
+                    applicationFactory
+            );
+        }
     }
 
     @Override
