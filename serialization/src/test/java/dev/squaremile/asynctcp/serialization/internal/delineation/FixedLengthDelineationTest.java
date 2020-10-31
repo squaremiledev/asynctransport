@@ -2,6 +2,7 @@ package dev.squaremile.asynctcp.serialization.internal.delineation;
 
 import java.nio.ByteBuffer;
 
+import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,10 +18,10 @@ import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFix
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 
-class IntegersDelineationTest
+class FixedLengthDelineationTest
 {
     private final DelineatedDataSpy delineatedDataSpy = new DelineatedDataSpy();
-    private final IntegersDelineation delineation = new IntegersDelineation(delineatedDataSpy);
+    private final DelineationHandler delineation = new FixedLengthDelineation(delineatedDataSpy, Integer.BYTES);
 
     @Test
     void shouldNotNotifyAboutPartialData()
@@ -96,6 +97,25 @@ class IntegersDelineationTest
                 iValB()
         );
     }
+
+    @Test
+    void shouldDelineateByteByByte()
+    {
+        DelineatedDataSpy delineatedDataSpy = new DelineatedDataSpy();
+
+        // When
+        new FixedLengthDelineation(delineatedDataSpy, 1)
+                .onData(new UnsafeBuffer(new byte[]{0, 1, 2, 3, 4}), 1, 3);
+
+        // Then
+        assertEquals(
+                delineatedDataSpy.received(),
+                new byte[]{1},
+                new byte[]{2},
+                new byte[]{3}
+        );
+    }
+
 
     private byte[] intInBytes(final int value)
     {

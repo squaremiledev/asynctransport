@@ -7,7 +7,6 @@ import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXE
 
 class DelineationHandlerFactory
 {
-
     public static final String FIX_MESSAGE_PATTERN = "8=[^\\u0001]+\\u00019=([0-9]+)\\u0001";
 
     DelineationHandler create(final Delineation delineation, final DelineationHandler delineatedDataHandler)
@@ -19,19 +18,7 @@ class DelineationHandlerFactory
         switch (delineation.type())
         {
             case FIXED_LENGTH:
-                switch (delineation.knownLength())
-                {
-                    case 0:
-                        return delineatedDataHandler;
-                    case 1:
-                        return new SingleByteDelineation(delineatedDataHandler);
-                    case 4:
-                        return new IntegersDelineation(delineatedDataHandler);
-                    case 8:
-                        return new LongsDelineation(delineatedDataHandler);
-                    default:
-                        return new FixedLengthDelineation(delineatedDataHandler, delineation.knownLength());
-                }
+                return delineation.knownLength() == 0 ? delineatedDataHandler : new FixedLengthDelineation(delineatedDataHandler, delineation.knownLength());
             case ASCII_PATTERN:
                 if (FIX_MESSAGE_PATTERN.equals(delineation.pattern()) && delineation.knownLength() == 7)
                 {
