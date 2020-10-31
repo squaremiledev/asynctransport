@@ -2,6 +2,8 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 
 import java.util.function.LongConsumer;
 
+import org.agrona.MutableDirectBuffer;
+
 
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
@@ -21,13 +23,15 @@ class LongPingPongAppFactory implements ApplicationFactory
     private final EventListener pingSpy;
     private final LongConsumer messageListener;
     private final int messagesCap;
+    private final Delineation delineation;
 
-    public LongPingPongAppFactory(final int messagesCap, final int port, final EventListener pingSpy, final LongConsumer messageListener)
+    public LongPingPongAppFactory(final Delineation delineation, final int messagesCap, final int port, final EventListener pingSpy, final LongConsumer messageListener)
     {
         this.port = port;
         this.pingSpy = pingSpy;
         this.messageListener = messageListener;
         this.messagesCap = messagesCap;
+        this.delineation = delineation;
     }
 
     @Override
@@ -40,7 +44,7 @@ class LongPingPongAppFactory implements ApplicationFactory
             @Override
             public void onStart()
             {
-                transport.handle(transport.command(Listen.class).set(1, port, new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, "")));
+                transport.handle(transport.command(Listen.class).set(1, port, delineation));
             }
 
             @Override
@@ -51,8 +55,9 @@ class LongPingPongAppFactory implements ApplicationFactory
                 {
                     ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
                     SendMessage sendMessage = transport.command(connectionAccepted, SendMessage.class);
-                    int newNumber = 1_000_000;
-                    sendMessage.prepare(8).putLong(sendMessage.offset(), newNumber);
+                    int newNumber = 1;
+                    MutableDirectBuffer buffer = sendMessage.prepare(8);
+                    buffer.putLong(sendMessage.offset(), newNumber);
                     sendMessage.commit();
                     transport.handle(sendMessage);
 

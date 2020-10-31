@@ -12,6 +12,7 @@ import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
@@ -29,8 +30,24 @@ class SmallMessagesOneWayThroughputTest
     @Test
     void shouldSendLongs()
     {
-        ApplicationOnDuty pingApp = transportApplicationFactory.create("ping", new LongPingAppFactory(MESSAGES_CAP, port, stateListener));
-        ApplicationOnDuty pongApp = transportApplicationFactory.create("pong", new LongPongAppFactory(port, stateListener, number -> numbersReceivedCount++));
+        ApplicationOnDuty pingApp = transportApplicationFactory.create(
+                "ping",
+                new LongPingAppFactory(
+                        new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, ""),
+                        MESSAGES_CAP,
+                        port,
+                        stateListener
+                )
+        );
+        ApplicationOnDuty pongApp = transportApplicationFactory.create(
+                "pong",
+                new LongPongAppFactory(
+                        new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, ""),
+                        port,
+                        stateListener,
+                        number -> numbersReceivedCount++
+                )
+        );
         Apps apps = new Apps(pingApp, pongApp);
         pingApp.onStart();
         apps.runUntil(stateListener::hasStartedListening);

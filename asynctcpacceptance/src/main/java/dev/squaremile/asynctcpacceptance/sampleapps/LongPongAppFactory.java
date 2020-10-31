@@ -18,12 +18,14 @@ class LongPongAppFactory implements ApplicationFactory
     private final EventListener pongSpy;
     private final int port;
     private final LongConsumer messageListener;
+    private final Delineation delineation;
 
-    public LongPongAppFactory(final int port, final EventListener pongSpy, final LongConsumer messageListener)
+    public LongPongAppFactory(final Delineation delineation, final int port, final EventListener pongSpy, final LongConsumer messageListener)
     {
         this.pongSpy = pongSpy;
         this.port = port;
         this.messageListener = messageListener;
+        this.delineation = delineation;
     }
 
     @Override
@@ -59,7 +61,7 @@ class LongPongAppFactory implements ApplicationFactory
 
             private void connect()
             {
-                transport.handle(transport.command(Connect.class).set("localhost", port, CONNECT_COMMAND_ID, 100, new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, "")));
+                transport.handle(transport.command(Connect.class).set("localhost", port, CONNECT_COMMAND_ID, 100, delineation));
             }
         };
     }

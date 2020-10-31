@@ -20,7 +20,7 @@ class DelineationHandlerFactory
             case SHORT_LITTLE_ENDIAN_FIELD:
             case INT_BIG_ENDIAN_FIELD:
             case INT_LITTLE_ENDIAN_FIELD:
-                return new FixedLengthDelineation(delineatedDataHandler, delineation.extraLength());
+                return new LengthBasedDelineation(delineation.type(), delineation.padding(), delineation.extraLength(), delineatedDataHandler);
             case FIXED_LENGTH:
                 return delineation.extraLength() == 0 ? delineatedDataHandler : new FixedLengthDelineation(delineatedDataHandler, delineation.extraLength());
             case ASCII_PATTERN:

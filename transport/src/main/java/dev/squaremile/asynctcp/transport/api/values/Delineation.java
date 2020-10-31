@@ -1,8 +1,10 @@
 package dev.squaremile.asynctcp.transport.api.values;
 
+import java.nio.ByteOrder;
 import java.util.Objects;
 
 import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
 
 
 import static java.nio.ByteOrder.BIG_ENDIAN;
@@ -110,30 +112,58 @@ public class Delineation
 
     public enum Type
     {
-        ASCII_PATTERN(0, (buffer, currentOffset) -> 0),
-        FIXED_LENGTH(0, (buffer, currentOffset) -> 0),
-        SHORT_BIG_ENDIAN_FIELD(Short.BYTES, (buffer, currentOffset) -> buffer.getShort(currentOffset, BIG_ENDIAN)),
-        SHORT_LITTLE_ENDIAN_FIELD(Short.BYTES, (buffer, currentOffset) -> buffer.getShort(currentOffset, LITTLE_ENDIAN)),
-        INT_BIG_ENDIAN_FIELD(Integer.BYTES, (buffer, currentOffset) -> buffer.getInt(currentOffset, BIG_ENDIAN)),
-        INT_LITTLE_ENDIAN_FIELD(Integer.BYTES, (buffer, currentOffset) -> buffer.getInt(currentOffset, LITTLE_ENDIAN));
+        ASCII_PATTERN(0, (buffer, currentOffset) -> 0, (buffer, currentOffset, value) ->
+        {
+        }),
+        FIXED_LENGTH(0, (buffer, currentOffset) -> 0, (buffer, currentOffset, value) ->
+        {
+        }),
+        SHORT_BIG_ENDIAN_FIELD(Short.BYTES, (buffer, currentOffset) -> buffer.getShort(currentOffset, BIG_ENDIAN), (buffer, currentOffset, value) ->
+        {
+            buffer.putShort(currentOffset, (short)value, ByteOrder.BIG_ENDIAN);
+        }),
+        SHORT_LITTLE_ENDIAN_FIELD(Short.BYTES, (buffer, currentOffset) -> buffer.getShort(currentOffset, LITTLE_ENDIAN), (buffer, currentOffset, value) ->
+        {
+            buffer.putShort(currentOffset, (short)value, LITTLE_ENDIAN);
+        }),
+        INT_BIG_ENDIAN_FIELD(Integer.BYTES, (buffer, currentOffset) -> buffer.getInt(currentOffset, BIG_ENDIAN), (buffer, currentOffset, value) ->
+        {
+            buffer.putInt(currentOffset, value, ByteOrder.BIG_ENDIAN);
+        }),
+        INT_LITTLE_ENDIAN_FIELD(Integer.BYTES, (buffer, currentOffset) -> buffer.getInt(currentOffset, LITTLE_ENDIAN), (buffer, currentOffset, value) ->
+        {
+            buffer.putInt(currentOffset, value, LITTLE_ENDIAN);
+        });
 
         public final int lengthFieldLength;
-        private final Delineation.Type.LengthProvider lengthProvider;
+        private final LengthDecoder lengthDecoder;
+        private final LengthEncoder lengthEncoder;
 
-        Type(final int lengthFieldLength, final Delineation.Type.LengthProvider lengthProvider)
+        Type(final int lengthFieldLength, final LengthDecoder lengthDecoder, final LengthEncoder lengthEncoder)
         {
             this.lengthFieldLength = lengthFieldLength;
-            this.lengthProvider = lengthProvider;
+            this.lengthDecoder = lengthDecoder;
+            this.lengthEncoder = lengthEncoder;
         }
 
         public int readLength(final DirectBuffer buffer, final int currentOffset)
         {
-            return lengthProvider.readLength(buffer, currentOffset);
+            return lengthDecoder.readLength(buffer, currentOffset);
         }
 
-        interface LengthProvider
+        public void writeLength(final MutableDirectBuffer buffer, final int currentOffset, final int value)
+        {
+            lengthEncoder.writeLength(buffer, currentOffset, value);
+        }
+
+        interface LengthDecoder
         {
             int readLength(final DirectBuffer buffer, final int currentOffset);
+        }
+
+        interface LengthEncoder
+        {
+            void writeLength(final MutableDirectBuffer buffer, final int currentOffset, final int value);
         }
     }
 }

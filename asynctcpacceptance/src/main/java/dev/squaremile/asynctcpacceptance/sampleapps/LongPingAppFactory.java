@@ -18,12 +18,14 @@ class LongPingAppFactory implements ApplicationFactory
     private final int port;
     private final EventListener pingSpy;
     private final int messagesCap;
+    private final Delineation delineation;
 
-    public LongPingAppFactory(final int messagesCap, final int port, final EventListener pingSpy)
+    public LongPingAppFactory(final Delineation delineation, final int messagesCap, final int port, final EventListener pingSpy)
     {
         this.port = port;
         this.pingSpy = pingSpy;
         this.messagesCap = messagesCap;
+        this.delineation = delineation;
     }
 
     @Override
@@ -37,7 +39,7 @@ class LongPingAppFactory implements ApplicationFactory
             @Override
             public void onStart()
             {
-                transport.handle(transport.command(Listen.class).set(1, port, new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, "")));
+                transport.handle(transport.command(Listen.class).set(1, port, delineation));
             }
 
             @Override
