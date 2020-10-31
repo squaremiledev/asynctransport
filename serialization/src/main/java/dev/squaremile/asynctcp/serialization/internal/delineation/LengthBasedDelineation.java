@@ -42,9 +42,11 @@ class LengthBasedDelineation implements DelineationHandler
                 return new UnsafeBuffer(new byte[value]);
             case SHORT_BIG_ENDIAN_FIELD:
             case SHORT_LITTLE_ENDIAN_FIELD:
+                return new UnsafeBuffer(new byte[Short.MAX_VALUE]);
             case INT_BIG_ENDIAN_FIELD:
             case INT_LITTLE_ENDIAN_FIELD:
-                return new UnsafeBuffer(new byte[1024]); // TODO: probably not enough
+                // may not be enough, consider a dynamic resize
+                return new UnsafeBuffer(new byte[Short.MAX_VALUE * 2]);
             default:
                 throw new UnsupportedOperationException(lengthEncoding.name());
         }
