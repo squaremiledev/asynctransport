@@ -8,6 +8,7 @@ import static java.nio.ByteOrder.LITTLE_ENDIAN;
 
 public enum LengthEncoding
 {
+    ASCII_PATTERN(0, (buffer, currentOffset) -> 0),
     FIXED_LENGTH(0, (buffer, currentOffset) -> 0),
     SHORT_BIG_ENDIAN_FIELD(Short.BYTES, (buffer, currentOffset) -> buffer.getShort(currentOffset, BIG_ENDIAN)),
     SHORT_LITTLE_ENDIAN_FIELD(Short.BYTES, (buffer, currentOffset) -> buffer.getShort(currentOffset, LITTLE_ENDIAN)),

@@ -13,10 +13,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
@@ -41,11 +41,18 @@ public class ValidationTest
     static Stream<Delineation> unsupportedDelineation()
     {
         return Stream.of(
-                new Delineation(Delineation.Type.ASCII_PATTERN, 1, "invalidPattern"),
-                new Delineation(Delineation.Type.FIXED_LENGTH, -1, ""),
-                new Delineation(Delineation.Type.FIXED_LENGTH, 8, PredefinedTransportDelineation.FIX_MESSAGES.type.pattern()),
-                new Delineation(Delineation.Type.ASCII_PATTERN, PredefinedTransportDelineation.FIX_MESSAGES.type.knownLength() + 1, PredefinedTransportDelineation.FIX_MESSAGES.type.pattern()),
-                new Delineation(Delineation.Type.ASCII_PATTERN, PredefinedTransportDelineation.FIX_MESSAGES.type.knownLength(), PredefinedTransportDelineation.FIX_MESSAGES.type.pattern() + "a")
+                new Delineation(Delineation.Type.ASCII_PATTERN, 0, 1, "invalidPattern"),
+                new Delineation(Delineation.Type.FIXED_LENGTH, 0, -1, ""),
+                new Delineation(Delineation.Type.FIXED_LENGTH, -1, 8, ""),
+                new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, PredefinedTransportDelineation.FIX_MESSAGES.type.pattern()),
+                new Delineation(
+                        Delineation.Type.ASCII_PATTERN,
+                        0,
+                        PredefinedTransportDelineation.FIX_MESSAGES.type.extraLength() + 1,
+                        PredefinedTransportDelineation.FIX_MESSAGES.type.pattern()
+                ),
+                new Delineation(Delineation.Type.ASCII_PATTERN, 0, PredefinedTransportDelineation.FIX_MESSAGES.type.extraLength(), PredefinedTransportDelineation.FIX_MESSAGES.type.pattern() + "a"
+                )
         );
     }
 
@@ -59,7 +66,7 @@ public class ValidationTest
 
     static Stream<Function<Transport, TransportUserCommand>> commandsWithUnsupportedDelineation()
     {
-        Delineation unsupportedDelineation = new Delineation(Delineation.Type.ASCII_PATTERN, 1, "invalidPattern");
+        Delineation unsupportedDelineation = new Delineation(Delineation.Type.ASCII_PATTERN, 0, 1, "invalidPattern");
         return Stream.of(
                 transport -> transport.command(Listen.class).set(1, 8888, unsupportedDelineation),
                 transport -> transport.command(Connect.class).set("host", 9999, 1, 20, unsupportedDelineation)

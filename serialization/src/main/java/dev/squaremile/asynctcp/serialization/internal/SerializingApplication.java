@@ -17,8 +17,8 @@ import dev.squaremile.asynctcp.sbe.StoppedListeningEncoder;
 import dev.squaremile.asynctcp.sbe.TransportCommandFailedEncoder;
 import dev.squaremile.asynctcp.sbe.VarDataEncodingEncoder;
 import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
@@ -82,7 +82,7 @@ public class SerializingApplication implements EventDrivenApplication
                     .outboundPduLimit(event.outboundPduLimit())
                     .remoteHost(event.remoteHost())
                     .delineationType(DelineationTypeMapping.toWire(event.delineation().type()))
-                    .delineationKnownLength(event.delineation().knownLength())
+                    .delineationKnownLength(event.delineation().extraLength())
                     .delineationPattern(event.delineation().pattern());
             serializedEventListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + connectedEncoder.encodedLength());
         }
@@ -147,7 +147,7 @@ public class SerializingApplication implements EventDrivenApplication
                     .port(event.port())
                     .commandId(event.commandId())
                     .delineationType(DelineationTypeMapping.toWire(event.delineation().type()))
-                    .delineationKnownLength(event.delineation().knownLength())
+                    .delineationKnownLength(event.delineation().extraLength())
                     .delineationPattern(event.delineation().pattern());
             serializedEventListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + startedListeningEncoder.encodedLength());
         }

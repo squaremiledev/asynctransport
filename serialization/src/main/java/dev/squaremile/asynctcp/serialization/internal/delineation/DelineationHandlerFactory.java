@@ -18,9 +18,9 @@ class DelineationHandlerFactory
         switch (delineation.type())
         {
             case FIXED_LENGTH:
-                return delineation.knownLength() == 0 ? delineatedDataHandler : new FixedLengthDelineation(delineatedDataHandler, delineation.knownLength());
+                return delineation.extraLength() == 0 ? delineatedDataHandler : new FixedLengthDelineation(delineatedDataHandler, delineation.extraLength());
             case ASCII_PATTERN:
-                if (FIX_MESSAGE_PATTERN.equals(delineation.pattern()) && delineation.knownLength() == 7)
+                if (FIX_MESSAGE_PATTERN.equals(delineation.pattern()) && delineation.extraLength() == 7)
                 {
                     return new FixMessageDelineation(delineatedDataHandler);
                 }
@@ -31,7 +31,11 @@ class DelineationHandlerFactory
 
     boolean isSupported(final Delineation delineation)
     {
-        return (FIXED_LENGTH.equals(delineation.type()) && delineation.knownLength() >= 0 && "".equals(delineation.pattern())) ||
-               (ASCII_PATTERN.equals(delineation.type()) && delineation.knownLength() == 7 && FIX_MESSAGE_PATTERN.equals(delineation.pattern()));
+        if (delineation.extraLength() < 0 || delineation.padding() < 0)
+        {
+            return false;
+        }
+        return (FIXED_LENGTH.equals(delineation.type()) && "".equals(delineation.pattern())) ||
+               (ASCII_PATTERN.equals(delineation.type()) && delineation.extraLength() == 7 && FIX_MESSAGE_PATTERN.equals(delineation.pattern()));
     }
 }

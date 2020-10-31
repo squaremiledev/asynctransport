@@ -104,7 +104,7 @@ public class TransportEventDecoders
                             decoder.connectionId(),
                             decoder.inboundPduLimit(),
                             decoder.outboundPduLimit(),
-                            new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), decoder.delineationKnownLength(), decoder.delineationPattern())
+                            new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), 0, decoder.delineationKnownLength(), decoder.delineationPattern())
                     );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
@@ -246,7 +246,7 @@ public class TransportEventDecoders
                     StartedListening result = new StartedListening(
                             decoder.port(),
                             decoder.commandId(),
-                            new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), decoder.delineationKnownLength(), decoder.delineationPattern())
+                            new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), 0, decoder.delineationKnownLength(), decoder.delineationPattern())
                     );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;

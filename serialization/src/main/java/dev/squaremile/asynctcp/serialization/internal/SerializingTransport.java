@@ -121,7 +121,7 @@ public class SerializingTransport implements Transport, EventListener
                     .commandId(command.commandId())
                     .timeoutMs(command.timeoutMs())
                     .delineationType(DelineationTypeMapping.toWire(command.delineation().type()))
-                    .delineationKnownLength(command.delineation().knownLength())
+                    .delineationKnownLength(command.delineation().extraLength())
                     .delineationPattern(command.delineation().pattern())
                     .remoteHost(command.remoteHost());
             serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + connectEncoder.encodedLength());
@@ -133,7 +133,7 @@ public class SerializingTransport implements Transport, EventListener
                     .port(command.port())
                     .commandId(command.commandId())
                     .delineationType(DelineationTypeMapping.toWire(command.delineation().type()))
-                    .delineationKnownLength(command.delineation().knownLength())
+                    .delineationKnownLength(command.delineation().extraLength())
                     .delineationPattern(command.delineation().pattern());
             serializedCommandListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + listenEncoder.encodedLength());
         }
