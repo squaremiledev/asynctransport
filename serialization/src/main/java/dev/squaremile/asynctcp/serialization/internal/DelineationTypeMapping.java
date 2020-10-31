@@ -13,6 +13,14 @@ public class DelineationTypeMapping
                 return Delineation.Type.FIXED_LENGTH;
             case ASCII_PATTERN:
                 return Delineation.Type.ASCII_PATTERN;
+            case SHORT_BIG_ENDIAN_FIELD:
+                return Delineation.Type.SHORT_BIG_ENDIAN_FIELD;
+            case SHORT_LITTLE_ENDIAN_FIELD:
+                return Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD;
+            case INT_BIG_ENDIAN_FIELD:
+                return Delineation.Type.INT_BIG_ENDIAN_FIELD;
+            case INT_LITTLE_ENDIAN_FIELD:
+                return Delineation.Type.INT_LITTLE_ENDIAN_FIELD;
             case NULL_VAL:
             default:
                 throw new IllegalArgumentException();
@@ -27,6 +35,14 @@ public class DelineationTypeMapping
                 return DelineationType.FIXED_LENGTH;
             case ASCII_PATTERN:
                 return DelineationType.ASCII_PATTERN;
+            case SHORT_BIG_ENDIAN_FIELD:
+                return DelineationType.SHORT_BIG_ENDIAN_FIELD;
+            case SHORT_LITTLE_ENDIAN_FIELD:
+                return DelineationType.SHORT_LITTLE_ENDIAN_FIELD;
+            case INT_BIG_ENDIAN_FIELD:
+                return DelineationType.INT_BIG_ENDIAN_FIELD;
+            case INT_LITTLE_ENDIAN_FIELD:
+                return DelineationType.INT_LITTLE_ENDIAN_FIELD;
             default:
                 throw new IllegalArgumentException();
         }

@@ -8,8 +8,12 @@
                    byteOrder="littleEndian">
     <types>
         <enum name="DelineationType" encodingType="char">
-            <validValue name="FIXED_LENGTH">0</validValue>
-            <validValue name="ASCII_PATTERN">1</validValue>
+            <validValue name="ASCII_PATTERN">0</validValue>
+            <validValue name="FIXED_LENGTH">1</validValue>
+            <validValue name="SHORT_BIG_ENDIAN_FIELD">2</validValue>
+            <validValue name="SHORT_LITTLE_ENDIAN_FIELD">3</validValue>
+            <validValue name="INT_BIG_ENDIAN_FIELD">4</validValue>
+            <validValue name="INT_LITTLE_ENDIAN_FIELD">5</validValue>
         </enum>
         <composite name="messageHeader" description="Message identifiers and length of message root.">
             <type name="blockLength" primitiveType="uint16"/>
@@ -46,8 +50,9 @@
         <field name="port" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
         <field name="delineationType" id="3" type="DelineationType"/>
-        <field name="delineationKnownLength" id="4" type="int32"/>
-        <data name="delineationPattern" id="5" type="varStringEncoding"/>
+        <field name="delineationPadding" id="4" type="int32"/>
+        <field name="delineationKnownLength" id="5" type="int32"/>
+        <data name="delineationPattern" id="6" type="varStringEncoding"/>
     </sbe:message>
     <sbe:message name="TransportCommandFailed" id="2">
         <field name="port" id="1" type="port"/>
@@ -63,9 +68,10 @@
         <field name="inboundPduLimit" id="5" type="int32"/>
         <field name="outboundPduLimit" id="6" type="int32"/>
         <field name="delineationType" id="7" type="DelineationType"/>
-        <field name="delineationKnownLength" id="8" type="int32"/>
-        <data name="delineationPattern" id="9" type="varStringEncoding"/>
-        <data name="remoteHost" id="10" type="varStringEncoding"/>
+        <field name="delineationPadding" id="8" type="int32"/>
+        <field name="delineationKnownLength" id="9" type="int32"/>
+        <data name="delineationPattern" id="10" type="varStringEncoding"/>
+        <data name="remoteHost" id="11" type="varStringEncoding"/>
     </sbe:message>
     <sbe:message name="ConnectionAccepted" id="4">
         <field name="port" id="1" type="port"/>
@@ -122,16 +128,18 @@
         <field name="commandId" id="2" type="commandId"/>
         <field name="timeoutMs" id="3" type="int32"/>
         <field name="delineationType" id="4" type="DelineationType"/>
-        <field name="delineationKnownLength" id="5" type="int32"/>
-        <data name="delineationPattern" id="6" type="varStringEncoding"/>
-        <data name="remoteHost" id="7" type="varStringEncoding"/>
+        <field name="delineationPadding" id="5" type="int32"/>
+        <field name="delineationKnownLength" id="6" type="int32"/>
+        <data name="delineationPattern" id="7" type="varStringEncoding"/>
+        <data name="remoteHost" id="8" type="varStringEncoding"/>
     </sbe:message>
     <sbe:message name="Listen" id="103">
         <field name="port" id="1" type="port"/>
         <field name="commandId" id="2" type="commandId"/>
         <field name="delineationType" id="3" type="DelineationType"/>
-        <field name="delineationKnownLength" id="4" type="int32"/>
-        <data name="delineationPattern" id="5" type="varStringEncoding"/>
+        <field name="delineationPadding" id="4" type="int32"/>
+        <field name="delineationKnownLength" id="5" type="int32"/>
+        <data name="delineationPattern" id="6" type="varStringEncoding"/>
     </sbe:message>
     <sbe:message name="SendData" id="104">
         <field name="port" id="1" type="port"/>

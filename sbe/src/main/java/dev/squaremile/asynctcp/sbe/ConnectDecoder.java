@@ -7,7 +7,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public class ConnectDecoder
 {
-    public static final int BLOCK_LENGTH = 21;
+    public static final int BLOCK_LENGTH = 25;
     public static final int TEMPLATE_ID = 102;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
@@ -289,9 +289,63 @@ public class ConnectDecoder
     }
 
 
-    public static int delineationKnownLengthId()
+    public static int delineationPaddingId()
     {
         return 5;
+    }
+
+    public static int delineationPaddingSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int delineationPaddingEncodingOffset()
+    {
+        return 17;
+    }
+
+    public static int delineationPaddingEncodingLength()
+    {
+        return 4;
+    }
+
+    public static String delineationPaddingMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
+        }
+
+        return "";
+    }
+
+    public static int delineationPaddingNullValue()
+    {
+        return -2147483648;
+    }
+
+    public static int delineationPaddingMinValue()
+    {
+        return -2147483647;
+    }
+
+    public static int delineationPaddingMaxValue()
+    {
+        return 2147483647;
+    }
+
+    public int delineationPadding()
+    {
+        return buffer.getInt(offset + 17, java.nio.ByteOrder.LITTLE_ENDIAN);
+    }
+
+
+    public static int delineationKnownLengthId()
+    {
+        return 6;
     }
 
     public static int delineationKnownLengthSinceVersion()
@@ -301,7 +355,7 @@ public class ConnectDecoder
 
     public static int delineationKnownLengthEncodingOffset()
     {
-        return 17;
+        return 21;
     }
 
     public static int delineationKnownLengthEncodingLength()
@@ -339,13 +393,13 @@ public class ConnectDecoder
 
     public int delineationKnownLength()
     {
-        return buffer.getInt(offset + 17, java.nio.ByteOrder.LITTLE_ENDIAN);
+        return buffer.getInt(offset + 21, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
 
     public static int delineationPatternId()
     {
-        return 6;
+        return 7;
     }
 
     public static int delineationPatternSinceVersion()
@@ -457,7 +511,7 @@ public class ConnectDecoder
 
     public static int remoteHostId()
     {
-        return 7;
+        return 8;
     }
 
     public static int remoteHostSinceVersion()
@@ -607,6 +661,9 @@ public class ConnectDecoder
         builder.append('|');
         builder.append("delineationType=");
         builder.append(delineationType());
+        builder.append('|');
+        builder.append("delineationPadding=");
+        builder.append(delineationPadding());
         builder.append('|');
         builder.append("delineationKnownLength=");
         builder.append(delineationKnownLength());

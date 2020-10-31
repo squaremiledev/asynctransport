@@ -50,6 +50,11 @@ public class Delineation
         this.pattern = pattern;
     }
 
+    public static Delineation lengthBasedDelineation(final Type type, final int padding, final int length)
+    {
+        return new Delineation(type, padding, length, "");
+    }
+
     public static Delineation fixedLengthDelineation(final int length)
     {
         return new Delineation(Type.FIXED_LENGTH, 0, length, "");

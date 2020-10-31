@@ -3,9 +3,17 @@ package dev.squaremile.asynctcp.sbe;
 
 public enum DelineationType
 {
-    FIXED_LENGTH((byte)48),
+    ASCII_PATTERN((byte)48),
 
-    ASCII_PATTERN((byte)49),
+    FIXED_LENGTH((byte)49),
+
+    SHORT_BIG_ENDIAN_FIELD((byte)50),
+
+    SHORT_LITTLE_ENDIAN_FIELD((byte)51),
+
+    INT_BIG_ENDIAN_FIELD((byte)52),
+
+    INT_LITTLE_ENDIAN_FIELD((byte)53),
 
     /**
      * To be used to represent not present or null.
@@ -28,8 +36,12 @@ public enum DelineationType
     {
         switch (value)
         {
-            case 48: return FIXED_LENGTH;
-            case 49: return ASCII_PATTERN;
+            case 48: return ASCII_PATTERN;
+            case 49: return FIXED_LENGTH;
+            case 50: return SHORT_BIG_ENDIAN_FIELD;
+            case 51: return SHORT_LITTLE_ENDIAN_FIELD;
+            case 52: return INT_BIG_ENDIAN_FIELD;
+            case 53: return INT_LITTLE_ENDIAN_FIELD;
             case 0: return NULL_VAL;
         }
 

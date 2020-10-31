@@ -82,6 +82,7 @@ public class SerializingApplication implements EventDrivenApplication
                     .outboundPduLimit(event.outboundPduLimit())
                     .remoteHost(event.remoteHost())
                     .delineationType(DelineationTypeMapping.toWire(event.delineation().type()))
+                    .delineationPadding(event.delineation().padding())
                     .delineationKnownLength(event.delineation().extraLength())
                     .delineationPattern(event.delineation().pattern());
             serializedEventListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + connectedEncoder.encodedLength());
@@ -147,6 +148,7 @@ public class SerializingApplication implements EventDrivenApplication
                     .port(event.port())
                     .commandId(event.commandId())
                     .delineationType(DelineationTypeMapping.toWire(event.delineation().type()))
+                    .delineationPadding(event.delineation().padding())
                     .delineationKnownLength(event.delineation().extraLength())
                     .delineationPattern(event.delineation().pattern());
             serializedEventListener.onSerialized(buffer, offset, headerEncoder.encodedLength() + startedListeningEncoder.encodedLength());

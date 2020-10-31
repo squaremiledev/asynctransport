@@ -86,7 +86,7 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    Delineation delineation = new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), 0, decoder.delineationKnownLength(), decoder.delineationPattern());
+                    Delineation delineation = new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), decoder.delineationPadding(), decoder.delineationKnownLength(), decoder.delineationPattern());
                     String remoteHost = decoder.remoteHost();
                     Connect result = new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), delineation);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
@@ -111,7 +111,7 @@ public class TransportCommandDecoders
                     Listen result = new Listen().set(
                             decoder.commandId(),
                             decoder.port(),
-                            new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), 0, decoder.delineationKnownLength(), decoder.delineationPattern())
+                            new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), decoder.delineationPadding(), decoder.delineationKnownLength(), decoder.delineationPattern())
                     );
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
                     return result;
