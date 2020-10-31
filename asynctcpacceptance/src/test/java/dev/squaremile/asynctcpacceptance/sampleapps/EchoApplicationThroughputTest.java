@@ -74,8 +74,8 @@ class EchoApplicationThroughputTest
             for (int i = 0; i < numberOfMessagesSentDuringOneIteration; i++)
             {
                 // Not sure to what extent not setting all the data and leaving what's in the buffer affects the result
-                sendMessageCommand.prepare().putLong(sendMessageCommand.offset(), i);
-                sendMessageCommand.commit(MESSAGE_SIZE_IN_BYTES);
+                sendMessageCommand.prepare(MESSAGE_SIZE_IN_BYTES).putLong(sendMessageCommand.offset(), i);
+                sendMessageCommand.commit();
                 drivingTransport.handle(sendMessageCommand);
                 drivingTransport.work();
                 appUnderTest.work();

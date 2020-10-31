@@ -108,10 +108,10 @@ public class EchoConnectionApplication implements ConnectionApplication
             {
                 long sendTimeNs = readBuffer.getLong(messageReceived.offset() + 8);
                 SendMessage message = connectionTransport.command(SendMessage.class);
-                MutableDirectBuffer buffer = message.prepare();
+                MutableDirectBuffer buffer = message.prepare(16);
                 buffer.putLong(message.offset(), NO_OPTIONS);
                 buffer.putLong(message.offset() + 8, sendTimeNs);
-                message.commit(16);
+                message.commit();
                 connectionTransport.handle(message);
             }
         }

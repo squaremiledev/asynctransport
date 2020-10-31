@@ -1,8 +1,8 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
 
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
@@ -75,8 +75,8 @@ public class MessageEchoApplication implements EventDrivenApplication
     private SendMessage sendMessageCommandWithDataFrom(final MessageReceived messageReceivedEvent)
     {
         SendMessage sendMessage = transport.command(messageReceivedEvent, SendMessage.class);
-        messageReceivedEvent.buffer().getBytes(messageReceivedEvent.offset(), sendMessage.prepare(), sendMessage.offset(), messageReceivedEvent.length());
-        sendMessage.commit(messageReceivedEvent.length());
+        messageReceivedEvent.buffer().getBytes(messageReceivedEvent.offset(), sendMessage.prepare(messageReceivedEvent.length()), sendMessage.offset(), messageReceivedEvent.length());
+        sendMessage.commit();
         return sendMessage;
     }
 

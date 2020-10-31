@@ -17,7 +17,7 @@ class LongPingAppFactory implements ApplicationFactory
 {
     private final int port;
     private final EventListener pingSpy;
-    private int messagesCap;
+    private final int messagesCap;
 
     public LongPingAppFactory(final int messagesCap, final int port, final EventListener pingSpy)
     {
@@ -50,8 +50,8 @@ class LongPingAppFactory implements ApplicationFactory
                         if (numberCount < messagesCap)
                         {
                             SendMessage sendMessage = transport.command(connectionId, SendMessage.class).commandId(numberCount);
-                            sendMessage.prepare().putLong(sendMessage.offset(), numberCount);
-                            sendMessage.commit(8);
+                            sendMessage.prepare(8).putLong(sendMessage.offset(), numberCount);
+                            sendMessage.commit();
                             transport.handle(sendMessage);
                             numberCount++;
                         }

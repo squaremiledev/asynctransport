@@ -54,7 +54,7 @@ class SerializingTransportTest
         transport.handle(command);
 
         // Then
-        assertEqual(commandsSpy.all(), command);
+        assertEqual(commandsSpy.all(), command.copy());
     }
 
     @Test

@@ -66,8 +66,8 @@ public class RejectLogOn implements ConnectionApplication
         if (event instanceof MessageReceived)
         {
             SendMessage sendMessage = transport.command(SendMessage.class);
-            sendMessage.prepare().putBytes(sendMessage.offset(), logoutMessage);
-            sendMessage.commit(logoutMessage.length);
+            sendMessage.prepare(logoutMessage.length).putBytes(sendMessage.offset(), logoutMessage);
+            sendMessage.commit();
             transport.handle(sendMessage);
         }
     }

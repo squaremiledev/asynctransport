@@ -52,8 +52,8 @@ class LongPingPongAppFactory implements ApplicationFactory
                     ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
                     SendMessage sendMessage = transport.command(connectionAccepted, SendMessage.class);
                     int newNumber = 1_000_000;
-                    sendMessage.prepare().putLong(sendMessage.offset(), newNumber);
-                    sendMessage.commit(8);
+                    sendMessage.prepare(8).putLong(sendMessage.offset(), newNumber);
+                    sendMessage.commit();
                     transport.handle(sendMessage);
 
                     messageListener.accept(newNumber);
@@ -71,8 +71,8 @@ class LongPingPongAppFactory implements ApplicationFactory
                     long numberReceived = messageReceived.buffer().getLong(messageReceived.offset());
                     long newNumber = numberReceived + 1_000_000;
                     SendMessage sendMessage = transport.command(messageReceived, SendMessage.class);
-                    sendMessage.prepare().putLong(sendMessage.offset(), newNumber);
-                    sendMessage.commit(8);
+                    sendMessage.prepare(8).putLong(sendMessage.offset(), newNumber);
+                    sendMessage.commit();
                     transport.handle(sendMessage);
 
                     messageListener.accept(newNumber);

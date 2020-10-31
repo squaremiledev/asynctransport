@@ -39,7 +39,7 @@ class TransportCommandDeserializationTest
         transport.handle(command);
 
         // Then
-        assertEqual(commandsSpy.all(), command);
+        assertEqual(commandsSpy.all(), command.copy());
     }
 
     private SerializingTransport notifyingAboutSerializedCommand(final TransportCommandDeserialization serializedCommandListener)

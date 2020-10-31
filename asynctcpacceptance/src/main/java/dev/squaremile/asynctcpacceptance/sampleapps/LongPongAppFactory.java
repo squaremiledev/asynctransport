@@ -49,8 +49,8 @@ class LongPongAppFactory implements ApplicationFactory
                     long receivedNumber = messageReceived.buffer().getLong(messageReceived.offset());
                     long newNumber = receivedNumber + 1;
                     SendMessage sendMessage = transport.command(messageReceived, SendMessage.class);
-                    sendMessage.prepare().putLong(sendMessage.offset(), newNumber);
-                    sendMessage.commit(8);
+                    sendMessage.prepare(8).putLong(sendMessage.offset(), newNumber);
+                    sendMessage.commit();
                     transport.handle(sendMessage);
 
                     messageListener.accept(newNumber);

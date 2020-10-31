@@ -86,7 +86,12 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    Delineation delineation = new Delineation(DelineationTypeMapping.toDomain(decoder.delineationType()), decoder.delineationPadding(), decoder.delineationKnownLength(), decoder.delineationPattern());
+                    Delineation delineation = new Delineation(
+                            DelineationTypeMapping.toDomain(decoder.delineationType()),
+                            decoder.delineationPadding(),
+                            decoder.delineationKnownLength(),
+                            decoder.delineationPattern()
+                    );
                     String remoteHost = decoder.remoteHost();
                     Connect result = new Connect().set(remoteHost, decoder.remotePort(), decoder.commandId(), decoder.timeoutMs(), delineation);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength();
@@ -177,8 +182,8 @@ public class TransportCommandDecoders
                     );
                     int dataLength = (int)decoder.data().length();
                     SendMessage result = transport.command(new ConnectionIdValue(decoder.port(), decoder.connectionId()), SendMessage.class);
-                    result.prepare().putBytes(result.offset(), decoder.data().buffer(), decoder.data().offset() + decoder.data().encodedLength(), dataLength);
-                    result.commit(dataLength);
+                    result.prepare(dataLength).putBytes(result.offset(), decoder.data().buffer(), decoder.data().offset() + decoder.data().encodedLength(), dataLength);
+                    result.commit();
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength() + dataLength;
                     return result;
                 }
