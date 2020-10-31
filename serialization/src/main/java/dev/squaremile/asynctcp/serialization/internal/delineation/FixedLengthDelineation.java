@@ -3,7 +3,7 @@ package dev.squaremile.asynctcp.serialization.internal.delineation;
 import org.agrona.DirectBuffer;
 
 
-import dev.squaremile.asynctcp.transport.api.values.LengthEncoding;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 class FixedLengthDelineation implements DelineationHandler
 {
@@ -11,7 +11,7 @@ class FixedLengthDelineation implements DelineationHandler
 
     FixedLengthDelineation(final DelineationHandler delineatedDataHandler, final int fixedMessageLength)
     {
-        delineation = new LengthBasedDelineation(LengthEncoding.FIXED_LENGTH, 0, fixedMessageLength, delineatedDataHandler);
+        delineation = new LengthBasedDelineation(Delineation.Type.FIXED_LENGTH, 0, fixedMessageLength, delineatedDataHandler);
     }
 
     @Override

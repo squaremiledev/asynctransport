@@ -10,7 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 
-import dev.squaremile.asynctcp.transport.api.values.LengthEncoding;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.assertEquals;
 
@@ -20,8 +20,8 @@ class LengthBasedDelineationPropertyTest
     private final Random random = new Random();
 
     @ParameterizedTest
-    @EnumSource(mode = EnumSource.Mode.EXCLUDE, value = LengthEncoding.class, names = {"FIXED_LENGTH", "ASCII_PATTERN"})
-    void shouldDelineateMessages(final LengthEncoding lengthEncoding)
+    @EnumSource(mode = EnumSource.Mode.EXCLUDE, value = Delineation.Type.class, names = {"FIXED_LENGTH", "ASCII_PATTERN"})
+    void shouldDelineateMessages(final Delineation.Type lengthEncoding)
     {
         final int padding = random.nextInt(20);
         int fixedMessageLength = random.nextInt(5);

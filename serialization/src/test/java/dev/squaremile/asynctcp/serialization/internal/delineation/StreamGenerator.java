@@ -5,19 +5,19 @@ import java.util.Arrays;
 import java.util.Random;
 
 
-import dev.squaremile.asynctcp.transport.api.values.LengthEncoding;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static java.nio.ByteOrder.BIG_ENDIAN;
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 
 public class StreamGenerator
 {
-    private final LengthEncoding lengthEncoding;
+    private final Delineation.Type lengthEncoding;
     private final byte[] padding;
     private final byte[][] messages;
     private final int additionalMessageLength;
 
-    public StreamGenerator(final LengthEncoding lengthEncoding, final int padding, final int additionalMessageLength, final byte[][] messages)
+    public StreamGenerator(final Delineation.Type lengthEncoding, final int padding, final int additionalMessageLength, final byte[][] messages)
     {
         this.lengthEncoding = lengthEncoding;
         this.messages = messages;

@@ -5,7 +5,7 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 
 
-import dev.squaremile.asynctcp.transport.api.values.LengthEncoding;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 class LengthBasedDelineation implements DelineationHandler
 {
@@ -13,14 +13,14 @@ class LengthBasedDelineation implements DelineationHandler
     private final int fixedMessageLength;
     private final DelineationHandler delineatedDataHandler;
     private final MutableDirectBuffer undeliveredBuffer;
-    private final LengthEncoding lengthEncoding;
+    private final Delineation.Type lengthEncoding;
     private boolean readingLength;
     private int undeliveredLength;
     private int currentMessageLength;
     private int currentMessagePadding;
 
     LengthBasedDelineation(
-            final LengthEncoding lengthEncoding,
+            final Delineation.Type lengthEncoding,
             final int fixedMessagePadding,
             final int fixedMessageLength,
             final DelineationHandler delineatedDataHandler
@@ -32,12 +32,12 @@ class LengthBasedDelineation implements DelineationHandler
         this.delineatedDataHandler = delineatedDataHandler;
         this.undeliveredBuffer = createUndeliveredBuffer(lengthEncoding, fixedMessageLength);
         this.undeliveredLength = 0;
-        this.readingLength = lengthEncoding != LengthEncoding.FIXED_LENGTH;
+        this.readingLength = lengthEncoding != Delineation.Type.FIXED_LENGTH;
         this.currentMessagePadding = fixedMessagePadding;
-        this.currentMessageLength = lengthEncoding == LengthEncoding.FIXED_LENGTH ? fixedMessageLength : lengthEncoding.lengthFieldLength;
+        this.currentMessageLength = lengthEncoding == Delineation.Type.FIXED_LENGTH ? fixedMessageLength : lengthEncoding.lengthFieldLength;
     }
 
-    private static UnsafeBuffer createUndeliveredBuffer(final LengthEncoding lengthEncoding, final int value)
+    private static UnsafeBuffer createUndeliveredBuffer(final Delineation.Type lengthEncoding, final int value)
     {
         switch (lengthEncoding)
         {
@@ -99,7 +99,7 @@ class LengthBasedDelineation implements DelineationHandler
                 else
                 {
                     delineatedDataHandler.onData(undeliveredBuffer, currentMessagePadding, currentMessageLength);
-                    if (lengthEncoding != LengthEncoding.FIXED_LENGTH)
+                    if (lengthEncoding != Delineation.Type.FIXED_LENGTH)
                     {
                         currentMessageLength = lengthEncoding.lengthFieldLength;
                         currentMessagePadding = fixedMessagePadding;
@@ -138,7 +138,7 @@ class LengthBasedDelineation implements DelineationHandler
                 else
                 {
                     delineatedDataHandler.onData(buffer, currentOffset, currentMessageLength);
-                    if (lengthEncoding != LengthEncoding.FIXED_LENGTH)
+                    if (lengthEncoding != Delineation.Type.FIXED_LENGTH)
                     {
                         currentMessageLength = lengthEncoding.lengthFieldLength;
                         currentMessagePadding = fixedMessagePadding;

@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
+
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.NOISE;
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.PADDING;
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.assertEquals;
@@ -15,7 +17,7 @@ import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFix
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.bytes;
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.iValA;
 import static dev.squaremile.asynctcp.serialization.internal.delineation.DataFixtures.iValB;
-import static dev.squaremile.asynctcp.transport.api.values.LengthEncoding.INT_BIG_ENDIAN_FIELD;
+import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.INT_BIG_ENDIAN_FIELD;
 
 class LengthBasedDelineationTest
 {
@@ -24,7 +26,7 @@ class LengthBasedDelineationTest
     @Test
     void shouldNotNotifyAboutPartialData()
     {
-        final DelineationHandler delineation = new LengthBasedDelineation(INT_BIG_ENDIAN_FIELD, 0, 0, delineatedDataSpy);
+        final DelineationHandler delineation = new LengthBasedDelineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 0, 0, delineatedDataSpy);
         delineation.onData(bufferWith(new byte[]{0, 1, 2, 3, 4}), 0, 3);
         delineation.onData(bufferWith(new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8}), 0, 0);
         delineation.onData(bufferWith(new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8}), 3, 0);
