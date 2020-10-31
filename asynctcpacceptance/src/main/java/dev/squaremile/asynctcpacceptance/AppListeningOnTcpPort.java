@@ -10,7 +10,7 @@ import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.RAW_STREAMING;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.singletonList;
 
@@ -33,7 +33,7 @@ public class AppListeningOnTcpPort
                     public void onStart()
                     {
                         System.out.println("START");
-                        transport.handle(transport.command(Listen.class).set((long)1, appPort, RAW_STREAMING.type));
+                        transport.handle(transport.command(Listen.class).set((long)1, appPort, rawStreaming()));
                     }
 
                     @Override

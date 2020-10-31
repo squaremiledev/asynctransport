@@ -1,8 +1,8 @@
 package dev.squaremile.asynctcpacceptance.sampleapps;
 
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
@@ -37,7 +37,7 @@ class LongPingAppFactory implements ApplicationFactory
             @Override
             public void onStart()
             {
-                transport.handle(transport.command(Listen.class).set(1, port, Delineation.fixedLengthDelineation(8)));
+                transport.handle(transport.command(Listen.class).set(1, port, new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, "")));
             }
 
             @Override

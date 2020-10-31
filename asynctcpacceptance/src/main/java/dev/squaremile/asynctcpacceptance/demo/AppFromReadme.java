@@ -9,7 +9,7 @@ import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.RAW_STREAMING;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
 
 public class AppFromReadme
 {
@@ -23,7 +23,7 @@ public class AppFromReadme
                     @Override
                     public void onStart()
                     {
-                        transport.handle(transport.command(Listen.class).set(1, 8889, RAW_STREAMING.type));
+                        transport.handle(transport.command(Listen.class).set(1, 8889, rawStreaming()));
                         System.out.println("now you can run `telnet localhost 8889` in the terminal");
                     }
 

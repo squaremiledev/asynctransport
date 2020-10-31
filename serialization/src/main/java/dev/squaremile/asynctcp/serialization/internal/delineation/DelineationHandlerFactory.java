@@ -3,7 +3,6 @@ package dev.squaremile.asynctcp.serialization.internal.delineation;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.ASCII_PATTERN;
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.FIXED_LENGTH;
 
 class DelineationHandlerFactory
 {
@@ -35,7 +34,10 @@ class DelineationHandlerFactory
         {
             return false;
         }
-        return (FIXED_LENGTH.equals(delineation.type()) && "".equals(delineation.pattern())) ||
-               (ASCII_PATTERN.equals(delineation.type()) && delineation.extraLength() == 7 && FIX_MESSAGE_PATTERN.equals(delineation.pattern()));
+        if (!ASCII_PATTERN.equals(delineation.type()) && "".equals(delineation.pattern()))
+        {
+            return true;
+        }
+        return delineation.extraLength() == 7 && FIX_MESSAGE_PATTERN.equals(delineation.pattern());
     }
 }

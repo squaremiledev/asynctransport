@@ -14,10 +14,10 @@ import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.testfixtures.Worker;
 
 import static dev.squaremile.asynctcp.transport.api.app.EventListener.IGNORE_EVENTS;
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static java.lang.String.format;
 
@@ -35,7 +35,7 @@ class EchoApplicationThroughputTest
     EchoApplicationThroughputTest()
     {
         port = freePort();
-        testDrivingApp = new ThroughputTestDrivingApp(port, fixedLengthDelineation(MESSAGE_SIZE_IN_BYTES));
+        testDrivingApp = new ThroughputTestDrivingApp(port, new Delineation(Delineation.Type.FIXED_LENGTH, 0, MESSAGE_SIZE_IN_BYTES, ""));
         testDrivingTransportApplication = new NonProdGradeTransportAppFactory().create("testDrivingApp", testDrivingApp);
         testDrivingTransportApplication.onStart();
         appUnderTest = new NonProdGradeTransportAppFactory().create(
@@ -45,7 +45,7 @@ class EchoApplicationThroughputTest
                                 transport,
                                 port,
                                 IGNORE_EVENTS,
-                                fixedLengthDelineation(MESSAGE_SIZE_IN_BYTES), 101
+                                new Delineation(Delineation.Type.FIXED_LENGTH, 0, MESSAGE_SIZE_IN_BYTES, ""), 101
                         )))
         );
         appUnderTest.onStart();

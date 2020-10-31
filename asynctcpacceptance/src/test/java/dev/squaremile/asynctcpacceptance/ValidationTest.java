@@ -28,11 +28,9 @@ import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
-import static java.util.Arrays.stream;
-import static java.util.stream.Stream.concat;
 
 public class ValidationTest
 {
@@ -44,23 +42,27 @@ public class ValidationTest
                 new Delineation(Delineation.Type.ASCII_PATTERN, 0, 1, "invalidPattern"),
                 new Delineation(Delineation.Type.FIXED_LENGTH, 0, -1, ""),
                 new Delineation(Delineation.Type.FIXED_LENGTH, -1, 8, ""),
-                new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, PredefinedTransportDelineation.FIX_MESSAGES.type.pattern()),
+                new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, fixMessage().pattern()),
                 new Delineation(
                         Delineation.Type.ASCII_PATTERN,
                         0,
-                        PredefinedTransportDelineation.FIX_MESSAGES.type.extraLength() + 1,
-                        PredefinedTransportDelineation.FIX_MESSAGES.type.pattern()
+                        fixMessage().extraLength() + 1,
+                        fixMessage().pattern()
                 ),
-                new Delineation(Delineation.Type.ASCII_PATTERN, 0, PredefinedTransportDelineation.FIX_MESSAGES.type.extraLength(), PredefinedTransportDelineation.FIX_MESSAGES.type.pattern() + "a"
+                new Delineation(Delineation.Type.ASCII_PATTERN, 0, fixMessage().extraLength(), fixMessage().pattern() + "a"
                 )
         );
     }
 
     static Stream<Delineation> supportedDelineation()
     {
-        return concat(
-                Stream.of(fixedLengthDelineation(8)),
-                stream(PredefinedTransportDelineation.values()).map(predefined -> predefined.type)
+        return Stream.of(
+                new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, ""),
+                PredefinedTransportDelineation.fixMessage(),
+                PredefinedTransportDelineation.rawStreaming(),
+                PredefinedTransportDelineation.fixedLengthDelineation(5),
+                PredefinedTransportDelineation.lengthBasedDelineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 3, 4),
+                PredefinedTransportDelineation.lengthBasedDelineation(Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD, 0, 0)
         );
     }
 

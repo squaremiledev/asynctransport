@@ -22,9 +22,9 @@ import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.NO_OPTIONS;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.PLEASE_RESPOND_FLAG;
 import static java.lang.Integer.parseInt;
@@ -111,7 +111,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
                 transport,
                 remoteHost,
                 remotePort,
-                fixedLengthDelineation(16),
+                new Delineation(Delineation.Type.FIXED_LENGTH, 0, 16, ""),
                 (connectionTransport, connectionId) -> new SourcingConnectionApplication(
                         connectionId,
                         connectionTransport,

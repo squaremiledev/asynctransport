@@ -25,7 +25,7 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.internal.domain.NumberOfConnectionsChanged;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.RAW_STREAMING;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
@@ -39,7 +39,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
     void shouldNotifyWhenConnected()
     {
         // Given
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)1, freePort(), RAW_STREAMING.type));
+        serverTransport.handle(serverTransport.command(Listen.class).set((long)1, freePort(), rawStreaming()));
         final int serverPort = serverTransport.events().last(StartedListening.class).port();
         assertThat(serverTransport.statusEvents().contains(NumberOfConnectionsChanged.class)).isFalse();
 
@@ -69,7 +69,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
     void shouldProvideConnectionDetailsForEachConnection()
     {
         // Given
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)5, freePort(), RAW_STREAMING.type));
+        serverTransport.handle(serverTransport.command(Listen.class).set((long)5, freePort(), rawStreaming()));
         final int serverPort = serverTransport.events().last(StartedListening.class).port();
 
         // When
@@ -91,7 +91,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
     void shouldCloseConnection()
     {
         // Given
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)9, freePort(), RAW_STREAMING.type));
+        serverTransport.handle(serverTransport.command(Listen.class).set((long)9, freePort(), rawStreaming()));
         serverTransport.workUntil(() -> !serverTransport.events().all(StartedListening.class).isEmpty());
         final int serverPort = serverTransport.events().last(StartedListening.class).port();
         assertThrows(SocketException.class, clients.client(1)::write); // throws if not connected when writing
@@ -158,8 +158,8 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         // Given
         final int listeningPort1 = freePort();
         final int listeningPort2 = freePortOtherThan(listeningPort1);
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)5, listeningPort1, RAW_STREAMING.type));
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)6, listeningPort2, RAW_STREAMING.type));
+        serverTransport.handle(serverTransport.command(Listen.class).set((long)5, listeningPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set((long)6, listeningPort2, rawStreaming()));
         assertThat(serverTransport.events().last(StartedListening.class, event -> event.commandId() == 5).port()).isEqualTo(listeningPort1);
         assertThat(serverTransport.events().last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
 
@@ -194,10 +194,10 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         final int clientPort2 = freePortOtherThan(listeningPort1, listeningPort2, clientPort1);
 
         // When
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)5, listeningPort1, RAW_STREAMING.type));
+        serverTransport.handle(serverTransport.command(Listen.class).set((long)5, listeningPort1, rawStreaming()));
         assertThat(serverTransport.events().last(StartedListening.class, event -> event.commandId() == 5).port()).isEqualTo(listeningPort1);
         serverTransport.workUntil(completed(() -> clients.client(1).connectedTo(listeningPort1, clientPort1)));
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)6, listeningPort2, RAW_STREAMING.type));
+        serverTransport.handle(serverTransport.command(Listen.class).set((long)6, listeningPort2, rawStreaming()));
         assertThat(serverTransport.events().last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
         serverTransport.workUntil(completed(() -> clients.client(2).connectedTo(listeningPort2, clientPort2)));
 

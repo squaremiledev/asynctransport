@@ -50,21 +50,6 @@ public class Delineation
         this.pattern = pattern;
     }
 
-    public static Delineation lengthBasedDelineation(final Type type, final int padding, final int length)
-    {
-        return new Delineation(type, padding, length, "");
-    }
-
-    public static Delineation fixedLengthDelineation(final int length)
-    {
-        return new Delineation(Type.FIXED_LENGTH, 0, length, "");
-    }
-
-    public static Delineation patternBasedLengthDelineation(final String lengthValuePattern, final int extraLength)
-    {
-        return new Delineation(Type.ASCII_PATTERN, 0, extraLength, lengthValuePattern);
-    }
-
     public Type type()
     {
         return type;
@@ -89,6 +74,12 @@ public class Delineation
     }
 
     @Override
+    public int hashCode()
+    {
+        return Objects.hash(type, padding, extraLength, pattern);
+    }
+
+    @Override
     public boolean equals(final Object o)
     {
         if (this == o)
@@ -104,12 +95,6 @@ public class Delineation
                extraLength == that.extraLength &&
                type == that.type &&
                Objects.equals(pattern, that.pattern);
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(type, padding, extraLength, pattern);
     }
 
     @Override

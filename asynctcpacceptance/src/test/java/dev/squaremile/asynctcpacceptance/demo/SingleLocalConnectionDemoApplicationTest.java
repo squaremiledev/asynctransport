@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
 class SingleLocalConnectionDemoApplicationTest
@@ -25,7 +25,7 @@ class SingleLocalConnectionDemoApplicationTest
                 "singleLocalConnectionApplication",
                 transport -> new SingleLocalConnectionDemoApplication(
                         transport,
-                        fixedLengthDelineation(8),
+                        new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, ""),
                         applicationLifecycle,
                         LOGGER,
                         freePort(),

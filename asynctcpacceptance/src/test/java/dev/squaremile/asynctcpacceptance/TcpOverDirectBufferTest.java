@@ -10,10 +10,10 @@ import dev.squaremile.asynctcp.fixtures.SerializedMessagesSpy;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.internal.NonProdGradeTransportFactory;
 import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
-import dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.asynctcpacceptance.sampleapps.MessageEchoApplication;
@@ -48,7 +48,7 @@ class TcpOverDirectBufferTest
                         ),
                         port,
                         userFacingAppEvents,
-                        PredefinedTransportDelineation.SINGLE_BYTE.type,
+                        new Delineation(Delineation.Type.FIXED_LENGTH, 0, 1, ""),
                         100
                 ));
         final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(networkFacingTransport, userFacingApp);
@@ -65,7 +65,7 @@ class TcpOverDirectBufferTest
         // the confirmation is written to the returning buffer
         userFacingApp.onSerialized(networkToUserWrites.buffer(), networkToUserWrites.entry(0).offset, networkToUserWrites.entry(0).length);
         // and the echo app receives confirmation that is started listening
-        assertEqual(userFacingAppEvents.all(), new StartedListening(port, 100, PredefinedTransportDelineation.SINGLE_BYTE.type));
+        assertEqual(userFacingAppEvents.all(), new StartedListening(port, 100, new Delineation(Delineation.Type.FIXED_LENGTH, 0, 1, "")));
 
 
         // When

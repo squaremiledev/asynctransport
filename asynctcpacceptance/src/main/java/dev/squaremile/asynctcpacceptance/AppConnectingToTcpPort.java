@@ -8,7 +8,7 @@ import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.RAW_STREAMING;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.singletonList;
 
@@ -42,7 +42,7 @@ public class AppConnectingToTcpPort implements EventDrivenApplication
     public void onStart()
     {
         System.out.println("START");
-        transport.handle(transport.command(Connect.class).set("localhost", port, (long)1, 1_000, RAW_STREAMING.type));
+        transport.handle(transport.command(Connect.class).set("localhost", port, (long)1, 1_000, rawStreaming()));
     }
 
     @Override

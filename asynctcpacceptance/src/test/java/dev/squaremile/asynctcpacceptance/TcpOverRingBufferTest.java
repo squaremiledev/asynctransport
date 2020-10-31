@@ -22,7 +22,7 @@ import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.asynctcpacceptance.sampleapps.MessageEchoApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.SINGLE_BYTE;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
@@ -51,7 +51,7 @@ class TcpOverRingBufferTest
                                 transport,
                                 port,
                                 events,
-                                SINGLE_BYTE.type,
+                                fixedLengthDelineation(1),
                                 100
                         )
         );
@@ -60,7 +60,7 @@ class TcpOverRingBufferTest
         // Given
         application.onStart();
         runUntil(thingsOnDuty.reached(() -> events.contains(StartedListening.class)));
-        assertEqual(events.all(), new StartedListening(port, 100, SINGLE_BYTE.type));
+        assertEqual(events.all(), new StartedListening(port, 100, fixedLengthDelineation(1)));
 
         // When
         runUntil(thingsOnDuty.reached(completed(() -> sampleClient.connectedTo(port))));

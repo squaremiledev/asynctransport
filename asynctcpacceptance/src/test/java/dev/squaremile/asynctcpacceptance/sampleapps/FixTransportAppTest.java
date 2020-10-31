@@ -14,7 +14,7 @@ import dev.squaremile.asynctcpacceptance.sampleapps.fix.RejectLogOn;
 import dev.squaremile.asynctcpacceptance.sampleapps.fix.SendLogOn;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.FIX_MESSAGES;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
 public class FixTransportAppTest
@@ -29,7 +29,7 @@ public class FixTransportAppTest
         ApplicationOnDuty application = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create("heartBeating", transport ->
                 new SingleLocalConnectionDemoApplication(
                         transport,
-                        FIX_MESSAGES.type,
+                        fixMessage(),
                         lifecycleListener,
                         s ->
                         {

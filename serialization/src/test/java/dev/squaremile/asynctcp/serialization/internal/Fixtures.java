@@ -25,8 +25,8 @@ import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.RAW_STREAMING;
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.lengthBasedDelineation;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
+import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
 
 class Fixtures
 {
@@ -42,17 +42,17 @@ class Fixtures
     static Stream<TransportEvent> oneToOneSerializableEvents()
     {
         return Stream.of(
-                new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000, PredefinedTransportDelineation.FIX_MESSAGES.type),
-                new Connected(8882, 4, "remoteHost2", 8882, 4, 16000, 20000, PredefinedTransportDelineation.LONGS.type),
-                new Connected(8882, 4, "remoteHost2", 8882, 4, 16000, 20000, lengthBasedDelineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 30, 50)),
+                new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000, fixMessage()),
+                new Connected(8882, 4, "remoteHost2", 8882, 4, 16000, 20000, PredefinedTransportDelineation.fixedLengthDelineation(8)),
+                new Connected(8882, 4, "remoteHost2", 8882, 4, 16000, 20000, new Delineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 30, 50, "")),
                 new ConnectionAccepted(9881, 4, "remote", 9882, 5, 46000, 30000),
                 new ConnectionClosed(7888, 1, 2),
                 new ConnectionCommandFailed(8884, 103, "some details", 6),
                 new ConnectionResetByPeer(5888, 4, 6),
                 new DataSent(5888, 4, 1, 9, 18, 104, 45_000),
-                new StartedListening(8888, 5, PredefinedTransportDelineation.FIX_MESSAGES.type),
-                new StartedListening(8881, 4, PredefinedTransportDelineation.LONGS.type),
-                new StartedListening(8881, 4, lengthBasedDelineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 20, 40)),
+                new StartedListening(8888, 5, fixMessage()),
+                new StartedListening(8881, 4, PredefinedTransportDelineation.fixedLengthDelineation(8)),
+                new StartedListening(8881, 4, new Delineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 20, 40, "")),
                 new StoppedListening(8988, 6),
                 new TransportCommandFailed(8001, 101L, "some details", Listen.class)
 
@@ -63,11 +63,11 @@ class Fixtures
     {
         return Stream.of(
                 transport -> transport.command(connectedEvent(), CloseConnection.class).set(201),
-                transport -> transport.command(Connect.class).set("remoteHost", 8899, 202, 10, PredefinedTransportDelineation.SINGLE_BYTE.type),
-                transport -> transport.command(Connect.class).set("remoteHost2", 8898, 203, 11, PredefinedTransportDelineation.FIX_MESSAGES.type),
-                transport -> transport.command(Connect.class).set("remoteHost2", 8898, 203, 11, lengthBasedDelineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 10, 20)),
-                transport -> transport.command(Listen.class).set(203, 6688, PredefinedTransportDelineation.LONGS.type),
-                transport -> transport.command(Listen.class).set(204, 6689, lengthBasedDelineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 30, 40)),
+                transport -> transport.command(Connect.class).set("remoteHost", 8899, 202, 10, new Delineation(Delineation.Type.FIXED_LENGTH, 0, 1, "")),
+                transport -> transport.command(Connect.class).set("remoteHost2", 8898, 203, 11, fixMessage()),
+                transport -> transport.command(Connect.class).set("remoteHost2", 8898, 203, 11, new Delineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 10, 20, "")),
+                transport -> transport.command(Listen.class).set(203, 6688, PredefinedTransportDelineation.fixedLengthDelineation(8)),
+                transport -> transport.command(Listen.class).set(204, 6689, new Delineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 30, 40, "")),
                 transport -> transport.command(connectedEvent(), SendData.class).set(new byte[]{1, 2, 3, 4, 5, 6}, 205),
                 transport -> set(transport.command(connectedEvent(), SendMessage.class), 0, new byte[]{1, 2, 3, 4, 5, 6}, 2, 3),
                 transport -> transport.command(StopListening.class).set(204, 7788)
@@ -76,7 +76,7 @@ class Fixtures
 
     public static Connected connectedEvent()
     {
-        return new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000, RAW_STREAMING.type);
+        return new Connected(8881, 3, "remoteHost", 8882, 4, 56000, 80000, rawStreaming());
     }
 
     private static SendMessage set(final SendMessage command, final int index, byte[] src, final int offset, final int length)
