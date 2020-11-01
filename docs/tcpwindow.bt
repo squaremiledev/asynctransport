@@ -1,0 +1,78 @@
+#!/usr/local/bin/bpftrace
+#include <linux/tcp.h>
+
+BEGIN {
+    $expectedPort = (uint16)$1;
+    $infoLevelWinSize = (uint32)$2;
+    $warnLevelWinSize = (uint32)$3;
+
+    if ($expectedPort <= 0 || $infoLevelWinSize <= 0 || $warnLevelWinSize <= 0)
+    {
+        printf("Usage: ");
+        printf("bpftrace tcpwindow.bt PORT INFO_WIN_SIZE WARN_WIN_SIZE\n");
+        printf("e.g.   ");
+        printf("bpftrace tcpwindow.bt 8080 65500 5000 > port8080events.log\n");
+        exit();
+    }
+
+    printf("Trace TCP window sizes for port %d", $1);
+    printf(" with window size below %d as INFO and below %d as WARN\n", $2, $3);
+}
+
+kprobe:tcp_rcv_established
+{
+    $sk = (struct sock *)arg0;
+    $inet_family = $sk->__sk_common.skc_family;
+
+    if ($inet_family == AF_INET || $inet_family == AF_INET6)
+    {
+        $sock = (struct sock *)arg0;
+        $tcps = (struct tcp_sock *)arg0;
+        $skb = (struct sk_buff *)arg1;
+
+        $lport = $sk->__sk_common.skc_num;
+        $dport = $sk->__sk_common.skc_dport;
+        // Destination port is big endian, it must be flipped
+        $dport = ($dport >> 8) | (($dport << 8) & 0x00FF00);
+
+        $expectedPort = (uint16)$1;
+        if ($lport == $expectedPort || $dport == $expectedPort)
+        {
+            if ($inet_family == AF_INET) {
+              $daddr = ntop($sk->__sk_common.skc_daddr);
+              $saddr = ntop($sk->__sk_common.skc_rcv_saddr);
+            } else {
+              $daddr = ntop($sk->__sk_common.skc_v6_daddr.in6_u.u6_addr8);
+              $saddr = ntop($sk->__sk_common.skc_v6_rcv_saddr.in6_u.u6_addr8);
+            }
+
+            $infoLevelWinSize = (uint32)$2;
+            $warnLevelWinSize = (uint32)$3;
+            $is_info = ($tcps->rcv_wnd < $infoLevelWinSize || $tcps->snd_wnd < $infoLevelWinSize);
+            $is_warning = ($tcps->rcv_wnd < $warnLevelWinSize || $tcps->snd_wnd < $warnLevelWinSize);
+            $is_error = ($tcps->rcv_wnd == 0 || $tcps->snd_wnd == 0);
+
+            if ($is_info || $is_warning || $is_error)
+            {
+                printf("[%s]", $is_error ? "ERROR" : ($is_warning ? "WARN" : "INFO"));
+                time("|%Y-%m-%d %H:%M:%S");
+                printf("|rcv_wnd:%-7u",$tcps->rcv_wnd);
+                printf("|snd_wnd:%-7u",$tcps->snd_wnd);
+
+                printf("|[%s:%d", $saddr, $lport);
+                printf(" -> ");
+                printf("%s:%d]", $daddr, $dport);
+
+                printf("|PID: %d",pid);
+                printf("|CMD: %-15s",comm);
+
+                printf("|rcv_nxt:%u",$tcps->rcv_nxt);
+                printf(",snd_nxt:%u",$tcps->snd_nxt);
+                printf(",bytes_received:%u",$tcps->bytes_received);
+                printf(",bytes_sent:%u",$tcps->bytes_sent);
+                printf(",bytes_acked:%u",$tcps->bytes_acked);
+                printf("\n");
+            }
+        }
+    }
+}
