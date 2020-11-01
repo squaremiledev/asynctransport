@@ -123,6 +123,11 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
         return windowSizeInBytes;
     }
 
+    public long originalWindowSizeInBytes()
+    {
+        return sendBufferSize;
+    }
+
     public int bytesSent()
     {
         return bytesSent;
@@ -140,11 +145,12 @@ public class DataSent implements ConnectionEvent, TransportCorrelatedEvent
         return "DataSent{" +
                "port=" + port +
                ", connectionId=" + connectionId +
+               ", sendBufferSize=" + sendBufferSize +
                ", bytesSent=" + bytesSent +
                ", totalBytesSent=" + totalBytesSent +
                ", totalBytesBuffered=" + totalBytesBuffered +
                ", commandId=" + commandId +
-               ", sendBufferSize=" + sendBufferSize +
+               ", originalWindowSizeInBytes=" + sendBufferSize +
                ", windowSizeInBytes=" + windowSizeInBytes +
                '}';
     }

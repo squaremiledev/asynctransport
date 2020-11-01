@@ -143,8 +143,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
                                     connectedNotification.remoteHost,
                                     socket.getPort(),
                                     socket.getSendBufferSize(),
-                                    // TODO [perf]: decide how to select buffer size (prod and test performance)
-                                    socket.getSendBufferSize() * 2,
+                                    socket.getSendBufferSize() * 16,
                                     socket.getReceiveBufferSize()
                             );
                             registerConnection(

@@ -19,6 +19,7 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
+import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
@@ -219,7 +220,15 @@ public class SourcingConnectionApplication implements ConnectionApplication
         {
             throw new IllegalStateException(((CommandFailed)event).details());
         }
-        if (event instanceof MessageReceived)
+        else if (event instanceof DataSent)
+        {
+            DataSent dataSent = (DataSent)event;
+            if (dataSent.windowSizeInBytes() != dataSent.originalWindowSizeInBytes())
+            {
+                System.out.println("Window size changed to " + dataSent.windowSizeInBytes() + " bytes");
+            }
+        }
+        else if (event instanceof MessageReceived)
         {
             long receivedTimeNs = nanoTime();
             messagesReceivedCount++;

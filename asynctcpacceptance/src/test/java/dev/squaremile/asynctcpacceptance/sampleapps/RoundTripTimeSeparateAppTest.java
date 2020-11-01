@@ -39,7 +39,7 @@ public class RoundTripTimeSeparateAppTest
                 Integer.toString(respondToNth),
                 USE_BUFFERS,
                 Integer.toString(extraDataLength),
-        });
+                });
     }
 
 }

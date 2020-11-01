@@ -23,7 +23,7 @@ public class OutgoingStream
 
     OutgoingStream(final SingleConnectionEvents events, final int bufferSize)
     {
-        this.buffer = ByteBuffer.allocate(bufferSize * 2);
+        this.buffer = ByteBuffer.allocate(bufferSize);
         this.events = events;
         this.state = ConnectionState.NO_OUTSTANDING_DATA;
     }
@@ -38,7 +38,11 @@ public class OutgoingStream
         switch (state)
         {
             case NO_OUTSTANDING_DATA:
-                events.onEvent(events.dataSentEvent().set(sendNewData(0, newDataToSend, channel), totalBytesSent, totalBytesBuffered, commandId));
+                int bytesSentA = sendNewData(0, newDataToSend, channel);
+                if (bytesSentA >= 0)
+                {
+                    events.onEvent(events.dataSentEvent().set(bytesSentA, totalBytesSent, totalBytesBuffered, commandId));
+                }
                 break;
             case DATA_TO_SEND_BUFFERED:
                 buffer.flip();
@@ -49,7 +53,11 @@ public class OutgoingStream
 
                 if (hasSentAllBufferedData)
                 {
-                    events.onEvent(events.dataSentEvent().set(sendNewData(bufferedBytesSent, newDataToSend, channel), totalBytesSent, totalBytesBuffered, commandId));
+                    int bytesSentB = sendNewData(bufferedBytesSent, newDataToSend, channel);
+                    if (bytesSentB >= 0)
+                    {
+                        events.onEvent(events.dataSentEvent().set(bytesSentB, totalBytesSent, totalBytesBuffered, commandId));
+                    }
                 }
                 else
                 {
@@ -73,15 +81,21 @@ public class OutgoingStream
     private int sendNewData(final int bufferedBytesSent, final ByteBuffer newDataToSend, final WritableByteChannel channel) throws IOException
     {
         int newBytesSent = 0;
+        int newDataSentResult = 0;
         if (newDataToSend.remaining() > 0)
         {
-            final int newDataSentResult = channel.write(newDataToSend);
-            newBytesSent += newDataSentResult >= 0 ? newDataSentResult : 0;
+            newDataSentResult = channel.write(newDataToSend);
+            newBytesSent += Math.max(newDataSentResult, 0);
         }
         final int newBytesUnsent = newDataToSend.remaining();
         if (newBytesUnsent > 0)
         {
             buffer.put(newDataToSend);
+        }
+
+        if (newDataSentResult < 0)
+        {
+            return newDataSentResult;
         }
 
         final int bytesSent = bufferedBytesSent + newBytesSent;
