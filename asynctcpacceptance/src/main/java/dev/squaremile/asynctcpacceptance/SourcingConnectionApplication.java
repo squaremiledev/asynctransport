@@ -111,8 +111,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
                 transport,
                 remoteHost,
                 remotePort,
-                //new Delineation(Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
-                new Delineation(Delineation.Type.FIXED_LENGTH, 0, 16, ""),
+                new Delineation(Delineation.Type.INT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
                 (connectionTransport, connectionId) -> new SourcingConnectionApplication(
                         connectionId,
                         connectionTransport,
@@ -207,7 +206,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
             messagesReceivedCount++;
             awaitingResponsesInFlight--;
             MessageReceived messageReceived = (MessageReceived)event;
-            long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset() + 8);
+            long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset() + 4);
             onMessageReceived.onMessageReceived(messagesSentCount, messagesReceivedCount, sendTimeNs, receivedTimeNs);
             if (selectiveResponseRequest.receivedLast(messagesReceivedCount))
             {
@@ -224,9 +223,9 @@ public class SourcingConnectionApplication implements ConnectionApplication
     private void send(final long supposedSendingTimestampNs, final boolean expectResponse)
     {
         SendMessage message = connectionTransport.command(SendMessage.class);
-        MutableDirectBuffer buffer = message.prepare(16);
-        buffer.putLong(message.offset(), expectResponse ? PLEASE_RESPOND_FLAG : NO_OPTIONS);
-        buffer.putLong(message.offset() + 8, supposedSendingTimestampNs);
+        MutableDirectBuffer buffer = message.prepare(12);
+        buffer.putInt(message.offset(), expectResponse ? PLEASE_RESPOND_FLAG : NO_OPTIONS);
+        buffer.putLong(message.offset() + 4, supposedSendingTimestampNs);
         message.commit();
         connectionTransport.handle(message);
     }

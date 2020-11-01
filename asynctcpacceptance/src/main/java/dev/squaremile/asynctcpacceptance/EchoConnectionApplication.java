@@ -58,8 +58,7 @@ public class EchoConnectionApplication implements ConnectionApplication
     {
         return createApplication(useBuffers, transport -> new ListeningApplication(
                 transport,
-//                new Delineation(Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
-                new Delineation(Delineation.Type.FIXED_LENGTH, 0, 16, ""),
+                new Delineation(Delineation.Type.INT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
                 port,
                 () ->
                 {
@@ -104,14 +103,14 @@ public class EchoConnectionApplication implements ConnectionApplication
         {
             MessageReceived messageReceived = (MessageReceived)event;
             DirectBuffer readBuffer = messageReceived.buffer();
-            boolean shouldRespond = readBuffer.getLong(messageReceived.offset()) == PLEASE_RESPOND_FLAG;
+            boolean shouldRespond = readBuffer.getInt(messageReceived.offset()) == PLEASE_RESPOND_FLAG;
             if (shouldRespond)
             {
-                long sendTimeNs = readBuffer.getLong(messageReceived.offset() + 8);
+                long sendTimeNs = readBuffer.getLong(messageReceived.offset() + 4);
                 SendMessage message = connectionTransport.command(SendMessage.class);
-                MutableDirectBuffer buffer = message.prepare(16);
-                buffer.putLong(message.offset(), NO_OPTIONS);
-                buffer.putLong(message.offset() + 8, sendTimeNs);
+                MutableDirectBuffer buffer = message.prepare(12);
+                buffer.putInt(message.offset(), NO_OPTIONS);
+                buffer.putLong(message.offset() + 4, sendTimeNs);
                 message.commit();
                 connectionTransport.handle(message);
             }
