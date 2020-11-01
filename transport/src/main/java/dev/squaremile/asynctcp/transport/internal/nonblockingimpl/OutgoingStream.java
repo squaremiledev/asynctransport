@@ -10,6 +10,7 @@ import dev.squaremile.asynctcp.transport.internal.domain.connection.SingleConnec
 
 import static dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionState.DATA_TO_SEND_BUFFERED;
 import static dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionState.NO_OUTSTANDING_DATA;
+import static java.lang.Math.max;
 
 public class OutgoingStream
 {
@@ -42,7 +43,7 @@ public class OutgoingStream
             case DATA_TO_SEND_BUFFERED:
                 buffer.flip();
                 final int bufferedDataSentResult = channel.write(buffer);
-                final int bufferedBytesSent = bufferedDataSentResult >= 0 ? bufferedDataSentResult : 0;
+                final int bufferedBytesSent = max(bufferedDataSentResult, 0);
                 final boolean hasSentAllBufferedData = buffer.remaining() == 0;
                 buffer.compact();
 

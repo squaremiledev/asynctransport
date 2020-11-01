@@ -58,6 +58,7 @@ public class EchoConnectionApplication implements ConnectionApplication
     {
         return createApplication(useBuffers, transport -> new ListeningApplication(
                 transport,
+//                new Delineation(Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
                 new Delineation(Delineation.Type.FIXED_LENGTH, 0, 16, ""),
                 port,
                 () ->

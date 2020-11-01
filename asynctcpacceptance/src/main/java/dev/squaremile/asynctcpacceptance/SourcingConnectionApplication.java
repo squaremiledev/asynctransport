@@ -111,6 +111,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
                 transport,
                 remoteHost,
                 remotePort,
+                //new Delineation(Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
                 new Delineation(Delineation.Type.FIXED_LENGTH, 0, 16, ""),
                 (connectionTransport, connectionId) -> new SourcingConnectionApplication(
                         connectionId,

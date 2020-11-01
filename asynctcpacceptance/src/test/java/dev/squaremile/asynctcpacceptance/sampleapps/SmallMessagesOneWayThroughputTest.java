@@ -10,7 +10,6 @@ import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
@@ -81,7 +80,6 @@ class SmallMessagesOneWayThroughputTest
     {
 
         private boolean hasStartedListening;
-        private boolean hasClosedConnection;
 
         @Override
         public void onEvent(final Event event)
@@ -89,10 +87,6 @@ class SmallMessagesOneWayThroughputTest
             if (event instanceof StartedListening)
             {
                 hasStartedListening = true;
-            }
-            if (event instanceof ConnectionClosed)
-            {
-                hasClosedConnection = true;
             }
         }
 

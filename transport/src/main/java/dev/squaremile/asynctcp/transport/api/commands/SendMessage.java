@@ -2,7 +2,6 @@ package dev.squaremile.asynctcp.transport.api.commands;
 
 import java.nio.ByteBuffer;
 
-import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 
@@ -95,7 +94,7 @@ public class SendMessage implements ConnectionUserCommand
         return this;
     }
 
-    public DirectBuffer buffer()
+    public MutableDirectBuffer buffer()
     {
         return buffer;
     }
@@ -117,8 +116,6 @@ public class SendMessage implements ConnectionUserCommand
     {
         return "SendMessage{" +
                "connectionId=" + connectionId +
-               ", data=" + data +
-               ", buffer=" + buffer +
                ", offset=" + offset +
                ", delineation=" + delineation +
                ", capacity=" + capacity +
@@ -132,8 +129,8 @@ public class SendMessage implements ConnectionUserCommand
     public SendMessage copy()
     {
         SendMessage copy = new SendMessage(connectionId.port(), connectionId.connectionId(), capacity, delineation);
-        buffer.getBytes(offset, copy.prepare(length), copy.offset(), length);
-        copy.commit();
+        buffer.getBytes(offset, copy.buffer(), copy.offset(), length);
+        copy.set(offset, length, commandId);
         return copy;
     }
 
@@ -149,5 +146,18 @@ public class SendMessage implements ConnectionUserCommand
     {
         data.position(0).limit(length);
         return data;
+    }
+
+    public SendMessage set(final int offset, final int length, final long commandId)
+    {
+        this.offset = offset;
+        this.length = length;
+        this.commandId = commandId;
+        return this;
+    }
+
+    public void setLength(final int length)
+    {
+        this.length = length;
     }
 }

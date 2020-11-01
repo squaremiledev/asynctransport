@@ -180,11 +180,13 @@ public class TransportCommandDecoders
                             headerDecoder.blockLength(),
                             headerDecoder.version()
                     );
-                    int dataLength = (int)decoder.data().length();
+                    final int srcDataOffset = decoder.data().offset() + decoder.data().encodedLength();
+                    final int srcDataLength = (int)decoder.data().length();
+                    final DirectBuffer srcBuffer = decoder.data().buffer();
                     SendMessage result = transport.command(new ConnectionIdValue(decoder.port(), decoder.connectionId()), SendMessage.class);
-                    result.prepare(dataLength).putBytes(result.offset(), decoder.data().buffer(), decoder.data().offset() + decoder.data().encodedLength(), dataLength);
-                    result.commit();
-                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength() + dataLength;
+                    result.buffer().putBytes(result.offset(), srcBuffer, srcDataOffset, srcDataLength);
+                    result.setLength(srcDataLength);
+                    this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength() + srcDataLength;
                     return result;
                 }
         );

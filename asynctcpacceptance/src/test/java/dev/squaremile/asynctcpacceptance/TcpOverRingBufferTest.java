@@ -1,7 +1,6 @@
 package dev.squaremile.asynctcpacceptance;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
@@ -67,12 +66,12 @@ class TcpOverRingBufferTest
         runUntil(thingsOnDuty.reached(() -> events.all().size() >= 2));
 
         // Then
-        assertThat(((ConnectionAccepted)events.all().get(1)).port()).isEqualTo(port);
+        assertThat(events.all(ConnectionAccepted.class).get(0).port()).isEqualTo(port);
 
         // DATA SENDING PART
 
-        byte[] contentSent = byteArrayWithLong(Long.MAX_VALUE);
-        byte[] contentReceived = byteArrayWithLong(0);
+        byte[] contentSent = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
+        byte[] contentReceived = new byte[]{99, 99, 99, 99, 99, 99, 99, 99};
 
         // When
         sampleClient.write(contentSent);
@@ -85,13 +84,4 @@ class TcpOverRingBufferTest
         // Then
         assertThat(contentReceived).isEqualTo(contentSent);
     }
-
-    private byte[] byteArrayWithLong(final long value)
-    {
-        byte[] content = new byte[8];
-        ByteBuffer contentBuffer = ByteBuffer.wrap(content);
-        contentBuffer.putLong(value);
-        return content;
-    }
-
 }
