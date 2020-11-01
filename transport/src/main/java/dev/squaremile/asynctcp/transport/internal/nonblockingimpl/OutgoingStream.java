@@ -81,21 +81,14 @@ public class OutgoingStream
     private int sendNewData(final int bufferedBytesSent, final ByteBuffer newDataToSend, final WritableByteChannel channel) throws IOException
     {
         int newBytesSent = 0;
-        int newDataSentResult = 0;
         if (newDataToSend.remaining() > 0)
         {
-            newDataSentResult = channel.write(newDataToSend);
-            newBytesSent += Math.max(newDataSentResult, 0);
+            newBytesSent += Math.max(channel.write(newDataToSend), 0);
         }
         final int newBytesUnsent = newDataToSend.remaining();
         if (newBytesUnsent > 0)
         {
             buffer.put(newDataToSend);
-        }
-
-        if (newDataSentResult < 0)
-        {
-            return newDataSentResult;
         }
 
         final int bytesSent = bufferedBytesSent + newBytesSent;
