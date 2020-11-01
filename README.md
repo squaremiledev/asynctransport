@@ -5,11 +5,12 @@
 This library is an attempt to build a fully composable, library-style (read, non-framework style),
 message-driven, high performance, single threaded tcp server/client.
 
+I enjoy combining knowledge from technical books with distilled software design experience. One of the applications is this library. 
 It has been primarily designed to be used as a building block for other tools that require some audit
 capabilities, such as test spies and that should not slow down systems under test.
 
 However, because of a relatively low latency even at higher message rates, it can be also used as a building block for
-event sourced systems where part of its communication is done via TCP.
+(potentially event sourced) systems where part of its communication is done via TCP.
 
 To start write your own application, see dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort class.
 
