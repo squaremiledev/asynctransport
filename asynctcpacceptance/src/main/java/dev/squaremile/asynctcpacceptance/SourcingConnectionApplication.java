@@ -40,6 +40,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
     private final long messageDelayNs;
     private final OnMessageReceived onMessageReceived;
     private final SelectiveResponseRequest selectiveResponseRequest;
+    private final byte[] extraData;
     long messagesSentCount = 0;
     long awaitingResponsesInFlight = 0;
     long messagesReceivedCount = 0;
@@ -52,7 +53,8 @@ public class SourcingConnectionApplication implements ConnectionApplication
             final MutableBoolean isDone,
             final int sendingRatePerSecond,
             final OnMessageReceived onMessageReceived,
-            final int respondToEveryNthRequest
+            final int respondToEveryNthRequest,
+            final int extraDataLength
     )
     {
         this.connectionId = new ConnectionIdValue(connectionId);
@@ -62,14 +64,26 @@ public class SourcingConnectionApplication implements ConnectionApplication
         this.isDone = isDone;
         this.messageDelayNs = TimeUnit.SECONDS.toNanos(1) / sendingRatePerSecond;
         this.onMessageReceived = onMessageReceived;
+        this.extraData = generateExtraData(extraDataLength);
+    }
+
+    private static byte[] generateExtraData(final int extraDataLength)
+    {
+        byte[] data = new byte[extraDataLength];
+        for (int i = 0; i < data.length; i++)
+        {
+            data[i] = (byte)(i % 128);
+        }
+        return data;
     }
 
     public static void main(String[] args)
     {
-        if (args.length != 5 && args.length != 6 && args.length != 7)
+        if (args.length != 8)
         {
-            System.out.println("Usage: remoteHost remotePort sendingRatePerSecond skippedWarmUpResponses messagesSent [respondOnlyToNthRequest]");
-            System.out.println("e.g. localhost 8889 48000 400000 4000000 2");
+            System.out.println("Usage: remoteHost remotePort sendingRatePerSecond skippedWarmUpResponses messagesSent respondOnlyToNthRequest useBuffers extraDataLength");
+            System.out.println("e.g. localhost 8889 48000 400000 4000000 1 0 0");
+            System.out.println("e.g. localhost 8889 48000 400000 4000000 2 1 32");
             return;
         }
         String remoteHost = args[0];
@@ -77,16 +91,19 @@ public class SourcingConnectionApplication implements ConnectionApplication
         final int sendingRatePerSecond = parseInt(args[2]);
         final int skippedWarmUpResponses = parseInt(args[3]);
         final int messagesSent = parseInt(args[4]);
-        final int respondToEveryNthRequest = args.length > 5 ? parseInt(args[5]) : 1;
-        final boolean useBuffers = args.length > 6 && parseInt(args[6]) == 1;
+        final int respondToEveryNthRequest = parseInt(args[5]);
+        final boolean useBuffers = parseInt(args[6]) == 1;
+        final int extraDataLength = parseInt(args[7]);
 
         final int expectedResponses = messagesSent / respondToEveryNthRequest;
         final String description = String.format(
-                "remoteHost %s, remotePort %d, sendingRatePerSecond %d, skippedWarmUpResponses %d , messagesSent %d, %d expected responses with a response rate 1 for %d, use buffers: %s",
-                remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, expectedResponses, respondToEveryNthRequest, useBuffers
+                "remoteHost %s, remotePort %d, sendingRatePerSecond %d, skippedWarmUpResponses %d , " +
+                "messagesSent %d, %d expected responses with a response rate 1 for %d, use buffers: %s, extra data %d bytes",
+                remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses,
+                messagesSent, expectedResponses, respondToEveryNthRequest, useBuffers, extraDataLength
         );
         System.out.println("Starting with " + description);
-        start(description, remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, respondToEveryNthRequest, useBuffers);
+        start(description, remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, respondToEveryNthRequest, useBuffers, extraDataLength);
     }
 
     public static void start(
@@ -97,7 +114,8 @@ public class SourcingConnectionApplication implements ConnectionApplication
             final int skippedWarnUpResponses,
             final int messagesSent,
             final int respondToEveryNthRequest,
-            final boolean useBuffers
+            final boolean useBuffers,
+            final int extraDataLength
     )
     {
         int expectedResponses = messagesSent / respondToEveryNthRequest;
@@ -119,7 +137,8 @@ public class SourcingConnectionApplication implements ConnectionApplication
                         isDone,
                         sendingRatePerSecond,
                         measurements,
-                        respondToEveryNthRequest
+                        respondToEveryNthRequest,
+                        extraDataLength
                 )
         ));
 
@@ -223,9 +242,10 @@ public class SourcingConnectionApplication implements ConnectionApplication
     private void send(final long supposedSendingTimestampNs, final boolean expectResponse)
     {
         SendMessage message = connectionTransport.command(SendMessage.class);
-        MutableDirectBuffer buffer = message.prepare(12);
+        MutableDirectBuffer buffer = message.prepare(12 + extraData.length);
         buffer.putInt(message.offset(), expectResponse ? PLEASE_RESPOND_FLAG : NO_OPTIONS);
         buffer.putLong(message.offset() + 4, supposedSendingTimestampNs);
+        buffer.putBytes(message.offset() + 12, extraData);
         message.commit();
         connectionTransport.handle(message);
     }
