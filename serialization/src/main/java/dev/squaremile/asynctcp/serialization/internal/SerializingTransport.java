@@ -92,13 +92,13 @@ public class SerializingTransport implements Transport, EventListener
     }
 
     @Override
-    public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    public <C extends ConnectionUserCommand> C command(final long connectionId, final Class<C> commandType)
     {
-        if (!connectionCommandsByConnectionId.containsKey(connectionId.connectionId()))
+        if (!connectionCommandsByConnectionId.containsKey(connectionId))
         {
             throw new IllegalArgumentException("Connection id " + connectionId + " does not exist");
         }
-        return connectionCommandsByConnectionId.get(connectionId.connectionId()).command(commandType);
+        return connectionCommandsByConnectionId.get(connectionId).command(commandType);
     }
 
     @Override

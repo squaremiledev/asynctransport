@@ -36,7 +36,7 @@ public class DelineationValidatingTransport implements Transport
     }
 
     @Override
-    public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    public <C extends ConnectionUserCommand> C command(final long connectionId, final Class<C> commandType)
     {
         return delegate.command(connectionId, commandType);
     }

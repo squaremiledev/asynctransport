@@ -54,7 +54,7 @@ class LongPingPongAppFactory implements ApplicationFactory
                 if (event instanceof ConnectionAccepted)
                 {
                     ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
-                    SendMessage sendMessage = transport.command(connectionAccepted, SendMessage.class);
+                    SendMessage sendMessage = transport.command(connectionAccepted.connectionId(), SendMessage.class);
                     int newNumber = 1;
                     MutableDirectBuffer buffer = sendMessage.prepare(8);
                     buffer.putLong(sendMessage.offset(), newNumber);
@@ -70,12 +70,12 @@ class LongPingPongAppFactory implements ApplicationFactory
                     numberCount++;
                     if (numberCount >= messagesCap)
                     {
-                        transport.handle(transport.command(messageReceived, CloseConnection.class));
+                        transport.handle(transport.command(messageReceived.connectionId(), CloseConnection.class));
                         return;
                     }
                     long numberReceived = messageReceived.buffer().getLong(messageReceived.offset());
                     long newNumber = numberReceived + 1_000_000;
-                    SendMessage sendMessage = transport.command(messageReceived, SendMessage.class);
+                    SendMessage sendMessage = transport.command(messageReceived.connectionId(), SendMessage.class);
                     sendMessage.prepare(8).putLong(sendMessage.offset(), newNumber);
                     sendMessage.commit();
                     transport.handle(sendMessage);

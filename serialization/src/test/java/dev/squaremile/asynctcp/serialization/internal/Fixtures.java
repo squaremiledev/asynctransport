@@ -63,14 +63,14 @@ class Fixtures
     static Stream<Function<Transport, TransportUserCommand>> commands()
     {
         return Stream.of(
-                transport -> transport.command(connectedEvent(), CloseConnection.class).set(201),
+                transport -> transport.command(connectedEvent().connectionId(), CloseConnection.class).set(201),
                 transport -> transport.command(Connect.class).set("remoteHost", 8899, 202, 10, new Delineation(Delineation.Type.FIXED_LENGTH, 0, 1, "")),
                 transport -> transport.command(Connect.class).set("remoteHost2", 8898, 203, 11, fixMessage()),
                 transport -> transport.command(Connect.class).set("remoteHost2", 8898, 203, 11, new Delineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 10, 20, "")),
                 transport -> transport.command(Listen.class).set(203, 6688, PredefinedTransportDelineation.fixedLengthDelineation(8)),
                 transport -> transport.command(Listen.class).set(204, 6689, new Delineation(Delineation.Type.INT_BIG_ENDIAN_FIELD, 30, 40, "")),
-                transport -> transport.command(connectedEvent(), SendData.class).set(new byte[]{1, 2, 3, 4, 5, 6}, 205),
-                transport -> set(transport.command(connectedEvent(), SendMessage.class), 0, new byte[]{1, 2, 3, 4, 5, 6}, 2, 3),
+                transport -> transport.command(connectedEvent().connectionId(), SendData.class).set(new byte[]{1, 2, 3, 4, 5, 6}, 205),
+                transport -> set(transport.command(connectedEvent().connectionId(), SendMessage.class), 0, new byte[]{1, 2, 3, 4, 5, 6}, 2, 3),
                 transport -> transport.command(StopListening.class).set(204, 7788)
         );
     }

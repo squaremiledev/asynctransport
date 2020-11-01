@@ -74,7 +74,7 @@ public class MessageEchoApplication implements EventDrivenApplication
 
     private SendMessage sendMessageCommandWithDataFrom(final MessageReceived messageReceivedEvent)
     {
-        SendMessage sendMessage = transport.command(messageReceivedEvent, SendMessage.class);
+        SendMessage sendMessage = transport.command(messageReceivedEvent.connectionId(), SendMessage.class);
         messageReceivedEvent.buffer().getBytes(messageReceivedEvent.offset(), sendMessage.prepare(messageReceivedEvent.length()), sendMessage.offset(), messageReceivedEvent.length());
         sendMessage.commit();
         return sendMessage;

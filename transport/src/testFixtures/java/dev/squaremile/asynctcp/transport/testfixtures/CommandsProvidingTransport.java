@@ -7,7 +7,7 @@ import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 
@@ -30,19 +30,19 @@ public class CommandsProvidingTransport implements Transport
     }
 
     @Override
-    public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    public <C extends ConnectionUserCommand> C command(final long connectionId, final Class<C> commandType)
     {
         if (commandType.equals(CloseConnection.class))
         {
-            return commandType.cast(new CloseConnection(connectionId));
+            return commandType.cast(new CloseConnection(new ConnectionIdValue(1234, connectionId)));
         }
         if (commandType.equals(SendData.class))
         {
-            return commandType.cast(new SendData(connectionId, capacity));
+            return commandType.cast(new SendData(new ConnectionIdValue(1234, connectionId), capacity));
         }
         if (commandType.equals(SendMessage.class))
         {
-            return commandType.cast(new SendMessage(connectionId, capacity, delineation));
+            return commandType.cast(new SendMessage(new ConnectionIdValue(1234, connectionId), capacity, delineation));
         }
 
         throw new UnsupportedOperationException(commandType.getSimpleName());

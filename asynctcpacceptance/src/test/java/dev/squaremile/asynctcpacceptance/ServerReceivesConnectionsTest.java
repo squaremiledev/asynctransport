@@ -102,7 +102,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         assertThat(serverTransport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
 
         // When
-        serverTransport.handle(serverTransport.command(connectionAccepted, CloseConnection.class).set(10));
+        serverTransport.handle(serverTransport.command(connectionAccepted.connectionId(), CloseConnection.class).set(10));
 
         // Then
         assertThat(clients.client(1).hasServerClosedConnection()).isTrue();
@@ -120,7 +120,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         // Given
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
         assertThat(serverTransport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(1);
-        serverTransport.handle(serverTransport.command(conn, CloseConnection.class).set(15));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), CloseConnection.class).set(15));
         assertThat(serverTransport.events().last(ConnectionClosed.class)).usingRecursiveComparison()
                 .isEqualTo(new ConnectionClosed(conn.port(), conn.connectionId(), 15));
         assertThat(serverTransport.events().all(ConnectionClosed.class)).hasSize(1);
@@ -276,10 +276,10 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
         conn.port();
         conn.connectionId();
-        serverTransport.handle(serverTransport.command(conn, SendData.class).set("foo".getBytes(US_ASCII)));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set("foo".getBytes(US_ASCII)));
         conn.port();
         conn.connectionId();
-        serverTransport.handle(serverTransport.command(conn, SendData.class).set("BA".getBytes(US_ASCII)));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set("BA".getBytes(US_ASCII)));
         serverTransport.workUntil(() -> serverTransport.events().all(DataSent.class).size() == 2);
 
         //When

@@ -27,7 +27,7 @@ class ClientSendsDataTest extends TransportTestBase
         Connected connected = clientTransport.connectionEvents().last(Connected.class);
 
         //When
-        clientTransport.handle(clientTransport.command(connected, SendData.class).set(bytes("foo")));
+        clientTransport.handle(clientTransport.command(connected.connectionId(), SendData.class).set(bytes("foo")));
         assertThat(clientTransport.events().all(CommandFailed.class)).isEmpty();
         assertThat(serverTransport.events().all(CommandFailed.class)).isEmpty();
 

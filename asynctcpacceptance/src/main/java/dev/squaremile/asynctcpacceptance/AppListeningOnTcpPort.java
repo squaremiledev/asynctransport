@@ -8,6 +8,7 @@ import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
@@ -49,7 +50,7 @@ public class AppListeningOnTcpPort
                         if (event instanceof ConnectionAccepted)
                         {
                             ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
-                            transport.handle(transport.command(connectionAccepted, SendData.class).set(
+                            transport.handle(transport.command(connectionAccepted.connectionId(), SendData.class).set(
                                     (
                                             "Let me tell you some details about this connection.\n" +
                                             "You are " + connectionAccepted.remoteHost() +
@@ -64,7 +65,7 @@ public class AppListeningOnTcpPort
                         if (event instanceof MessageReceived)
                         {
                             MessageReceived dataReceived = (MessageReceived)event;
-                            transport.handle(transport.command(dataReceived, SendData.class).set(
+                            transport.handle(transport.command(dataReceived.connectionId(), SendData.class).set(
                                     (
                                             "You have sent me " + dataReceived.length() + " bytes\n"
                                     ).getBytes()));

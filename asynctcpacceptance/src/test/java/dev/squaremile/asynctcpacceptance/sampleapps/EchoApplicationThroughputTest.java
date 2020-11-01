@@ -64,7 +64,7 @@ class EchoApplicationThroughputTest
                             return testDrivingApp.connectedEvent() != null;
                         });
         Connected connected = testDrivingApp.connectedEvent();
-        SendMessage sendMessageCommand = drivingTransport.command(connected, SendMessage.class);
+        SendMessage sendMessageCommand = drivingTransport.command(connected.connectionId(), SendMessage.class);
         int numberOfMessagesSentDuringOneIteration = connected.outboundPduLimit() / MESSAGE_SIZE_IN_BYTES;
 
         long startTimeMs = System.currentTimeMillis();

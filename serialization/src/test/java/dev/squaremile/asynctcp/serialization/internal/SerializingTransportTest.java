@@ -17,6 +17,7 @@ import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.events.Connected;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.testfixtures.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.transport.testfixtures.TransportCommandSpy;
@@ -69,14 +70,16 @@ class SerializingTransportTest
         transport.onEvent(CONNECTED_EVENT);
 
         // When
-        CloseConnection command = transport.command(CONNECTED_EVENT, CloseConnection.class).set(123);
+        CloseConnection command = transport.command(CONNECTED_EVENT.connectionId(), CloseConnection.class).set(123);
 
         // Then
         assertThat(command.commandId()).isEqualTo(123);
         assertThat(command.connectionId()).isEqualTo(CONNECTED_EVENT.connectionId());
         assertThat(command.port()).isEqualTo(CONNECTED_EVENT.port());
-        assertThrows(IllegalArgumentException.class, () ->
-                transport.command(new ConnectionIdValue(CONNECTED_EVENT.port(), CONNECTED_EVENT.connectionId() + 10), CloseConnection.class));
+        assertThrows(IllegalArgumentException.class, () -> transport.command(
+                ((ConnectionId)new ConnectionIdValue(CONNECTED_EVENT.port(), CONNECTED_EVENT.connectionId() + 10)).connectionId(),
+                CloseConnection.class
+        ));
     }
 
     @Test
@@ -92,7 +95,7 @@ class SerializingTransportTest
         // Then
         assertThrows(
                 IllegalArgumentException.class,
-                () -> transport.command(new ConnectionIdValue(4444, 9765), CloseConnection.class)
+                () -> transport.command(((ConnectionId)new ConnectionIdValue(4444, 9765)).connectionId(), CloseConnection.class)
         );
     }
 }

@@ -58,7 +58,7 @@ class ServerSendsDataTest extends TransportTestBase
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
 
         //When
-        serverTransport.handle(serverTransport.command(conn, SendData.class).set(bytes("foo")));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(bytes("foo")));
 
         // Then
         serverTransport.workUntil(completed(() -> clients.client(1).read(3, 10, dataConsumer)));
@@ -79,8 +79,8 @@ class ServerSendsDataTest extends TransportTestBase
         final ConnectionAccepted conn = driver.listenAndConnect(clients.client(1));
 
         //When
-        serverTransport.handle(serverTransport.command(conn, SendData.class).set(bytes("foo")));
-        serverTransport.handle(serverTransport.command(conn, SendData.class).set(bytes("BA")));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(bytes("foo")));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(bytes("BA")));
 
         // Then
         serverTransport.workUntil(completed(() -> clients.client(1).read(5, 10, dataConsumer)));
@@ -101,7 +101,7 @@ class ServerSendsDataTest extends TransportTestBase
         //When
         conn.port();
         conn.connectionId();
-        serverTransport.handle(serverTransport.command(conn, SendData.class).set(new byte[]{}, (long)100));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(new byte[]{}, (long)100));
         serverTransport.workUntil(() -> serverTransport.connectionEvents().contains(DataSent.class, conn.connectionId()));
 
         // Then
@@ -147,7 +147,7 @@ class ServerSendsDataTest extends TransportTestBase
 
         //When
         serverTransport.handle(new SendData(conn.port() + 1, conn.connectionId(), 20).set(bytes("fo")));
-        serverTransport.handle(serverTransport.command(conn, SendData.class).set(bytes("bar")));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(bytes("bar")));
 
         // Then
         serverTransport.workUntil(completed(() -> clients.client(1).read(3, 3, dataConsumer)));
@@ -179,16 +179,16 @@ class ServerSendsDataTest extends TransportTestBase
         //When
         connS1C1.port();
         connS1C1.connectionId();
-        serverTransport.handle(serverTransport.command(connS1C1, SendData.class).set(bytes(fixedLengthStringStartingWith("S1 -> C1 ", 10))));
+        serverTransport.handle(serverTransport.command(connS1C1.connectionId(), SendData.class).set(bytes(fixedLengthStringStartingWith("S1 -> C1 ", 10))));
         connS2C2.port();
         connS2C2.connectionId();
-        serverTransport.handle(serverTransport.command(connS2C2, SendData.class).set(bytes(fixedLengthStringStartingWith("S2 -> C2 ", 20))));
+        serverTransport.handle(serverTransport.command(connS2C2.connectionId(), SendData.class).set(bytes(fixedLengthStringStartingWith("S2 -> C2 ", 20))));
         connS1C3.port();
         connS1C3.connectionId();
-        serverTransport.handle(serverTransport.command(connS1C3, SendData.class).set(bytes(fixedLengthStringStartingWith("S1 -> C3 ", 30))));
+        serverTransport.handle(serverTransport.command(connS1C3.connectionId(), SendData.class).set(bytes(fixedLengthStringStartingWith("S1 -> C3 ", 30))));
         connS2C4.port();
         connS2C4.connectionId();
-        serverTransport.handle(serverTransport.command(connS2C4, SendData.class).set(bytes(fixedLengthStringStartingWith("S2 -> C4 ", 40))));
+        serverTransport.handle(serverTransport.command(connS2C4.connectionId(), SendData.class).set(bytes(fixedLengthStringStartingWith("S2 -> C4 ", 40))));
 
         // Then
         final ThreadSafeReadDataSpy dataConsumer1 = new ThreadSafeReadDataSpy();
@@ -233,7 +233,7 @@ class ServerSendsDataTest extends TransportTestBase
         assertThat(data.length).isEqualTo(contentSizeInBytes);
         conn.port();
         conn.connectionId();
-        serverTransport.handle(serverTransport.command(conn, SendData.class).set(data));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(data));
 
         // Then
         serverTransport.workUntil(completed(() -> clients.client(1).read(data.length, data.length, dataConsumer)));
@@ -259,7 +259,7 @@ class ServerSendsDataTest extends TransportTestBase
         //When
         runUntil(() ->
                  {
-                     serverTransport.handle(serverTransport.command(conn, SendData.class).set(dataThatFitsTheBuffer));
+                     serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(dataThatFitsTheBuffer));
                      return serverTransport.connectionEvents().contains(DataSent.class, conn.connectionId()) &&
                             serverTransport.connectionEvents().last(DataSent.class, conn.connectionId()).bytesSent() == 0;
                  });
@@ -292,7 +292,7 @@ class ServerSendsDataTest extends TransportTestBase
         MutableInteger commandsCount = new MutableInteger(0);
         serverTransport.workUntil(() ->
                                   {
-                                      serverTransport.handle(serverTransport.command(conn, SendData.class).set(singleMessageData, commandsCount.incrementAndGet()));
+                                      serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(singleMessageData, commandsCount.incrementAndGet()));
                                       dataConsumerForTheTest.consume(singleMessageData, singleMessageData.length);
                                       // stop when unable to send more data
                                       return !serverTransport.connectionEvents().all(DataSent.class, conn.connectionId()).isEmpty() &&
@@ -357,7 +357,7 @@ class ServerSendsDataTest extends TransportTestBase
         Worker.runUntil(() -> clients.client(1).hasServerClosedConnection());
 
         //When
-        serverTransport.handle(serverTransport.command(conn, SendData.class).set(bytes("foo"), 101));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(bytes("foo"), 101));
 
         // Then
         assertEqual(serverTransport.events().all(), eventsBeforeClosed, asList(

@@ -43,7 +43,7 @@ public class TransportCommandSpy extends Spy<TransportCommand> implements Transp
     }
 
     @Override
-    public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    public <C extends ConnectionUserCommand> C command(final long connectionId, final Class<C> commandType)
     {
         return transport.command(connectionId, commandType);
     }

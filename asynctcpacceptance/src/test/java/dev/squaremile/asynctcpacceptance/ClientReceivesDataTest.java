@@ -18,6 +18,7 @@ import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.DataReceived;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.testfixtures.ConnectionEventsSpy;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.DataFixtures.concatenatedData;
@@ -88,7 +89,7 @@ class ClientReceivesDataTest extends TransportTestBase
         // When
         dataChunksToSend.forEach(dataChunkToSend ->
                                  {
-                                     serverTransport.handle(serverTransport.command(conn, SendData.class).set(dataChunkToSend));
+                                     serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(dataChunkToSend));
                                      // Make sure all buffered data has been sent before sending more to avoid buffer overflow
                                      while (true)
                                      {

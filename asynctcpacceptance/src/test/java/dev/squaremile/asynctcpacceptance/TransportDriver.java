@@ -50,7 +50,7 @@ public class TransportDriver
         MutableInteger commandsCount = new MutableInteger(0);
         transport.workUntil(() ->
                             {
-                                transport.handle(transport.command(connectionId, SendData.class).set(singleMessageData, commandsCount.incrementAndGet()));
+                                transport.handle(transport.command(connectionId.connectionId(), SendData.class).set(singleMessageData, commandsCount.incrementAndGet()));
                                 // stop when unable to send more data
                                 return !transport.connectionEvents().all(DataSent.class, connectionId.connectionId()).isEmpty() &&
                                        transport.connectionEvents().last(DataSent.class, connectionId.connectionId()).bytesSent() == 0;
@@ -134,7 +134,7 @@ public class TransportDriver
         final long randomCommandId = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
         connection.port();
         connection.connectionId();
-        transport.handle(transport.command(connection, SendData.class).set(content, randomCommandId));
+        transport.handle(transport.command(connection.connectionId(), SendData.class).set(content, randomCommandId));
         final ThreadSafeReadDataSpy dataConsumer = new ThreadSafeReadDataSpy();
         transport.workUntil(completed(() -> client.read(content.length, content.length, dataConsumer)));
         transport.workUntil(() -> transport.events().contains(DataSent.class, event -> event.commandId() == randomCommandId));

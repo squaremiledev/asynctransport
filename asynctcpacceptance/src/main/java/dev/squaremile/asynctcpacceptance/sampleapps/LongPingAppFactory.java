@@ -51,7 +51,7 @@ class LongPingAppFactory implements ApplicationFactory
                     {
                         if (numberCount < messagesCap)
                         {
-                            SendMessage sendMessage = transport.command(connectionId, SendMessage.class).commandId(numberCount);
+                            SendMessage sendMessage = transport.command(connectionId.connectionId(), SendMessage.class).commandId(numberCount);
                             sendMessage.prepare(8).putLong(sendMessage.offset(), numberCount);
                             sendMessage.commit();
                             transport.handle(sendMessage);

@@ -30,7 +30,6 @@ import dev.squaremile.asynctcp.transport.api.commands.StopListening;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 import dev.squaremile.asynctcp.transport.internal.domain.NoOpCommand;
@@ -188,9 +187,9 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
     }
 
     @Override
-    public <C extends ConnectionUserCommand> C command(final ConnectionId connectionId, final Class<C> commandType)
+    public <C extends ConnectionUserCommand> C command(final long connectionId, final Class<C> commandType)
     {
-        Connection connection = connections.get(connectionId.connectionId());
+        Connection connection = connections.get(connectionId);
         if (connection == null)
         {
             throw new IllegalArgumentException("There is no connection " + connectionId);

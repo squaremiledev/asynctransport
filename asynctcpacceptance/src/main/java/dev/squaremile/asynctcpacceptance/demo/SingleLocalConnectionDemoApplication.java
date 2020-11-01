@@ -4,13 +4,13 @@ package dev.squaremile.asynctcpacceptance.demo;
 import java.util.function.Consumer;
 
 
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
@@ -88,11 +88,11 @@ public class SingleLocalConnectionDemoApplication implements EventDrivenApplicat
 
         if (initiatorConnectionId != null)
         {
-            t.handle(t.command(initiatorConnectionId, CloseConnection.class).set(4));
+            t.handle(t.command(initiatorConnectionId.connectionId(), CloseConnection.class).set(4));
         }
         else if (acceptorConnectionId != null)
         {
-            t.handle(t.command(acceptorConnectionId, CloseConnection.class).set(5));
+            t.handle(t.command(acceptorConnectionId.connectionId(), CloseConnection.class).set(5));
         }
         log.accept("exit  onStop() " + state);
     }
@@ -253,7 +253,7 @@ public class SingleLocalConnectionDemoApplication implements EventDrivenApplicat
         @Override
         public <C extends ConnectionUserCommand> C command(final Class<C> commandType)
         {
-            return transport.command(connectionId, commandType);
+            return transport.command(connectionId.connectionId(), commandType);
         }
 
         @Override

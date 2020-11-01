@@ -7,6 +7,7 @@ import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
@@ -39,7 +40,7 @@ public class AppFromReadme
                         if (event instanceof ConnectionAccepted)
                         {
                             ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
-                            transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
+                            transport.handle(transport.command(connectionAccepted.connectionId(), SendData.class).set("Hi!".getBytes()));
                         }
                     }
                 }
