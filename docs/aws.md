@@ -185,7 +185,31 @@ worst                  |           419 |            838 |
 
 Based on 720000 measurements.
 It took 89994 ms between the first measured message sent and the last received
+```
 
+## With serialization (ring buffers)
+
+Test v. cbd74f0a2edb0e27f3d868ccbc99e0b2598bddc7
+
+```
+# box 1
+java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.EchoConnectionApplication 9998 1
+
+# box 2
+java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication 172.31.35.37 9998 256000 80000 5600000 32 1
+Scenario: remoteHost 172.31.35.37, remotePort 9998, sendingRatePerSecond 256000, skippedWarmUpResponses 80000 , messagesSent 5600000, 175000 expected responses with a response rate 1 for 32, use buffers: true
+Results:
+---------------------------------------------------------
+latency (microseconds) |     ~ one way |     round trip |
+mean                   |            30 |             60 |
+99th percentile        |            44 |             88 |
+99.9th percentile      |            49 |             98 |
+99.99th percentile     |            70 |            139 |
+99.999th percentile    |           130 |            260 |
+worst                  |           130 |            260 |
+
+Based on 95000 measurements.
+It took 11874 ms between the first measured message sent and the last received
 ```
 
 Netperf benchmark
