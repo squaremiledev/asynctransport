@@ -10,6 +10,7 @@ import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.values.CommandId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionState;
 import dev.squaremile.asynctcp.transport.testfixtures.ConnectionEventsSpy;
@@ -345,17 +346,21 @@ class ConnectionImplTest
 
     private ConnectionImpl newConnection(final FakeChannel channel)
     {
-        // TODO: delineation should not be null, it suggests missing value type in this package
-        return new ConnectionImpl(config(), channel, null, events);
+        return new ConnectionImpl(config(), channel, delineation(), events);
     }
 
     private ConnectionImpl newConnection(final ConnectionConfiguration config)
     {
-        return new ConnectionImpl(config, new FakeChannel(), null, events);
+        return new ConnectionImpl(config, new FakeChannel(), delineation(), events);
     }
 
-    private ConnectionConfiguration config()
+    private static ConnectionConfiguration config()
     {
         return new ConnectionConfiguration(new ConnectionIdValue(8080, 51), "localhost", 9090, 10, SAMPLE_SEND_BUFFER_SIZE, 30);
+    }
+
+    private static Delineation delineation()
+    {
+        return new Delineation(Delineation.Type.FIXED_LENGTH, 0, 0, "");
     }
 }

@@ -38,7 +38,6 @@ import dev.squaremile.asynctcp.transport.internal.domain.connection.Connection;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionState;
 
-// TODO [perf]: make sure all commands and events can be used without generating garbage
 public class NonBlockingTransport extends TransportPoller implements AutoCloseable, Transport
 {
     private final ConnectionIdSource connectionIdSource;
@@ -136,7 +135,6 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
                         {
                             Socket socket = socketChannel.socket();
                             socket.setTcpNoDelay(true);
-                            // TODO [perf]: size buffers correctly
                             ConnectionIdValue connectionId = new ConnectionIdValue(socket.getLocalPort(), connectionIdSource.newId());
                             final ConnectionConfiguration configuration = new ConnectionConfiguration(
                                     connectionId,

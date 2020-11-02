@@ -13,8 +13,7 @@ import dev.squaremile.asynctcp.transport.internal.domain.connection.ValidatedCon
 
 public class ConnectionImpl implements AutoCloseable, Connection
 {
-
-    private Connection delegate;
+    private final Connection delegate;
 
     ConnectionImpl(
             final ConnectionConfiguration configuration,

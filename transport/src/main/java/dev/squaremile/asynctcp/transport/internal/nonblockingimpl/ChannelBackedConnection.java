@@ -37,8 +37,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
     private final ConnectionConfiguration configuration;
     private final OutgoingStream outgoingStream;
     private long totalBytesReceived;
+    private final int port;
     private ConnectionState connectionState;
-    private int port;
 
     ChannelBackedConnection(
             final ConnectionConfiguration configuration,
