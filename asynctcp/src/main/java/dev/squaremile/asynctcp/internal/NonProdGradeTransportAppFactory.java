@@ -5,19 +5,19 @@ import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.agrona.concurrent.ringbuffer.RingBuffer;
 
-
 import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 
 
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
+import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
 import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationValidatingTransport;
-import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferApplication;
-import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferWriter;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventDrivenApplication;
+import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
@@ -26,6 +26,7 @@ import static dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler.
 
 public class NonProdGradeTransportAppFactory implements TransportApplicationFactory
 {
+    private static final int MSG_TYPE_ID = 1;
 
     private final NonProdGradeTransportFactory transportFactory = new NonProdGradeTransportFactory();
 
@@ -37,14 +38,14 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
         return new ApplicationWithThingsOnDuty(
                 createWithoutTransport(
                         role,
-                        networkToUser,
-                        userToNetwork,
-                        applicationFactory
+                        applicationFactory,
+                        networkToUser::read,
+                        (sourceBuffer, sourceOffset, length) -> userToNetwork.write(MSG_TYPE_ID, sourceBuffer, sourceOffset, length)
                 ),
                 transportFactory.create(
                         "networkFacing",
-                        networkToUser,
-                        userToNetwork
+                        userToNetwork::read,
+                        (sourceBuffer, sourceOffset, length) -> networkToUser.write(MSG_TYPE_ID, sourceBuffer, sourceOffset, length)
                 )
         );
     }
@@ -60,10 +61,15 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
     }
 
     @Override
-    public EventDrivenApplication createWithoutTransport(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory)
+    public EventDrivenApplication createWithoutTransport(
+            final String role,
+            final ApplicationFactory applicationFactory,
+            final SerializedEventSupplier eventSupplier,
+            final SerializedCommandListener commandListener
+    )
     {
-        SerializingTransport serializingTransport = new SerializingTransport(new ExpandableArrayBuffer(), 0, new RingBufferWriter("userToNetworkRingBuffer", userToNetwork));
-        return new RingBufferApplication(serializingTransport, applicationFactory.create(serializingTransport), networkToUser);
+        final SerializingTransport serializingTransport = new SerializingTransport(new ExpandableArrayBuffer(), 0, commandListener);
+        return new SerializedEventDrivenApplication(serializingTransport, applicationFactory.create(serializingTransport), eventSupplier);
     }
 
 

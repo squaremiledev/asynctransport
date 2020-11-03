@@ -1,8 +1,10 @@
 package dev.squaremile.asynctcp.api;
 
-import org.agrona.concurrent.ringbuffer.RingBuffer;
 
-
+import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
+import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
+import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedCommandSupplier;
+import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 
@@ -22,7 +24,7 @@ public interface TransportApplicationFactory
      * @param applicationFactory a user provided application
      * @return a wired application ready to be started and used
      */
-    ApplicationOnDuty create(String role, final int buffersSize, ApplicationFactory applicationFactory);
+    ApplicationOnDuty create(String role, int buffersSize, ApplicationFactory applicationFactory);
 
     /**
      * Creates a wired TCP Application that is ready to use and uses an on-stack invocation to as a mean
@@ -50,15 +52,20 @@ public interface TransportApplicationFactory
     /**
      * Creates a wired TCP Application that requires a buffer-backed transport counterparty to work.
      * <p>
-     * Use this factory along with a corresponding {@link TransportFactory#create(String, RingBuffer, RingBuffer)}
+     * Use this factory along with a corresponding {@link TransportFactory#create(String, SerializedCommandSupplier, SerializedEventListener)}
      * method to have an application that is independent from the transport, or to run
      * the application and the transport in separate threads or processes.
      *
      * @param role               A simple label, no other special meaning at the moment
-     * @param networkToUser      a buffer containing events sent from the transport (network) to the application
-     * @param userToNetwork      a buffer containing commands sent from the application to the transport (network)
-     * @param applicationFactory a user provided application
+     * @param applicationFactory A user provided application
+     * @param eventSupplier      A source of serialized events
+     * @param commandListener    A listener for serialized commands
      * @return a wired application ready to be started and used
      */
-    ApplicationOnDuty createWithoutTransport(String role, RingBuffer networkToUser, RingBuffer userToNetwork, ApplicationFactory applicationFactory);
+    ApplicationOnDuty createWithoutTransport(
+            String role,
+            ApplicationFactory applicationFactory,
+            SerializedEventSupplier eventSupplier,
+            SerializedCommandListener commandListener
+    );
 }

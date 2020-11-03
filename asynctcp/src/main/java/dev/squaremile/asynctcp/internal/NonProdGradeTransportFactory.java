@@ -2,7 +2,6 @@ package dev.squaremile.asynctcp.internal;
 
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.SystemEpochClock;
-import org.agrona.concurrent.ringbuffer.RingBuffer;
 
 
 import dev.squaremile.asynctcp.api.TransportFactory;
@@ -11,23 +10,17 @@ import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
 import dev.squaremile.asynctcp.serialization.internal.NonBLockingMessageDrivenTransport;
 import dev.squaremile.asynctcp.serialization.internal.SerializingApplication;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
-import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferBackedTransport;
-import dev.squaremile.asynctcp.serialization.internal.messaging.RingBufferWriter;
+import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedCommandSupplier;
+import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedMessageDrivenTransport;
 import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
 
 public class NonProdGradeTransportFactory implements TransportFactory
 {
     @Override
-    public MessageDrivenTransport create(
-            final String role, final SerializedEventListener eventListener
-    )
+    public MessageDrivenTransport create(final String role, final SerializedEventListener eventListener)
     {
         DelineationApplication delineationApplication = new DelineationApplication(
-                new SerializingApplication(
-                        new ExpandableArrayBuffer(),
-                        0,
-                        eventListener
-                )
+                new SerializingApplication(new ExpandableArrayBuffer(), 0, eventListener)
         );
         return new NonBLockingMessageDrivenTransport(
                 new NonBlockingTransport(
@@ -41,16 +34,10 @@ public class NonProdGradeTransportFactory implements TransportFactory
     @Override
     public MessageDrivenTransport create(
             final String role,
-            final RingBuffer networkToUser,
-            final RingBuffer userToNetwork
+            final SerializedCommandSupplier commandSupplier,
+            final SerializedEventListener eventListener
     )
     {
-        return new RingBufferBackedTransport(
-                create(
-                        role,
-                        new RingBufferWriter("networkToUserRingBuffer", networkToUser)
-                ),
-                userToNetwork
-        );
+        return new SerializedMessageDrivenTransport(create(role, eventListener), commandSupplier);
     }
 }

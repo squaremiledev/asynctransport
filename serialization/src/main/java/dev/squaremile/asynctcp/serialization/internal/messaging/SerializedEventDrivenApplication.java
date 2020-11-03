@@ -1,27 +1,30 @@
 package dev.squaremile.asynctcp.serialization.internal.messaging;
 
-import org.agrona.concurrent.ringbuffer.RingBuffer;
+import org.agrona.concurrent.MessageHandler;
 
 
 import dev.squaremile.asynctcp.serialization.internal.TransportEventsDeserialization;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 
-public class RingBufferApplication implements EventDrivenApplication
+public class SerializedEventDrivenApplication implements EventDrivenApplication
 {
     private final EventDrivenApplication application;
-    private final RingBufferReader ringBufferReader;
+    private final SerializedEventSupplier eventSupplier;
+    private final MessageHandler messageHandler;
 
-    public RingBufferApplication(final EventListener eventListener, final EventDrivenApplication application, final RingBuffer ringBuffer)
+    public SerializedEventDrivenApplication(final EventListener eventListener, final EventDrivenApplication application, final SerializedEventSupplier eventSupplier)
     {
         this.application = application;
-        this.ringBufferReader = new RingBufferReader("fromNetwork", ringBuffer, new TransportEventsDeserialization(
+        this.eventSupplier = eventSupplier;
+        final TransportEventsDeserialization serializedMessageListener = new TransportEventsDeserialization(
                 event ->
                 {
                     eventListener.onEvent(event);
                     application.onEvent(event);
-                }));
+                });
+        this.messageHandler = (msgTypeId, buffer, index, length) -> serializedMessageListener.onSerialized(buffer, index, length);
     }
 
     @Override
@@ -45,7 +48,7 @@ public class RingBufferApplication implements EventDrivenApplication
     @Override
     public void work()
     {
-        ringBufferReader.read();
+        eventSupplier.poll(messageHandler);
         application.work();
     }
 }

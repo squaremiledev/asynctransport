@@ -1,20 +1,22 @@
 package dev.squaremile.asynctcp.serialization.internal.messaging;
 
 import org.agrona.DirectBuffer;
-import org.agrona.concurrent.ringbuffer.RingBuffer;
+import org.agrona.concurrent.MessageHandler;
 
 
 import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
 
-public class RingBufferBackedTransport implements MessageDrivenTransport
+public class SerializedMessageDrivenTransport implements MessageDrivenTransport
 {
-    private final RingBufferReader bufferReader;
+    private final SerializedCommandSupplier commandSupplier;
+    private final MessageHandler messageHandler;
     private final MessageDrivenTransport messageDrivenTransport;
 
-    public RingBufferBackedTransport(final MessageDrivenTransport messageDrivenTransport, final RingBuffer toNetworkBuffer)
+    public SerializedMessageDrivenTransport(final MessageDrivenTransport messageDrivenTransport, final SerializedCommandSupplier commandSupplier)
     {
         this.messageDrivenTransport = messageDrivenTransport;
-        bufferReader = new RingBufferReader("toNetwork", toNetworkBuffer, this.messageDrivenTransport);
+        this.commandSupplier = commandSupplier;
+        this.messageHandler = (msgTypeId, buffer, index, length) -> messageDrivenTransport.onSerialized(buffer, index, length);
     }
 
     @Override
@@ -26,7 +28,7 @@ public class RingBufferBackedTransport implements MessageDrivenTransport
     @Override
     public void work()
     {
-        bufferReader.read();
+        commandSupplier.poll(messageHandler);
         messageDrivenTransport.work();
     }
 
