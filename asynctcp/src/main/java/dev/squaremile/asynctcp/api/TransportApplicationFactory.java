@@ -7,6 +7,7 @@ import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedComman
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 
 public interface TransportApplicationFactory
 {
@@ -47,12 +48,12 @@ public interface TransportApplicationFactory
      * @param applicationFactory a user provided application
      * @return a wired application ready to be started and used
      */
-    ApplicationOnDuty create(String role, ApplicationFactory applicationFactory);
+    ApplicationOnDuty createSharedStack(String role, ApplicationFactory applicationFactory);
 
     /**
      * Creates a wired TCP Application that requires a buffer-backed transport counterparty to work.
      * <p>
-     * Use this factory along with a corresponding {@link TransportFactory#create(String, SerializedCommandSupplier, SerializedEventListener)}
+     * Use this factory along with a corresponding {@link TransportApplicationFactory#createTransport(String, SerializedCommandSupplier, SerializedEventListener)}
      * method to have an application that is independent from the transport, or to run
      * the application and the transport in separate threads or processes.
      *
@@ -68,4 +69,14 @@ public interface TransportApplicationFactory
             SerializedEventSupplier eventSupplier,
             SerializedCommandListener commandListener
     );
+
+    /**
+     * Creates a buffer backed TCP transport.
+     *
+     * @param role            A simple label, no other special meaning at the moment
+     * @param commandSupplier A source os serialized commands
+     * @param eventListener   A listener for serialized events
+     * @return a wired transport
+     */
+    TransportOnDuty createTransport(String role, SerializedCommandSupplier commandSupplier, SerializedEventListener eventListener);
 }

@@ -124,7 +124,7 @@ public class ValidationTest
 
     private void whenApplicationStarting(final EventsSpy eventsSpy, final Consumer<Transport> onStart)
     {
-        ApplicationOnDuty application = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create("test", transport -> new EventDrivenApplication()
+        ApplicationOnDuty application = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).createSharedStack("test", transport -> new EventDrivenApplication()
         {
             @Override
             public void onStart()

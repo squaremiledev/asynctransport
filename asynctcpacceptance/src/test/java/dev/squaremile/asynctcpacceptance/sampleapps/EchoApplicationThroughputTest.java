@@ -36,9 +36,9 @@ class EchoApplicationThroughputTest
     {
         port = freePort();
         testDrivingApp = new ThroughputTestDrivingApp(port, new Delineation(Delineation.Type.FIXED_LENGTH, 0, MESSAGE_SIZE_IN_BYTES, ""));
-        testDrivingTransportApplication = new NonProdGradeTransportAppFactory().create("testDrivingApp", testDrivingApp);
+        testDrivingTransportApplication = new NonProdGradeTransportAppFactory().createSharedStack("testDrivingApp", testDrivingApp);
         testDrivingTransportApplication.onStart();
-        appUnderTest = new NonProdGradeTransportAppFactory().create(
+        appUnderTest = new NonProdGradeTransportAppFactory().createSharedStack(
                 "appUnderTest",
                 transport -> new DelineationApplication(new DelineationApplication(
                         new MessageEchoApplication(

@@ -30,15 +30,16 @@ class SmallMessagesTwoWayThroughputTest
     @Test
     void shouldExchangeLongs()
     {
-        ApplicationOnDuty pingApp = transportApplicationFactory.create("ping", new LongPingPongAppFactory(new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, ""),
-                                                                                                          MESSAGES_CAP, port, stateListener, number -> numbersExchangedCount++
+        ApplicationOnDuty pingApp = transportApplicationFactory.createSharedStack("ping", new LongPingPongAppFactory(new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, ""),
+                                                                                                                     MESSAGES_CAP, port, stateListener, number -> numbersExchangedCount++
         ));
-        ApplicationOnDuty pongApp = transportApplicationFactory.create(
+        ApplicationOnDuty pongApp = transportApplicationFactory.createSharedStack(
                 "pong",
-                new LongPongAppFactory(new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, ""),
-                                       port,
-                                       stateListener,
-                                       number -> numbersExchangedCount++
+                new LongPongAppFactory(
+                        new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, ""),
+                        port,
+                        stateListener,
+                        number -> numbersExchangedCount++
                 )
         );
         Apps apps = new Apps(pingApp, pongApp);

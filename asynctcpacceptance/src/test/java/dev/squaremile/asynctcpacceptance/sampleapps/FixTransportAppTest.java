@@ -26,7 +26,7 @@ public class FixTransportAppTest
     @Test
     void shouldExchangeMessages()
     {
-        ApplicationOnDuty application = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create("heartBeating", transport ->
+        ApplicationOnDuty application = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).createSharedStack("heartBeating", transport ->
                 new SingleLocalConnectionDemoApplication(
                         transport,
                         fixMessage(),

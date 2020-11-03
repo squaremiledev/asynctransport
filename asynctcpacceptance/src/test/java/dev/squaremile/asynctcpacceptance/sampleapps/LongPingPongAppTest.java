@@ -51,7 +51,7 @@ class LongPingPongAppTest
     @ParameterizedTest
     void shouldExchangeLongs(final Delineation delineation)
     {
-        ApplicationOnDuty pingApp = transportApplicationFactory.create(
+        ApplicationOnDuty pingApp = transportApplicationFactory.createSharedStack(
                 "ping",
                 new LongPingPongAppFactory(
                         delineation,
@@ -61,7 +61,7 @@ class LongPingPongAppTest
                         number -> numbersExchangedCount++
                 )
         );
-        ApplicationOnDuty pongApp = transportApplicationFactory.create(
+        ApplicationOnDuty pongApp = transportApplicationFactory.createSharedStack(
                 "pong",
                 new LongPongAppFactory(
                         delineation,

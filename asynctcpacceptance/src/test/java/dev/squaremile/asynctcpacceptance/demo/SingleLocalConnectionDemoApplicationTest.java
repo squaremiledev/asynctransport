@@ -21,7 +21,7 @@ class SingleLocalConnectionDemoApplicationTest
     @Test
     void printTheLifecycle()
     {
-        ApplicationOnDuty app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
+        ApplicationOnDuty app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).createSharedStack(
                 "singleLocalConnectionApplication",
                 transport -> new SingleLocalConnectionDemoApplication(
                         transport,

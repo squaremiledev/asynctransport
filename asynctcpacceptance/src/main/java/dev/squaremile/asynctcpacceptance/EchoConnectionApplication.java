@@ -74,7 +74,7 @@ public class EchoConnectionApplication implements ConnectionApplication
         else
         {
             System.out.println("Creating an app without ring buffers");
-            return transportApplicationFactory.create("echo", applicationFactory);
+            return transportApplicationFactory.createSharedStack("echo", applicationFactory);
         }
     }
 

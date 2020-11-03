@@ -7,7 +7,6 @@ import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
@@ -16,7 +15,7 @@ public class AppFromReadme
 {
     public static void main(String[] args)
     {
-        ApplicationOnDuty app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
+        ApplicationOnDuty app = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).createSharedStack(
                 "MyApp",
                 transport -> new EventDrivenApplication()
                 {

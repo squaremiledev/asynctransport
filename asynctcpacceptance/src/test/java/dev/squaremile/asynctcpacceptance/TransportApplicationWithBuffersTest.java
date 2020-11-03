@@ -25,7 +25,7 @@ import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 import static java.lang.System.arraycopy;
 
-class TcpOverRingBufferTest
+class TransportApplicationWithBuffersTest
 {
 
     private final int port = freePort();
@@ -39,14 +39,13 @@ class TcpOverRingBufferTest
         ApplicationOnDuty application = transportApplicationFactory.create(
                 "test",
                 1024 * 1024,
-                (transport) ->
-                        new MessageEchoApplication(
-                                transport,
-                                port,
-                                events,
-                                fixedLengthDelineation(1),
-                                100
-                        )
+                transport -> new MessageEchoApplication(
+                        transport,
+                        port,
+                        events,
+                        fixedLengthDelineation(1),
+                        100
+                )
         );
         final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(application);
 

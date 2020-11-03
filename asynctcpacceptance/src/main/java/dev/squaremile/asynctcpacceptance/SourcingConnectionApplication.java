@@ -164,7 +164,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
         else
         {
             System.out.println("Creating an app without ring buffers");
-            return transportApplicationFactory.create(
+            return transportApplicationFactory.createSharedStack(
                     "source",
                     applicationFactory
             );

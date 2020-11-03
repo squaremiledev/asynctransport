@@ -29,7 +29,7 @@ class SmallMessagesOneWayThroughputTest
     @Test
     void shouldSendLongs()
     {
-        ApplicationOnDuty pingApp = transportApplicationFactory.create(
+        ApplicationOnDuty pingApp = transportApplicationFactory.createSharedStack(
                 "ping",
                 new LongPingAppFactory(
                         new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, ""),
@@ -38,7 +38,7 @@ class SmallMessagesOneWayThroughputTest
                         stateListener
                 )
         );
-        ApplicationOnDuty pongApp = transportApplicationFactory.create(
+        ApplicationOnDuty pongApp = transportApplicationFactory.createSharedStack(
                 "pong",
                 new LongPongAppFactory(
                         new Delineation(Delineation.Type.FIXED_LENGTH, 0, 8, ""),

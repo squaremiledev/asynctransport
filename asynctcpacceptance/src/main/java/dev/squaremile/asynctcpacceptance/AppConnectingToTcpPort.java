@@ -1,9 +1,9 @@
 package dev.squaremile.asynctcpacceptance;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 
@@ -28,7 +28,7 @@ public class AppConnectingToTcpPort implements EventDrivenApplication
         if (args.length == 1)
         {
             ApplicationOnDuty transportApplication = new AsyncTcp().transportAppFactory(NON_PROD_GRADE)
-                    .create("", transport -> new AppConnectingToTcpPort(transport, parseInt(args[0])));
+                    .createSharedStack("", transport -> new AppConnectingToTcpPort(transport, parseInt(args[0])));
 
             new NaiveRoundRobinSingleThreadRunner().run(singletonList(transportApplication));
         }
