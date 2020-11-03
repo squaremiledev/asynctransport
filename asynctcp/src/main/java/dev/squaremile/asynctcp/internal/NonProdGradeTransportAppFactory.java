@@ -1,7 +1,12 @@
 package dev.squaremile.asynctcp.internal;
 
 import org.agrona.ExpandableArrayBuffer;
+import org.agrona.concurrent.UnsafeBuffer;
+import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.agrona.concurrent.ringbuffer.RingBuffer;
+
+
+import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 
 
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
@@ -25,8 +30,10 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
     private final NonProdGradeTransportFactory transportFactory = new NonProdGradeTransportFactory();
 
     @Override
-    public EventDrivenApplication create(final String role, final RingBuffer networkToUser, final RingBuffer userToNetwork, final ApplicationFactory applicationFactory)
+    public EventDrivenApplication create(final String role, final int buffersSize, final ApplicationFactory applicationFactory)
     {
+        final RingBuffer networkToUser = new OneToOneRingBuffer(new UnsafeBuffer(new byte[buffersSize + TRAILER_LENGTH]));
+        final RingBuffer userToNetwork = new OneToOneRingBuffer(new UnsafeBuffer(new byte[buffersSize + TRAILER_LENGTH]));
         return new ApplicationWithThingsOnDuty(
                 createWithoutTransport(
                         role,

@@ -2,10 +2,6 @@ package dev.squaremile.asynctcpacceptance;
 
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
-import org.agrona.concurrent.UnsafeBuffer;
-import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
-
-import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
@@ -73,20 +69,12 @@ public class EchoConnectionApplication implements ConnectionApplication
         if (useBuffers)
         {
             System.out.println("Creating an app that uses ring buffers");
-            return transportApplicationFactory.create(
-                    "echo",
-                    new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
-                    new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
-                    applicationFactory
-            );
+            return transportApplicationFactory.create("echo", 1024 * 1024, applicationFactory);
         }
         else
         {
             System.out.println("Creating an app without ring buffers");
-            return transportApplicationFactory.create(
-                    "echo",
-                    applicationFactory
-            );
+            return transportApplicationFactory.create("echo", applicationFactory);
         }
     }
 

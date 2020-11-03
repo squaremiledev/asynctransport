@@ -4,10 +4,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.MutableBoolean;
-import org.agrona.concurrent.UnsafeBuffer;
-import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
-
-import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
@@ -161,8 +157,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
             System.out.println("Creating an app that uses ring buffers");
             return transportApplicationFactory.create(
                     "source",
-                    new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
-                    new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH])),
+                    1024 * 1024,
                     applicationFactory
             );
         }

@@ -9,22 +9,25 @@ import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 public interface TransportApplicationFactory
 {
     /**
-     * Creates a wired TCP Application that is ready to use.
+     * Creates a wired TCP Application that is ready to use and uses buffers to exchange messages between
+     * the transport and tha application.
+     *
      * <p>
      * Use this factory if you want transport commands and events to be serialized and exchanged via buffers,
      * and nod directly by a method invocations. If the overhead is acceptable, this can be used a default
      * method of communication for audit purposes.
      *
      * @param role               A simple label, no other special meaning at the moment
-     * @param networkToUser      a buffer containing events sent from the transport (network) to the application
-     * @param userToNetwork      a buffer containing commands sent from the application to the transport (network)
+     * @param buffersSize        Size of the underlying transport - app buffers in bytes (e.g. 1024 * 1024 )
      * @param applicationFactory a user provided application
      * @return a wired application ready to be started and used
      */
-    ApplicationOnDuty create(String role, RingBuffer networkToUser, RingBuffer userToNetwork, ApplicationFactory applicationFactory);
+    ApplicationOnDuty create(String role, final int buffersSize, ApplicationFactory applicationFactory);
 
     /**
-     * Creates a wired TCP Application that is ready to use.
+     * Creates a wired TCP Application that is ready to use and uses an on-stack invocation to as a mean
+     * to connect the transport and the application.
+     *
      * <p>
      * Use this factory if you want the least overhead at the cost of no audit trail what commands and events are exchanged
      * between your application and the transport. The interaction with the transport from within you app can be the same

@@ -2,11 +2,8 @@ package dev.squaremile.asynctcpacceptance;
 
 import java.io.IOException;
 
-import org.agrona.concurrent.UnsafeBuffer;
-import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.junit.jupiter.api.Test;
 
-import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -33,8 +30,6 @@ class TcpOverRingBufferTest
 
     private final int port = freePort();
     private final SampleClient sampleClient = new SampleClient();
-    private final OneToOneRingBuffer networkToUser = new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH]));
-    private final OneToOneRingBuffer userToNetwork = new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 * 1024 + TRAILER_LENGTH]));
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
     private final EventsSpy events = EventsSpy.spy();
 
@@ -43,8 +38,7 @@ class TcpOverRingBufferTest
     {
         ApplicationOnDuty application = transportApplicationFactory.create(
                 "test",
-                networkToUser,
-                userToNetwork,
+                1024 * 1024,
                 (transport) ->
                         new MessageEchoApplication(
                                 transport,
