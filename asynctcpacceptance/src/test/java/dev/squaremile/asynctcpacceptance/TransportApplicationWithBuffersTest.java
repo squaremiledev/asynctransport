@@ -36,9 +36,11 @@ class TransportApplicationWithBuffersTest
     @Test
     void shouldAcceptConnectionAndSendDataUsingTcpOverRingBuffer() throws IOException
     {
+        final PrintingMessageListener logPrinter = new PrintingMessageListener();
         ApplicationOnDuty application = transportApplicationFactory.create(
                 "test",
                 1024 * 1024,
+                logPrinter,
                 transport -> new MessageEchoApplication(
                         transport,
                         port,
@@ -76,5 +78,6 @@ class TransportApplicationWithBuffersTest
 
         // Then
         assertThat(contentReceived).isEqualTo(contentSent);
+        assertThat(logPrinter.logContent()).hasSizeBetween(2000, 10000);
     }
 }

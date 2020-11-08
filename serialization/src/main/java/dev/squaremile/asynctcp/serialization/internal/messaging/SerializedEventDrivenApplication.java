@@ -3,6 +3,7 @@ package dev.squaremile.asynctcp.serialization.internal.messaging;
 import org.agrona.concurrent.MessageHandler;
 
 
+import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
 import dev.squaremile.asynctcp.serialization.internal.TransportEventsDeserialization;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
@@ -14,17 +15,26 @@ public class SerializedEventDrivenApplication implements EventDrivenApplication
     private final SerializedEventSupplier eventSupplier;
     private final MessageHandler messageHandler;
 
-    public SerializedEventDrivenApplication(final EventListener eventListener, final EventDrivenApplication application, final SerializedEventSupplier eventSupplier)
+    public SerializedEventDrivenApplication(
+            final EventListener eventListener,
+            final EventDrivenApplication application,
+            final SerializedEventSupplier eventSupplier,
+            final SerializedEventListener serializedEventListener
+    )
     {
         this.application = application;
         this.eventSupplier = eventSupplier;
-        final TransportEventsDeserialization serializedMessageListener = new TransportEventsDeserialization(
+        final SerializedEventListener serializedEventsListener = new TransportEventsDeserialization(
                 event ->
                 {
                     eventListener.onEvent(event);
                     application.onEvent(event);
                 });
-        this.messageHandler = (msgTypeId, buffer, index, length) -> serializedMessageListener.onSerialized(buffer, index, length);
+        this.messageHandler = (msgTypeId, buffer, index, length) ->
+        {
+            serializedEventListener.onSerialized(buffer, index, length);
+            serializedEventsListener.onSerialized(buffer, index, length);
+        };
     }
 
     @Override

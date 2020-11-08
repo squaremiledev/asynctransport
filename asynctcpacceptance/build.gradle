@@ -29,6 +29,7 @@ dependencies {
 
     testImplementation testFixtures(project(':transport'))
     testImplementation testFixtures(project(':asynctcp'))
+    testImplementation project(':sbe')
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     testImplementation 'org.assertj:assertj-core:3.16.1'
 }

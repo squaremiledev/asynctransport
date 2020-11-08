@@ -3,6 +3,7 @@ package dev.squaremile.asynctcp.api;
 
 import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
 import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
+import dev.squaremile.asynctcp.serialization.internal.SerializedMessageListener;
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedCommandSupplier;
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
@@ -20,12 +21,18 @@ public interface TransportApplicationFactory
      * and nod directly by a method invocations. If the overhead is acceptable, this can be used a default
      * method of communication for audit purposes.
      *
-     * @param role               A simple label, no other special meaning at the moment
-     * @param buffersSize        Size of the underlying transport - app buffers in bytes (e.g. 1024 * 1024 )
-     * @param applicationFactory a user provided application
+     * @param role                      A simple label, no other special meaning at the moment
+     * @param buffersSize               Size of the underlying transport - app buffers in bytes (e.g. 1024 * 1024 )
+     * @param serializedMessageListener Is notified about all commands and events sent from and to the application
+     * @param applicationFactory        a user provided application
      * @return a wired application ready to be started and used
      */
-    ApplicationOnDuty create(String role, int buffersSize, ApplicationFactory applicationFactory);
+    ApplicationOnDuty create(
+            String role,
+            int buffersSize,
+            final SerializedMessageListener serializedMessageListener,
+            ApplicationFactory applicationFactory
+    );
 
     /**
      * Creates a wired TCP Application that is ready to use and uses an on-stack invocation to as a mean
@@ -57,17 +64,19 @@ public interface TransportApplicationFactory
      * method to have an application that is independent from the transport, or to run
      * the application and the transport in separate threads or processes.
      *
-     * @param role               A simple label, no other special meaning at the moment
-     * @param applicationFactory A user provided application
-     * @param eventSupplier      A source of serialized events
-     * @param commandListener    A listener for serialized commands
+     * @param role                    A simple label, no other special meaning at the moment
+     * @param applicationFactory      A user provided application
+     * @param eventSupplier           A source of serialized events
+     * @param commandListener         A listener for serialized commands that should be sent to the transport
+     * @param serializedEventListener An additional listener for serialized events that come from the transport
      * @return a wired application ready to be started and used
      */
     ApplicationOnDuty createWithoutTransport(
             String role,
             ApplicationFactory applicationFactory,
             SerializedEventSupplier eventSupplier,
-            SerializedCommandListener commandListener
+            SerializedCommandListener commandListener,
+            SerializedEventListener serializedEventListener
     );
 
     /**

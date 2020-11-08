@@ -22,6 +22,7 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
+import static dev.squaremile.asynctcp.serialization.internal.SerializedMessageListener.NO_OP;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.NO_OPTIONS;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.PLEASE_RESPOND_FLAG;
 import static java.lang.Integer.parseInt;
@@ -158,6 +159,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
             return transportApplicationFactory.create(
                     "source",
                     1024 * 1024,
+                    NO_OP,
                     applicationFactory
             );
         }

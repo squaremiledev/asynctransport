@@ -14,6 +14,7 @@ import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
 import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
 import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
 import dev.squaremile.asynctcp.serialization.internal.NonBLockingMessageDrivenTransport;
+import dev.squaremile.asynctcp.serialization.internal.SerializedMessageListener;
 import dev.squaremile.asynctcp.serialization.internal.SerializingApplication;
 import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
 import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
@@ -36,7 +37,12 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
     private static final int MSG_TYPE_ID = 1;
 
     @Override
-    public EventDrivenApplication create(final String role, final int buffersSize, final ApplicationFactory applicationFactory)
+    public EventDrivenApplication create(
+            final String role,
+            final int buffersSize,
+            final SerializedMessageListener serializedMessageListener,
+            final ApplicationFactory applicationFactory
+    )
     {
         final RingBuffer networkToUser = new OneToOneRingBuffer(new UnsafeBuffer(new byte[buffersSize + TRAILER_LENGTH]));
         final RingBuffer userToNetwork = new OneToOneRingBuffer(new UnsafeBuffer(new byte[buffersSize + TRAILER_LENGTH]));
@@ -45,7 +51,12 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
                         role,
                         applicationFactory,
                         networkToUser::read,
-                        (sourceBuffer, sourceOffset, length) -> userToNetwork.write(MSG_TYPE_ID, sourceBuffer, sourceOffset, length)
+                        (sourceBuffer, sourceOffset, length) ->
+                        {
+                            userToNetwork.write(MSG_TYPE_ID, sourceBuffer, sourceOffset, length);
+                            serializedMessageListener.onSerialized(sourceBuffer, sourceOffset, length);
+                        },
+                        serializedMessageListener::onSerialized
                 ),
                 createTransport(
                         "networkFacing",
@@ -70,11 +81,12 @@ public class NonProdGradeTransportAppFactory implements TransportApplicationFact
             final String role,
             final ApplicationFactory applicationFactory,
             final SerializedEventSupplier eventSupplier,
-            final SerializedCommandListener commandListener
+            final SerializedCommandListener serializedCommandListener,
+            final SerializedEventListener serializedEventListener
     )
     {
-        final SerializingTransport serializingTransport = new SerializingTransport(new ExpandableArrayBuffer(), 0, commandListener);
-        return new SerializedEventDrivenApplication(serializingTransport, applicationFactory.create(serializingTransport), eventSupplier);
+        final SerializingTransport serializingTransport = new SerializingTransport(new ExpandableArrayBuffer(), 0, serializedCommandListener);
+        return new SerializedEventDrivenApplication(serializingTransport, applicationFactory.create(serializingTransport), eventSupplier, serializedEventListener);
     }
 
     @Override
