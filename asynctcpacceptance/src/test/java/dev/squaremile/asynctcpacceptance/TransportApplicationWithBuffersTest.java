@@ -78,6 +78,9 @@ class TransportApplicationWithBuffersTest
 
         // Then
         assertThat(contentReceived).isEqualTo(contentSent);
-        assertThat(logPrinter.logContent()).hasSizeBetween(2000, 10000);
+        String logContent = logPrinter.logContent();
+        assertThat(logContent).hasSizeBetween(2000, 10000);
+        // to check that it can be read again
+        assertThat(logPrinter.logContent()).isEqualTo(logContent);
     }
 }
