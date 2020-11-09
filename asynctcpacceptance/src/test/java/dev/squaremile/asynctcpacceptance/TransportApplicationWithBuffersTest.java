@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
@@ -36,18 +37,19 @@ class TransportApplicationWithBuffersTest
     @Test
     void shouldAcceptConnectionAndSendDataUsingTcpOverRingBuffer() throws IOException
     {
-        final PrintingMessageListener logPrinter = new PrintingMessageListener();
+        final MessageLog messageLog = new MessageLog();
+        ApplicationFactory applicationFactory = transport -> new MessageEchoApplication(
+                transport,
+                port,
+                events,
+                fixedLengthDelineation(1),
+                100
+        );
         ApplicationOnDuty application = transportApplicationFactory.create(
                 "test",
                 1024 * 1024,
-                logPrinter,
-                transport -> new MessageEchoApplication(
-                        transport,
-                        port,
-                        events,
-                        fixedLengthDelineation(1),
-                        100
-                )
+                messageLog,
+                applicationFactory
         );
         final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(application);
 
@@ -78,9 +80,34 @@ class TransportApplicationWithBuffersTest
 
         // Then
         assertThat(contentReceived).isEqualTo(contentSent);
-        String logContent = logPrinter.logContent();
+        verifyMessageLog(messageLog);
+        verifyDeterminism(applicationFactory, messageLog);
+    }
+
+    private void verifyMessageLog(final MessageLog messageLog)
+    {
+        String logContent = messageLog.logContent();
         assertThat(logContent).hasSizeBetween(2000, 10000);
         // to check that it can be read again
-        assertThat(logPrinter.logContent()).isEqualTo(logContent);
+        assertThat(messageLog.logContent()).isEqualTo(logContent);
+    }
+
+    private void verifyDeterminism(final ApplicationFactory applicationFactory, final MessageLog previousMessageLog)
+    {
+        final MessageLog newMessageLog = new MessageLog();
+        ApplicationOnDuty newApplication = transportApplicationFactory.createWithoutTransport(
+                "new",
+                applicationFactory,
+                previousMessageLog.singleEventSupplier(),
+                newMessageLog::onSerialized,
+                newMessageLog::onSerialized
+        );
+
+        // When
+        newApplication.onStart();
+        runUntil(new ThingsOnDutyRunner(newApplication).reached(() -> newMessageLog.logContent().length() >= previousMessageLog.logContent().length()));
+
+        // Then
+        assertThat(newMessageLog.logContent()).isEqualTo(previousMessageLog.logContent());
     }
 }

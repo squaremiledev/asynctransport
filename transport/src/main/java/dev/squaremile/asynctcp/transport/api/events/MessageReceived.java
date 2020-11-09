@@ -1,5 +1,7 @@
 package dev.squaremile.asynctcp.transport.api.events;
 
+import java.util.Arrays;
+
 import org.agrona.DirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 
@@ -75,10 +77,12 @@ public class MessageReceived implements ConnectionEvent
     @Override
     public String toString()
     {
+        byte[] content = new byte[length];
+        data.getBytes(offset, content);
         return "MessageReceived{" +
                "port=" + port +
                ", connectionId=" + connectionId +
-               ", data=" + data +
+               ", data=" + Arrays.toString(content) +
                ", length=" + length +
                ", offset=" + offset +
                '}';

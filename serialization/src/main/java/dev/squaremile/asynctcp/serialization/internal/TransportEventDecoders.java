@@ -313,4 +313,9 @@ public class TransportEventDecoders
         }
         return eventDecoders.get(templateId);
     }
+
+    public boolean supports(final MessageHeaderDecoder header)
+    {
+        return eventDecoders.containsKey(header.templateId());
+    }
 }

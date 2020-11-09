@@ -200,4 +200,9 @@ public class TransportCommandDecoders
         }
         return commandDecoders.get(templateId);
     }
+
+    public boolean supports(final MessageHeaderDecoder header)
+    {
+        return commandDecoders.containsKey(header.templateId());
+    }
 }
