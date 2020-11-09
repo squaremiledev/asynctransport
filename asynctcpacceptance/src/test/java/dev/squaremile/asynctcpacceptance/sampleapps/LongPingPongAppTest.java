@@ -2,6 +2,7 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -15,18 +16,23 @@ import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
+import dev.squaremile.asynctcpacceptance.TimingExtension;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
+@ExtendWith(TimingExtension.class)
 class LongPingPongAppTest
 {
     private static final int MESSAGES_CAP = 100;
     private final EventsSpy pingSpy = EventsSpy.spy();
     private final EventsSpy pongSpy = EventsSpy.spy();
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
-    private int port = freePort();
+    private final int port = freePort();
+
     private int numbersExchangedCount = 0;
+    private int pingSum = 0;
+    private int pongSum = 0;
 
     static Stream<Delineation> delineations()
     {
@@ -58,7 +64,11 @@ class LongPingPongAppTest
                         MESSAGES_CAP,
                         port,
                         pingSpy,
-                        number -> numbersExchangedCount++
+                        number ->
+                        {
+                            pingSum += number;
+                            numbersExchangedCount++;
+                        }
                 )
         );
         ApplicationOnDuty pongApp = transportApplicationFactory.createSharedStack(
@@ -67,7 +77,11 @@ class LongPingPongAppTest
                         delineation,
                         port,
                         pongSpy,
-                        number -> numbersExchangedCount++
+                        number ->
+                        {
+                            pongSum += number;
+                            numbersExchangedCount++;
+                        }
                 )
         );
         Apps apps = new Apps(pingApp, pongApp);
@@ -80,5 +94,7 @@ class LongPingPongAppTest
 
         // Then
         assertThat(numbersExchangedCount).isEqualTo(MESSAGES_CAP * 2);
+        assertThat(pingSum).isEqualTo(655037754);
+        assertThat(pongSum).isEqualTo(655037854);
     }
 }

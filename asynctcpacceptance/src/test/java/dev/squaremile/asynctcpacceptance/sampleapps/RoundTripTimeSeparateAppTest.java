@@ -2,12 +2,15 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 import dev.squaremile.asynctcpacceptance.EchoConnectionApplication;
 import dev.squaremile.asynctcpacceptance.SourcingConnectionApplication;
+import dev.squaremile.asynctcpacceptance.TimingExtension;
 
 @Disabled
+@ExtendWith(TimingExtension.class)
 public class RoundTripTimeSeparateAppTest
 {
 

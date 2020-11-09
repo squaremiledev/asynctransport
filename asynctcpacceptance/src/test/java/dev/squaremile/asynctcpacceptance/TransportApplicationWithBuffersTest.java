@@ -3,6 +3,7 @@ package dev.squaremile.asynctcpacceptance;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,6 +27,7 @@ import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 import static java.lang.System.arraycopy;
 
+@ExtendWith(TimingExtension.class)
 class TransportApplicationWithBuffersTest
 {
 

@@ -3,6 +3,7 @@ package dev.squaremile.asynctcpacceptance;
 import java.util.function.BooleanSupplier;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,6 +14,7 @@ import dev.squaremile.asynctcp.transport.testfixtures.TransportUnderTest;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 
+@ExtendWith(TimingExtension.class)
 abstract class TransportTestBase
 {
     final TransportUnderTest serverTransport = new TransportUnderTest();

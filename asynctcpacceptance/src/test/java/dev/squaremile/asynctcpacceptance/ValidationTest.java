@@ -5,6 +5,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.agrona.collections.MutableReference;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -32,6 +33,7 @@ import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelin
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
+@ExtendWith(TimingExtension.class)
 public class ValidationTest
 {
     private final EventsSpy events = EventsSpy.spy();

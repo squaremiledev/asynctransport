@@ -2,12 +2,14 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 
 import org.agrona.collections.MutableLong;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcpacceptance.TimingExtension;
 import dev.squaremile.asynctcpacceptance.demo.ApplicationLifecycle;
 import dev.squaremile.asynctcpacceptance.demo.SingleLocalConnectionDemoApplication;
 import dev.squaremile.asynctcpacceptance.sampleapps.fix.RejectLogOn;
@@ -17,6 +19,7 @@ import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
+@ExtendWith(TimingExtension.class)
 public class FixTransportAppTest
 {
     private static final int TOTAL_MESSAGES_TO_RECEIVE = 1_000_000;

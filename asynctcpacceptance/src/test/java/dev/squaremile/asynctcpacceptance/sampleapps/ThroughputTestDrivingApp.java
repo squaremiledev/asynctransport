@@ -21,7 +21,7 @@ class ThroughputTestDrivingApp implements ApplicationFactory
     private final int port;
     private Transport transport;
     private App app;
-    private Delineation delineation;
+    private final Delineation delineation;
 
     public ThroughputTestDrivingApp(final int port, final Delineation delineation)
     {
