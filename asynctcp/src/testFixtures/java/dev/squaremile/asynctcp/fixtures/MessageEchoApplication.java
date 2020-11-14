@@ -3,8 +3,8 @@ package dev.squaremile.asynctcp.fixtures;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
@@ -13,11 +13,11 @@ import static java.util.Objects.requireNonNull;
 
 public class MessageEchoApplication implements ConnectionApplication
 {
-    private final Transport transport;
+    private final ConnectionTransport transport;
     private final ConnectionId connectionId;
     private final EventListener eventListener;
 
-    public MessageEchoApplication(final Transport transport, final ConnectionId connectionId, final EventListener eventListener)
+    public MessageEchoApplication(final ConnectionTransport transport, final ConnectionId connectionId, final EventListener eventListener)
     {
         this.transport = requireNonNull(transport);
         this.connectionId = connectionId;
@@ -59,7 +59,7 @@ public class MessageEchoApplication implements ConnectionApplication
 
     private SendMessage sendMessageCommandWithDataFrom(final MessageReceived messageReceivedEvent)
     {
-        SendMessage sendMessage = transport.command(messageReceivedEvent.connectionId(), SendMessage.class);
+        SendMessage sendMessage = transport.command(SendMessage.class);
         messageReceivedEvent.buffer().getBytes(messageReceivedEvent.offset(), sendMessage.prepare(messageReceivedEvent.length()), sendMessage.offset(), messageReceivedEvent.length());
         sendMessage.commit();
         return sendMessage;

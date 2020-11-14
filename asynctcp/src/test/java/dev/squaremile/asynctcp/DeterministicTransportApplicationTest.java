@@ -1,15 +1,19 @@
 package dev.squaremile.asynctcp;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
+import dev.squaremile.asynctcp.api.wiring.ApplicationResolver;
+import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.fixtures.MessageEchoApplication;
 import dev.squaremile.asynctcp.fixtures.MessageLog;
@@ -24,7 +28,6 @@ import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.api.wiring.ConnectionApplicationProvider.connectionApplication;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
@@ -41,17 +44,27 @@ class DeterministicTransportApplicationTest
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
     private final EventsSpy events = EventsSpy.spy();
 
-    @Test
-    void shouldAcceptConnectionAndSendDataUsingTcpOverRingBuffer() throws IOException
+    static Stream<ConnectionApplicationFactory> connectionFactories()
+    {
+        return Stream.of(
+                (connectionTransport, connectionId) -> new MessageEchoApplication(connectionTransport, connectionId, EventListener.IGNORE_EVENTS),
+                (connectionTransport, connectionId) -> new ApplicationResolver(connectionId, () -> new MessageEchoApplication(connectionTransport, connectionId, EventListener.IGNORE_EVENTS))
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("connectionFactories")
+    void shouldSupportDeterministicApplication(final ConnectionApplicationFactory connectionApplicationFactory) throws IOException
     {
         final MessageLog messageLog = new MessageLog();
-        final ApplicationFactory applicationFactory = transport -> new ListeningApplication(
-                transport,
-                fixedLengthDelineation(1),
-                port,
-                events,
-                connectionApplication(connectionId -> new MessageEchoApplication(transport, connectionId, EventListener.IGNORE_EVENTS))
-        );
+        final ApplicationFactory applicationFactory = transport ->
+                new ListeningApplication(
+                        transport,
+                        fixedLengthDelineation(1),
+                        port,
+                        events,
+                        connectionApplicationFactory
+                );
         ApplicationOnDuty application = transportApplicationFactory.create(
                 "echo",
                 1024 * 1024,

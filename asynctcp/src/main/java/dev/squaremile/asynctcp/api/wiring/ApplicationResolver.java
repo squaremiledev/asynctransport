@@ -8,13 +8,13 @@ public class ApplicationResolver implements ConnectionApplication
 {
     private static final NoOpConnectionApplication NO_APPLICATION = new NoOpConnectionApplication();
     private final ConnectionId connectionId;
-    private final ConnectionApplicationProvider connectionApplicationProvider;
+    private final LazyConnectionApplicationFactory lazyConnectionApplicationFactory;
     private ConnectionApplication delegate = NO_APPLICATION;
 
-    public ApplicationResolver(final ConnectionId connectionId, final ConnectionApplicationProvider connectionApplicationProvider)
+    public ApplicationResolver(final ConnectionId connectionId, final LazyConnectionApplicationFactory lazyConnectionApplicationFactory)
     {
         this.connectionId = connectionId;
-        this.connectionApplicationProvider = connectionApplicationProvider;
+        this.lazyConnectionApplicationFactory = lazyConnectionApplicationFactory;
     }
 
     @Override
@@ -26,7 +26,7 @@ public class ApplicationResolver implements ConnectionApplication
     @Override
     public void onStart()
     {
-        ConnectionApplication connectionApplication = connectionApplicationProvider.onStart(connectionId);
+        ConnectionApplication connectionApplication = lazyConnectionApplicationFactory.onStart();
         if (connectionApplication != null)
         {
             this.delegate = connectionApplication;
@@ -48,20 +48,7 @@ public class ApplicationResolver implements ConnectionApplication
     @Override
     public void onEvent(final ConnectionEvent event)
     {
-        resolveDelegate(event);
         delegate.onEvent(event);
-    }
-
-    private void resolveDelegate(final ConnectionEvent event)
-    {
-        if (delegate == NO_APPLICATION)
-        {
-            ConnectionApplication connectionApplication = connectionApplicationProvider.onEvent(event);
-            if (connectionApplication != null)
-            {
-                this.delegate = connectionApplication;
-            }
-        }
     }
 
     private static class NoOpConnectionApplication implements ConnectionApplication
