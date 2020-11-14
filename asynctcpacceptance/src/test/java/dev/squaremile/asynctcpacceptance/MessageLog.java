@@ -24,11 +24,6 @@ public class MessageLog implements SerializedMessageListener
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final ExpandableRingBuffer applicationMessagesLog = new ExpandableRingBuffer();
     private final StringBuilder humanReadableLog = new StringBuilder();
-    private final SerializedMessageListener messageListener = (buffer, sourceOffset, length) ->
-    {
-        humanReadableLog.append(decode(buffer, sourceOffset, length));
-        humanReadableLog.append("\n");
-    };
 
     private Object decode(final DirectBuffer sourceBuffer, final int sourceOffset, final int length)
     {
@@ -59,7 +54,8 @@ public class MessageLog implements SerializedMessageListener
         applicationMessagesLog.forEach(
                 (buffer, offset, length, headOffset) ->
                 {
-                    messageListener.onSerialized(buffer, offset, length);
+                    humanReadableLog.append(decode(buffer, offset, length));
+                    humanReadableLog.append("\n");
                     return true;
                 },
                 Integer.MAX_VALUE
