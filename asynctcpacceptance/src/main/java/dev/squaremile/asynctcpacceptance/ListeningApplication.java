@@ -34,6 +34,17 @@ public class ListeningApplication implements EventDrivenApplication
             final Delineation delineation,
             final int port,
             final EventListener eventListener,
+            final ConnectionApplicationProvider connectionApplicationProvider
+    )
+    {
+        this(transport, delineation, port, eventListener, (connectionTransport, connectionId) -> new ApplicationResolver(connectionId, connectionApplicationProvider));
+    }
+
+    public ListeningApplication(
+            final Transport transport,
+            final Delineation delineation,
+            final int port,
+            final EventListener eventListener,
             final ConnectionApplicationFactory connectionApplicationFactory
     )
     {

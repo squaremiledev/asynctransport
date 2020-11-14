@@ -46,7 +46,7 @@ class TransportApplicationWithBuffersTest
                 fixedLengthDelineation(1),
                 port,
                 events,
-                (connectionTransport, connectionId) -> new MessageEchoApplication(transport, connectionId, EventListener.IGNORE_EVENTS)
+                ConnectionApplicationProvider.connectionApplication(connectionId -> new MessageEchoApplication(transport, connectionId, EventListener.IGNORE_EVENTS))
         );
         ApplicationOnDuty application = transportApplicationFactory.create(
                 "echo",
