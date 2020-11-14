@@ -8,6 +8,7 @@ import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 import static java.util.Objects.requireNonNull;
 
@@ -20,7 +21,7 @@ public class MessageEchoApplication implements ConnectionApplication
     public MessageEchoApplication(final ConnectionTransport transport, final ConnectionId connectionId, final EventListener eventListener)
     {
         this.transport = requireNonNull(transport);
-        this.connectionId = connectionId;
+        this.connectionId = new ConnectionIdValue(connectionId);
         this.eventListener = eventListener;
     }
 

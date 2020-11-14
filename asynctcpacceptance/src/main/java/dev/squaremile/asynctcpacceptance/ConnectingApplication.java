@@ -1,7 +1,6 @@
 package dev.squaremile.asynctcpacceptance;
 
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
-import dev.squaremile.asynctcp.api.wiring.SingleConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
@@ -13,6 +12,7 @@ import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
+import dev.squaremile.asynctcpacceptance.demo.SingleConnectionTransport;
 
 public class ConnectingApplication implements EventDrivenApplication
 {

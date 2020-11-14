@@ -16,8 +16,6 @@ import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
-import dev.squaremile.asynctcp.api.wiring.ResolvedConnectionApplication;
-import dev.squaremile.asynctcp.api.wiring.StartedConnectionApplication;
 import dev.squaremile.asynctcp.fixtures.MessageEchoApplication;
 import dev.squaremile.asynctcp.fixtures.MessageLog;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
@@ -49,26 +47,38 @@ class DeterministicTransportApplicationTest
 
     static Stream<Arguments> connectionFactories()
     {
-        final ConnectionApplicationFactory eagerFactory = (connectionTransport, connectionId) -> new MessageEchoApplication(connectionTransport, connectionId, EventListener.IGNORE_EVENTS);
-        final ConnectionApplicationFactory lazyFactory = (connectionTransport, connectionId) -> new StartedConnectionApplication(
-                connectionId,
-                () -> new MessageEchoApplication(connectionTransport, connectionId, EventListener.IGNORE_EVENTS)
+        final ConnectionApplicationFactory onCreateFactory = ConnectionApplicationFactory.onCreate(
+                (connectionTransport, connectionId) -> new MessageEchoApplication(
+                        connectionTransport,
+                        connectionId,
+                        EventListener.IGNORE_EVENTS
+                )
         );
-        final ConnectionApplicationFactory resolvedFactory = (connectionTransport, connectionId) -> new ResolvedConnectionApplication(
-                connectionId,
-                () -> new MessageEchoApplication(connectionTransport, connectionId, EventListener.IGNORE_EVENTS)
+        final ConnectionApplicationFactory onStart = ConnectionApplicationFactory.onStart(
+                (connectionTransport, connectionId) -> new MessageEchoApplication(
+                        connectionTransport,
+                        connectionId,
+                        EventListener.IGNORE_EVENTS
+                )
+        );
+        final ConnectionApplicationFactory onEventFactory = ConnectionApplicationFactory.onEvent(
+                (connectionTransport, event) -> new MessageEchoApplication(
+                        connectionTransport,
+                        event,
+                        EventListener.IGNORE_EVENTS
+                )
         );
 
         return Stream.of(
-                arguments(eagerFactory, eagerFactory),
-                arguments(eagerFactory, lazyFactory),
-                arguments(eagerFactory, resolvedFactory),
-                arguments(lazyFactory, eagerFactory),
-                arguments(lazyFactory, lazyFactory),
-                arguments(lazyFactory, resolvedFactory),
-                arguments(resolvedFactory, eagerFactory),
-                arguments(resolvedFactory, lazyFactory),
-                arguments(resolvedFactory, resolvedFactory)
+                arguments(onCreateFactory, onCreateFactory),
+                arguments(onCreateFactory, onStart),
+                arguments(onCreateFactory, onEventFactory),
+                arguments(onStart, onCreateFactory),
+                arguments(onStart, onStart),
+                arguments(onStart, onEventFactory),
+                arguments(onEventFactory, onCreateFactory),
+                arguments(onEventFactory, onStart),
+                arguments(onEventFactory, onEventFactory)
         );
     }
 

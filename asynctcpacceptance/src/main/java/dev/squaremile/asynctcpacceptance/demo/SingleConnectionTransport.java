@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.api.wiring;
+package dev.squaremile.asynctcpacceptance.demo;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
@@ -7,7 +7,7 @@ import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
-class SingleConnectionTransport implements ConnectionTransport
+public class SingleConnectionTransport implements ConnectionTransport
 {
     private final Transport transport;
     private final ConnectionId connectionId;

@@ -2,20 +2,27 @@ package dev.squaremile.asynctcp.api.wiring;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
-public class ResolvedConnectionApplication implements ConnectionApplication
+class OnEventConnectionApplication implements ConnectionApplication
 {
     private static final NoOpConnectionApplication NO_APPLICATION = new NoOpConnectionApplication();
+    private final ConnectionTransport connectionTransport;
     private final ConnectionId connectionId;
-    private final LazyConnectionApplicationFactory lazyConnectionApplicationFactory;
+    private final OnEventConnectionApplicationFactory onEventConnectionApplicationFactory;
     private ConnectionApplication delegate = NO_APPLICATION;
     private boolean isResolved = false;
 
-    public ResolvedConnectionApplication(final ConnectionId connectionId, final LazyConnectionApplicationFactory lazyConnectionApplicationFactory)
+    public OnEventConnectionApplication(
+            final ConnectionTransport connectionTransport,
+            final ConnectionId connectionId,
+            final OnEventConnectionApplicationFactory onEventConnectionApplicationFactory
+    )
     {
+        this.connectionTransport = connectionTransport;
         this.connectionId = connectionId;
-        this.lazyConnectionApplicationFactory = lazyConnectionApplicationFactory;
+        this.onEventConnectionApplicationFactory = onEventConnectionApplicationFactory;
     }
 
     @Override
@@ -46,7 +53,7 @@ public class ResolvedConnectionApplication implements ConnectionApplication
     {
         if (!isResolved)
         {
-            ConnectionApplication connectionApplication = lazyConnectionApplicationFactory.onStart();
+            ConnectionApplication connectionApplication = onEventConnectionApplicationFactory.createOnEvent(connectionTransport, event);
             if (connectionApplication != null)
             {
                 delegate = connectionApplication;
@@ -56,5 +63,4 @@ public class ResolvedConnectionApplication implements ConnectionApplication
         }
         delegate.onEvent(event);
     }
-
 }

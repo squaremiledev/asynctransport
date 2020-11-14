@@ -2,20 +2,27 @@ package dev.squaremile.asynctcp.api.wiring;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
-public class StartedConnectionApplication implements ConnectionApplication
+class OnStartConnectionApplication implements ConnectionApplication
 {
     private static final NoOpConnectionApplication NO_APPLICATION = new NoOpConnectionApplication();
+    private final ConnectionTransport connectionTransport;
     private final ConnectionId connectionId;
-    private final LazyConnectionApplicationFactory lazyConnectionApplicationFactory;
+    private final OnStartConnectionApplicationFactory onStartConnectionApplicationFactory;
     private ConnectionApplication delegate = NO_APPLICATION;
     private boolean isResolved = false;
 
-    public StartedConnectionApplication(final ConnectionId connectionId, final LazyConnectionApplicationFactory lazyConnectionApplicationFactory)
+    public OnStartConnectionApplication(
+            final ConnectionTransport connectionTransport,
+            final ConnectionId connectionId,
+            final OnStartConnectionApplicationFactory onStartConnectionApplicationFactory
+    )
     {
+        this.connectionTransport = connectionTransport;
         this.connectionId = connectionId;
-        this.lazyConnectionApplicationFactory = lazyConnectionApplicationFactory;
+        this.onStartConnectionApplicationFactory = onStartConnectionApplicationFactory;
     }
 
     @Override
@@ -29,7 +36,7 @@ public class StartedConnectionApplication implements ConnectionApplication
     {
         if (!isResolved)
         {
-            delegate = lazyConnectionApplicationFactory.onStart();
+            delegate = onStartConnectionApplicationFactory.createOnStart(connectionTransport, connectionId);
             isResolved = true;
             delegate.onStart();
         }

@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 
 
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
-import dev.squaremile.asynctcp.api.wiring.SingleConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.Event;
