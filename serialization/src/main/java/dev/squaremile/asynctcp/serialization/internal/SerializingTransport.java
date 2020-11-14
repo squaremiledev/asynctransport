@@ -28,7 +28,6 @@ import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.internal.domain.CommandFactory;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionCommands;
@@ -68,12 +67,6 @@ public class SerializingTransport implements Transport, EventListener
     }
 
     @Override
-    public void close()
-    {
-
-    }
-
-    @Override
     public <C extends TransportUserCommand> C command(final Class<C> commandType)
     {
         if (commandType.equals(Listen.class))
@@ -99,6 +92,12 @@ public class SerializingTransport implements Transport, EventListener
             throw new IllegalArgumentException("Connection id " + connectionId + " does not exist");
         }
         return connectionCommandsByConnectionId.get(connectionId).command(commandType);
+    }
+
+    @Override
+    public void close()
+    {
+
     }
 
     @Override

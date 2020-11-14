@@ -13,6 +13,7 @@ import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
@@ -40,15 +41,15 @@ class TransportApplicationWithBuffersTest
     void shouldAcceptConnectionAndSendDataUsingTcpOverRingBuffer() throws IOException
     {
         final MessageLog messageLog = new MessageLog();
-        ApplicationFactory applicationFactory = transport -> new MessageEchoApplication(
+        final ApplicationFactory applicationFactory = transport -> new ListeningApplication(
                 transport,
+                fixedLengthDelineation(1),
                 port,
                 events,
-                fixedLengthDelineation(1),
-                100
+                (connectionTransport, connectionId) -> new MessageEchoApplication(transport, connectionId, EventListener.IGNORE_EVENTS)
         );
         ApplicationOnDuty application = transportApplicationFactory.create(
-                "test",
+                "echo",
                 1024 * 1024,
                 messageLog,
                 applicationFactory
@@ -58,14 +59,15 @@ class TransportApplicationWithBuffersTest
         // Given
         application.onStart();
         runUntil(thingsOnDuty.reached(() -> events.contains(StartedListening.class)));
-        assertEqual(events.all(), new StartedListening(port, 100, fixedLengthDelineation(1)));
+        assertEqual(events.all(), new StartedListening(port, 1, fixedLengthDelineation(1)));
 
         // When
         runUntil(thingsOnDuty.reached(completed(() -> sampleClient.connectedTo(port))));
         runUntil(thingsOnDuty.reached(() -> events.all().size() >= 2));
 
         // Then
-        assertThat(events.all(ConnectionAccepted.class).get(0).port()).isEqualTo(port);
+        final ConnectionAccepted connectionAccepted = events.all(ConnectionAccepted.class).get(0);
+        assertThat(connectionAccepted.port()).isEqualTo(port);
 
         // DATA SENDING PART
 
@@ -100,7 +102,7 @@ class TransportApplicationWithBuffersTest
         ApplicationOnDuty newApplication = transportApplicationFactory.createWithoutTransport(
                 "new",
                 applicationFactory,
-                previousMessageLog.singleEventSupplier(),
+                previousMessageLog.capturedEventsSupplier(),
                 newMessageLog::onSerialized,
                 newMessageLog::onSerialized
         );

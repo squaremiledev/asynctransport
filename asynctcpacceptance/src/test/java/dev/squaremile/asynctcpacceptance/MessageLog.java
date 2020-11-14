@@ -65,7 +65,7 @@ public class MessageLog implements SerializedMessageListener
         return content;
     }
 
-    public SerializedEventSupplier singleEventSupplier()
+    public SerializedEventSupplier capturedEventsSupplier()
     {
         final OneToOneRingBuffer eventsToConsume = new OneToOneRingBuffer(new UnsafeBuffer(new byte[Math.min(1024 * 1024, applicationMessagesLog.capacity()) + TRAILER_LENGTH]));
         applicationMessagesLog.forEach(
