@@ -5,16 +5,19 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
-import dev.squaremile.asynctcp.api.wiring.ApplicationResolver;
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
+import dev.squaremile.asynctcp.api.wiring.ResolvedConnectionApplication;
+import dev.squaremile.asynctcp.api.wiring.StartedConnectionApplication;
 import dev.squaremile.asynctcp.fixtures.MessageEchoApplication;
 import dev.squaremile.asynctcp.fixtures.MessageLog;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
@@ -44,32 +47,48 @@ class DeterministicTransportApplicationTest
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
     private final EventsSpy events = EventsSpy.spy();
 
-    static Stream<ConnectionApplicationFactory> connectionFactories()
+    static Stream<Arguments> connectionFactories()
     {
+        final ConnectionApplicationFactory eagerFactory = (connectionTransport, connectionId) -> new MessageEchoApplication(connectionTransport, connectionId, EventListener.IGNORE_EVENTS);
+        final ConnectionApplicationFactory lazyFactory = (connectionTransport, connectionId) -> new StartedConnectionApplication(
+                connectionId,
+                () -> new MessageEchoApplication(connectionTransport, connectionId, EventListener.IGNORE_EVENTS)
+        );
+        final ConnectionApplicationFactory resolvedFactory = (connectionTransport, connectionId) -> new ResolvedConnectionApplication(
+                connectionId,
+                () -> new MessageEchoApplication(connectionTransport, connectionId, EventListener.IGNORE_EVENTS)
+        );
+
         return Stream.of(
-                (connectionTransport, connectionId) -> new MessageEchoApplication(connectionTransport, connectionId, EventListener.IGNORE_EVENTS),
-                (connectionTransport, connectionId) -> new ApplicationResolver(connectionId, () -> new MessageEchoApplication(connectionTransport, connectionId, EventListener.IGNORE_EVENTS))
+                arguments(eagerFactory, eagerFactory),
+                arguments(eagerFactory, lazyFactory),
+                arguments(eagerFactory, resolvedFactory),
+                arguments(lazyFactory, eagerFactory),
+                arguments(lazyFactory, lazyFactory),
+                arguments(lazyFactory, resolvedFactory),
+                arguments(resolvedFactory, eagerFactory),
+                arguments(resolvedFactory, lazyFactory),
+                arguments(resolvedFactory, resolvedFactory)
         );
     }
 
     @ParameterizedTest
     @MethodSource("connectionFactories")
-    void shouldSupportDeterministicApplication(final ConnectionApplicationFactory connectionApplicationFactory) throws IOException
+    void shouldSupportDeterministicApplication(final ConnectionApplicationFactory originalConnectionAppFactory, final ConnectionApplicationFactory replayedConnectionAppFactory) throws IOException
     {
         final MessageLog messageLog = new MessageLog();
-        final ApplicationFactory applicationFactory = transport ->
-                new ListeningApplication(
-                        transport,
-                        fixedLengthDelineation(1),
-                        port,
-                        events,
-                        connectionApplicationFactory
-                );
         ApplicationOnDuty application = transportApplicationFactory.create(
                 "echo",
                 1024 * 1024,
                 messageLog,
-                applicationFactory
+                transport ->
+                        new ListeningApplication(
+                                transport,
+                                fixedLengthDelineation(1),
+                                port,
+                                events,
+                                originalConnectionAppFactory
+                        )
         );
         final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(application);
 
@@ -102,7 +121,17 @@ class DeterministicTransportApplicationTest
         // Then
         assertThat(contentReceived).isEqualTo(contentSent);
         verifyMessageLog(messageLog);
-        verifyDeterminism(applicationFactory, messageLog);
+        verifyDeterminism(
+                messageLog,
+                transport ->
+                        new ListeningApplication(
+                                transport,
+                                fixedLengthDelineation(1),
+                                port,
+                                events,
+                                replayedConnectionAppFactory
+                        )
+        );
     }
 
     private void verifyMessageLog(final MessageLog messageLog)
@@ -113,7 +142,7 @@ class DeterministicTransportApplicationTest
         assertThat(messageLog.logContent()).isEqualTo(logContent);
     }
 
-    private void verifyDeterminism(final ApplicationFactory applicationFactory, final MessageLog previousMessageLog)
+    private void verifyDeterminism(final MessageLog previousMessageLog, final ApplicationFactory applicationFactory)
     {
         final MessageLog newMessageLog = new MessageLog();
         ApplicationOnDuty newApplication = transportApplicationFactory.createWithoutTransport(
