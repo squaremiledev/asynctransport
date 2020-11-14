@@ -14,7 +14,7 @@ However, because of a relatively low latency even at higher message rates, it ca
 
 To start write your own application, see dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort class.
 
-To use TCP in a message-driven fashion, look at `dev.squaremile.asynctcpacceptance.TransportApplicationWithBuffersTest`
+To use TCP in a message-driven fashion, look at `dev.squaremile.asynctcp.DeterministicTransportApplicationTest`
 
 ## Evaluation
 

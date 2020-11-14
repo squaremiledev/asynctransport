@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.asynctcp.fixtures;
 
 import org.agrona.DirectBuffer;
 import org.agrona.ExpandableRingBuffer;

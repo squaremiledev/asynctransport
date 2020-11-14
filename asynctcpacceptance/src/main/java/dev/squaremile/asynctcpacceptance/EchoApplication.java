@@ -1,6 +1,7 @@
 package dev.squaremile.asynctcpacceptance;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
+import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;

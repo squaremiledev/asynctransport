@@ -26,7 +26,10 @@ dependencies {
 
     testFixturesImplementation project(':transport')
     testFixturesImplementation project(':serialization')
+    testFixturesImplementation project(':sbe')
+    testFixturesImplementation testFixtures(project(':transport'))
     testFixturesImplementation 'org.agrona:agrona:1.6.0'
+    testFixturesImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
 
     testImplementation 'org.assertj:assertj-core:3.16.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'

@@ -4,11 +4,10 @@ package dev.squaremile.asynctcpacceptance.demo;
 import java.util.function.Consumer;
 
 
+import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
+import dev.squaremile.asynctcp.api.wiring.SingleConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
@@ -22,7 +21,6 @@ import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
@@ -237,34 +235,6 @@ public class SingleLocalConnectionDemoApplication implements EventDrivenApplicat
         void onUp();
 
         void onDown();
-    }
-
-    public static class SingleConnectionTransport implements ConnectionTransport
-    {
-        private final Transport transport;
-        private final ConnectionId connectionId;
-
-        public SingleConnectionTransport(final Transport transport, final ConnectionId connectionId)
-        {
-            this.transport = transport;
-            this.connectionId = new ConnectionIdValue(connectionId);
-        }
-
-        @Override
-        public <C extends ConnectionUserCommand> C command(final Class<C> commandType)
-        {
-            return transport.command(connectionId.connectionId(), commandType);
-        }
-
-        @Override
-        public void handle(final ConnectionCommand command)
-        {
-            if (command.connectionId() != connectionId.connectionId())
-            {
-                throw new IllegalArgumentException("Connection id mismatch " + command.connectionId() + " vs " + connectionId.connectionId());
-            }
-            transport.handle(command);
-        }
     }
 
 }

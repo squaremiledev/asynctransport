@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.asynctcp.api.wiring;
 
 import java.util.function.Function;
 
@@ -9,10 +9,6 @@ import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 public interface ConnectionApplicationProvider
 {
-    ConnectionApplication onStart(final ConnectionId connectionId);
-
-    ConnectionApplication onEvent(final ConnectionEvent event);
-
     static ConnectionApplicationProvider connectionApplication(final Function<ConnectionId, ConnectionApplication> applicationFactory)
     {
         return new ConnectionApplicationProvider()
@@ -30,4 +26,8 @@ public interface ConnectionApplicationProvider
             }
         };
     }
+
+    ConnectionApplication onStart(final ConnectionId connectionId);
+
+    ConnectionApplication onEvent(final ConnectionEvent event);
 }

@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance.sampleapps;
+package dev.squaremile.asynctcp.fixtures;
 
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;

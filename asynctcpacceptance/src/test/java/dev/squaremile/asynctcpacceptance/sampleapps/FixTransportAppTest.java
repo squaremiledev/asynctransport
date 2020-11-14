@@ -8,8 +8,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
+import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
-import dev.squaremile.asynctcpacceptance.TimingExtension;
 import dev.squaremile.asynctcpacceptance.demo.ApplicationLifecycle;
 import dev.squaremile.asynctcpacceptance.demo.SingleLocalConnectionDemoApplication;
 import dev.squaremile.asynctcpacceptance.sampleapps.fix.RejectLogOn;

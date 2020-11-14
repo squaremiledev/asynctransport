@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
+import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.CommandFailed;

@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance.demo;
+package dev.squaremile.asynctcp.api.wiring;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;

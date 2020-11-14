@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.asynctcp.api.wiring;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +16,6 @@ import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
-import dev.squaremile.asynctcpacceptance.demo.ConnectionApplicationFactory;
-import dev.squaremile.asynctcpacceptance.demo.SingleLocalConnectionDemoApplication;
 
 public class ListeningApplication implements EventDrivenApplication
 {
@@ -92,10 +90,9 @@ public class ListeningApplication implements EventDrivenApplication
         }
         if (event instanceof ConnectionAccepted)
         {
-            System.out.println("Accepted connection " + event);
             ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
             ConnectionApplication newConnectionApplication = connectionApplicationFactory.create(
-                    new SingleLocalConnectionDemoApplication.SingleConnectionTransport(transport, connectionAccepted),
+                    new SingleConnectionTransport(transport, connectionAccepted),
                     connectionAccepted
             );
             connectionApplications.add(newConnectionApplication);
@@ -103,7 +100,6 @@ public class ListeningApplication implements EventDrivenApplication
         }
         else if (event instanceof ConnectionResetByPeer || event instanceof ConnectionClosed)
         {
-            System.out.println("Connection closed " + event);
             ConnectionEvent closingEvent = (ConnectionEvent)event;
             for (final ConnectionApplication connectionApplication : connectionApplications)
             {

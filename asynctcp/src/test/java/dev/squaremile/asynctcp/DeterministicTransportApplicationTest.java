@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.asynctcp;
 
 import java.io.IOException;
 
@@ -10,7 +10,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
+import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
+import dev.squaremile.asynctcp.fixtures.MessageEchoApplication;
+import dev.squaremile.asynctcp.fixtures.MessageLog;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
+import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
@@ -18,9 +22,9 @@ import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
-import dev.squaremile.asynctcpacceptance.sampleapps.MessageEchoApplication;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
+import static dev.squaremile.asynctcp.api.wiring.ConnectionApplicationProvider.connectionApplication;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
@@ -29,7 +33,7 @@ import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 import static java.lang.System.arraycopy;
 
 @ExtendWith(TimingExtension.class)
-class TransportApplicationWithBuffersTest
+class DeterministicTransportApplicationTest
 {
 
     private final int port = freePort();
@@ -46,7 +50,7 @@ class TransportApplicationWithBuffersTest
                 fixedLengthDelineation(1),
                 port,
                 events,
-                ConnectionApplicationProvider.connectionApplication(connectionId -> new MessageEchoApplication(transport, connectionId, EventListener.IGNORE_EVENTS))
+                connectionApplication(connectionId -> new MessageEchoApplication(transport, connectionId, EventListener.IGNORE_EVENTS))
         );
         ApplicationOnDuty application = transportApplicationFactory.create(
                 "echo",

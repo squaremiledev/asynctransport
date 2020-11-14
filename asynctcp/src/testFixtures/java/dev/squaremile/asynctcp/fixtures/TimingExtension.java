@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.asynctcp.fixtures;
 
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
@@ -9,7 +9,8 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 
-public class TimingExtension implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
+public class TimingExtension implements BeforeTestExecutionCallback, AfterTestExecutionCallback
+{
 
     private static final Logger LOGGER = Logger.getLogger(TimingExtension.class.getName());
 
@@ -31,7 +32,8 @@ public class TimingExtension implements BeforeTestExecutionCallback, AfterTestEx
         LOGGER.info(() -> String.format("Method [%s] took %s ms.", testMethod.getName(), duration));
     }
 
-    private Store getStore(ExtensionContext context) {
+    private Store getStore(ExtensionContext context)
+    {
         return context.getStore(Namespace.create(getClass(), context.getRequiredTestMethod()));
     }
 

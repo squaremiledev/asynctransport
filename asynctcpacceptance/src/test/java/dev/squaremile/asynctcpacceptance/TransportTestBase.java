@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
 import dev.squaremile.asynctcp.transport.testfixtures.TearDown;
 import dev.squaremile.asynctcp.transport.testfixtures.TransportUnderTest;
