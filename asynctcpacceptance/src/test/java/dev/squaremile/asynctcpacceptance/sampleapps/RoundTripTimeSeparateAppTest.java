@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 
-import dev.squaremile.asynctcpacceptance.EchoConnectionApplication;
+import dev.squaremile.asynctcpacceptance.EchoApplication;
 import dev.squaremile.asynctcpacceptance.SourcingConnectionApplication;
 import dev.squaremile.asynctcpacceptance.TimingExtension;
 
@@ -15,13 +15,12 @@ public class RoundTripTimeSeparateAppTest
 {
 
     private static final String PORT = Integer.toString(8889);
-    private static final String USE_BUFFERS = Integer.toString(1);
 
     // run as first, when started run, measureRoundTripTime
     @Test
     void runEchoApplication()
     {
-        EchoConnectionApplication.main(new String[]{PORT, USE_BUFFERS});
+        EchoApplication.main(new String[]{PORT});
     }
 
     @Test
@@ -40,7 +39,7 @@ public class RoundTripTimeSeparateAppTest
                 Integer.toString(skippedWarmUpResponses),
                 Integer.toString(messagesSent),
                 Integer.toString(respondToNth),
-                USE_BUFFERS,
+                String.valueOf(1),
                 Integer.toString(extraDataLength),
                 });
     }

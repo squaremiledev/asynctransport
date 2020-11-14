@@ -193,7 +193,7 @@ Test v. cbd74f0a2edb0e27f3d868ccbc99e0b2598bddc7
 
 ```
 # box 1
-java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.EchoConnectionApplication 9998 1
+java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.EchoApplication 9998
 
 # box 2
 java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication 172.31.35.37 9998 256000 80000 5600000 32 1
