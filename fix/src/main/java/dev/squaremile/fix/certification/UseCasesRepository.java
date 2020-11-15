@@ -15,9 +15,12 @@ public class UseCasesRepository implements FakeApplicationRepository
     {
         for (final UseCaseFake useCaseFake : useCaseFakes)
         {
-            this.useCaseForVersionAndUser
-                    .computeIfAbsent(useCaseFake.fixVersion(), (key) -> new HashMap<>(10))
-                    .put(useCaseFake.username(), useCaseFake.applicationFactory());
+            final Map<String, FakeApplicationFactory> fakesForFixVersion = useCaseForVersionAndUser.computeIfAbsent(useCaseFake.fixVersion(), (key) -> new HashMap<>(10));
+            if (fakesForFixVersion.containsKey(useCaseFake.username()))
+            {
+                throw new IllegalArgumentException("Entry " + useCaseFake + " has been already configured");
+            }
+            fakesForFixVersion.put(useCaseFake.username(), useCaseFake.applicationFactory());
         }
     }
 
