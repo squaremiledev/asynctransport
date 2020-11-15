@@ -1,6 +1,5 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.asynctcp.api.wiring;
 
-import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
@@ -12,7 +11,6 @@ import dev.squaremile.asynctcp.transport.api.events.Connected;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
-import dev.squaremile.asynctcpacceptance.demo.SingleConnectionTransport;
 
 public class ConnectingApplication implements EventDrivenApplication
 {
@@ -48,10 +46,11 @@ public class ConnectingApplication implements EventDrivenApplication
     @Override
     public void onStop()
     {
-        if (connectionApplication != null)
+        final ConnectionApplication stoppingConnectionApplication = connectionApplication;
+        if (stoppingConnectionApplication != null)
         {
-            connectionApplication.onStop();
             connectionApplication = null;
+            stoppingConnectionApplication.onStop();
         }
     }
 
