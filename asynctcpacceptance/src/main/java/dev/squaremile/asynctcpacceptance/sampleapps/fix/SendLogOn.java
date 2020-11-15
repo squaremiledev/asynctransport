@@ -2,6 +2,8 @@ package dev.squaremile.asynctcpacceptance.sampleapps.fix;
 
 import java.nio.charset.StandardCharsets;
 
+import org.agrona.AsciiSequenceView;
+
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
@@ -24,6 +26,7 @@ public class SendLogOn implements ConnectionApplication
     private ConnectionId connectionId;
     private long lastSeenWindowSizeInBytes = -1;
     private long messagesSent = 0;
+    private final AsciiSequenceView content = new AsciiSequenceView();
 
 
     public SendLogOn(final ConnectionTransport transport, final Runnable onMessage, final ConnectionId connectionId, final int messageCap)
@@ -73,7 +76,16 @@ public class SendLogOn implements ConnectionApplication
     {
         if (event instanceof MessageReceived)
         {
-            onMessage.run();
+            final MessageReceived message = (MessageReceived)event;
+            content.wrap(message.buffer(), message.offset(), message.length());
+            for (int i = 0; i < content.length() - 4; i++)
+            {
+                if (content.charAt(i) == '3' && content.charAt(i + 1) == '5' && content.charAt(i + 2) == '=' && content.charAt(i + 3) == '5')
+                {
+                    onMessage.run();
+                    break;
+                }
+            }
         }
 
         if (event instanceof DataSent)

@@ -2,6 +2,8 @@ package dev.squaremile.asynctcpacceptance.sampleapps.fix;
 
 import java.nio.charset.StandardCharsets;
 
+import org.agrona.AsciiSequenceView;
+
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
@@ -17,6 +19,7 @@ public class RejectLogOn implements ConnectionApplication
     private final Runnable onMessage;
     private final ConnectionId connectionId;
     private final ConnectionTransport transport;
+    private final AsciiSequenceView content = new AsciiSequenceView();
     private final byte[] logoutMessage = asciiFix("8=FIX.4.2^9=84^35=5^49=SellSide^" +
                                                   "56=BuySide^34=3^52=20190606-09:25:34.329^" +
                                                   "58=Logout acknowledgement^10=049^");
@@ -49,11 +52,6 @@ public class RejectLogOn implements ConnectionApplication
     @Override
     public void onEvent(final ConnectionEvent event)
     {
-        if (event instanceof MessageReceived)
-        {
-            onMessage.run();
-        }
-
         if (event instanceof DataSent)
         {
             DataSent dataSent = (DataSent)event;
@@ -63,12 +61,22 @@ public class RejectLogOn implements ConnectionApplication
                 lastSeenWindowSizeInBytes = dataSent.windowSizeInBytes();
             }
         }
-        if (event instanceof MessageReceived)
+        else if (event instanceof MessageReceived)
         {
-            SendMessage sendMessage = transport.command(SendMessage.class);
-            sendMessage.prepare(logoutMessage.length).putBytes(sendMessage.offset(), logoutMessage);
-            sendMessage.commit();
-            transport.handle(sendMessage);
+            final MessageReceived messageReceived = (MessageReceived)event;
+            content.wrap(messageReceived.buffer(), messageReceived.offset(), messageReceived.length());
+            for (int i = 0; i < content.length() - 4; i++)
+            {
+                if (content.charAt(i) == '3' && content.charAt(i + 1) == '5' && content.charAt(i + 2) == '=' && content.charAt(i + 3) == 'A')
+                {
+                    onMessage.run();
+                    final SendMessage sendMessage = transport.command(SendMessage.class);
+                    sendMessage.prepare(logoutMessage.length).putBytes(sendMessage.offset(), logoutMessage);
+                    sendMessage.commit();
+                    transport.handle(sendMessage);
+                    break;
+                }
+            }
         }
     }
 }
