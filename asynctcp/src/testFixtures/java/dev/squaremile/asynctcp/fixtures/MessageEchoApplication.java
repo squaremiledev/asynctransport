@@ -7,28 +7,18 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 import static java.util.Objects.requireNonNull;
 
 public class MessageEchoApplication implements ConnectionApplication
 {
     private final ConnectionTransport transport;
-    private final ConnectionId connectionId;
     private final EventListener eventListener;
 
-    public MessageEchoApplication(final ConnectionTransport transport, final ConnectionId connectionId, final EventListener eventListener)
+    public MessageEchoApplication(final ConnectionTransport transport, final EventListener eventListener)
     {
         this.transport = requireNonNull(transport);
-        this.connectionId = new ConnectionIdValue(connectionId);
         this.eventListener = eventListener;
-    }
-
-    @Override
-    public ConnectionId connectionId()
-    {
-        return connectionId;
     }
 
     @Override

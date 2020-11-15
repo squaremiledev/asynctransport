@@ -18,7 +18,7 @@ public interface ConnectionApplicationFactory
 
     static ConnectionApplicationFactory onEvent(final OnEventConnectionApplicationFactory onEventConnectionApplicationFactory)
     {
-        return (connectionTransport, connectionId) -> new OnEventConnectionApplication(connectionTransport, connectionId, onEventConnectionApplicationFactory);
+        return (connectionTransport, connectionId) -> new OnEventConnectionApplication(connectionTransport, onEventConnectionApplicationFactory);
     }
 
     ConnectionApplication create(ConnectionTransport connectionTransport, ConnectionId connectionId);

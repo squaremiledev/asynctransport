@@ -2,15 +2,9 @@ package dev.squaremile.asynctcp.api.wiring;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 class NoOpConnectionApplication implements ConnectionApplication
 {
-    @Override
-    public ConnectionId connectionId()
-    {
-        return null;
-    }
 
     @Override
     public void onStart()

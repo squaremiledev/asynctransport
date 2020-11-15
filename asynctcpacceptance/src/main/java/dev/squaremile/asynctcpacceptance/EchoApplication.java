@@ -38,7 +38,7 @@ public class EchoApplication implements ApplicationOnDuty
                         new Delineation(Delineation.Type.INT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
                         port,
                         EventListener.IGNORE_EVENTS,
-                        EchoConnectionApplication::new
+                        (connectionTransport, connectionId) -> new EchoConnectionApplication(connectionTransport)
                 )
         );
     }

@@ -60,8 +60,7 @@ public class FixTransportAppTest
                         () -> startedListening.set(true),
                         (connectionTransport, connectionId, fixVersion, username) -> new RejectLogOn(
                                 connectionTransport,
-                                messageCount::increment,
-                                connectionId
+                                messageCount::increment
                         )
                 )
         );

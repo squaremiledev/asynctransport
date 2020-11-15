@@ -50,21 +50,18 @@ class DeterministicTransportApplicationTest
         final ConnectionApplicationFactory onCreateFactory = ConnectionApplicationFactory.onCreate(
                 (connectionTransport, connectionId) -> new MessageEchoApplication(
                         connectionTransport,
-                        connectionId,
                         EventListener.IGNORE_EVENTS
                 )
         );
         final ConnectionApplicationFactory onStart = ConnectionApplicationFactory.onStart(
                 (connectionTransport, connectionId) -> new MessageEchoApplication(
                         connectionTransport,
-                        connectionId,
                         EventListener.IGNORE_EVENTS
                 )
         );
         final ConnectionApplicationFactory onEventFactory = ConnectionApplicationFactory.onEvent(
                 (connectionTransport, event) -> new MessageEchoApplication(
                         connectionTransport,
-                        event,
                         EventListener.IGNORE_EVENTS
                 )
         );

@@ -11,13 +11,10 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 public class RejectLogOn implements ConnectionApplication
 {
     private final Runnable onMessage;
-    private final ConnectionId connectionId;
     private final ConnectionTransport transport;
     private final AsciiSequenceView content = new AsciiSequenceView();
     private final byte[] logoutMessage = asciiFix("8=FIX.4.2^9=84^35=5^49=SellSide^" +
@@ -26,22 +23,15 @@ public class RejectLogOn implements ConnectionApplication
 
     private long lastSeenWindowSizeInBytes = -1;
 
-    public RejectLogOn(final ConnectionTransport transport, final Runnable onMessage, final ConnectionId connectionId)
+    public RejectLogOn(final ConnectionTransport transport, final Runnable onMessage)
     {
         this.transport = transport;
         this.onMessage = onMessage;
-        this.connectionId = new ConnectionIdValue(connectionId);
     }
 
     private static byte[] asciiFix(final String content)
     {
         return content.replaceAll("\\^", "\u0001").getBytes(StandardCharsets.US_ASCII);
-    }
-
-    @Override
-    public ConnectionId connectionId()
-    {
-        return connectionId;
     }
 
     public void work()

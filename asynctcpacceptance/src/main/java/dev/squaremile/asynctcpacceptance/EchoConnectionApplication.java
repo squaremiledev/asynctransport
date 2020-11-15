@@ -9,8 +9,6 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.NO_OPTIONS;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.PLEASE_RESPOND_FLAG;
@@ -18,18 +16,10 @@ import static dev.squaremile.asynctcpacceptance.AdHocProtocol.PLEASE_RESPOND_FLA
 public class EchoConnectionApplication implements ConnectionApplication
 {
     private final ConnectionTransport connectionTransport;
-    private final ConnectionId connectionId;
 
-    public EchoConnectionApplication(final ConnectionTransport connectionTransport, final ConnectionId connectionId)
+    public EchoConnectionApplication(final ConnectionTransport connectionTransport)
     {
         this.connectionTransport = connectionTransport;
-        this.connectionId = new ConnectionIdValue(connectionId);
-    }
-
-    @Override
-    public ConnectionId connectionId()
-    {
-        return connectionId;
     }
 
     @Override

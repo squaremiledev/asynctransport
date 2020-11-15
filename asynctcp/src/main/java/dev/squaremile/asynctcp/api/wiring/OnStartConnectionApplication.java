@@ -26,12 +26,6 @@ class OnStartConnectionApplication implements ConnectionApplication
     }
 
     @Override
-    public ConnectionId connectionId()
-    {
-        return connectionId;
-    }
-
-    @Override
     public void onStart()
     {
         if (!isResolved)

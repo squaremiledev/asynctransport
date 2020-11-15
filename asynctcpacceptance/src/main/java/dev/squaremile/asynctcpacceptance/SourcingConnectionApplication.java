@@ -18,8 +18,6 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
@@ -31,8 +29,6 @@ import static java.lang.System.nanoTime;
 
 public class SourcingConnectionApplication implements ConnectionApplication
 {
-
-    private final ConnectionId connectionId;
     private final ConnectionTransport connectionTransport;
     private final int totalMessagesToSend;
     private final MutableBoolean isDone;
@@ -46,7 +42,6 @@ public class SourcingConnectionApplication implements ConnectionApplication
     private long startedSendingTimestampNanos = Long.MIN_VALUE;
 
     public SourcingConnectionApplication(
-            final ConnectionId connectionId,
             final ConnectionTransport connectionTransport,
             final int totalMessagesToSend,
             final MutableBoolean isDone,
@@ -56,7 +51,6 @@ public class SourcingConnectionApplication implements ConnectionApplication
             final int extraDataLength
     )
     {
-        this.connectionId = new ConnectionIdValue(connectionId);
         this.connectionTransport = connectionTransport;
         this.totalMessagesToSend = totalMessagesToSend;
         this.selectiveResponseRequest = new SelectiveResponseRequest(totalMessagesToSend, respondToEveryNthRequest);
@@ -130,7 +124,6 @@ public class SourcingConnectionApplication implements ConnectionApplication
                 remotePort,
                 new Delineation(Delineation.Type.INT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
                 (connectionTransport, connectionId) -> new SourcingConnectionApplication(
-                        connectionId,
                         connectionTransport,
                         messagesSent,
                         isDone,
@@ -172,12 +165,6 @@ public class SourcingConnectionApplication implements ConnectionApplication
                     applicationFactory
             );
         }
-    }
-
-    @Override
-    public ConnectionId connectionId()
-    {
-        return connectionId;
     }
 
     @Override

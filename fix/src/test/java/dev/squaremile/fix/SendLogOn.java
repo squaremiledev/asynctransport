@@ -43,12 +43,6 @@ public class SendLogOn implements ConnectionApplication
     }
 
     @Override
-    public ConnectionId connectionId()
-    {
-        return connectionId;
-    }
-
-    @Override
     public void onStop()
     {
         if (connectionId != null)
