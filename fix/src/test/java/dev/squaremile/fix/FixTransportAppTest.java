@@ -12,6 +12,7 @@ import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
 import dev.squaremile.asynctcp.fixtures.TimingExtension;
+import dev.squaremile.asynctcp.serialization.internal.SerializedMessageListener;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
@@ -21,7 +22,7 @@ import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 @ExtendWith(TimingExtension.class)
 public class FixTransportAppTest
 {
-    private static final int TOTAL_MESSAGES_TO_RECEIVE = 1_000;
+    private static final int TOTAL_MESSAGES_TO_RECEIVE = 100_000;
     private final MutableLong messageCount = new MutableLong();
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
     private final MutableBoolean startedListening = new MutableBoolean(false);
@@ -44,8 +45,10 @@ public class FixTransportAppTest
                         )
                 )
         );
-        final ApplicationOnDuty acceptor = transportApplicationFactory.createSharedStack(
+        final ApplicationOnDuty acceptor = transportApplicationFactory.create(
                 "acceptor",
+                1024 * 1024,
+                SerializedMessageListener.NO_OP,
                 new FixAcceptorFactory(
                         port,
                         () -> startedListening.set(true),
