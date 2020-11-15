@@ -17,21 +17,21 @@ import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.fix.certification.FixApplicationFactory;
 
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 
-class FixAcceptorFactory implements ApplicationFactory
+public class FixAcceptorFactory implements ApplicationFactory
 {
     private final int port;
     private final Runnable onStartedListening;
     private final OnEventConnectionApplicationFactory onEventConnectionApplicationFactory;
 
-    FixAcceptorFactory(final int port, final Runnable onStartedListening, final ApplicationForUser applicationForUser)
+    public FixAcceptorFactory(final int port, final Runnable onStartedListening, final FixApplicationFactory fixApplicationFactory)
     {
         this.port = port;
         this.onStartedListening = onStartedListening;
-        this.onEventConnectionApplicationFactory = new UsernameBasedConnectionApplicationFactory(applicationForUser);
+        this.onEventConnectionApplicationFactory = new UsernameBasedConnectionApplicationFactory(fixApplicationFactory);
     }
 
     @Override
@@ -52,21 +52,16 @@ class FixAcceptorFactory implements ApplicationFactory
         );
     }
 
-    interface ApplicationForUser
-    {
-        ConnectionApplication create(final ConnectionTransport connectionTransport, final ConnectionId connectionId, final String fixVersion, final String username);
-    }
-
     static class UsernameBasedConnectionApplicationFactory implements OnEventConnectionApplicationFactory
     {
-        private final ApplicationForUser applicationForUser;
+        private final FixApplicationFactory fixApplicationFactory;
         private final AsciiSequenceView content = new AsciiSequenceView();
         private final Pattern fixVersionPattern = Pattern.compile("8=(.*?)\u0001");
         private final Pattern usernamePattern = Pattern.compile("\u0001553=(.*?)\u0001");
 
-        UsernameBasedConnectionApplicationFactory(final ApplicationForUser applicationForUser)
+        UsernameBasedConnectionApplicationFactory(final FixApplicationFactory fixApplicationFactory)
         {
-            this.applicationForUser = applicationForUser;
+            this.fixApplicationFactory = fixApplicationFactory;
         }
 
         @Override
@@ -77,7 +72,7 @@ class FixAcceptorFactory implements ApplicationFactory
                 final String fixMessage = fixMessage((MessageReceived)event);
                 if (fixMessage.contains("\u000135=A\u0001"))
                 {
-                    return applicationForUser.create(connectionTransport, event, fixVersion(fixMessage), username(fixMessage));
+                    return fixApplicationFactory.create(connectionTransport, event, fixVersion(fixMessage), username(fixMessage));
                 }
             }
             return null;

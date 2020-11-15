@@ -3,7 +3,6 @@ package dev.squaremile.fix;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.agrona.collections.MutableBoolean;
 import org.agrona.collections.MutableInteger;
 import org.agrona.collections.MutableLong;
 import org.junit.jupiter.api.Test;
@@ -18,24 +17,34 @@ import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
 import dev.squaremile.asynctcp.fixtures.MessageLog;
 import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.fix.certification.Certification;
+import dev.squaremile.fix.certification.usecases.SampleUseCaseRepository;
+import dev.squaremile.fix.certification.usecases.SampleUseCases;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
 @ExtendWith(TimingExtension.class)
-public class FixTransportAppTest
+public class CertificationTest
 {
-    private static final int TOTAL_MESSAGES_TO_RECEIVE = 100_000;
+    private static final int TOTAL_MESSAGES_TO_RECEIVE = 10;
     private final MutableLong messageCount = new MutableLong();
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
-    private final MutableBoolean startedListening = new MutableBoolean(false);
     private final int port = freePort();
+    private final MessageLog acceptorMessageLog = new MessageLog();
 
     @Test
-    void shouldExchangeMessages()
+    void shouldPickCorrectFakeImplementationToConductCertification()
     {
         // Given
+        final ApplicationOnDuty certifyingApplication = Certification.startCertifyingApplication(
+                port,
+                1024 * 1024,
+                acceptorMessageLog,
+                new SampleUseCaseRepository()
+        );
+
         final ApplicationOnDuty initiator = transportApplicationFactory.createSharedStack("initiator", transport ->
                 new ConnectingApplication(
                         transport,
@@ -46,38 +55,21 @@ public class FixTransportAppTest
                                 connectionTransport,
                                 messageCount::increment,
                                 connectionId,
-                                TOTAL_MESSAGES_TO_RECEIVE / 2
+                                TOTAL_MESSAGES_TO_RECEIVE,
+                                SampleUseCases.USE_CASE_002_REJECTED_LOGON.fixVersion(),
+                                SampleUseCases.USE_CASE_002_REJECTED_LOGON.username()
                         )
                 )
         );
-        final MessageLog acceptorMessageLog = new MessageLog();
-        final ApplicationOnDuty acceptor = transportApplicationFactory.create(
-                "acceptor",
-                1024 * 1024,
-                acceptorMessageLog,
-                new FixAcceptorFactory(
-                        port,
-                        () -> startedListening.set(true),
-                        (connectionTransport, connectionId, fixVersion, username) -> new RejectLogOn(
-                                connectionTransport,
-                                messageCount::increment
-                        )
-                )
-        );
-        acceptor.onStart();
-        while (!startedListening.get())
-        {
-            acceptor.work();
-        }
 
         // When
         initiator.onStart();
         while (messageCount.get() < TOTAL_MESSAGES_TO_RECEIVE)
         {
-            acceptor.work();
+            certifyingApplication.work();
             initiator.work();
         }
-        acceptor.onStop();
+        certifyingApplication.onStop();
         initiator.onStop();
 
         // Then
@@ -95,7 +87,7 @@ public class FixTransportAppTest
                     uniqueFixMessages.add(fixMessage.toString());
                 }));
         assertThat(uniqueFixMessages).hasSize(1);
-        assertThat(fixMessagesCount.get()).isEqualTo(TOTAL_MESSAGES_TO_RECEIVE / 2);
+        assertThat(fixMessagesCount.get()).isEqualTo(TOTAL_MESSAGES_TO_RECEIVE);
     }
 
 }
