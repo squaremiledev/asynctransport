@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance.sampleapps;
+package dev.squaremile.fix;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,12 +59,12 @@ class FixAcceptorFactory implements ApplicationFactory
 
     static class UsernameBasedConnectionApplicationFactory implements OnEventConnectionApplicationFactory
     {
-        private final FixAcceptorFactory.ApplicationForUser applicationForUser;
+        private final ApplicationForUser applicationForUser;
         private final AsciiSequenceView content = new AsciiSequenceView();
         private final Pattern fixVersionPattern = Pattern.compile("8=(.*?)\u0001");
         private final Pattern usernamePattern = Pattern.compile("\u0001553=(.*?)\u0001");
 
-        UsernameBasedConnectionApplicationFactory(final FixAcceptorFactory.ApplicationForUser applicationForUser)
+        UsernameBasedConnectionApplicationFactory(final ApplicationForUser applicationForUser)
         {
             this.applicationForUser = applicationForUser;
         }

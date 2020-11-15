@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance.sampleapps.fix;
+package dev.squaremile.fix;
 
 import java.nio.charset.StandardCharsets;
 
