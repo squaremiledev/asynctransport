@@ -2,6 +2,7 @@ package dev.squaremile.asynctcp.fixtures;
 
 import org.agrona.DirectBuffer;
 import org.agrona.ExpandableRingBuffer;
+import org.agrona.concurrent.MessageHandler;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 
@@ -65,9 +66,9 @@ public class MessageLog implements SerializedMessageListener
         return content;
     }
 
-    public SerializedEventSupplier capturedEventsSupplier()
+    public SerializedEventSupplier createCapturedEventsSupplier()
     {
-        final OneToOneRingBuffer eventsToConsume = new OneToOneRingBuffer(new UnsafeBuffer(new byte[Math.min(1024 * 1024, applicationMessagesLog.capacity()) + TRAILER_LENGTH]));
+        final OneToOneRingBuffer eventsToConsume = new OneToOneRingBuffer(new UnsafeBuffer(new byte[Math.max(1024 * 1024, applicationMessagesLog.capacity()) + TRAILER_LENGTH]));
         applicationMessagesLog.forEach(
                 (buffer, offset, length, headOffset) ->
                 {
@@ -80,5 +81,15 @@ public class MessageLog implements SerializedMessageListener
                 Integer.MAX_VALUE
         );
         return eventsToConsume::read;
+    }
+
+    public void readAll(final MessageHandler messageHandler)
+    {
+        final SerializedEventSupplier capturedEvents = createCapturedEventsSupplier();
+        do
+        {
+
+        }
+        while (capturedEvents.poll(messageHandler) > 0);
     }
 }

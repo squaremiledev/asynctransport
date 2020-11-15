@@ -1,6 +1,10 @@
 package dev.squaremile.fix;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.agrona.collections.MutableBoolean;
+import org.agrona.collections.MutableInteger;
 import org.agrona.collections.MutableLong;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
+import dev.squaremile.asynctcp.fixtures.MessageLog;
 import dev.squaremile.asynctcp.fixtures.TimingExtension;
-import dev.squaremile.asynctcp.serialization.internal.SerializedMessageListener;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
@@ -31,6 +35,7 @@ public class FixTransportAppTest
     @Test
     void shouldExchangeMessages()
     {
+        // Given
         final ApplicationOnDuty initiator = transportApplicationFactory.createSharedStack("initiator", transport ->
                 new ConnectingApplication(
                         transport,
@@ -45,10 +50,11 @@ public class FixTransportAppTest
                         )
                 )
         );
+        final MessageLog acceptorMessageLog = new MessageLog();
         final ApplicationOnDuty acceptor = transportApplicationFactory.create(
                 "acceptor",
                 1024 * 1024,
-                SerializedMessageListener.NO_OP,
+                acceptorMessageLog,
                 new FixAcceptorFactory(
                         port,
                         () -> startedListening.set(true),
@@ -64,21 +70,33 @@ public class FixTransportAppTest
         {
             acceptor.work();
         }
+
+        // When
         initiator.onStart();
-        long before = System.currentTimeMillis();
         while (messageCount.get() < TOTAL_MESSAGES_TO_RECEIVE)
         {
             acceptor.work();
             initiator.work();
         }
-        long after = System.currentTimeMillis();
-
         acceptor.onStop();
         initiator.onStop();
 
-        long messagesPerSecond = messageCount.get() * 1000 / (after - before);
-        System.out.printf("Exchanged %d messages at the rate of %d msg/s%n", messageCount.get(), messagesPerSecond);
-        assertThat(messagesPerSecond).isGreaterThan(10_000);
+        // Then
+        acceptorReceivedCorrectMessages(acceptorMessageLog);
+    }
+
+    private void acceptorReceivedCorrectMessages(final MessageLog messageLog)
+    {
+        final Set<String> uniqueFixMessages = new HashSet<>(1);
+        final MutableInteger fixMessagesCount = new MutableInteger(0);
+        messageLog.readAll(new ReceivedFixMessagesHandler(
+                fixMessage ->
+                {
+                    fixMessagesCount.increment();
+                    uniqueFixMessages.add(fixMessage.toString());
+                }));
+        assertThat(uniqueFixMessages).hasSize(1);
+        assertThat(fixMessagesCount.get()).isEqualTo(TOTAL_MESSAGES_TO_RECEIVE / 2);
     }
 
 }

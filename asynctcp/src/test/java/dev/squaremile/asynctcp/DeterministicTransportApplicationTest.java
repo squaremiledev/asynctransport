@@ -158,7 +158,7 @@ class DeterministicTransportApplicationTest
         ApplicationOnDuty newApplication = transportApplicationFactory.createWithoutTransport(
                 "new",
                 applicationFactory,
-                previousMessageLog.capturedEventsSupplier(),
+                previousMessageLog.createCapturedEventsSupplier(),
                 newMessageLog::onSerialized,
                 newMessageLog::onSerialized
         );
