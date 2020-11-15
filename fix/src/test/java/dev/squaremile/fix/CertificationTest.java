@@ -28,7 +28,7 @@ import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 @ExtendWith(TimingExtension.class)
 public class CertificationTest
 {
-    private static final int TOTAL_MESSAGES_TO_RECEIVE = 10;
+    private static final int TOTAL_MESSAGES_TO_RECEIVE = 10_000;
     private final MutableLong messageCount = new MutableLong();
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
     private final int port = freePort();
