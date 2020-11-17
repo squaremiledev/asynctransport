@@ -1,4 +1,4 @@
-package dev.squaremile.fix;
+package dev.squaremile.asynctcp.fix;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,12 +14,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
+import dev.squaremile.asynctcp.certification.Certification;
+import dev.squaremile.asynctcp.fix.certification.usecases.SampleUseCaseRepositoryFactory;
+import dev.squaremile.asynctcp.fix.certification.usecases.SampleUseCases;
 import dev.squaremile.asynctcp.fixtures.MessageLog;
 import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
-import dev.squaremile.fix.certification.Certification;
-import dev.squaremile.fix.certification.usecases.SampleUseCaseRepository;
-import dev.squaremile.fix.certification.usecases.SampleUseCases;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
@@ -33,18 +33,18 @@ public class CertificationTest
     private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
     private final int port = freePort();
     private final MessageLog acceptorMessageLog = new MessageLog();
+    private final Certification<FixMetadata> certification = new Certification<>(
+            1024 * 1024,
+            fixMessage(),
+            acceptorMessageLog,
+            new FixResolver(),
+            new SampleUseCaseRepositoryFactory()
+    );
 
     @Test
     void shouldPickCorrectFakeImplementationToConductCertification()
     {
-        // Given
-        final ApplicationOnDuty certifyingApplication = Certification.startCertifyingApplication(
-                port,
-                1024 * 1024,
-                acceptorMessageLog,
-                new SampleUseCaseRepository()
-        );
-
+        final ApplicationOnDuty certifyingApplication = certification.start(port);
         final ApplicationOnDuty initiator = transportApplicationFactory.createSharedStack("initiator", transport ->
                 new ConnectingApplication(
                         transport,

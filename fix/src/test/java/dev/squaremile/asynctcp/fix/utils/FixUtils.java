@@ -1,4 +1,4 @@
-package dev.squaremile.fix.utils;
+package dev.squaremile.asynctcp.fix.utils;
 
 import java.nio.charset.StandardCharsets;
 

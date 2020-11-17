@@ -1,5 +1,8 @@
 package dev.squaremile.asynctcp.api.wiring;
 
+import java.util.Optional;
+
+
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
@@ -24,5 +27,5 @@ public interface OnEventConnectionApplicationFactory
      * @param event               evens targeting a particular connection
      * @return application handling a single connection or null if not decided yet
      */
-    ConnectionApplication createOnEvent(final ConnectionTransport connectionTransport, final ConnectionEvent event);
+    Optional<ConnectionApplication> createOnEvent(final ConnectionTransport connectionTransport, final ConnectionEvent event);
 }

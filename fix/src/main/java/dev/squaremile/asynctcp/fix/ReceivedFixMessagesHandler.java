@@ -1,4 +1,4 @@
-package dev.squaremile.fix;
+package dev.squaremile.asynctcp.fix;
 
 import java.util.function.Consumer;
 

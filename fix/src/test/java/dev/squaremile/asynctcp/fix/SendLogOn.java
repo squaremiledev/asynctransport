@@ -1,8 +1,9 @@
-package dev.squaremile.fix;
+package dev.squaremile.asynctcp.fix;
 
 import org.agrona.AsciiSequenceView;
 
 
+import dev.squaremile.asynctcp.fix.utils.FixUtils;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
@@ -12,7 +13,6 @@ import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.fix.utils.FixUtils;
 
 public class SendLogOn implements ConnectionApplication
 {

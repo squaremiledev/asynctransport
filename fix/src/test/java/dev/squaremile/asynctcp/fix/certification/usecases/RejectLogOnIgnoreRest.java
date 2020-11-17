@@ -1,18 +1,18 @@
-package dev.squaremile.fix.certification.usecases;
+package dev.squaremile.asynctcp.fix.certification.usecases;
 
 import org.agrona.AsciiSequenceView;
 
 
+import dev.squaremile.asynctcp.fix.utils.FixUtils;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.fix.certification.FakeApplication;
-import dev.squaremile.fix.utils.FixUtils;
 
-import static dev.squaremile.fix.utils.FixUtils.asciiFixBody;
+import static dev.squaremile.asynctcp.fix.utils.FixUtils.asciiFixBody;
 
-public class RejectLogOnIgnoreRest implements FakeApplication
+public class RejectLogOnIgnoreRest implements ConnectionApplication
 {
     private final ConnectionTransport transport;
     private final AsciiSequenceView content = new AsciiSequenceView();

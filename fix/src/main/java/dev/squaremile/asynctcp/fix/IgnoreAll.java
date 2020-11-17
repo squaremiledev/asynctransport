@@ -1,8 +1,9 @@
-package dev.squaremile.fix.certification;
+package dev.squaremile.asynctcp.fix;
 
+import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 
-public class IgnoreAll implements FakeApplication
+public class IgnoreAll implements ConnectionApplication
 {
 
     @Override

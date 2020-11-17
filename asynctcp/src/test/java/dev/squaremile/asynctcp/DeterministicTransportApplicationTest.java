@@ -1,6 +1,7 @@
 package dev.squaremile.asynctcp;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,10 +61,10 @@ class DeterministicTransportApplicationTest
                 )
         );
         final ConnectionApplicationFactory onEventFactory = ConnectionApplicationFactory.onEvent(
-                (connectionTransport, event) -> new MessageEchoApplication(
+                (connectionTransport, event) -> Optional.of(new MessageEchoApplication(
                         connectionTransport,
                         EventListener.IGNORE_EVENTS
-                )
+                ))
         );
 
         return Stream.of(

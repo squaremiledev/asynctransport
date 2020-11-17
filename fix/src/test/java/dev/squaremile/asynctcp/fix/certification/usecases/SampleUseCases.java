@@ -1,8 +1,8 @@
-package dev.squaremile.fix.certification.usecases;
+package dev.squaremile.asynctcp.fix.certification.usecases;
 
-import dev.squaremile.fix.certification.UseCase;
+import dev.squaremile.asynctcp.fix.FixUC;
 
-public enum SampleUseCases implements UseCase
+public enum SampleUseCases implements FixUC
 {
     USE_CASE_001_ACCEPTED_LOGON("FIX.4.2", "useCase001"),
     USE_CASE_002_REJECTED_LOGON("FIXT.1.1", "useCase002"),

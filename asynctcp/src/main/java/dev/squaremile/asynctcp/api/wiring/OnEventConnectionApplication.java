@@ -1,5 +1,8 @@
 package dev.squaremile.asynctcp.api.wiring;
 
+import java.util.Optional;
+
+
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
@@ -43,10 +46,10 @@ class OnEventConnectionApplication implements ConnectionApplication
     {
         if (!isResolved)
         {
-            ConnectionApplication connectionApplication = onEventConnectionApplicationFactory.createOnEvent(connectionTransport, event);
-            if (connectionApplication != null)
+            Optional<ConnectionApplication> connectionApplication = onEventConnectionApplicationFactory.createOnEvent(connectionTransport, event);
+            if (connectionApplication.isPresent())
             {
-                delegate = connectionApplication;
+                delegate = connectionApplication.get();
                 isResolved = true;
                 delegate.onStart();
             }
