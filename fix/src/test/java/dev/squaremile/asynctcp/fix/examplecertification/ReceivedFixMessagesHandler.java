@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.certification.examples.fix;
+package dev.squaremile.asynctcp.fix.examplecertification;
 
 import java.util.function.Consumer;
 

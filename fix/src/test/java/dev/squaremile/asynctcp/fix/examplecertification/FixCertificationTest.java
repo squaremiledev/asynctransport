@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.certification.examples.fix;
+package dev.squaremile.asynctcp.fix.examplecertification;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +19,7 @@ import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-import static dev.squaremile.asynctcp.certification.examples.fix.FixCertification.fixCertification;
+import static dev.squaremile.asynctcp.fix.examplecertification.FixCertification.fixCertification;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
@@ -47,8 +47,8 @@ public class FixCertificationTest
                                 messageCount::increment,
                                 connectionId,
                                 TOTAL_MESSAGES_TO_RECEIVE,
-                                FixCertification.USE_CASE_002_REJECTED_LOGON.fixVersion(),
-                                FixCertification.USE_CASE_002_REJECTED_LOGON.username()
+                                FixCertification.USE_CASE_002_FIX11_REJECTED_LOGON.fixVersion(),
+                                FixCertification.USE_CASE_002_FIX11_REJECTED_LOGON.username()
                         )
                 )
         );

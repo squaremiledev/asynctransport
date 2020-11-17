@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.certification;
+package dev.squaremile.asynctcp.fix.examplecertification;
 
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 

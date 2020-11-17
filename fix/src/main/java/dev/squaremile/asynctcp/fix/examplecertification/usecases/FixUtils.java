@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.certification.examples.fix.usecases;
+package dev.squaremile.asynctcp.fix.examplecertification.usecases;
 
 import java.nio.charset.StandardCharsets;
 

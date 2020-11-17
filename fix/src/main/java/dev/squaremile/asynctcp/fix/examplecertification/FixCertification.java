@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.certification.examples.fix;
+package dev.squaremile.asynctcp.fix.examplecertification;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,34 +10,34 @@ import org.agrona.AsciiSequenceView;
 
 
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
-import dev.squaremile.asynctcp.certification.Certification;
-import dev.squaremile.asynctcp.certification.IgnoreAll;
-import dev.squaremile.asynctcp.certification.examples.fix.usecases.RejectLogOnIgnoreRest;
-import dev.squaremile.asynctcp.certification.examples.fix.usecases.RespondToLogOnIgnoreRest;
+import dev.squaremile.asynctcp.fix.examplecertification.usecases.RejectLogOnIgnoreRest;
+import dev.squaremile.asynctcp.fix.examplecertification.usecases.RespondToLogOnIgnoreRest;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 
 public class FixCertification
 {
-    public static final UseCase USE_CASE_001_ACCEPTED_LOGON = new UseCase("FIX.4.2", "useCase001", (connectionTransport, connectionId) -> new RespondToLogOnIgnoreRest(connectionTransport));
-    public static final UseCase USE_CASE_002_REJECTED_LOGON = new UseCase("FIXT.1.1", "useCase002", (connectionTransport, connectionId) -> new RejectLogOnIgnoreRest(connectionTransport));
-    public static final UseCase USE_CASE_002_NOT_RESPONDING = new UseCase("FIXT.1.1", "useCase003", (connectionTransport, connectionId) -> new IgnoreAll());
+    public static final UseCase USE_CASE_001_ACCEPTED_LOGON = new UseCase("FIX.4.2", "UCAcceptLogon", (connectionTransport, connectionId) -> new RespondToLogOnIgnoreRest(connectionTransport));
+    public static final UseCase USE_CASE_002_FIX11_REJECTED_LOGON = new UseCase("FIXT.1.1", "UCRejectLogon", (connectionTransport, connectionId) -> new RejectLogOnIgnoreRest(connectionTransport));
+    public static final UseCase USE_CASE_002_FIX42_REJECTED_LOGON = new UseCase("FIX.4.2", "UCRejectLogon", (connectionTransport, connectionId) -> new RejectLogOnIgnoreRest(connectionTransport));
+    public static final UseCase USE_CASE_002_NOT_RESPONDING = new UseCase("FIXT.1.1", "UCIgnoreAll", (connectionTransport, connectionId) -> new IgnoreAll());
 
     public static Certification<UseCase> fixCertification()
     {
         return new Certification<>(
                 1024 * 1024,
                 fixMessage(),
-                new Resolver(
+                new UseCasesPerFixVersionAndUsername(
                         USE_CASE_001_ACCEPTED_LOGON,
-                        USE_CASE_002_REJECTED_LOGON,
+                        USE_CASE_002_FIX11_REJECTED_LOGON,
+                        USE_CASE_002_FIX42_REJECTED_LOGON,
                         USE_CASE_002_NOT_RESPONDING
                 )
         );
     }
 
-    public static class UseCase implements dev.squaremile.asynctcp.certification.UseCase
+    public static class UseCase implements dev.squaremile.asynctcp.fix.examplecertification.UseCase
     {
         private final String fixVersion;
         private final String username;
@@ -71,7 +71,7 @@ public class FixCertification
         }
     }
 
-    public static class Resolver implements dev.squaremile.asynctcp.certification.Resolver<UseCase>
+    public static class UseCasesPerFixVersionAndUsername implements Resolver<UseCase>
     {
         private final AsciiSequenceView content = new AsciiSequenceView();
         private final Pattern fixVersionPattern = Pattern.compile("8=(.*?)\u0001");
@@ -79,7 +79,7 @@ public class FixCertification
         private final List<UseCase> useCases;
 
 
-        public Resolver(UseCase... useCases)
+        public UseCasesPerFixVersionAndUsername(UseCase... useCases)
         {
             this.useCases = Arrays.asList(useCases);
         }
