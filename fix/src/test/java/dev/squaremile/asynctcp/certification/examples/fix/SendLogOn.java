@@ -1,9 +1,9 @@
-package dev.squaremile.asynctcp.fix;
+package dev.squaremile.asynctcp.certification.examples.fix;
 
 import org.agrona.AsciiSequenceView;
 
 
-import dev.squaremile.asynctcp.fix.utils.FixUtils;
+import dev.squaremile.asynctcp.certification.examples.fix.usecases.FixUtils;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;

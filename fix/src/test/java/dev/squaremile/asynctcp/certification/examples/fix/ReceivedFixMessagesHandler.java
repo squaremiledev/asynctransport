@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.fix;
+package dev.squaremile.asynctcp.certification.examples.fix;
 
 import java.util.function.Consumer;
 
@@ -11,7 +11,7 @@ import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
 import dev.squaremile.asynctcp.serialization.internal.TransportEventsDeserialization;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 
-class ReceivedFixMessagesHandler implements MessageHandler
+public class ReceivedFixMessagesHandler implements MessageHandler
 {
     private final AsciiSequenceView content = new AsciiSequenceView();
     private final SerializedEventListener serializedEventsListener;

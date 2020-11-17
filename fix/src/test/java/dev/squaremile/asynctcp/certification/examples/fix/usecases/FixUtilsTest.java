@@ -1,11 +1,11 @@
-package dev.squaremile.asynctcp.fix;
+package dev.squaremile.asynctcp.certification.examples.fix.usecases;
 
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import static dev.squaremile.asynctcp.fix.utils.FixUtils.asciiFixBody;
+import static dev.squaremile.asynctcp.certification.examples.fix.usecases.FixUtils.asciiFixBody;
 
 class FixUtilsTest
 {

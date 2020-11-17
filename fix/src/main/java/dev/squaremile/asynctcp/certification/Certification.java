@@ -12,9 +12,6 @@ import dev.squaremile.asynctcp.api.wiring.OnEventConnectionApplicationFactory;
 import dev.squaremile.asynctcp.serialization.internal.SerializedMessageListener;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
@@ -23,42 +20,39 @@ import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 
-public class Certification<UseCase>
+public class Certification<T extends UseCase>
 {
     private final int buffersSize;
     private final Delineation delineation;
-    private final SerializedMessageListener acceptorMessageLog;
-    private final Resolver<UseCase> resolver;
-    private final UseCaseApplicationFactory<UseCase> useCaseApplicationFactory;
+    private final Resolver<T> resolver;
 
-    public Certification(
-            final int buffersSize,
-            final Delineation delineation,
-            final SerializedMessageListener acceptorMessageLog,
-            final Resolver<UseCase> resolver,
-            final UseCaseApplicationFactory<UseCase> useCaseApplicationFactory
-    )
+    public Certification(final int buffersSize, final Delineation delineation, final Resolver<T> resolver)
     {
         this.buffersSize = buffersSize;
         this.delineation = delineation;
-        this.acceptorMessageLog = acceptorMessageLog;
         this.resolver = resolver;
-        this.useCaseApplicationFactory = useCaseApplicationFactory;
     }
 
 
-    public ApplicationOnDuty start(final int port)
+    public ApplicationOnDuty start(final int port, final SerializedMessageListener acceptorMessageListener)
     {
         final MutableBoolean readyToAcceptConnections = new MutableBoolean(false);
         final ApplicationOnDuty acceptor = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
                 "acceptor",
                 buffersSize,
-                acceptorMessageLog,
+                acceptorMessageListener,
                 new AcceptorApplicationFactory(
                         port,
                         () -> readyToAcceptConnections.set(true),
                         delineation,
-                        new OnMetadataConnectionApplicationFactory<>(useCaseApplicationFactory, resolver)
+                        (connectionTransport, event) ->
+                        {
+                            if (event instanceof MessageReceived)
+                            {
+                                return resolver.useCase((MessageReceived)event).map(useCase -> useCase.fakeAppFactory().create(connectionTransport, event));
+                            }
+                            return Optional.empty();
+                        }
                 )
         );
         acceptor.onStart();
@@ -105,31 +99,6 @@ public class Certification<UseCase>
                     },
                     ConnectionApplicationFactory.onEvent(onEventConnectionApplicationFactory)
             );
-        }
-
-    }
-
-    private static class OnMetadataConnectionApplicationFactory<Metadata> implements OnEventConnectionApplicationFactory
-    {
-        private final UseCaseApplicationFactory<Metadata> useCaseApplicationFactory;
-        private final Resolver<Metadata> resolver;
-
-        public OnMetadataConnectionApplicationFactory(final UseCaseApplicationFactory<Metadata> useCaseApplicationFactory, final Resolver<Metadata> resolver)
-        {
-            this.useCaseApplicationFactory = useCaseApplicationFactory;
-            this.resolver = resolver;
-        }
-
-        @Override
-        public Optional<ConnectionApplication> createOnEvent(final ConnectionTransport connectionTransport, final ConnectionEvent event)
-        {
-            if (event instanceof MessageReceived)
-            {
-                return resolver
-                        .useCase((MessageReceived)event)
-                        .map(metadata -> useCaseApplicationFactory.create(connectionTransport, event, metadata));
-            }
-            return Optional.empty();
         }
 
     }
