@@ -11,6 +11,7 @@ plugins {
     id 'maven-publish'
     id 'java-test-fixtures'
     id "com.jfrog.bintray" version "1.8.4"
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 java {
@@ -26,21 +27,12 @@ test {
     }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs += [
-                    project(':transport').file('src/main/java'),
-                    project(':sbe').file('src/main/java'),
-                    project(':serialization').file('src/main/java')
-            ]
-        }
-    }
-}
-
-
 dependencies {
-    implementation 'org.agrona:agrona:1.6.0'
+    api 'org.agrona:agrona:1.6.0'
+
+    api project(':transport')
+    api project(':serialization')
+    api project(':sbe')
 
     testFixturesImplementation project(':transport')
     testFixturesImplementation project(':serialization')
@@ -54,7 +46,11 @@ dependencies {
     testImplementation testFixtures(project(':transport'))
 }
 
-jar {
+shadowJar {
+    classifier null
+    dependencies {
+        exclude(dependency('org.agrona:agrona:.*'))
+    }
     manifest {
         attributes('Automatic-Module-Name': 'dev.squaremile.asynctcp')
     }
@@ -70,45 +66,48 @@ repositories {
     jcenter()
 }
 
-
-def projectPom = {
-    name = 'asynctcp'
-    packaging = 'jar'
-    description = 'Async TCP'
-
-    url = 'https://github.com/squaremiledev/asynctransport'
-
-    scm {
-        connection = 'scm:git:https://github.com/squaremiledev/asynctransport.git'
-        developerConnection = 'scm:git:https://github.com/squaremiledev/asynctransport.git'
-        url = 'https://github.com/squaremiledev/asynctransport.git'
-    }
-
-    licenses {
-        license {
-            name = 'The Apache License, Version 2.0'
-            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-        }
-    }
-
-    developers {
-        developer {
-            id = 'MichaelSzymczak'
-            name = 'Michal Szymczak'
-            email = 'contact@michaelszymczak.com'
-            url = 'https://github.com/michaelszymczak'
-        }
-    }
-}
-
 publishing {
     publications {
         MyPublication(MavenPublication) {
-            from components.java
-            groupId "dev.squaremile"
-            artifactId = 'asynctcp'
-            version "${version}"
-            pom(projectPom)
+            artifact(shadowJar)
+            pom {
+                withXml {
+                    def dependencies = asNode().appendNode('dependencies')
+                    def dependency = dependencies.appendNode('dependency')
+                    dependency.appendNode('groupId', 'org.agrona')
+                    dependency.appendNode('artifactId', 'agrona')
+                    dependency.appendNode('version', '1.6.0')
+                    dependency.appendNode('scope', 'provided')
+                }
+
+                name = 'asynctcp'
+                packaging = 'jar'
+                description = 'Async TCP'
+
+                url = 'https://github.com/squaremiledev/asynctransport'
+
+                scm {
+                    connection = 'scm:git:https://github.com/squaremiledev/asynctransport.git'
+                    developerConnection = 'scm:git:https://github.com/squaremiledev/asynctransport.git'
+                    url = 'https://github.com/squaremiledev/asynctransport.git'
+                }
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'michaelszymczak.com'
+                        name = 'Michael Szymczak'
+                        email = 'contact@michaelszymczak.com'
+                        url = 'https://github.com/michaelszymczak'
+                    }
+                }
+            }
         }
     }
 
@@ -125,9 +124,9 @@ bintray {
         licenses = ['Apache-2.0']
         vcsUrl = 'https://github.com/squaremiledev/asynctransport.git'
         version {
-            name = '0.0.17'
-            desc = 'test build'
-            vcsTag = '0.0.17'
+            name = project.version
+            desc = 'Async TCP'
+            vcsTag = project.version
         }
     }
 }

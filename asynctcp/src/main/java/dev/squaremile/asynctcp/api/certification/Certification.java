@@ -9,7 +9,7 @@ import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.api.wiring.OnEventConnectionApplicationFactory;
-import dev.squaremile.asynctcp.serialization.internal.SerializedMessageListener;
+import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
@@ -20,17 +20,17 @@ import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 
-public class Certification<T extends UseCase>
+public class Certification
 {
     private final int buffersSize;
     private final Delineation delineation;
-    private final Resolver<T> resolver;
+    private final UseCases useCases;
 
-    public Certification(final int buffersSize, final Delineation delineation, final Resolver<T> resolver)
+    public Certification(final int buffersSize, final Delineation delineation, final UseCases useCases)
     {
         this.buffersSize = buffersSize;
         this.delineation = delineation;
-        this.resolver = resolver;
+        this.useCases = useCases;
     }
 
 
@@ -49,7 +49,7 @@ public class Certification<T extends UseCase>
                         {
                             if (event instanceof MessageReceived)
                             {
-                                return resolver.useCase((MessageReceived)event).map(useCase -> useCase.fakeAppFactory().create(connectionTransport, event));
+                                return useCases.useCase((MessageReceived)event).map(useCase -> useCase.fakeAppFactory().create(connectionTransport, event));
                             }
                             return Optional.empty();
                         }

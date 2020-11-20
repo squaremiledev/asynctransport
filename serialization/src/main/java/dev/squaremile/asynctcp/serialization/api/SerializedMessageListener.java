@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.serialization.internal;
+package dev.squaremile.asynctcp.serialization.api;
 
 import org.agrona.DirectBuffer;
 

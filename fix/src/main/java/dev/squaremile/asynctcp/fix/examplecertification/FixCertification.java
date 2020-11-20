@@ -11,24 +11,37 @@ import org.agrona.AsciiSequenceView;
 
 import dev.squaremile.asynctcp.api.certification.Certification;
 import dev.squaremile.asynctcp.api.certification.IgnoreAll;
-import dev.squaremile.asynctcp.api.certification.Resolver;
+import dev.squaremile.asynctcp.api.certification.UseCase;
+import dev.squaremile.asynctcp.api.certification.UseCases;
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 import dev.squaremile.asynctcp.fix.examplecertification.usecases.RejectLogOnIgnoreRest;
 import dev.squaremile.asynctcp.fix.examplecertification.usecases.RespondToLogOnIgnoreRest;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 
 public class FixCertification
 {
-    public static final UseCase USE_CASE_001_ACCEPTED_LOGON = new UseCase("FIX.4.2", "UCAcceptLogon", (connectionTransport, connectionId) -> new RespondToLogOnIgnoreRest(connectionTransport));
-    public static final UseCase USE_CASE_002_FIX11_REJECTED_LOGON = new UseCase("FIXT.1.1", "UCRejectLogon", (connectionTransport, connectionId) -> new RejectLogOnIgnoreRest(connectionTransport));
-    public static final UseCase USE_CASE_002_FIX42_REJECTED_LOGON = new UseCase("FIX.4.2", "UCRejectLogon", (connectionTransport, connectionId) -> new RejectLogOnIgnoreRest(connectionTransport));
-    public static final UseCase USE_CASE_002_NOT_RESPONDING = new UseCase("FIXT.1.1", "UCIgnoreAll", (connectionTransport, connectionId) -> new IgnoreAll());
+    public static final FixUseCase USE_CASE_001_ACCEPTED_LOGON = new FixUseCase("FIX.4.2", "UCAcceptLogon", (connectionTransport, connectionId) -> new RespondToLogOnIgnoreRest(connectionTransport));
+    public static final FixUseCase USE_CASE_002_FIX11_REJECTED_LOGON = new FixUseCase(
+            "FIXT.1.1",
+            "UCRejectLogon",
+            (connectionTransport, connectionId) -> new RejectLogOnIgnoreRest(connectionTransport)
+    );
+    public static final FixUseCase USE_CASE_002_FIX42_REJECTED_LOGON = new FixUseCase(
+            "FIX.4.2",
+            "UCRejectLogon",
+            (connectionTransport, connectionId) -> new RejectLogOnIgnoreRest(connectionTransport)
+    );
+    public static final FixUseCase USE_CASE_002_NOT_RESPONDING = new FixUseCase("FIXT.1.1", "UCIgnoreAll", (connectionTransport, connectionId) -> new IgnoreAll());
 
-    public static Certification<UseCase> fixCertification()
+    public static Certification fixCertification()
     {
-        return new Certification<>(
+        return new Certification(
                 1024 * 1024,
                 fixMessage(),
                 new UseCasesPerFixVersionAndUsername(
@@ -40,13 +53,13 @@ public class FixCertification
         );
     }
 
-    public static class UseCase implements dev.squaremile.asynctcp.api.certification.UseCase
+    public static class FixUseCase implements UseCase
     {
         private final String fixVersion;
         private final String username;
         private final ConnectionApplicationFactory connectionApplicationFactory;
 
-        public UseCase(
+        public FixUseCase(
                 final String fixVersion,
                 final String username,
                 final ConnectionApplicationFactory connectionApplicationFactory
@@ -74,15 +87,31 @@ public class FixCertification
         }
     }
 
-    public static class UseCasesPerFixVersionAndUsername implements Resolver<UseCase>
+    private static class SessionLayerConnectionApplication implements ConnectionApplication
+    {
+        private final ConnectionApplication application;
+
+        public SessionLayerConnectionApplication(final FixUseCase useCase, final ConnectionTransport connectionTransport, final ConnectionId connectionId)
+        {
+            application = useCase.fakeAppFactory().create(connectionTransport, connectionId);
+        }
+
+        @Override
+        public void onEvent(final ConnectionEvent event)
+        {
+            application.onEvent(event);
+        }
+    }
+
+    public static class UseCasesPerFixVersionAndUsername implements UseCases
     {
         private final AsciiSequenceView content = new AsciiSequenceView();
         private final Pattern fixVersionPattern = Pattern.compile("8=(.*?)\u0001");
         private final Pattern usernamePattern = Pattern.compile("\u0001553=(.*?)\u0001");
-        private final List<UseCase> useCases;
+        private final List<FixUseCase> useCases;
 
 
-        public UseCasesPerFixVersionAndUsername(UseCase... useCases)
+        public UseCasesPerFixVersionAndUsername(FixUseCase... useCases)
         {
             this.useCases = Arrays.asList(useCases);
         }
@@ -95,14 +124,11 @@ public class FixCertification
             {
                 final String fixVersion = fixVersion(fixMessage);
                 final String username = username(fixMessage);
-                for (final UseCase useCase : useCases)
-                {
-                    if (useCase.fixVersion().equals(fixVersion) && useCase.username().equals(username))
-                    {
-                        return Optional.of(useCase);
-                    }
-                }
-                throw new IllegalArgumentException("No use case found for " + fixMessage);
+                return useCases.stream()
+                        .filter(useCase -> useCase.fixVersion().equals(fixVersion) && useCase.username().equals(username))
+                        .map(useCase -> Optional.of((UseCase)() -> (connectionTransport, connectionId) -> new SessionLayerConnectionApplication(useCase, connectionTransport, connectionId)))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("No use case found for " + fixMessage));
             }
             return Optional.empty();
         }

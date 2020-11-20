@@ -3,7 +3,7 @@ package dev.squaremile.asynctcp.api;
 
 import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
 import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
-import dev.squaremile.asynctcp.serialization.internal.SerializedMessageListener;
+import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedCommandSupplier;
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;

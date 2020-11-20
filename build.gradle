@@ -3,6 +3,10 @@ plugins {
     id 'idea'
 }
 
+wrapper {
+    distributionType = Wrapper.DistributionType.ALL
+}
+
 allprojects {
     repositories {
         jcenter()
@@ -10,6 +14,7 @@ allprojects {
     compileJava {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'
+        options.compilerArgs += JavaVersion.current() >= JavaVersion.VERSION_1_9 ? ["--release", "8"] : []
     }
     group property('dev.squaremile.asynctransport.group')
     version property('dev.squaremile.asynctransport.version')

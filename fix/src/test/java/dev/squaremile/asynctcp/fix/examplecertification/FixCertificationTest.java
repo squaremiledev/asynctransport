@@ -2,10 +2,12 @@ package dev.squaremile.asynctcp.fix.examplecertification;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.agrona.collections.MutableInteger;
 import org.agrona.collections.MutableLong;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +35,8 @@ public class FixCertificationTest
     private final MessageLog acceptorMessageLog = new MessageLog();
 
     @Test
-    void shouldPickCorrectFakeImplementationToConductCertification()
+    @Timeout(value = 5)
+    void shouldPickCorrectFakeImplementationToConductCertification() throws InterruptedException
     {
         final ApplicationOnDuty certifyingApplication = fixCertification().start(port, acceptorMessageLog);
         final ApplicationOnDuty initiator = transportApplicationFactory.createSharedStack("initiator", transport ->
@@ -57,6 +60,7 @@ public class FixCertificationTest
         initiator.onStart();
         while (messageCount.get() < TOTAL_MESSAGES_TO_RECEIVE)
         {
+            Thread.sleep(1);
             certifyingApplication.work();
             initiator.work();
         }

@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 
-public interface Resolver<T extends UseCase>
+public interface UseCases
 {
-    Optional<T> useCase(MessageReceived messageReceived);
+    Optional<UseCase> useCase(MessageReceived messageReceived);
 }
