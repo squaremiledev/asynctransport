@@ -9,6 +9,9 @@ import java.util.regex.Pattern;
 import org.agrona.AsciiSequenceView;
 
 
+import dev.squaremile.asynctcp.api.certification.Certification;
+import dev.squaremile.asynctcp.api.certification.IgnoreAll;
+import dev.squaremile.asynctcp.api.certification.Resolver;
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 import dev.squaremile.asynctcp.fix.examplecertification.usecases.RejectLogOnIgnoreRest;
 import dev.squaremile.asynctcp.fix.examplecertification.usecases.RespondToLogOnIgnoreRest;
@@ -37,7 +40,7 @@ public class FixCertification
         );
     }
 
-    public static class UseCase implements dev.squaremile.asynctcp.fix.examplecertification.UseCase
+    public static class UseCase implements dev.squaremile.asynctcp.api.certification.UseCase
     {
         private final String fixVersion;
         private final String username;

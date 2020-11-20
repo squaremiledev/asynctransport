@@ -128,7 +128,6 @@ bintray {
             name = '0.0.17'
             desc = 'test build'
             vcsTag = '0.0.17'
-            attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
         }
     }
 }
