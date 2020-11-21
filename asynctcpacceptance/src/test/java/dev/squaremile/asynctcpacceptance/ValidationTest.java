@@ -29,7 +29,6 @@ import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 
-import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
@@ -127,7 +126,7 @@ public class ValidationTest
 
     private void whenApplicationStarting(final EventsSpy eventsSpy, final Consumer<Transport> onStart)
     {
-        ApplicationOnDuty application = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).createSharedStack("test", transport -> new EventDrivenApplication()
+        ApplicationOnDuty application = new AsyncTcp().createSharedStack("test", transport -> new EventDrivenApplication()
         {
             @Override
             public void onStart()

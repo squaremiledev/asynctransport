@@ -6,7 +6,6 @@ import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static java.lang.Integer.parseInt;
 
 public class EchoApplication implements ApplicationOnDuty
@@ -31,7 +30,7 @@ public class EchoApplication implements ApplicationOnDuty
 
     public EchoApplication(final int port)
     {
-        applicationOnDuty = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).createSharedStack(
+        applicationOnDuty = new AsyncTcp().createSharedStack(
                 "echo",
                 transport -> new ListeningApplication(
                         transport,

@@ -29,7 +29,6 @@ import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 
-import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
@@ -43,7 +42,7 @@ class DeterministicTransportApplicationTest
 
     private final int port = freePort();
     private final SampleClient sampleClient = new SampleClient();
-    private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
+    private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp();
     private final EventsSpy events = EventsSpy.spy();
 
     static Stream<Arguments> connectionFactories()

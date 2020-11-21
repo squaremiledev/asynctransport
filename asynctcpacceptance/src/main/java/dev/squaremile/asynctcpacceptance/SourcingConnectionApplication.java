@@ -20,7 +20,6 @@ import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.SerializedMessageListener.NO_OP;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.NO_OPTIONS;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.PLEASE_RESPOND_FLAG;
@@ -146,11 +145,11 @@ public class SourcingConnectionApplication implements ConnectionApplication
 
     private static ApplicationOnDuty createApplication(final boolean useBuffers, final ApplicationFactory applicationFactory)
     {
-        final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
+        final TransportApplicationFactory asyncTcp = new AsyncTcp();
         if (useBuffers)
         {
             System.out.println("Creating an app that uses ring buffers");
-            return transportApplicationFactory.create(
+            return asyncTcp.create(
                     "source",
                     1024 * 1024,
                     NO_OP,
@@ -160,7 +159,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
         else
         {
             System.out.println("Creating an app without ring buffers");
-            return transportApplicationFactory.createSharedStack(
+            return asyncTcp.createSharedStack(
                     "source",
                     applicationFactory
             );

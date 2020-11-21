@@ -32,7 +32,7 @@ import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTra
 
 import static dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler.NO_HANDLER;
 
-public class NonProdGradeTransportAppFactory implements TransportApplicationFactory
+public class RingBufferBackedTransportApplicationFactory implements TransportApplicationFactory
 {
     private static final int MSG_TYPE_ID = 1;
 

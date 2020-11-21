@@ -7,7 +7,6 @@ import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 
-import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.singletonList;
@@ -15,7 +14,7 @@ import static java.util.Collections.singletonList;
 public class AppConnectingToTcpPort implements EventDrivenApplication
 {
     private final Transport transport;
-    private int port;
+    private final int port;
 
     private AppConnectingToTcpPort(final Transport transport, final int port)
     {
@@ -27,7 +26,7 @@ public class AppConnectingToTcpPort implements EventDrivenApplication
     {
         if (args.length == 1)
         {
-            ApplicationOnDuty transportApplication = new AsyncTcp().transportAppFactory(NON_PROD_GRADE)
+            ApplicationOnDuty transportApplication = new AsyncTcp()
                     .createSharedStack("", transport -> new AppConnectingToTcpPort(transport, parseInt(args[0])));
 
             new NaiveRoundRobinSingleThreadRunner().run(singletonList(transportApplication));
@@ -52,14 +51,14 @@ public class AppConnectingToTcpPort implements EventDrivenApplication
     }
 
     @Override
-    public void onEvent(final Event event)
-    {
-        System.out.println(event);
-    }
-
-    @Override
     public void work()
     {
 
+    }
+
+    @Override
+    public void onEvent(final Event event)
+    {
+        System.out.println(event);
     }
 }

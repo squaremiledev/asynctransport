@@ -18,7 +18,6 @@ import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 
-import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
 @ExtendWith(TimingExtension.class)
@@ -27,7 +26,7 @@ class LongPingPongAppTest
     private static final int MESSAGES_CAP = 100;
     private final EventsSpy pingSpy = EventsSpy.spy();
     private final EventsSpy pongSpy = EventsSpy.spy();
-    private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
+    private final TransportApplicationFactory asyncTcp = new AsyncTcp();
     private final int port = freePort();
 
     private int numbersExchangedCount = 0;
@@ -57,7 +56,7 @@ class LongPingPongAppTest
     @ParameterizedTest
     void shouldExchangeLongs(final Delineation delineation)
     {
-        ApplicationOnDuty pingApp = transportApplicationFactory.createSharedStack(
+        ApplicationOnDuty pingApp = asyncTcp.createSharedStack(
                 "ping",
                 new LongPingPongAppFactory(
                         delineation,
@@ -71,7 +70,7 @@ class LongPingPongAppTest
                         }
                 )
         );
-        ApplicationOnDuty pongApp = transportApplicationFactory.createSharedStack(
+        ApplicationOnDuty pongApp = asyncTcp.createSharedStack(
                 "pong",
                 new LongPongAppFactory(
                         delineation,

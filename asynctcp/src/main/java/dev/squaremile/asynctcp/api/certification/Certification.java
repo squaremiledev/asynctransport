@@ -18,8 +18,6 @@ import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
-
 public class Certification
 {
     private final int buffersSize;
@@ -37,7 +35,7 @@ public class Certification
     public ApplicationOnDuty start(final int port, final SerializedMessageListener acceptorMessageListener)
     {
         final MutableBoolean readyToAcceptConnections = new MutableBoolean(false);
-        final ApplicationOnDuty acceptor = new AsyncTcp().transportAppFactory(NON_PROD_GRADE).create(
+        final ApplicationOnDuty acceptor = new AsyncTcp().create(
                 "acceptor",
                 buffersSize,
                 acceptorMessageListener,

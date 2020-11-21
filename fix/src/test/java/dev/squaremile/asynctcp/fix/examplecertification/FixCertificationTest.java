@@ -2,7 +2,6 @@ package dev.squaremile.asynctcp.fix.examplecertification;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.agrona.collections.MutableInteger;
 import org.agrona.collections.MutableLong;
@@ -20,7 +19,6 @@ import dev.squaremile.asynctcp.fixtures.MessageLog;
 import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 
-import static dev.squaremile.asynctcp.api.FactoryType.NON_PROD_GRADE;
 import static dev.squaremile.asynctcp.fix.examplecertification.FixCertification.fixCertification;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
@@ -30,7 +28,7 @@ public class FixCertificationTest
 {
     private static final int TOTAL_MESSAGES_TO_RECEIVE = 1;
     private final MutableLong messageCount = new MutableLong();
-    private final TransportApplicationFactory transportApplicationFactory = new AsyncTcp().transportAppFactory(NON_PROD_GRADE);
+    private final TransportApplicationFactory asyncTcp = new AsyncTcp();
     private final int port = freePort();
     private final MessageLog acceptorMessageLog = new MessageLog();
 
@@ -39,7 +37,7 @@ public class FixCertificationTest
     void shouldPickCorrectFakeImplementationToConductCertification() throws InterruptedException
     {
         final ApplicationOnDuty certifyingApplication = fixCertification().start(port, acceptorMessageLog);
-        final ApplicationOnDuty initiator = transportApplicationFactory.createSharedStack("initiator", transport ->
+        final ApplicationOnDuty initiator = asyncTcp.createSharedStack("initiator", transport ->
                 new ConnectingApplication(
                         transport,
                         "localhost",
