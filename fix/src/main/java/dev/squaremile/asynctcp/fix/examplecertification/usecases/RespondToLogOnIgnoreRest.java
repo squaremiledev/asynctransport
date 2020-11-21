@@ -35,8 +35,8 @@ public class RespondToLogOnIgnoreRest implements ConnectionApplication
                 if (FixUtils.isLogon(content, i))
                 {
                     final SendMessage sendMessage = transport.command(SendMessage.class);
-                    sendMessage.prepare(logonMessage.length).putBytes(sendMessage.offset(), logonMessage);
-                    sendMessage.commit();
+                    sendMessage.prepare().putBytes(sendMessage.offset(), logonMessage);
+                    sendMessage.commit(logonMessage.length);
                     transport.handle(sendMessage);
                     break;
                 }

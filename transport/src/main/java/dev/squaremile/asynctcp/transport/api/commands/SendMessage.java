@@ -21,7 +21,6 @@ public class SendMessage implements ConnectionUserCommand
     private final Delineation delineation;
     private final int capacity;
     private int offset;
-    private int lengthToCommit;
     private int length;
     private long commandId;
 
@@ -37,7 +36,6 @@ public class SendMessage implements ConnectionUserCommand
         this.data = ByteBuffer.allocate(capacity);
         this.buffer = new UnsafeBuffer(data);
         this.length = 0;
-        this.lengthToCommit = 0;
         this.commandId = CommandId.NO_COMMAND_ID;
         this.initialOffset = 0;
         this.offset = 0;
@@ -62,20 +60,9 @@ public class SendMessage implements ConnectionUserCommand
         return connectionId.connectionId();
     }
 
-    public MutableDirectBuffer prepare(final int length)
+    public MutableDirectBuffer prepare()
     {
-        if (delineation.type() == Delineation.Type.FIXED_LENGTH || delineation.type() == Delineation.Type.ASCII_PATTERN)
-        {
-            this.lengthToCommit = length;
-        }
-        else
-        {
-            offset = initialOffset + delineation.padding();
-            delineation.type().writeLength(buffer, offset, length - delineation.extraLength());
-            offset += delineation.type().lengthFieldLength;
-            lengthToCommit = delineation.padding() + delineation.type().lengthFieldLength + length;
-        }
-
+        this.offset = initialOffset + delineation.padding() + delineation.type().lengthFieldLength;
         this.length = 0;
         return buffer;
     }
@@ -88,7 +75,6 @@ public class SendMessage implements ConnectionUserCommand
     public SendMessage reset()
     {
         commandId = CommandId.NO_COMMAND_ID;
-        lengthToCommit = 0;
         length = 0;
         offset = initialOffset;
         return this;
@@ -119,7 +105,6 @@ public class SendMessage implements ConnectionUserCommand
                ", offset=" + offset +
                ", delineation=" + delineation +
                ", capacity=" + capacity +
-               ", lengthToCommit=" + lengthToCommit +
                ", length=" + length +
                ", commandId=" + commandId +
                '}';
@@ -134,11 +119,12 @@ public class SendMessage implements ConnectionUserCommand
         return copy;
     }
 
-    public SendMessage commit()
+    public SendMessage commit(final int length)
     {
-        this.length = lengthToCommit;
-        this.lengthToCommit = 0;
+        this.delineation.type().writeLength(buffer, initialOffset + delineation.padding(), length - delineation.extraLength());
+        this.length = delineation.padding() + delineation.type().lengthFieldLength + length;
         this.offset = initialOffset;
+
         return this;
     }
 

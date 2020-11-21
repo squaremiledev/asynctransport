@@ -90,8 +90,8 @@ public class SendLogOn implements ConnectionApplication
             return;
         }
         SendMessage sendMessage = transport.command(SendMessage.class);
-        sendMessage.prepare(logonMessage.length).putBytes(sendMessage.offset(), logonMessage);
-        sendMessage.commit();
+        sendMessage.prepare().putBytes(sendMessage.offset(), logonMessage);
+        sendMessage.commit(logonMessage.length);
         transport.handle(sendMessage);
         messagesSent++;
     }

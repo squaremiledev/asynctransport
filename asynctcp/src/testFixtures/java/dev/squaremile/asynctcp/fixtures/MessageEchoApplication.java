@@ -51,8 +51,8 @@ public class MessageEchoApplication implements ConnectionApplication
     private SendMessage sendMessageCommandWithDataFrom(final MessageReceived messageReceivedEvent)
     {
         SendMessage sendMessage = transport.command(SendMessage.class);
-        messageReceivedEvent.buffer().getBytes(messageReceivedEvent.offset(), sendMessage.prepare(messageReceivedEvent.length()), sendMessage.offset(), messageReceivedEvent.length());
-        sendMessage.commit();
+        messageReceivedEvent.buffer().getBytes(messageReceivedEvent.offset(), sendMessage.prepare(), sendMessage.offset(), messageReceivedEvent.length());
+        sendMessage.commit(messageReceivedEvent.length());
         return sendMessage;
     }
 }

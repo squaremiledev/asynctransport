@@ -235,11 +235,11 @@ public class SourcingConnectionApplication implements ConnectionApplication
     private void send(final long supposedSendingTimestampNs, final boolean expectResponse)
     {
         SendMessage message = connectionTransport.command(SendMessage.class);
-        MutableDirectBuffer buffer = message.prepare(12 + extraData.length);
+        MutableDirectBuffer buffer = message.prepare();
         buffer.putInt(message.offset(), expectResponse ? PLEASE_RESPOND_FLAG : NO_OPTIONS);
         buffer.putLong(message.offset() + 4, supposedSendingTimestampNs);
         buffer.putBytes(message.offset() + 12, extraData);
-        message.commit();
+        message.commit(12 + extraData.length);
         connectionTransport.handle(message);
     }
 
