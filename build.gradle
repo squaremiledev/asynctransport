@@ -11,11 +11,17 @@ allprojects {
     repositories {
         jcenter()
     }
-    compileJava {
-        sourceCompatibility = '1.8'
-        targetCompatibility = '1.8'
-        options.compilerArgs += JavaVersion.current() >= JavaVersion.VERSION_1_9 ? ["--release", "8"] : []
-    }
     group property('dev.squaremile.asynctransport.group')
     version property('dev.squaremile.asynctransport.version')
+}
+
+subprojects { Project project ->
+    tasks.withType(JavaCompile) { JavaCompile task ->
+        task.sourceCompatibility = '1.8'
+        task.targetCompatibility = '1.8'
+        if (!task.options.compilerArgs.contains("--release") && JavaVersion.current() >= JavaVersion.VERSION_1_9)
+        {
+            task.options.compilerArgs += ["--release", "8"]
+        }
+    }
 }
