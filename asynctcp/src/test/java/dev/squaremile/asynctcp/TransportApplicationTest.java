@@ -18,6 +18,7 @@ import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.transport.api.values.Delineation;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 
@@ -33,7 +34,7 @@ import static java.lang.System.arraycopy;
 class TransportApplicationTest
 {
 
-    private static final ResponseApplication.ByteConverter BYTE_CONVERTER = value -> (byte)(value + 100);
+    private static final Delineation DELINEATION = fixedLengthDelineation(3);
 
     private final int port = freePort();
     private final SampleClient sampleClient = new SampleClient();
@@ -51,10 +52,12 @@ class TransportApplicationTest
                 transport ->
                         new ListeningApplication(
                                 transport,
-                                fixedLengthDelineation(3),
+                                DELINEATION,
                                 port,
                                 events,
-                                (connectionTransport, connectionId) -> new ResponseApplication(connectionTransport, IGNORE_EVENTS, BYTE_CONVERTER)
+                                (connectionTransport, connectionId) -> new ResponseApplication(
+                                        connectionTransport, IGNORE_EVENTS, value -> (byte)(value * 10)
+                                )
                         )
         );
         final ThingsOnDutyRunner thingsOnDuty = new ThingsOnDutyRunner(application);
@@ -74,23 +77,13 @@ class TransportApplicationTest
 
         // DATA SENDING PART
         byte[] dataToSend = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
+        byte[] expectedReceivedData = new byte[]{10, 20, 30, 40, 50, 60, 70, 80, 90};
 
         // When
         sampleClient.write(dataToSend);
-        byte[] actualReceivedData = readReceivedData(thingsOnDuty, dataToSend.length);
 
         // Then
-        assertThat(actualReceivedData).isEqualTo(expectedDataToReceive(dataToSend, BYTE_CONVERTER));
-    }
-
-    private byte[] expectedDataToReceive(final byte[] dataToSend, final ResponseApplication.ByteConverter byteConverter)
-    {
-        byte[] expectedDataToReceive = new byte[dataToSend.length];
-        for (int i = 0; i < dataToSend.length; i++)
-        {
-            expectedDataToReceive[i] = byteConverter.convert(dataToSend[i]);
-        }
-        return expectedDataToReceive;
+        assertThat(readReceivedData(thingsOnDuty, dataToSend.length)).isEqualTo(expectedReceivedData);
     }
 
     private byte[] readReceivedData(final ThingsOnDutyRunner thingsOnDuty, final int expectedDataLength)
