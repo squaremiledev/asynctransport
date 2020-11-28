@@ -80,19 +80,23 @@ Coordinated omission included in all the results.
 - (A) 100k msg/s send -> (B) 100k msg/s received -> (B) 100k msg/s send -> (A) 100k msg/s received
 
 ```
-Scenario: remoteHost localhost, remotePort 9998, sendingRatePerSecond 100000, skippedWarmUpResponses 31250 , messagesSent 6000000, 187500 expected responses with a response rate 1 for 32
+java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.EchoApplication  9998 
+java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication localhost 9998 100000 31250 6000000 32 1 0 
+
+Scenario: remoteHost localhost, remotePort 9998, sendingRatePerSecond 100000, skippedWarmUpResponses 31250 , messagesSent 6000000, 187500 expected responses with a response rate 1 for 32, use buffers: true, extra data 0 bytes
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |             8 |             15 |
-99th percentile        |            15 |             29 |
-99.9th percentile      |            29 |             58 |
-99.99th percentile     |            63 |            126 |
-99.999th percentile    |           132 |            264 |
-worst                  |           143 |            285 |
+mean                   |             9 |             18 |
+99th percentile        |            15 |             30 |
+99.9th percentile      |            27 |             54 |
+99.99th percentile     |            64 |            127 |
+99.999th percentile    |           164 |            328 |
+worst                  |           220 |            439 |
 
 Based on 156250 measurements.
 It took 49999 ms between the first measured message sent and the last received
+
 ```
 
 ### Cloud (AWS EC2)

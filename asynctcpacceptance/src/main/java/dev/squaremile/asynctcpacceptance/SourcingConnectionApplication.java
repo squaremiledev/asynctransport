@@ -2,6 +2,7 @@ package dev.squaremile.asynctcpacceptance;
 
 import java.util.concurrent.TimeUnit;
 
+import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.MutableBoolean;
 
@@ -18,11 +19,14 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.DataSent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
 import static dev.squaremile.asynctcp.serialization.api.SerializedMessageListener.NO_OP;
+import static dev.squaremile.asynctcpacceptance.AdHocProtocol.CORRELATION_ID_OFFSET;
+import static dev.squaremile.asynctcpacceptance.AdHocProtocol.EXTRA_DATA_OFFSET;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.NO_OPTIONS;
+import static dev.squaremile.asynctcpacceptance.AdHocProtocol.OFFSET_OPTIONS;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.PLEASE_RESPOND_FLAG;
+import static dev.squaremile.asynctcpacceptance.AdHocProtocol.SEND_TIME_OFFSET;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.nanoTime;
 
@@ -30,6 +34,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
 {
     private final ConnectionTransport connectionTransport;
     private final int totalMessagesToSend;
+    private final int requestToResponseRatio;
     private final MutableBoolean isDone;
     private final long messageDelayNs;
     private final OnMessageReceived onMessageReceived;
@@ -52,6 +57,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
     {
         this.connectionTransport = connectionTransport;
         this.totalMessagesToSend = totalMessagesToSend;
+        this.requestToResponseRatio = respondToEveryNthRequest;
         this.selectiveResponseRequest = new SelectiveResponseRequest(totalMessagesToSend, respondToEveryNthRequest);
         this.isDone = isDone;
         this.messageDelayNs = TimeUnit.SECONDS.toNanos(1) / sendingRatePerSecond;
@@ -121,7 +127,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
                 transport,
                 remoteHost,
                 remotePort,
-                new Delineation(Delineation.Type.INT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
+                AdHocProtocol.DELINEATION,
                 (connectionTransport, connectionId) -> new SourcingConnectionApplication(
                         connectionTransport,
                         messagesSent,
@@ -190,7 +196,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
             if (nowNs >= expectedTimestampNsToSendThisMessage)
             {
                 boolean askToRespond = selectiveResponseRequest.shouldRespond(messagesSentCount);
-                send(expectedTimestampNsToSendThisMessage, askToRespond);
+                send(expectedTimestampNsToSendThisMessage, askToRespond, messagesSentCount);
                 messagesSentCount++;
                 awaitingResponsesInFlight += askToRespond ? 1 : 0;
             }
@@ -218,7 +224,9 @@ public class SourcingConnectionApplication implements ConnectionApplication
             messagesReceivedCount++;
             awaitingResponsesInFlight--;
             MessageReceived messageReceived = (MessageReceived)event;
-            long sendTimeNs = messageReceived.buffer().getLong(messageReceived.offset() + 4);
+            DirectBuffer buffer = messageReceived.buffer();
+            long sendTimeNs = buffer.getLong(messageReceived.offset() + SEND_TIME_OFFSET);
+            validateResponse(buffer.getLong(messageReceived.offset() + CORRELATION_ID_OFFSET));
             onMessageReceived.onMessageReceived(messagesSentCount, messagesReceivedCount, sendTimeNs, receivedTimeNs);
             if (selectiveResponseRequest.receivedLast(messagesReceivedCount))
             {
@@ -232,14 +240,23 @@ public class SourcingConnectionApplication implements ConnectionApplication
         }
     }
 
-    private void send(final long supposedSendingTimestampNs, final boolean expectResponse)
+    private void validateResponse(final long correlationId)
+    {
+        if (((messagesReceivedCount - 1) * requestToResponseRatio) != correlationId)
+        {
+            throw new IllegalStateException("A mismatch detected");
+        }
+    }
+
+    private void send(final long supposedSendingTimestampNs, final boolean expectResponse, final long correlationId)
     {
         SendMessage message = connectionTransport.command(SendMessage.class);
         MutableDirectBuffer buffer = message.prepare();
-        buffer.putInt(message.offset(), expectResponse ? PLEASE_RESPOND_FLAG : NO_OPTIONS);
-        buffer.putLong(message.offset() + 4, supposedSendingTimestampNs);
-        buffer.putBytes(message.offset() + 12, extraData);
-        message.commit(12 + extraData.length);
+        buffer.putInt(message.offset() + OFFSET_OPTIONS, expectResponse ? PLEASE_RESPOND_FLAG : NO_OPTIONS);
+        buffer.putLong(message.offset() + SEND_TIME_OFFSET, supposedSendingTimestampNs);
+        buffer.putLong(message.offset() + CORRELATION_ID_OFFSET, correlationId);
+        buffer.putBytes(message.offset() + EXTRA_DATA_OFFSET, extraData);
+        message.commit(EXTRA_DATA_OFFSET + extraData.length);
         connectionTransport.handle(message);
     }
 
