@@ -36,4 +36,14 @@ public class FreePort
         while (reserved.contains(newPort));
         return newPort;
     }
+
+    public static List<Integer> freePorts(final int count)
+    {
+        final Integer[] allocatedPorts = new Integer[count];
+        for (int i = 0; i < count; i++)
+        {
+            allocatedPorts[i] = freePortOtherThan(allocatedPorts);
+        }
+        return Arrays.asList(allocatedPorts);
+    }
 }
