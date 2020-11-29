@@ -13,9 +13,6 @@ test {
 }
 
 dependencies {
-    implementation project(':transport')
-    implementation project(':serialization')
-    implementation project(':asynctcp')
     implementation 'org.agrona:agrona:1.6.0'
     implementation 'io.aeron:aeron-cluster:1.31.1'
 
