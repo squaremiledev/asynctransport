@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'java-library'
+    id 'java-test-fixtures'
     id 'idea'
 }
 
@@ -15,6 +16,10 @@ test {
 dependencies {
     implementation 'org.agrona:agrona:1.6.0'
     implementation 'io.aeron:aeron-cluster:1.31.1'
+
+    testFixturesImplementation 'org.agrona:agrona:1.6.0'
+    testFixturesImplementation 'io.aeron:aeron-cluster:1.31.1'
+    testFixturesImplementation testFixtures(project(':transport'))
 
     testImplementation testFixtures(project(':transport'))
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'

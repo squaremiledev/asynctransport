@@ -1,4 +1,4 @@
-package dev.squaremile.transport.aeroncluster.support.applications;
+package dev.squaremile.transport.aeroncluster.fixtures.applications;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;

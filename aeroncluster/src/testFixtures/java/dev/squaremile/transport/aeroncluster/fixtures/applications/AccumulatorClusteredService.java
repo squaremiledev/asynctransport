@@ -1,4 +1,4 @@
-package dev.squaremile.transport.aeroncluster.support.applications;
+package dev.squaremile.transport.aeroncluster.fixtures.applications;
 
 import org.agrona.BitUtil;
 import org.agrona.DirectBuffer;

@@ -9,10 +9,10 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.io.TempDir;
 
 
-import dev.squaremile.transport.aeroncluster.support.applications.AccumulatorClusteredService;
-import dev.squaremile.transport.aeroncluster.support.applications.NumberGeneratorClusterClientApp;
-import dev.squaremile.transport.aeroncluster.support.cluster.ClusterEndpoints;
-import dev.squaremile.transport.aeroncluster.support.cluster.ClusterNode;
+import dev.squaremile.transport.aeroncluster.fixtures.applications.AccumulatorClusteredService;
+import dev.squaremile.transport.aeroncluster.fixtures.applications.NumberGeneratorClusterClientApp;
+import dev.squaremile.transport.aeroncluster.fixtures.ClusterEndpoints;
+import dev.squaremile.transport.aeroncluster.fixtures.ClusterNode;
 import io.aeron.exceptions.RegistrationException;
 import io.github.artsok.RepeatedIfExceptionsTest;
 

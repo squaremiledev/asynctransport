@@ -1,4 +1,4 @@
-package dev.squaremile.transport.aeroncluster.support.cluster;
+package dev.squaremile.transport.aeroncluster.fixtures;
 
 import java.nio.file.Path;
 

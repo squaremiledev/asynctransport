@@ -1,8 +1,11 @@
-package dev.squaremile.transport.aeroncluster.support.cluster;
+package dev.squaremile.transport.aeroncluster.fixtures;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+
+import dev.squaremile.transport.aeroncluster.fixtures.ClusterEndpoints;
 
 class ClusterEndpointsTest
 {
