@@ -20,12 +20,12 @@ import io.aeron.driver.ThreadingMode;
 public class ClusterNode
 {
     private final ClusterContext clusterContext;
-    private final Runnable onReady;
+    private final ShutdownSignalBarrier shutdownSignalBarrier;
 
-    public ClusterNode(final ClusterContext clusterContext, final Runnable onReady)
+    private ClusterNode(final ClusterContext clusterContext, final ShutdownSignalBarrier shutdownSignalBarrier)
     {
         this.clusterContext = clusterContext;
-        this.onReady = onReady;
+        this.shutdownSignalBarrier = shutdownSignalBarrier;
     }
 
     public static ClusterNode clusterNode(
@@ -93,7 +93,7 @@ public class ClusterNode
                         )
                         .clusterDir(clusterDirectory.resolve("clusterDir").toFile())
         );
-        return new ClusterNode(clusterContext, shutdownSignalBarrier::await);
+        return new ClusterNode(clusterContext, shutdownSignalBarrier);
     }
 
     public void start()
@@ -105,7 +105,7 @@ public class ClusterNode
                 ClusteredServiceContainer clusteredServiceContainer = ClusteredServiceContainer.launch(clusterContext.clusteredServiceContext())
         )
         {
-            onReady.run();
+            shutdownSignalBarrier.await();
         }
     }
 }

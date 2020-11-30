@@ -9,14 +9,15 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.io.TempDir;
 
 
-import dev.squaremile.transport.aeroncluster.fixtures.applications.AccumulatorClusteredService;
-import dev.squaremile.transport.aeroncluster.fixtures.applications.NumberGeneratorClusterClientApp;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterEndpoints;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterNode;
+import dev.squaremile.transport.aeroncluster.fixtures.applications.AccumulatorClusteredService;
+import dev.squaremile.transport.aeroncluster.fixtures.applications.NumberGeneratorClusterClientApp;
 import io.aeron.exceptions.RegistrationException;
 import io.github.artsok.RepeatedIfExceptionsTest;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePorts;
+import static dev.squaremile.transport.aeroncluster.fixtures.NodeEndpointsFixture.nodeEndpoints;
 
 class ClientFactoryTest
 {
@@ -83,20 +84,6 @@ class ClientFactoryTest
                 nodeId,
                 clusterEndpoints,
                 new AccumulatorClusteredService()
-        );
-    }
-
-    private ClusterEndpoints.NodeEndpoints nodeEndpoints(final List<Integer> nodeFreePorts, final int nodeId, final String ingress)
-    {
-        return new ClusterEndpoints.NodeEndpoints(
-                nodeId,
-                ingress,
-                "localhost:" + nodeFreePorts.get(0),
-                "localhost:" + nodeFreePorts.get(1),
-                "localhost:" + nodeFreePorts.get(2),
-                "localhost:" + nodeFreePorts.get(3),
-                "localhost:" + nodeFreePorts.get(4),
-                "localhost:" + nodeFreePorts.get(5)
         );
     }
 
