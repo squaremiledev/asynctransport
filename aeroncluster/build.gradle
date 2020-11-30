@@ -19,4 +19,5 @@ dependencies {
     testImplementation testFixtures(project(':transport'))
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     testImplementation 'org.assertj:assertj-core:3.16.1'
+    testImplementation 'io.github.artsok:rerunner-jupiter:2.1.6'
 }

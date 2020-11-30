@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Executors;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -12,42 +13,92 @@ import dev.squaremile.aeroncluster.support.applications.AccumulatorClusteredServ
 import dev.squaremile.aeroncluster.support.applications.NumberGeneratorClusterClientApp;
 import dev.squaremile.aeroncluster.support.cluster.ClusterEndpoints;
 import dev.squaremile.aeroncluster.support.cluster.ClusterNode;
+import io.aeron.exceptions.RegistrationException;
+import io.github.artsok.RepeatedIfExceptionsTest;
 
 import static dev.squaremile.aeroncluster.support.cluster.ClusterNode.clusterNode;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePorts;
 
 class ClientFactoryTest
 {
-    @RepeatedTest(3)
-    void shouldConnectAndExchangeMessagesWithTheCluster(@TempDir Path tempDir)
+    public static final int PORTS_NEEDED_FOR_INGRESS = 3;
+    public static final int PORTS_NEEDED_BY_CLUSTER = 6;
+    private final List<Integer> ports = freePorts(21);
+    private final List<Integer> node0FreePorts = ports.subList(PORTS_NEEDED_FOR_INGRESS, PORTS_NEEDED_FOR_INGRESS + PORTS_NEEDED_BY_CLUSTER);
+    private final List<Integer> node1FreePorts = ports.subList(PORTS_NEEDED_FOR_INGRESS + PORTS_NEEDED_BY_CLUSTER, PORTS_NEEDED_FOR_INGRESS + PORTS_NEEDED_BY_CLUSTER * 2);
+    private final List<Integer> node2FreePorts = ports.subList(PORTS_NEEDED_FOR_INGRESS + PORTS_NEEDED_BY_CLUSTER * 2, PORTS_NEEDED_FOR_INGRESS + PORTS_NEEDED_BY_CLUSTER * 3);
+    private final IngressEndpoints.Endpoint node0Ingress = new IngressEndpoints.Endpoint(0, "localhost", ports.get(0));
+    private final IngressEndpoints.Endpoint node1Ingress = new IngressEndpoints.Endpoint(1, "localhost", ports.get(1));
+    private final IngressEndpoints.Endpoint node2Ingress = new IngressEndpoints.Endpoint(2, "localhost", ports.get(2));
+
+    @RepeatedIfExceptionsTest(repeats = 2, exceptions = RegistrationException.class)
+    void shouldWorkWithAThreeNodeCluster(@TempDir Path tempDir)
     {
-        final List<Integer> ports = freePorts(7);
-        final Integer ingressPort = ports.get(0);
-        final int nodeId = 0;
-        final ClusterNode clusterNode = clusterNode(
-                tempDir.resolve("cluster"),
-                tempDir.resolve("aeron"),
-                nodeId,
-                new ClusterEndpoints(
-                        new ClusterEndpoints.NodeEndpoints(
-                                nodeId,
-                                "localhost:" + ingressPort,
-                                "localhost:" + ports.get(1),
-                                "localhost:" + ports.get(2),
-                                "localhost:" + ports.get(3),
-                                "localhost:" + ports.get(4),
-                                "localhost:" + ports.get(5),
-                                "localhost:" + ports.get(6)
-                        )
-                ),
-                new AccumulatorClusteredService()
+        final IngressEndpoints ingressEndpoints = new IngressEndpoints(node0Ingress, node1Ingress, node2Ingress);
+        final ClusterEndpoints clusterEndpoints = new ClusterEndpoints(
+                nodeEndpoints(node0FreePorts, 0, ingressEndpoints.get(0).endpoint()),
+                nodeEndpoints(node1FreePorts, 1, ingressEndpoints.get(1).endpoint()),
+                nodeEndpoints(node2FreePorts, 2, ingressEndpoints.get(2).endpoint())
         );
+        final ClusterNode clusterNode0 = createClusterNode(0, tempDir.resolve("node-0"), clusterEndpoints);
+        final ClusterNode clusterNode1 = createClusterNode(1, tempDir.resolve("node-1"), clusterEndpoints);
+        final ClusterNode clusterNode2 = createClusterNode(2, tempDir.resolve("node-2"), clusterEndpoints);
 
-        Executors.newSingleThreadExecutor().execute(clusterNode::start);
-
+        Executors.newSingleThreadExecutor().execute(clusterNode0::start);
+        Executors.newSingleThreadExecutor().execute(clusterNode1::start);
+        Executors.newSingleThreadExecutor().execute(clusterNode2::start);
         new ClientFactory().createConnection(
-                new IngressEndpoints(new IngressEndpoints.Endpoint(nodeId, "localhost", ingressPort)),
+                ingressEndpoints,
                 (aeronCluster, publisher) -> new NumberGeneratorClusterClientApp(aeronCluster, publisher, 5, 200)
         ).connect();
     }
+
+    @RepeatedIfExceptionsTest(repeats = 2, exceptions = RegistrationException.class)
+    void shouldWorkWithASingleNodeCluster(@TempDir Path tempDir)
+    {
+        final IngressEndpoints ingressEndpoints = new IngressEndpoints(node0Ingress);
+        final ClusterEndpoints clusterEndpoints = new ClusterEndpoints(
+                nodeEndpoints(node0FreePorts, 0, ingressEndpoints.get(0).endpoint())
+        );
+        final ClusterNode clusterNode0 = createClusterNode(0, tempDir.resolve("node-0"), clusterEndpoints);
+        Executors.newSingleThreadExecutor().execute(clusterNode0::start);
+
+        new ClientFactory().createConnection(
+                ingressEndpoints,
+                (aeronCluster, publisher) -> new NumberGeneratorClusterClientApp(aeronCluster, publisher, 5, 200)
+        ).connect();
+    }
+
+    @Disabled
+    @RepeatedTest(3)
+    void shouldNotHardcodeAnyGlobalResources(@TempDir Path tempDir)
+    {
+        shouldWorkWithAThreeNodeCluster(tempDir);
+    }
+
+    private ClusterNode createClusterNode(final int nodeId, final Path noteTempDir, final ClusterEndpoints clusterEndpoints)
+    {
+        return clusterNode(
+                noteTempDir.resolve("cluster"),
+                noteTempDir.resolve("aeron"),
+                nodeId,
+                clusterEndpoints,
+                new AccumulatorClusteredService()
+        );
+    }
+
+    private ClusterEndpoints.NodeEndpoints nodeEndpoints(final List<Integer> nodeFreePorts, final int nodeId, final String ingress)
+    {
+        return new ClusterEndpoints.NodeEndpoints(
+                nodeId,
+                ingress,
+                "localhost:" + nodeFreePorts.get(0),
+                "localhost:" + nodeFreePorts.get(1),
+                "localhost:" + nodeFreePorts.get(2),
+                "localhost:" + nodeFreePorts.get(3),
+                "localhost:" + nodeFreePorts.get(4),
+                "localhost:" + nodeFreePorts.get(5)
+        );
+    }
+
 }

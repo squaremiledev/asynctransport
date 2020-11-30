@@ -29,7 +29,7 @@ public class IngressEndpoints
     public String asUri()
     {
         return endpoints.stream()
-                .map(endpoint -> String.format("%d=%s:%d", endpoint.nodeId(), endpoint.hostname(), endpoint.port()))
+                .map(endpoint -> String.format("%d=%s", endpoint.nodeId(), endpoint.endpoint()))
                 .collect(Collectors.joining(","));
     }
 
@@ -39,6 +39,11 @@ public class IngressEndpoints
         return "IngressEndpoints{" +
                "endpoints=" + endpoints +
                '}';
+    }
+
+    public Endpoint get(final int nodeId)
+    {
+        return endpoints.get(nodeId);
     }
 
     public static class Endpoint
@@ -57,6 +62,11 @@ public class IngressEndpoints
         public int nodeId()
         {
             return nodeId;
+        }
+
+        public String endpoint()
+        {
+            return hostname() + ":" + port();
         }
 
         public String hostname()

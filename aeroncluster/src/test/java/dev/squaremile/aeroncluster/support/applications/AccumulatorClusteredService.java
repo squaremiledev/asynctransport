@@ -23,17 +23,40 @@ public class AccumulatorClusteredService implements ClusteredService
 
     public void onStart(final Cluster cluster, final Image snapshotImage)
     {
+        System.out.println("[onStart]");
         this.idleStrategy = cluster.idleStrategy();
     }
 
     public void onSessionOpen(final ClientSession session, final long timestamp)
     {
+        System.out.println("[onSessionOpen]");
 
     }
 
     public void onSessionClose(final ClientSession session, final long timestamp, final CloseReason closeReason)
     {
+        System.out.println("[onSessionClose]");
 
+    }
+
+    public void onTimerEvent(final long correlationId, final long timestamp)
+    {
+        System.out.println("[onTimerEvent]");
+    }
+
+    public void onTakeSnapshot(final ExclusivePublication snapshotPublication)
+    {
+        System.out.println("[onTakeSnapshot]");
+    }
+
+    public void onRoleChange(final Cluster.Role newRole)
+    {
+        System.out.println("[onRoleChange]");
+    }
+
+    public void onTerminate(final Cluster cluster)
+    {
+        System.out.println("[onTerminate]");
     }
 
     public void onSessionMessage(
@@ -45,6 +68,7 @@ public class AccumulatorClusteredService implements ClusteredService
             final Header header
     )
     {
+        System.out.println("[onSessionMessage]");
         final int message = buffer.getInt(offset);
         totalSoFar += message;
         if (null != session)
@@ -57,21 +81,5 @@ public class AccumulatorClusteredService implements ClusteredService
                 idleStrategy.idle();
             }
         }
-    }
-
-    public void onTimerEvent(final long correlationId, final long timestamp)
-    {
-    }
-
-    public void onTakeSnapshot(final ExclusivePublication snapshotPublication)
-    {
-    }
-
-    public void onRoleChange(final Cluster.Role newRole)
-    {
-    }
-
-    public void onTerminate(final Cluster cluster)
-    {
     }
 }
