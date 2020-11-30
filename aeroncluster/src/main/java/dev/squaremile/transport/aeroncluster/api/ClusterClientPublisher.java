@@ -1,4 +1,4 @@
-package dev.squaremile.aeroncluster.api;
+package dev.squaremile.transport.aeroncluster.api;
 
 import org.agrona.DirectBuffer;
 

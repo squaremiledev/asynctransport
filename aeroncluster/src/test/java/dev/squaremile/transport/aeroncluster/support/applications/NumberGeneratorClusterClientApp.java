@@ -1,4 +1,4 @@
-package dev.squaremile.aeroncluster.support.applications;
+package dev.squaremile.transport.aeroncluster.support.applications;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
@@ -12,8 +12,8 @@ import org.agrona.concurrent.BackoffIdleStrategy;
 import org.agrona.concurrent.IdleStrategy;
 
 
-import dev.squaremile.aeroncluster.api.ClusterClientApplication;
-import dev.squaremile.aeroncluster.api.ClusterClientPublisher;
+import dev.squaremile.transport.aeroncluster.api.ClusterClientApplication;
+import dev.squaremile.transport.aeroncluster.api.ClusterClientPublisher;
 import io.aeron.cluster.client.AeronCluster;
 import io.aeron.logbuffer.Header;
 

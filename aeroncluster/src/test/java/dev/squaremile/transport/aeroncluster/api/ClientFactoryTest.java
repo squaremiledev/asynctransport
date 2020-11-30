@@ -1,4 +1,4 @@
-package dev.squaremile.aeroncluster.api;
+package dev.squaremile.transport.aeroncluster.api;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -9,14 +9,13 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.io.TempDir;
 
 
-import dev.squaremile.aeroncluster.support.applications.AccumulatorClusteredService;
-import dev.squaremile.aeroncluster.support.applications.NumberGeneratorClusterClientApp;
-import dev.squaremile.aeroncluster.support.cluster.ClusterEndpoints;
-import dev.squaremile.aeroncluster.support.cluster.ClusterNode;
+import dev.squaremile.transport.aeroncluster.support.applications.AccumulatorClusteredService;
+import dev.squaremile.transport.aeroncluster.support.applications.NumberGeneratorClusterClientApp;
+import dev.squaremile.transport.aeroncluster.support.cluster.ClusterEndpoints;
+import dev.squaremile.transport.aeroncluster.support.cluster.ClusterNode;
 import io.aeron.exceptions.RegistrationException;
 import io.github.artsok.RepeatedIfExceptionsTest;
 
-import static dev.squaremile.aeroncluster.support.cluster.ClusterNode.clusterNode;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePorts;
 
 class ClientFactoryTest
@@ -78,7 +77,7 @@ class ClientFactoryTest
 
     private ClusterNode createClusterNode(final int nodeId, final Path noteTempDir, final ClusterEndpoints clusterEndpoints)
     {
-        return clusterNode(
+        return ClusterNode.clusterNode(
                 noteTempDir.resolve("cluster"),
                 noteTempDir.resolve("aeron"),
                 nodeId,

@@ -1,6 +1,6 @@
-package dev.squaremile.aeroncluster.api;
+package dev.squaremile.transport.aeroncluster.api;
 
-import dev.squaremile.aeroncluster.implementation.ClusterConnection;
+import dev.squaremile.transport.aeroncluster.implementation.ClusterConnection;
 
 public class ClientFactory
 {

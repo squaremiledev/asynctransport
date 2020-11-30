@@ -1,4 +1,4 @@
-package dev.squaremile.aeroncluster.support.cluster;
+package dev.squaremile.transport.aeroncluster.support.cluster;
 
 import io.aeron.archive.Archive;
 import io.aeron.cluster.ConsensusModule;
