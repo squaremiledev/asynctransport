@@ -17,7 +17,8 @@ import io.aeron.exceptions.RegistrationException;
 import io.github.artsok.RepeatedIfExceptionsTest;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortPools;
-import static dev.squaremile.transport.aeroncluster.fixtures.NodeEndpointsFixture.nodeEndpoints;
+import static dev.squaremile.transport.aeroncluster.fixtures.ClusterEndpoints.nodeEndpoints;
+import static dev.squaremile.transport.aeroncluster.fixtures.ClusterEndpoints.withLocalhost;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 class ClientFactoryTest
@@ -26,15 +27,10 @@ class ClientFactoryTest
     void shouldWorkWithAThreeNodeCluster(@TempDir Path tempDir)
     {
         final Map<String, List<Integer>> freePortPools = freePortPools("node0:6", "node1:6", "node2:6", "ingress:3");
-        final IngressEndpoints ingressEndpoints = new IngressEndpoints(
-                new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)),
-                new IngressEndpoints.Endpoint(1, "localhost", freePortPools.get("ingress").get(1)),
-                new IngressEndpoints.Endpoint(2, "localhost", freePortPools.get("ingress").get(2))
-        );
         final ClusterEndpoints clusterEndpoints = new ClusterEndpoints(
-                nodeEndpoints(freePortPools.get("node0"), 0, ingressEndpoints.get(0).endpoint()),
-                nodeEndpoints(freePortPools.get("node1"), 1, ingressEndpoints.get(1).endpoint()),
-                nodeEndpoints(freePortPools.get("node2"), 2, ingressEndpoints.get(2).endpoint())
+                nodeEndpoints(0, new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), withLocalhost(freePortPools.get("node0"))),
+                nodeEndpoints(1, new IngressEndpoints.Endpoint(1, "localhost", freePortPools.get("ingress").get(1)), withLocalhost(freePortPools.get("node1"))),
+                nodeEndpoints(2, new IngressEndpoints.Endpoint(2, "localhost", freePortPools.get("ingress").get(2)), withLocalhost(freePortPools.get("node2")))
         );
         final ClusterNode clusterNode0 = createClusterNode(0, tempDir.resolve("node-0"), clusterEndpoints, new AccumulatorClusteredService());
         final ClusterNode clusterNode1 = createClusterNode(1, tempDir.resolve("node-1"), clusterEndpoints, new AccumulatorClusteredService());
@@ -44,7 +40,7 @@ class ClientFactoryTest
         runInBackground(clusterNode1::start);
         runInBackground(clusterNode2::start);
         new ClientFactory().createConnection(
-                ingressEndpoints,
+                clusterEndpoints.ingressEndpoints(),
                 (aeronCluster, publisher) -> new NumberGeneratorClusterClientApp(aeronCluster, publisher, 5, 200)
         ).connect();
     }
@@ -53,19 +49,12 @@ class ClientFactoryTest
     void shouldWorkWithASingleNodeCluster(@TempDir Path tempDir)
     {
         final Map<String, List<Integer>> freePortPools = freePortPools("node0:6", "ingress:1");
-        runInBackground(createClusterNode(
-                0,
-                tempDir.resolve("node-0"),
-                new ClusterEndpoints(
-                        nodeEndpoints(
-                                freePortPools.get("node0"),
-                                0,
-                                new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)).endpoint()
-                        )),
-                new AccumulatorClusteredService()
-        )::start);
+        ClusterEndpoints clusterEndpoints = new ClusterEndpoints(nodeEndpoints(
+                0, new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), withLocalhost(freePortPools.get("node0"))
+        ));
+        runInBackground(createClusterNode(0, tempDir.resolve("node-0"), clusterEndpoints, new AccumulatorClusteredService())::start);
         new ClientFactory().createConnection(
-                new IngressEndpoints(new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0))),
+                clusterEndpoints.ingressEndpoints(),
                 (aeronCluster, publisher) -> new NumberGeneratorClusterClientApp(aeronCluster, publisher, 5, 200)
         ).connect();
     }

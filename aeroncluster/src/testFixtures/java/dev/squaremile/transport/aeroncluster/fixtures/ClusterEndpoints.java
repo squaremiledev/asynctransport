@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+import dev.squaremile.transport.aeroncluster.api.IngressEndpoints;
+
 public class ClusterEndpoints
 {
     private final List<NodeEndpoints> nodes;
@@ -15,6 +18,30 @@ public class ClusterEndpoints
             throw new IllegalArgumentException("At least one node required");
         }
         this.nodes = Arrays.asList(nodes);
+    }
+
+    public static NodeEndpoints nodeEndpoints(final int nodeId, final IngressEndpoints.Endpoint ingress, final List<String> endpoints)
+    {
+        return new NodeEndpoints(
+                nodeId,
+                ingress,
+                endpoints.get(0),
+                endpoints.get(1),
+                endpoints.get(2),
+                endpoints.get(3),
+                endpoints.get(4),
+                endpoints.get(5)
+        );
+    }
+
+    public static List<String> withLocalhost(final List<Integer> nodeFreePorts)
+    {
+        return nodeFreePorts.stream().map(port -> "localhost:" + port).collect(Collectors.toList());
+    }
+
+    public IngressEndpoints ingressEndpoints()
+    {
+        return new IngressEndpoints(nodes.stream().map(node -> node.ingressEndpoint).collect(Collectors.toList()));
     }
 
     public NodeEndpoints node(final int nodeId)
@@ -41,6 +68,7 @@ public class ClusterEndpoints
         private final String consensus;
         private final String log;
         private final String catchup;
+        private final IngressEndpoints.Endpoint ingressEndpoint;
         private final String archiveControl;
         private final int nodeId;
         private final String logControl;
@@ -48,7 +76,7 @@ public class ClusterEndpoints
 
         public NodeEndpoints(
                 final int nodeId,
-                final String ingress,
+                final IngressEndpoints.Endpoint ingress,
                 final String consensus,
                 final String log,
                 final String catchup,
@@ -57,9 +85,10 @@ public class ClusterEndpoints
                 final String recordingEvents
         )
         {
+            ingressEndpoint = ingress;
             this.archiveControl = archiveControl;
             this.nodeId = nodeId;
-            this.ingress = ingress;
+            this.ingress = ingress.endpoint();
             this.consensus = consensus;
             this.log = log;
             this.catchup = catchup;

@@ -18,15 +18,16 @@ import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelin
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortPools;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.noExceptionAnd;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
+import static dev.squaremile.transport.aeroncluster.fixtures.ClusterEndpoints.nodeEndpoints;
+import static dev.squaremile.transport.aeroncluster.fixtures.ClusterEndpoints.withLocalhost;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterNode.clusterNode;
-import static dev.squaremile.transport.aeroncluster.fixtures.NodeEndpointsFixture.nodeEndpoints;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 class TcpGatewayConnectionTest
 {
     private final Map<String, List<Integer>> freePortPools = freePortPools("tcp:1", "ingress:1", "clusterNode:6");
     private final IngressEndpoints ingressEndpoints = new IngressEndpoints(new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)));
-    private final ClusterEndpoints clusterEndpoints = new ClusterEndpoints(nodeEndpoints(freePortPools.get("clusterNode"), 0, ingressEndpoints.get(0).endpoint()));
+    private final ClusterEndpoints clusterEndpoints = new ClusterEndpoints(nodeEndpoints(0, ingressEndpoints.get(0), withLocalhost(freePortPools.get("clusterNode"))));
 
     @Test
     void shouldUseTcpGatewayToInteractWithTcpLayerFromWithinTheCluster(@TempDir Path tempDir)
