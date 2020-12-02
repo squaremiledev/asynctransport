@@ -29,10 +29,10 @@ public class ClusterNode
     }
 
     public static ClusterNode clusterNode(
+            final ClusterDefinition.NodeDefinition node,
+            final String memberURIs,
             final Path clusterDirectory,
             final Path aeronDirectory,
-            final int nodeId,
-            final ClusterEndpoints clusterEndpoints,
             final ClusteredService clusteredService
     )
     {
@@ -45,10 +45,10 @@ public class ClusterNode
                         new ChannelUriStringBuilder()
                                 .media("udp")
                                 .termLength(termLength.asBytes())
-                                .endpoint(clusterEndpoints.node(nodeId).archiveControl())
+                                .endpoint(node.archiveControl())
                                 .build()
                 )
-                .recordingEventsChannel("aeron:udp?control-mode=dynamic|control=" + clusterEndpoints.node(nodeId).recordingEvents())
+                .recordingEventsChannel("aeron:udp?control-mode=dynamic|control=" + node.recordingEvents())
                 .localControlChannel("aeron:ipc?term-length=" + termLength.asChannelParameter());
         final ShutdownSignalBarrier shutdownSignalBarrier = new ShutdownSignalBarrier();
         final ClusterContext clusterContext = new ClusterContext(
@@ -59,8 +59,8 @@ public class ClusterNode
                         .aeronDirectoryName(aeronDirectory.toString())
                         .terminationHook(shutdownSignalBarrier::signal),
                 new ConsensusModule.Context()
-                        .clusterMemberId(nodeId)
-                        .clusterMembers(clusterEndpoints.asUri())
+                        .clusterMemberId(node.nodeId())
+                        .clusterMembers(memberURIs)
                         .clusterDir(clusterDirectory.resolve("consensusDir").toFile())
                         .ingressChannel("aeron:udp?term-length=" + termLength.asChannelParameter())
                         .logChannel(
@@ -68,7 +68,7 @@ public class ClusterNode
                                         .media("udp")
                                         .termLength(termLength.asBytes())
                                         .controlMode("manual")
-                                        .controlEndpoint(clusterEndpoints.node(nodeId).logControl())
+                                        .controlEndpoint(node.logControl())
                                         .build()
                         )
                         .archiveContext(

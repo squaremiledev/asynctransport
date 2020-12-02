@@ -4,8 +4,8 @@ import dev.squaremile.transport.aeroncluster.implementation.ClusterConnection;
 
 public class ClientFactory
 {
-    public ClusterConnection createConnection(final IngressEndpoints ingressEndpoints, final ClusterClientApplicationFactory factory)
+    public ClusterConnection createConnection(final IngressDefinition ingress, final ClusterClientApplicationFactory factory)
     {
-        return new ClusterConnection(ingressEndpoints, factory);
+        return new ClusterConnection(ingress, factory);
     }
 }

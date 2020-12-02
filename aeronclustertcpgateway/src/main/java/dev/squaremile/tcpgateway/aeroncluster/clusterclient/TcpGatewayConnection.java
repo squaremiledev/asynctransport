@@ -14,7 +14,7 @@ import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTra
 import dev.squaremile.transport.aeroncluster.api.ClientFactory;
 import dev.squaremile.transport.aeroncluster.api.ClusterClientApplication;
 import dev.squaremile.transport.aeroncluster.api.ClusterClientPublisher;
-import dev.squaremile.transport.aeroncluster.api.IngressEndpoints;
+import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
 import io.aeron.cluster.client.AeronCluster;
 import io.aeron.cluster.codecs.EventCode;
 import io.aeron.logbuffer.Header;
@@ -22,16 +22,16 @@ import io.aeron.logbuffer.Header;
 public class TcpGatewayConnection
 {
     private final ClientFactory clientFactory = new ClientFactory();
-    private final IngressEndpoints ingressEndpoints;
+    private final IngressDefinition ingress;
 
-    public TcpGatewayConnection(final IngressEndpoints ingressEndpoints)
+    public TcpGatewayConnection(final IngressDefinition ingress)
     {
-        this.ingressEndpoints = ingressEndpoints;
+        this.ingress = ingress;
     }
 
     public void connect()
     {
-        clientFactory.createConnection(ingressEndpoints, TcpGateway::new).connect();
+        clientFactory.createConnection(ingress, TcpGateway::new).connect();
     }
 
     private static class TcpGateway implements ClusterClientApplication

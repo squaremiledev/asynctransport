@@ -1,23 +1,17 @@
 package dev.squaremile.transport.aeroncluster.api;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 
 import static java.util.Collections.unmodifiableList;
 
-public class IngressEndpoints
+public class IngressDefinition
 {
     private final List<Endpoint> endpoints;
 
-    public IngressEndpoints(final Endpoint... endpoints)
-    {
-        this(Arrays.asList(endpoints));
-    }
-
-    public IngressEndpoints(final List<Endpoint> endpoints)
+    public IngressDefinition(final List<Endpoint> endpoints)
     {
         if (endpoints.isEmpty())
         {
@@ -39,11 +33,6 @@ public class IngressEndpoints
         return "IngressEndpoints{" +
                "endpoints=" + endpoints +
                '}';
-    }
-
-    public Endpoint get(final int nodeId)
-    {
-        return endpoints.get(nodeId);
     }
 
     public static class Endpoint

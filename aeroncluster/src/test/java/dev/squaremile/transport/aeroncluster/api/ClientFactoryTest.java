@@ -9,7 +9,7 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.io.TempDir;
 
 
-import dev.squaremile.transport.aeroncluster.fixtures.ClusterEndpoints;
+import dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterNode;
 import dev.squaremile.transport.aeroncluster.fixtures.applications.AccumulatorClusteredService;
 import dev.squaremile.transport.aeroncluster.fixtures.applications.NumberGeneratorClusterClientApp;
@@ -17,8 +17,8 @@ import io.aeron.exceptions.RegistrationException;
 import io.github.artsok.RepeatedIfExceptionsTest;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortPools;
-import static dev.squaremile.transport.aeroncluster.fixtures.ClusterEndpoints.nodeEndpoints;
-import static dev.squaremile.transport.aeroncluster.fixtures.ClusterEndpoints.withLocalhost;
+import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.node;
+import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.endpoints;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 class ClientFactoryTest
@@ -27,20 +27,36 @@ class ClientFactoryTest
     void shouldWorkWithAThreeNodeCluster(@TempDir Path tempDir)
     {
         final Map<String, List<Integer>> freePortPools = freePortPools("node0:6", "node1:6", "node2:6", "ingress:3");
-        final ClusterEndpoints clusterEndpoints = new ClusterEndpoints(
-                nodeEndpoints(0, new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), withLocalhost(freePortPools.get("node0"))),
-                nodeEndpoints(1, new IngressEndpoints.Endpoint(1, "localhost", freePortPools.get("ingress").get(1)), withLocalhost(freePortPools.get("node1"))),
-                nodeEndpoints(2, new IngressEndpoints.Endpoint(2, "localhost", freePortPools.get("ingress").get(2)), withLocalhost(freePortPools.get("node2")))
+        final ClusterDefinition cluster = new ClusterDefinition(
+                node(0, new IngressDefinition.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), endpoints("localhost", freePortPools.get("node0"))),
+                node(1, new IngressDefinition.Endpoint(1, "localhost", freePortPools.get("ingress").get(1)), endpoints("localhost", freePortPools.get("node1"))),
+                node(2, new IngressDefinition.Endpoint(2, "localhost", freePortPools.get("ingress").get(2)), endpoints("localhost", freePortPools.get("node2")))
         );
-        final ClusterNode clusterNode0 = createClusterNode(0, tempDir.resolve("node-0"), clusterEndpoints, new AccumulatorClusteredService());
-        final ClusterNode clusterNode1 = createClusterNode(1, tempDir.resolve("node-1"), clusterEndpoints, new AccumulatorClusteredService());
-        final ClusterNode clusterNode2 = createClusterNode(2, tempDir.resolve("node-2"), clusterEndpoints, new AccumulatorClusteredService());
 
-        runInBackground(clusterNode0::start);
-        runInBackground(clusterNode1::start);
-        runInBackground(clusterNode2::start);
+        runInBackground(ClusterNode.clusterNode(
+                cluster.node(0),
+                cluster.memberURIs(),
+                tempDir.resolve("node-0").resolve("cluster"),
+                tempDir.resolve("node-0").resolve("aeron"),
+                new AccumulatorClusteredService()
+        )::start);
+        runInBackground(ClusterNode.clusterNode(
+                cluster.node(1),
+                cluster.memberURIs(),
+                tempDir.resolve("node-1").resolve("cluster"),
+                tempDir.resolve("node-1").resolve("aeron"),
+                new AccumulatorClusteredService()
+        )::start);
+        runInBackground(ClusterNode.clusterNode(
+                cluster.node(2),
+                cluster.memberURIs(),
+                tempDir.resolve("node-2").resolve("cluster"),
+                tempDir.resolve("node-2").resolve("aeron"),
+                new AccumulatorClusteredService()
+        )::start);
+
         new ClientFactory().createConnection(
-                clusterEndpoints.ingressEndpoints(),
+                cluster.ingress(),
                 (aeronCluster, publisher) -> new NumberGeneratorClusterClientApp(aeronCluster, publisher, 5, 200)
         ).connect();
     }
@@ -49,12 +65,19 @@ class ClientFactoryTest
     void shouldWorkWithASingleNodeCluster(@TempDir Path tempDir)
     {
         final Map<String, List<Integer>> freePortPools = freePortPools("node0:6", "ingress:1");
-        ClusterEndpoints clusterEndpoints = new ClusterEndpoints(nodeEndpoints(
-                0, new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), withLocalhost(freePortPools.get("node0"))
-        ));
-        runInBackground(createClusterNode(0, tempDir.resolve("node-0"), clusterEndpoints, new AccumulatorClusteredService())::start);
+        final ClusterDefinition cluster = new ClusterDefinition(
+                node(0, new IngressDefinition.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), endpoints("localhost", freePortPools.get("node0")))
+        );
+        final Path noteTempDir = tempDir.resolve("node-0");
+        runInBackground(ClusterNode.clusterNode(
+                cluster.node(0),
+                cluster.memberURIs(),
+                noteTempDir.resolve("cluster"),
+                noteTempDir.resolve("aeron"),
+                new AccumulatorClusteredService()
+        )::start);
         new ClientFactory().createConnection(
-                clusterEndpoints.ingressEndpoints(),
+                cluster.ingress(),
                 (aeronCluster, publisher) -> new NumberGeneratorClusterClientApp(aeronCluster, publisher, 5, 200)
         ).connect();
     }
@@ -70,16 +93,4 @@ class ClientFactoryTest
     {
         newSingleThreadExecutor().execute(task);
     }
-
-    private ClusterNode createClusterNode(final int nodeId, final Path noteTempDir, final ClusterEndpoints clusterEndpoints, final AccumulatorClusteredService clusteredService)
-    {
-        return ClusterNode.clusterNode(
-                noteTempDir.resolve("cluster"),
-                noteTempDir.resolve("aeron"),
-                nodeId,
-                clusterEndpoints,
-                clusteredService
-        );
-    }
-
 }

@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-import dev.squaremile.transport.aeroncluster.api.IngressEndpoints;
+import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
 
-public class ClusterEndpoints
+public class ClusterDefinition
 {
-    private final List<NodeEndpoints> nodes;
+    private final List<NodeDefinition> nodes;
 
-    public ClusterEndpoints(NodeEndpoints... nodes)
+    public ClusterDefinition(NodeDefinition... nodes)
     {
         if (nodes.length == 0)
         {
@@ -20,9 +20,13 @@ public class ClusterEndpoints
         this.nodes = Arrays.asList(nodes);
     }
 
-    public static NodeEndpoints nodeEndpoints(final int nodeId, final IngressEndpoints.Endpoint ingress, final List<String> endpoints)
+    public static NodeDefinition node(final int nodeId, final IngressDefinition.Endpoint ingress, final List<String> endpoints)
     {
-        return new NodeEndpoints(
+        if (endpoints.size() != 6)
+        {
+            throw new IllegalArgumentException();
+        }
+        return new NodeDefinition(
                 nodeId,
                 ingress,
                 endpoints.get(0),
@@ -34,22 +38,22 @@ public class ClusterEndpoints
         );
     }
 
-    public static List<String> withLocalhost(final List<Integer> nodeFreePorts)
+    public static List<String> endpoints(final String host, final List<Integer> nodeFreePorts)
     {
-        return nodeFreePorts.stream().map(port -> "localhost:" + port).collect(Collectors.toList());
+        return nodeFreePorts.stream().map(port -> host + ":" + port).collect(Collectors.toList());
     }
 
-    public IngressEndpoints ingressEndpoints()
+    public IngressDefinition ingress()
     {
-        return new IngressEndpoints(nodes.stream().map(node -> node.ingressEndpoint).collect(Collectors.toList()));
+        return new IngressDefinition(nodes.stream().map(node -> node.ingressEndpoint).collect(Collectors.toList()));
     }
 
-    public NodeEndpoints node(final int nodeId)
+    public NodeDefinition node(final int nodeId)
     {
         return nodes.get(nodeId);
     }
 
-    public String asUri()
+    public String memberURIs()
     {
         return nodes.stream().map(Object::toString).collect(Collectors.joining("|")) + "|";
     }
@@ -62,21 +66,21 @@ public class ClusterEndpoints
                '}';
     }
 
-    public static class NodeEndpoints
+    public static class NodeDefinition
     {
         private final String ingress;
         private final String consensus;
         private final String log;
         private final String catchup;
-        private final IngressEndpoints.Endpoint ingressEndpoint;
+        private final IngressDefinition.Endpoint ingressEndpoint;
         private final String archiveControl;
         private final int nodeId;
         private final String logControl;
         private final String recordingEvents;
 
-        public NodeEndpoints(
+        public NodeDefinition(
                 final int nodeId,
-                final IngressEndpoints.Endpoint ingress,
+                final IngressDefinition.Endpoint ingress,
                 final String consensus,
                 final String log,
                 final String catchup,
@@ -85,7 +89,11 @@ public class ClusterEndpoints
                 final String recordingEvents
         )
         {
-            ingressEndpoint = ingress;
+            if (ingress.nodeId() != nodeId)
+            {
+                throw new IllegalArgumentException();
+            }
+            this.ingressEndpoint = ingress;
             this.archiveControl = archiveControl;
             this.nodeId = nodeId;
             this.ingress = ingress.endpoint();
