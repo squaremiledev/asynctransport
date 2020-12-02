@@ -2,8 +2,17 @@ package dev.squaremile.asynctcp.transport.testfixtures;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
+import java.util.Map;
+
+
+import static java.lang.Integer.parseInt;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toMap;
 
 public class FreePort
 {
@@ -37,7 +46,25 @@ public class FreePort
         return newPort;
     }
 
-    public static List<Integer> freePorts(final int count)
+    public static Map<String, List<Integer>> freePortPools(final String... requestedPools)
+    {
+        final Deque<Integer> freePortsDeque = new ArrayDeque<>(freePorts(stream(requestedPools).mapToInt(r1 -> parseInt(r1.split(":")[1])).sum()));
+        return stream(requestedPools).collect(toMap(
+                r -> r.split(":")[0],
+                r ->
+                {
+                    int numberOfPorts = parseInt(r.split(":")[1]);
+                    List<Integer> freePorts = new ArrayList<>(numberOfPorts);
+                    for (int i = 0; i < numberOfPorts; i++)
+                    {
+                        freePorts.add(freePortsDeque.poll());
+                    }
+                    return freePorts;
+                }
+        ));
+    }
+
+    private static List<Integer> freePorts(final int count)
     {
         final Integer[] allocatedPorts = new Integer[count];
         for (int i = 0; i < count; i++)

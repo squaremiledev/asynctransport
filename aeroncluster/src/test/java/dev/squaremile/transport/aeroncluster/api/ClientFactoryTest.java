@@ -2,7 +2,7 @@ package dev.squaremile.transport.aeroncluster.api;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.Executors;
+import java.util.Map;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.RepeatedTest;
@@ -16,37 +16,33 @@ import dev.squaremile.transport.aeroncluster.fixtures.applications.NumberGenerat
 import io.aeron.exceptions.RegistrationException;
 import io.github.artsok.RepeatedIfExceptionsTest;
 
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePorts;
+import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortPools;
 import static dev.squaremile.transport.aeroncluster.fixtures.NodeEndpointsFixture.nodeEndpoints;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 class ClientFactoryTest
 {
-    public static final int PORTS_NEEDED_FOR_INGRESS = 3;
-    public static final int PORTS_NEEDED_BY_CLUSTER = 6;
-    private final List<Integer> ports = freePorts(21);
-    private final List<Integer> node0FreePorts = ports.subList(PORTS_NEEDED_FOR_INGRESS, PORTS_NEEDED_FOR_INGRESS + PORTS_NEEDED_BY_CLUSTER);
-    private final List<Integer> node1FreePorts = ports.subList(PORTS_NEEDED_FOR_INGRESS + PORTS_NEEDED_BY_CLUSTER, PORTS_NEEDED_FOR_INGRESS + PORTS_NEEDED_BY_CLUSTER * 2);
-    private final List<Integer> node2FreePorts = ports.subList(PORTS_NEEDED_FOR_INGRESS + PORTS_NEEDED_BY_CLUSTER * 2, PORTS_NEEDED_FOR_INGRESS + PORTS_NEEDED_BY_CLUSTER * 3);
-    private final IngressEndpoints.Endpoint node0Ingress = new IngressEndpoints.Endpoint(0, "localhost", ports.get(0));
-    private final IngressEndpoints.Endpoint node1Ingress = new IngressEndpoints.Endpoint(1, "localhost", ports.get(1));
-    private final IngressEndpoints.Endpoint node2Ingress = new IngressEndpoints.Endpoint(2, "localhost", ports.get(2));
-
     @RepeatedIfExceptionsTest(repeats = 2, exceptions = RegistrationException.class)
     void shouldWorkWithAThreeNodeCluster(@TempDir Path tempDir)
     {
-        final IngressEndpoints ingressEndpoints = new IngressEndpoints(node0Ingress, node1Ingress, node2Ingress);
-        final ClusterEndpoints clusterEndpoints = new ClusterEndpoints(
-                nodeEndpoints(node0FreePorts, 0, ingressEndpoints.get(0).endpoint()),
-                nodeEndpoints(node1FreePorts, 1, ingressEndpoints.get(1).endpoint()),
-                nodeEndpoints(node2FreePorts, 2, ingressEndpoints.get(2).endpoint())
+        final Map<String, List<Integer>> freePortPools = freePortPools("node0:6", "node1:6", "node2:6", "ingress:3");
+        final IngressEndpoints ingressEndpoints = new IngressEndpoints(
+                new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)),
+                new IngressEndpoints.Endpoint(1, "localhost", freePortPools.get("ingress").get(1)),
+                new IngressEndpoints.Endpoint(2, "localhost", freePortPools.get("ingress").get(2))
         );
-        final ClusterNode clusterNode0 = createClusterNode(0, tempDir.resolve("node-0"), clusterEndpoints);
-        final ClusterNode clusterNode1 = createClusterNode(1, tempDir.resolve("node-1"), clusterEndpoints);
-        final ClusterNode clusterNode2 = createClusterNode(2, tempDir.resolve("node-2"), clusterEndpoints);
+        final ClusterEndpoints clusterEndpoints = new ClusterEndpoints(
+                nodeEndpoints(freePortPools.get("node0"), 0, ingressEndpoints.get(0).endpoint()),
+                nodeEndpoints(freePortPools.get("node1"), 1, ingressEndpoints.get(1).endpoint()),
+                nodeEndpoints(freePortPools.get("node2"), 2, ingressEndpoints.get(2).endpoint())
+        );
+        final ClusterNode clusterNode0 = createClusterNode(0, tempDir.resolve("node-0"), clusterEndpoints, new AccumulatorClusteredService());
+        final ClusterNode clusterNode1 = createClusterNode(1, tempDir.resolve("node-1"), clusterEndpoints, new AccumulatorClusteredService());
+        final ClusterNode clusterNode2 = createClusterNode(2, tempDir.resolve("node-2"), clusterEndpoints, new AccumulatorClusteredService());
 
-        Executors.newSingleThreadExecutor().execute(clusterNode0::start);
-        Executors.newSingleThreadExecutor().execute(clusterNode1::start);
-        Executors.newSingleThreadExecutor().execute(clusterNode2::start);
+        runInBackground(clusterNode0::start);
+        runInBackground(clusterNode1::start);
+        runInBackground(clusterNode2::start);
         new ClientFactory().createConnection(
                 ingressEndpoints,
                 (aeronCluster, publisher) -> new NumberGeneratorClusterClientApp(aeronCluster, publisher, 5, 200)
@@ -56,15 +52,20 @@ class ClientFactoryTest
     @RepeatedIfExceptionsTest(repeats = 2, exceptions = RegistrationException.class)
     void shouldWorkWithASingleNodeCluster(@TempDir Path tempDir)
     {
-        final IngressEndpoints ingressEndpoints = new IngressEndpoints(node0Ingress);
-        final ClusterEndpoints clusterEndpoints = new ClusterEndpoints(
-                nodeEndpoints(node0FreePorts, 0, ingressEndpoints.get(0).endpoint())
-        );
-        final ClusterNode clusterNode0 = createClusterNode(0, tempDir.resolve("node-0"), clusterEndpoints);
-        Executors.newSingleThreadExecutor().execute(clusterNode0::start);
-
+        final Map<String, List<Integer>> freePortPools = freePortPools("node0:6", "ingress:1");
+        runInBackground(createClusterNode(
+                0,
+                tempDir.resolve("node-0"),
+                new ClusterEndpoints(
+                        nodeEndpoints(
+                                freePortPools.get("node0"),
+                                0,
+                                new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)).endpoint()
+                        )),
+                new AccumulatorClusteredService()
+        )::start);
         new ClientFactory().createConnection(
-                ingressEndpoints,
+                new IngressEndpoints(new IngressEndpoints.Endpoint(0, "localhost", freePortPools.get("ingress").get(0))),
                 (aeronCluster, publisher) -> new NumberGeneratorClusterClientApp(aeronCluster, publisher, 5, 200)
         ).connect();
     }
@@ -76,14 +77,19 @@ class ClientFactoryTest
         shouldWorkWithAThreeNodeCluster(tempDir);
     }
 
-    private ClusterNode createClusterNode(final int nodeId, final Path noteTempDir, final ClusterEndpoints clusterEndpoints)
+    private void runInBackground(final Runnable task)
+    {
+        newSingleThreadExecutor().execute(task);
+    }
+
+    private ClusterNode createClusterNode(final int nodeId, final Path noteTempDir, final ClusterEndpoints clusterEndpoints, final AccumulatorClusteredService clusteredService)
     {
         return ClusterNode.clusterNode(
                 noteTempDir.resolve("cluster"),
                 noteTempDir.resolve("aeron"),
                 nodeId,
                 clusterEndpoints,
-                new AccumulatorClusteredService()
+                clusteredService
         );
     }
 
