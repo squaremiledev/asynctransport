@@ -1,18 +1,29 @@
 package dev.squaremile.tcpgateway.aeroncluster.clusterclient;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.agrona.DirectBuffer;
+import org.agrona.concurrent.BackoffIdleStrategy;
+import org.agrona.concurrent.IdleStrategy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.TcpHandlingClusteredService;
+import dev.squaremile.transport.aeroncluster.api.ClientFactory;
+import dev.squaremile.transport.aeroncluster.api.ClusterClientApplication;
 import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition;
+import io.aeron.logbuffer.Header;
 
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortPools;
@@ -21,33 +32,107 @@ import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.endpoints;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.node;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterNode.clusterNode;
+import static io.aeron.cluster.client.AeronCluster.Configuration.INGRESS_STREAM_ID_DEFAULT;
+import static java.util.Arrays.asList;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 class TcpGatewayConnectionTest
 {
-    private final Map<String, List<Integer>> freePortPools = freePortPools("tcp:1", "ingress:1", "clusterNode:6");
-    private final ClusterDefinition cluster = new ClusterDefinition(
-            node(0, new IngressDefinition.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), endpoints("localhost", freePortPools.get("clusterNode")))
-    );
+    private final IdleStrategy idleStrategy = new BackoffIdleStrategy();
 
     @Test
     void shouldUseTcpGatewayToInteractWithTcpLayerFromWithinTheCluster(@TempDir Path tempDir)
     {
+        final int tcpGatewayEgressStreamId = new Random().nextInt();
+        final Map<String, List<Integer>> freePortPools = freePortPools("tcp:2", "ingress:1", "clusterNode:6");
+        final ClusterDefinition cluster = new ClusterDefinition(
+                node(0, new IngressDefinition.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), endpoints("localhost", freePortPools.get("clusterNode")))
+        );
+
         newSingleThreadExecutor().execute(clusterNode(
                 cluster.node(0),
                 cluster.memberURIs(),
                 tempDir.resolve("cluster"),
                 tempDir.resolve("aeron"),
                 new TcpHandlingClusteredService(
-                        transport -> transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1))),
+                        tcpGatewayEgressStreamId,
+                        (transport, streamId) -> transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1))),
                         System.out::println
                 )
         )::start);
-        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress()).connect());
+
+        // When
+        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress(), INGRESS_STREAM_ID_DEFAULT, tcpGatewayEgressStreamId).connect());
 
         // When
         runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(0)) != null));
         runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(0)) != null));
         runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(0)) != null));
+    }
+
+    @Test
+    void shouldDetectTcpGatewayClientsByStreamId(@TempDir Path tempDir)
+    {
+        final int tcpGatewayEgressStreamId = new Random().nextInt();
+        final int anotherTcpGatewayEgressStreamId = tcpGatewayEgressStreamId + 1;
+        final int nonTcpClientStreamId = tcpGatewayEgressStreamId + 2;
+        final Collection<Integer> tcpGatewayStreamIds = asList(tcpGatewayEgressStreamId, anotherTcpGatewayEgressStreamId);
+        final AtomicBoolean receivedMessageOnNonTcpGatewayClient = new AtomicBoolean(false);
+        final Map<String, List<Integer>> freePortPools = freePortPools("tcp:2", "ingress:1", "clusterNode:6");
+        final ClusterDefinition cluster = new ClusterDefinition(
+                node(0, new IngressDefinition.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), endpoints("localhost", freePortPools.get("clusterNode")))
+        );
+        newSingleThreadExecutor().execute(clusterNode(
+                cluster.node(0),
+                cluster.memberURIs(),
+                tempDir.resolve("cluster"),
+                tempDir.resolve("aeron"),
+                new TcpHandlingClusteredService(
+                        tcpGatewayStreamIds,
+                        (transport, streamId) ->
+                        {
+                            if (streamId % 2 == 0)
+                            {
+                                transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1)));
+                            }
+                            else
+                            {
+                                transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(1), fixedLengthDelineation(1)));
+                            }
+                        },
+                        System.out::println
+                )
+        )::start);
+
+        // When
+        newSingleThreadExecutor().execute(() -> new ClientFactory().createConnection(
+                cluster.ingress(),
+                INGRESS_STREAM_ID_DEFAULT,
+                nonTcpClientStreamId,
+                (aeronCluster, publisher) -> new ClusterClientApplication()
+                {
+                    @Override
+                    public void onStart()
+                    {
+                        while (!Thread.currentThread().isInterrupted())
+                        {
+                            idleStrategy.idle(aeronCluster.pollEgress());
+                        }
+                    }
+
+                    @Override
+                    public void onMessage(final long clusterSessionId, final long timestamp, final DirectBuffer buffer, final int offset, final int length, final Header header)
+                    {
+                        receivedMessageOnNonTcpGatewayClient.set(true);
+                    }
+                }
+        ).connect());
+        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress(), INGRESS_STREAM_ID_DEFAULT, tcpGatewayEgressStreamId).connect());
+        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress(), INGRESS_STREAM_ID_DEFAULT, anotherTcpGatewayEgressStreamId).connect());
+
+        // Then
+        runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(0)) != null));
+        runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(1)) != null));
+        assertThat(receivedMessageOnNonTcpGatewayClient.get()).describedAs("Does not expect any messages here, it's not a tcp gateway after all").isFalse();
     }
 }

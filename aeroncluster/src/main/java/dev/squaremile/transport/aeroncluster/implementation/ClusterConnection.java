@@ -24,10 +24,10 @@ public class ClusterConnection
     private final ApplicationWrapper applicationWrapper;
     private final EmbeddedClusterClient embeddedClusterClient;
 
-    public ClusterConnection(final IngressDefinition ingress, final ClusterClientApplicationFactory factory)
+    public ClusterConnection(final IngressDefinition ingress, final ClusterClientApplicationFactory factory, final int ingressStreamId, final int egressStreamId)
     {
         this.applicationWrapper = new ApplicationWrapper(factory);
-        this.embeddedClusterClient = new EmbeddedClusterClient(new ClusterClientContext(ingress, applicationWrapper));
+        this.embeddedClusterClient = new EmbeddedClusterClient(new ClusterClientContext(ingress, applicationWrapper, ingressStreamId, egressStreamId));
     }
 
     public void connect()
@@ -106,10 +106,16 @@ public class ClusterConnection
         private final MediaDriverContext mediaDriverContext;
         private final AeronClusterContext aeronClusterContext;
 
-        public ClusterClientContext(IngressDefinition ingress, EgressListener egressListener)
+        public ClusterClientContext(IngressDefinition ingress, EgressListener egressListener, final int ingressStreamId, final int egressStreamId)
         {
             this.mediaDriverContext = new MediaDriverContext();
-            this.aeronClusterContext = new AeronClusterContext(mediaDriverContext.aeronDirectory(), ingress, egressListener);
+            this.aeronClusterContext = new AeronClusterContext(
+                    mediaDriverContext.aeronDirectory(),
+                    ingress,
+                    ingressStreamId,
+                    egressListener,
+                    egressStreamId
+            );
         }
 
         public AeronCluster.Context buildAeronClusterContext()
@@ -128,12 +134,22 @@ public class ClusterConnection
         private final EgressListener egressListener;
         private final String aeronDirectory;
         private final IngressDefinition ingress;
+        private final int ingressStreamId;
+        private final int egressStreamId;
 
-        public AeronClusterContext(final String aeronDirectory, final IngressDefinition ingress, final EgressListener egressListener)
+        public AeronClusterContext(
+                final String aeronDirectory,
+                final IngressDefinition ingress,
+                final int ingressStreamId,
+                final EgressListener egressListener,
+                final int egressStreamId
+        )
         {
             this.egressListener = egressListener;
             this.aeronDirectory = aeronDirectory;
             this.ingress = ingress;
+            this.ingressStreamId = ingressStreamId;
+            this.egressStreamId = egressStreamId;
         }
 
         public AeronCluster.Context buildContext()
@@ -141,6 +157,8 @@ public class ClusterConnection
             return new AeronCluster.Context()
                     .ingressChannel("aeron:udp")
                     .egressChannel("aeron:udp?endpoint=localhost:0")
+                    .ingressStreamId(ingressStreamId)
+                    .egressStreamId(egressStreamId)
                     .aeronDirectoryName(aeronDirectory)
                     .ingressEndpoints(ingress.asUri())
                     .egressListener(egressListener);
