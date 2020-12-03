@@ -1,7 +1,6 @@
 package dev.squaremile.tcpgateway.aeroncluster.clusterclient;
 
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -18,7 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
-import dev.squaremile.tcpgateway.aeroncluster.clusterservice.TcpHandlingClusteredService;
+import dev.squaremile.tcpgateway.aeroncluster.clusterservice.TcpGatewayClient;
+import dev.squaremile.tcpgateway.aeroncluster.clusterservice.StreamMultiplexClusteredService;
 import dev.squaremile.transport.aeroncluster.api.ClientFactory;
 import dev.squaremile.transport.aeroncluster.api.ClusterClientApplication;
 import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
@@ -33,7 +33,6 @@ import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.e
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.node;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterNode.clusterNode;
 import static io.aeron.cluster.client.AeronCluster.Configuration.INGRESS_STREAM_ID_DEFAULT;
-import static java.util.Arrays.asList;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 class TcpGatewayConnectionTest
@@ -54,10 +53,12 @@ class TcpGatewayConnectionTest
                 cluster.memberURIs(),
                 tempDir.resolve("cluster"),
                 tempDir.resolve("aeron"),
-                new TcpHandlingClusteredService(
-                        tcpGatewayEgressStreamId,
-                        (transport, streamId) -> transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1))),
-                        System.out::println
+                new StreamMultiplexClusteredService(
+                        new TcpGatewayClient(
+                                tcpGatewayEgressStreamId,
+                                (transport, streamId) -> transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1))),
+                                System.out::println
+                        )
                 )
         )::start);
 
@@ -76,7 +77,6 @@ class TcpGatewayConnectionTest
         final int tcpGatewayEgressStreamId = new Random().nextInt();
         final int anotherTcpGatewayEgressStreamId = tcpGatewayEgressStreamId + 1;
         final int nonTcpClientStreamId = tcpGatewayEgressStreamId + 2;
-        final Collection<Integer> tcpGatewayStreamIds = asList(tcpGatewayEgressStreamId, anotherTcpGatewayEgressStreamId);
         final AtomicBoolean receivedMessageOnNonTcpGatewayClient = new AtomicBoolean(false);
         final Map<String, List<Integer>> freePortPools = freePortPools("tcp:2", "ingress:1", "clusterNode:6");
         final ClusterDefinition cluster = new ClusterDefinition(
@@ -87,20 +87,11 @@ class TcpGatewayConnectionTest
                 cluster.memberURIs(),
                 tempDir.resolve("cluster"),
                 tempDir.resolve("aeron"),
-                new TcpHandlingClusteredService(
-                        tcpGatewayStreamIds,
-                        (transport, streamId) ->
-                        {
-                            if (streamId % 2 == 0)
-                            {
-                                transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1)));
-                            }
-                            else
-                            {
-                                transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(1), fixedLengthDelineation(1)));
-                            }
-                        },
-                        System.out::println
+                new StreamMultiplexClusteredService(
+                        new TcpGatewayClient(tcpGatewayEgressStreamId, (transport, streamId) ->
+                                transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1))), System.out::println),
+                        new TcpGatewayClient(anotherTcpGatewayEgressStreamId, (transport, streamId) ->
+                                transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(1), fixedLengthDelineation(1))), System.out::println)
                 )
         )::start);
 
