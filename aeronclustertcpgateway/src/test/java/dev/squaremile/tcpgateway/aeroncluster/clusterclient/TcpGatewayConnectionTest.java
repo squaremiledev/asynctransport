@@ -15,6 +15,8 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import dev.squaremile.asynctcp.transport.api.app.Event;
+import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.StreamMultiplexClusteredService;
@@ -40,38 +42,6 @@ class TcpGatewayConnectionTest
     private final IdleStrategy idleStrategy = new BackoffIdleStrategy();
 
     @Test
-    void shouldUseTcpGatewayToInteractWithTcpLayerFromWithinTheCluster(@TempDir Path tempDir)
-    {
-        final int tcpGatewayEgressStreamId = new Random().nextInt();
-        final Map<String, List<Integer>> freePortPools = freePortPools("tcp:2", "ingress:1", "clusterNode:6");
-        final ClusterDefinition cluster = new ClusterDefinition(
-                node(0, new IngressDefinition.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), endpoints("localhost", freePortPools.get("clusterNode")))
-        );
-
-        newSingleThreadExecutor().execute(clusterNode(
-                cluster.node(0),
-                cluster.memberURIs(),
-                tempDir.resolve("cluster"),
-                tempDir.resolve("aeron"),
-                new StreamMultiplexClusteredService(
-                        new TcpGatewayClient(
-                                tcpGatewayEgressStreamId,
-                                transport -> transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1))),
-                                System.out::println
-                        )
-                )
-        )::start);
-
-        // When
-        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress(), INGRESS_STREAM_ID_DEFAULT, tcpGatewayEgressStreamId).connect());
-
-        // When
-        runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(0)) != null));
-        runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(0)) != null));
-        runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(0)) != null));
-    }
-
-    @Test
     void shouldDetectTcpGatewayClientsByStreamId(@TempDir Path tempDir)
     {
         final int tcpGatewayEgressStreamId = new Random().nextInt();
@@ -88,10 +58,34 @@ class TcpGatewayConnectionTest
                 tempDir.resolve("cluster"),
                 tempDir.resolve("aeron"),
                 new StreamMultiplexClusteredService(
-                        new TcpGatewayClient(tcpGatewayEgressStreamId, transport ->
-                                transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1))), System.out::println),
-                        new TcpGatewayClient(anotherTcpGatewayEgressStreamId, transport ->
-                                transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(1), fixedLengthDelineation(1))), System.out::println)
+                        new TcpGatewayClient(tcpGatewayEgressStreamId, transport -> new EventDrivenApplication()
+                        {
+                            @Override
+                            public void onStart()
+                            {
+                                transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1)));
+                            }
+
+                            @Override
+                            public void onEvent(final Event event)
+                            {
+                                System.out.println(event);
+                            }
+                        }),
+                        new TcpGatewayClient(anotherTcpGatewayEgressStreamId, transport -> new EventDrivenApplication()
+                        {
+                            @Override
+                            public void onStart()
+                            {
+                                transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(1), fixedLengthDelineation(1)));
+                            }
+
+                            @Override
+                            public void onEvent(final Event event)
+                            {
+                                System.out.println(event);
+                            }
+                        })
                 )
         )::start);
 

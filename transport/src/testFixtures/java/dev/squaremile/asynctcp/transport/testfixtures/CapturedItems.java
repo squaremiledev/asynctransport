@@ -13,17 +13,17 @@ public class CapturedItems<T>
 {
     private final List<T> items = new ArrayList<>();
 
-    public void add(final T event)
+    public synchronized void add(final T event)
     {
         items.add(event);
     }
 
-    public List<T> all()
+    public synchronized List<T> all()
     {
         return new ArrayList<>(items);
     }
 
-    public <Type extends T> Type last(final Class<Type> clazz, final Predicate<Type> predicate)
+    public synchronized <Type extends T> Type last(final Class<Type> clazz, final Predicate<Type> predicate)
     {
 
         final List<Type> result = all(clazz, predicate);
@@ -37,7 +37,7 @@ public class CapturedItems<T>
         }
     }
 
-    public <Type extends T> List<Type> all(final Class<Type> itemType, final Predicate<Type> predicate)
+    public synchronized <Type extends T> List<Type> all(final Class<Type> itemType, final Predicate<Type> predicate)
     {
         return items.stream()
                 .filter(itemType::isInstance)
@@ -47,7 +47,7 @@ public class CapturedItems<T>
     }
 
     @Override
-    public String toString()
+    public synchronized String toString()
     {
         return items.stream().map(Objects::toString).collect(joining("\n"));
     }

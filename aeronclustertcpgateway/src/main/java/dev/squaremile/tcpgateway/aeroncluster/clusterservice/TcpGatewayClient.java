@@ -1,16 +1,13 @@
 package dev.squaremile.tcpgateway.aeroncluster.clusterservice;
 
-import java.util.function.Consumer;
-
 import org.agrona.DirectBuffer;
 import org.agrona.collections.Long2ObjectHashMap;
 import org.agrona.concurrent.IdleStrategy;
 
 
 import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
-import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
 import dev.squaremile.asynctcp.serialization.internal.TransportEventsDeserialization;
-import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
+import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import io.aeron.cluster.codecs.CloseReason;
 import io.aeron.cluster.service.ClientSession;
 
@@ -18,19 +15,16 @@ public class TcpGatewayClient implements EventHandler
 {
     private final Long2ObjectHashMap<SerializedEventListener> tcpEventsForTcpGatewaySession = new Long2ObjectHashMap<>();
     private final int streamId;
-    private final Consumer<SerializingTransport> onStart;
-    private final Consumer<TransportEvent> onTcpEvent;
+    private final ApplicationFactory applicationFactory;
     private IdleStrategy idleStrategy;
 
     public TcpGatewayClient(
             final int egressStreamId,
-            final Consumer<SerializingTransport> onStart,
-            final Consumer<TransportEvent> onTcpEvent
+            final ApplicationFactory applicationFactory
     )
     {
         this.streamId = egressStreamId;
-        this.onStart = onStart;
-        this.onTcpEvent = onTcpEvent;
+        this.applicationFactory = applicationFactory;
     }
 
     @Override
@@ -50,9 +44,8 @@ public class TcpGatewayClient implements EventHandler
     {
         final TcpGatewaySession tcpGatewaySession = new TcpGatewaySession(
                 session,
-                idleStrategy,
-                onStart::accept,
-                onTcpEvent
+                applicationFactory,
+                idleStrategy
         );
         tcpEventsForTcpGatewaySession.put(session.id(), new TransportEventsDeserialization(tcpGatewaySession::onEvent));
         tcpGatewaySession.onStart();

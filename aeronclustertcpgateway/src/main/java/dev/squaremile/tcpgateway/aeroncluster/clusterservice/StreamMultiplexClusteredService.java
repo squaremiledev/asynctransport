@@ -24,7 +24,7 @@ public class StreamMultiplexClusteredService implements ClusteredService
     {
         if (eventHandlers.length != stream(eventHandlers).mapToInt(EventHandler::streamId).distinct().count())
         {
-            throw new IllegalArgumentException("Ambiguous unique stream ids: " + stream(eventHandlers).map(EventHandler::streamId).collect(Collectors.toList()));
+            throw new IllegalArgumentException("Duplicate stream ids: " + stream(eventHandlers).map(EventHandler::streamId).collect(Collectors.toList()));
         }
         this.eventHandlers = new Int2ObjectHashMap<>();
         stream(eventHandlers).forEach(eventHandler -> this.eventHandlers.put(eventHandler.streamId(), eventHandler));
