@@ -1,8 +1,5 @@
 package dev.squaremile.asynctcp.transport.api.app;
 
-public interface ApplicationOnDuty extends OnDuty
+public interface ApplicationOnDuty extends ApplicationLifecycle, OnDuty
 {
-    void onStart();
-
-    void onStop();
 }
