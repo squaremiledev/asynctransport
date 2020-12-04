@@ -20,7 +20,6 @@ public class StreamMultiplexClusteredService implements ClusteredService
 {
     private final Int2ObjectHashMap<EventHandler> eventHandlers;
 
-
     public StreamMultiplexClusteredService(final EventHandler... eventHandlers)
     {
         if (eventHandlers.length != stream(eventHandlers).mapToInt(EventHandler::streamId).distinct().count())

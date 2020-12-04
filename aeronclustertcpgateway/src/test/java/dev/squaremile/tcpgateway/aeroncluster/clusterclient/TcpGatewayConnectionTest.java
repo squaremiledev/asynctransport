@@ -17,8 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
-import dev.squaremile.tcpgateway.aeroncluster.clusterservice.TcpGatewayClient;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.StreamMultiplexClusteredService;
+import dev.squaremile.tcpgateway.aeroncluster.clusterservice.TcpGatewayClient;
 import dev.squaremile.transport.aeroncluster.api.ClientFactory;
 import dev.squaremile.transport.aeroncluster.api.ClusterClientApplication;
 import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
@@ -56,7 +56,7 @@ class TcpGatewayConnectionTest
                 new StreamMultiplexClusteredService(
                         new TcpGatewayClient(
                                 tcpGatewayEgressStreamId,
-                                (transport, streamId) -> transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1))),
+                                transport -> transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1))),
                                 System.out::println
                         )
                 )
@@ -88,9 +88,9 @@ class TcpGatewayConnectionTest
                 tempDir.resolve("cluster"),
                 tempDir.resolve("aeron"),
                 new StreamMultiplexClusteredService(
-                        new TcpGatewayClient(tcpGatewayEgressStreamId, (transport, streamId) ->
+                        new TcpGatewayClient(tcpGatewayEgressStreamId, transport ->
                                 transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(0), fixedLengthDelineation(1))), System.out::println),
-                        new TcpGatewayClient(anotherTcpGatewayEgressStreamId, (transport, streamId) ->
+                        new TcpGatewayClient(anotherTcpGatewayEgressStreamId, transport ->
                                 transport.handle(transport.command(Listen.class).set(1, freePortPools.get("tcp").get(1), fixedLengthDelineation(1))), System.out::println)
                 )
         )::start);

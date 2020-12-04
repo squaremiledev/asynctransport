@@ -1,6 +1,5 @@
 package dev.squaremile.tcpgateway.aeroncluster.clusterservice;
 
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.agrona.DirectBuffer;
@@ -19,17 +18,17 @@ public class TcpGatewayClient implements EventHandler
 {
     private final Long2ObjectHashMap<SerializedEventListener> tcpEventsForTcpGatewaySession = new Long2ObjectHashMap<>();
     private final int streamId;
-    private final BiConsumer<SerializingTransport, Integer> onStart;
+    private final Consumer<SerializingTransport> onStart;
     private final Consumer<TransportEvent> onTcpEvent;
     private IdleStrategy idleStrategy;
 
     public TcpGatewayClient(
-            final int streamId,
-            final BiConsumer<SerializingTransport, Integer> onStart,
+            final int egressStreamId,
+            final Consumer<SerializingTransport> onStart,
             final Consumer<TransportEvent> onTcpEvent
     )
     {
-        this.streamId = streamId;
+        this.streamId = egressStreamId;
         this.onStart = onStart;
         this.onTcpEvent = onTcpEvent;
     }
@@ -52,7 +51,7 @@ public class TcpGatewayClient implements EventHandler
         final TcpGatewaySession tcpGatewaySession = new TcpGatewaySession(
                 session,
                 idleStrategy,
-                transport -> onStart.accept(transport, session.responseStreamId()),
+                onStart::accept,
                 onTcpEvent
         );
         tcpEventsForTcpGatewaySession.put(session.id(), new TransportEventsDeserialization(tcpGatewaySession::onEvent));
