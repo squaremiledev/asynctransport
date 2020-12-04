@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.StreamMultiplexClusteredService;
@@ -58,7 +58,7 @@ class TcpGatewayConnectionTest
                 tempDir.resolve("cluster"),
                 tempDir.resolve("aeron"),
                 new StreamMultiplexClusteredService(
-                        new TcpGatewayClient(tcpGatewayEgressStreamId, transport -> new EventDrivenApplication()
+                        new TcpGatewayClient(tcpGatewayEgressStreamId, transport -> new TransportApplicationOnDuty()
                         {
                             @Override
                             public void onStart()
@@ -72,7 +72,7 @@ class TcpGatewayConnectionTest
                                 System.out.println(event);
                             }
                         }),
-                        new TcpGatewayClient(anotherTcpGatewayEgressStreamId, transport -> new EventDrivenApplication()
+                        new TcpGatewayClient(anotherTcpGatewayEgressStreamId, transport -> new TransportApplicationOnDuty()
                         {
                             @Override
                             public void onStart()

@@ -5,7 +5,7 @@ import org.agrona.collections.Long2ObjectHashMap;
 
 
 import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
@@ -21,15 +21,15 @@ import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-public class DelineationApplication implements EventDrivenApplication, TransportCommandHandler
+public class DelineationApplication implements TransportApplicationOnDuty, TransportCommandHandler
 {
 
-    private final EventDrivenApplication delegate;
+    private final TransportApplicationOnDuty delegate;
     private final Long2ObjectHashMap<DelineationHandler> delineationPerConnection = new Long2ObjectHashMap<>();
     private final DelineationHandlerFactory delineationHandlerFactory = new DelineationHandlerFactory();
     private final Int2ObjectHashMap<Delineation> delineationTypePerListeningPort = new Int2ObjectHashMap<>();
 
-    public DelineationApplication(final EventDrivenApplication delegate)
+    public DelineationApplication(final TransportApplicationOnDuty delegate)
     {
         this.delegate = delegate;
     }

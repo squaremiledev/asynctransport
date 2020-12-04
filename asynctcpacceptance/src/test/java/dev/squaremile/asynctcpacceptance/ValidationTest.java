@@ -18,8 +18,8 @@ import dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
 import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
@@ -126,7 +126,7 @@ public class ValidationTest
 
     private void whenApplicationStarting(final EventsSpy eventsSpy, final Consumer<Transport> onStart)
     {
-        ApplicationOnDuty application = new AsyncTcp().createSharedStack("test", transport -> new EventDrivenApplication()
+        ApplicationOnDuty application = new AsyncTcp().createSharedStack("test", transport -> new TransportApplicationOnDuty()
         {
             @Override
             public void onStart()

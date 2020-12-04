@@ -3,7 +3,7 @@ package dev.squaremile.asynctcpacceptance;
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
@@ -26,13 +26,13 @@ public class AppListeningOnTcpPort
 
         ApplicationOnDuty app = new AsyncTcp().createSharedStack(
                 "AppListeningOnTcpPort",
-                transport -> new EventDrivenApplication()
+                transport -> new TransportApplicationOnDuty()
                 {
                     @Override
                     public void onStart()
                     {
                         System.out.println("START");
-                        transport.handle(transport.command(Listen.class).set((long)1, appPort, rawStreaming()));
+                        transport.handle(transport.command(Listen.class).set(1, appPort, rawStreaming()));
                     }
 
                     @Override

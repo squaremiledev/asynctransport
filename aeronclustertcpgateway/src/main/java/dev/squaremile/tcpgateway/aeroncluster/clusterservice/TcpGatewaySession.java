@@ -5,19 +5,19 @@ import org.agrona.concurrent.IdleStrategy;
 
 
 import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplication;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
 import io.aeron.cluster.service.ClientSession;
 
 class TcpGatewaySession
 {
-    private final EventDrivenApplication eventDrivenApplication;
+    private final TransportApplication transportApplication;
     private final SerializingTransport transport;
 
     public TcpGatewaySession(
             final ClientSession session,
-            final ApplicationFactory applicationFactory,
+            final TransportApplicationFactory applicationFactory,
             final IdleStrategy idleStrategy
     )
     {
@@ -29,17 +29,17 @@ class TcpGatewaySession
                 idleStrategy.idle();
             }
         });
-        this.eventDrivenApplication = applicationFactory.create(transport);
+        this.transportApplication = applicationFactory.create(transport);
     }
 
     public void onEvent(TransportEvent event)
     {
         transport.onEvent(event);
-        eventDrivenApplication.onEvent(event);
+        transportApplication.onEvent(event);
     }
 
     public void onStart()
     {
-        eventDrivenApplication.onStart();
+        transportApplication.onStart();
     }
 }

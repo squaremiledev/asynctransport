@@ -10,10 +10,10 @@ import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.api.wiring.OnEventConnectionApplicationFactory;
 import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
@@ -61,7 +61,7 @@ public class Certification
         return acceptor;
     }
 
-    private static class AcceptorApplicationFactory implements ApplicationFactory
+    private static class AcceptorApplicationFactory implements TransportApplicationOnDutyFactory
     {
         private final int port;
         private final Runnable onStartedListening;
@@ -82,7 +82,7 @@ public class Certification
         }
 
         @Override
-        public EventDrivenApplication create(final Transport transport)
+        public TransportApplicationOnDuty create(final Transport transport)
         {
             return new ListeningApplication(
                     transport,

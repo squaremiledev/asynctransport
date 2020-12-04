@@ -5,11 +5,11 @@ import java.util.function.LongConsumer;
 import org.agrona.MutableDirectBuffer;
 
 
-import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.Listen;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
@@ -17,7 +17,7 @@ import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-class LongPingPongAppFactory implements ApplicationFactory
+class LongPingPongAppFactory implements TransportApplicationOnDutyFactory
 {
     private final int port;
     private final EventListener pingSpy;
@@ -35,9 +35,9 @@ class LongPingPongAppFactory implements ApplicationFactory
     }
 
     @Override
-    public EventDrivenApplication create(final Transport transport)
+    public TransportApplicationOnDuty create(final Transport transport)
     {
-        return new EventDrivenApplication()
+        return new TransportApplicationOnDuty()
         {
             private int numberCount = 0;
 

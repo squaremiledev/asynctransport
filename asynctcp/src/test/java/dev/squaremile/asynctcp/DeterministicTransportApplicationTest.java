@@ -21,8 +21,8 @@ import dev.squaremile.asynctcp.fixtures.MessageLog;
 import dev.squaremile.asynctcp.fixtures.ResponseApplication;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.fixtures.TimingExtension;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
@@ -140,7 +140,7 @@ class DeterministicTransportApplicationTest
         assertThat(messageLog.logContent()).isEqualTo(logContent);
     }
 
-    private void verifyDeterminism(final MessageLog previousMessageLog, final ApplicationFactory applicationFactory)
+    private void verifyDeterminism(final MessageLog previousMessageLog, final TransportApplicationOnDutyFactory applicationFactory)
     {
         final MessageLog newMessageLog = new MessageLog();
         ApplicationOnDuty newApplication = transportApplicationFactory.createWithoutTransport(

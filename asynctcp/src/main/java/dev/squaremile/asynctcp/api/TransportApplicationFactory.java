@@ -6,8 +6,8 @@ import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
 import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedCommandSupplier;
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
 import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 
 public interface TransportApplicationFactory
@@ -27,11 +27,11 @@ public interface TransportApplicationFactory
      * @param applicationFactory        a user provided application
      * @return a wired application ready to be started and used
      */
-    ApplicationOnDuty create(
+    TransportApplicationOnDuty create(
             String role,
             int buffersSize,
             final SerializedMessageListener serializedMessageListener,
-            ApplicationFactory applicationFactory
+            TransportApplicationOnDutyFactory applicationFactory
     );
 
     /**
@@ -55,7 +55,7 @@ public interface TransportApplicationFactory
      * @param applicationFactory a user provided application
      * @return a wired application ready to be started and used
      */
-    ApplicationOnDuty createSharedStack(String role, ApplicationFactory applicationFactory);
+    TransportApplicationOnDuty createSharedStack(String role, TransportApplicationOnDutyFactory applicationFactory);
 
     /**
      * Creates a wired TCP Application that requires a buffer-backed transport counterparty to work.
@@ -71,9 +71,9 @@ public interface TransportApplicationFactory
      * @param serializedEventListener An additional listener for serialized events that come from the transport
      * @return a wired application ready to be started and used
      */
-    ApplicationOnDuty createWithoutTransport(
+    TransportApplicationOnDuty createWithoutTransport(
             String role,
-            ApplicationFactory applicationFactory,
+            TransportApplicationOnDutyFactory applicationFactory,
             SerializedEventSupplier eventSupplier,
             SerializedCommandListener commandListener,
             SerializedEventListener serializedEventListener

@@ -1,6 +1,6 @@
 package dev.squaremile.asynctcp.transport.api.app;
 
-public interface EventDrivenApplication extends ApplicationOnDuty, EventListener
+public interface TransportApplicationOnDuty extends TransportApplication, ApplicationOnDuty, EventListener
 {
     @Override
     default void onStart()

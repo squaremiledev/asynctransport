@@ -6,8 +6,8 @@ import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
 import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedCommandSupplier;
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
 import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
 
 public class AsyncTcp implements TransportApplicationFactory
@@ -15,23 +15,23 @@ public class AsyncTcp implements TransportApplicationFactory
     private final TransportApplicationFactory factory = new RingBufferBackedTransportApplicationFactory();
 
     @Override
-    public ApplicationOnDuty create(
-            final String role, final int buffersSize, final SerializedMessageListener serializedMessageListener, final ApplicationFactory applicationFactory
+    public TransportApplicationOnDuty create(
+            final String role, final int buffersSize, final SerializedMessageListener serializedMessageListener, final TransportApplicationOnDutyFactory applicationFactory
     )
     {
         return factory.create(role, buffersSize, serializedMessageListener, applicationFactory);
     }
 
     @Override
-    public ApplicationOnDuty createSharedStack(final String role, final ApplicationFactory applicationFactory)
+    public TransportApplicationOnDuty createSharedStack(final String role, final TransportApplicationOnDutyFactory applicationFactory)
     {
         return factory.createSharedStack(role, applicationFactory);
     }
 
     @Override
-    public ApplicationOnDuty createWithoutTransport(
+    public TransportApplicationOnDuty createWithoutTransport(
             final String role,
-            final ApplicationFactory applicationFactory,
+            final TransportApplicationOnDutyFactory applicationFactory,
             final SerializedEventSupplier eventSupplier,
             final SerializedCommandListener commandListener,
             final SerializedEventListener serializedEventListener

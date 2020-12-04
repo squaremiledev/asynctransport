@@ -23,11 +23,11 @@ import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedComman
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventDrivenApplication;
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
 import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedMessageDrivenTransport;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
 import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
 
 import static dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler.NO_HANDLER;
@@ -37,11 +37,11 @@ public class RingBufferBackedTransportApplicationFactory implements TransportApp
     private static final int MSG_TYPE_ID = 1;
 
     @Override
-    public EventDrivenApplication create(
+    public TransportApplicationOnDuty create(
             final String role,
             final int buffersSize,
             final SerializedMessageListener serializedMessageListener,
-            final ApplicationFactory applicationFactory
+            final TransportApplicationOnDutyFactory applicationFactory
     )
     {
         final RingBuffer networkToUser = new OneToOneRingBuffer(new UnsafeBuffer(new byte[buffersSize + TRAILER_LENGTH]));
@@ -67,19 +67,19 @@ public class RingBufferBackedTransportApplicationFactory implements TransportApp
     }
 
     @Override
-    public EventDrivenApplication createSharedStack(final String role, ApplicationFactory applicationFactory)
+    public TransportApplicationOnDuty createSharedStack(final String role, TransportApplicationOnDutyFactory applicationFactory)
     {
         ListeningApplication listeningApplication = new ListeningApplication();
         Transport transport = new DelineationValidatingTransport(listeningApplication, new NonBlockingTransport(listeningApplication, NO_HANDLER, System::currentTimeMillis, role));
-        EventDrivenApplication app = new DelineationApplication(applicationFactory.create(transport));
+        TransportApplicationOnDuty app = new DelineationApplication(applicationFactory.create(transport));
         listeningApplication.set(app);
         return new TransportPoweredApplication(transport, app);
     }
 
     @Override
-    public EventDrivenApplication createWithoutTransport(
+    public TransportApplicationOnDuty createWithoutTransport(
             final String role,
-            final ApplicationFactory applicationFactory,
+            final TransportApplicationOnDutyFactory applicationFactory,
             final SerializedEventSupplier eventSupplier,
             final SerializedCommandListener serializedCommandListener,
             final SerializedEventListener serializedEventListener
@@ -110,7 +110,7 @@ public class RingBufferBackedTransportApplicationFactory implements TransportApp
 
     private static class ListeningApplication implements EventListener
     {
-        private EventDrivenApplication listeningApplication;
+        private TransportApplicationOnDuty listeningApplication;
 
         @Override
         public void onEvent(final Event event)
@@ -118,7 +118,7 @@ public class RingBufferBackedTransportApplicationFactory implements TransportApp
             listeningApplication.onEvent(event);
         }
 
-        public void set(final EventDrivenApplication app)
+        public void set(final TransportApplicationOnDuty app)
         {
             listeningApplication = app;
         }

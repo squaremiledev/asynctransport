@@ -3,15 +3,15 @@ package dev.squaremile.asynctcpacceptance;
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.singletonList;
 
-public class AppConnectingToTcpPort implements EventDrivenApplication
+public class AppConnectingToTcpPort implements TransportApplicationOnDuty
 {
     private final Transport transport;
     private final int port;
@@ -41,7 +41,7 @@ public class AppConnectingToTcpPort implements EventDrivenApplication
     public void onStart()
     {
         System.out.println("START");
-        transport.handle(transport.command(Connect.class).set("localhost", port, (long)1, 1_000, rawStreaming()));
+        transport.handle(transport.command(Connect.class).set("localhost", port, 1, 1_000, rawStreaming()));
     }
 
     @Override

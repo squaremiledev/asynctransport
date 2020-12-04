@@ -1,15 +1,15 @@
 package dev.squaremile.asynctcp.internal;
 
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.Event;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 
-public class TransportPoweredApplication implements EventDrivenApplication
+public class TransportPoweredApplication implements TransportApplicationOnDuty
 {
     private final Transport transport;
-    private final EventDrivenApplication app;
+    private final TransportApplicationOnDuty app;
 
-    TransportPoweredApplication(final Transport transport, final EventDrivenApplication app)
+    TransportPoweredApplication(final Transport transport, final TransportApplicationOnDuty app)
     {
         this.transport = transport;
         this.app = app;

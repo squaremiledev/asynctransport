@@ -3,17 +3,17 @@ package dev.squaremile.asynctcpacceptance.sampleapps;
 import java.util.function.LongConsumer;
 
 
-import dev.squaremile.asynctcp.transport.api.app.ApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventDrivenApplication;
 import dev.squaremile.asynctcp.transport.api.app.EventListener;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
 import dev.squaremile.asynctcp.transport.api.commands.Connect;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.Delineation;
 
-class LongPongAppFactory implements ApplicationFactory
+class LongPongAppFactory implements TransportApplicationOnDutyFactory
 {
     private final EventListener pongSpy;
     private final int port;
@@ -29,9 +29,9 @@ class LongPongAppFactory implements ApplicationFactory
     }
 
     @Override
-    public EventDrivenApplication create(final Transport transport)
+    public TransportApplicationOnDuty create(final Transport transport)
     {
-        return new EventDrivenApplication()
+        return new TransportApplicationOnDuty()
         {
             private static final int CONNECT_COMMAND_ID = 1;
 
