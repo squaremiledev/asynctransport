@@ -1,8 +1,5 @@
 package dev.squaremile.transport.usecases.market;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -61,20 +58,20 @@ class FakeMarketTest
     @Test
     void shouldInformAboutTickingSecurity()
     {
-        final List<Security> observedTicks = new ArrayList<>();
+        final TickerSpy tickerSpy = new TickerSpy();
         FakeMarket fakeMarket = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 100),
                 new IncrementAfterNTimeUnits(2, 3),
-                security -> observedTicks.add(new TrackedSecurity().update(security))
+                tickerSpy
         );
         range(1, 11).forEach(fakeMarket::tick);
 
-        assertThat(observedTicks).hasSize(10);
-        assertThat(observedTicks.get(0)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1, 100, 0));
-        assertThat(observedTicks.get(1)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(2, 103, 2));
-        assertThat(observedTicks.get(2)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(3, 103, 2));
-        assertThat(observedTicks.get(3)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(4, 106, 4));
-        assertThat(observedTicks.get(9)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(10, 115, 10));
+        assertThat(tickerSpy.observedTicks()).hasSize(10);
+        assertThat(tickerSpy.observedTick(0)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1, 100, 0));
+        assertThat(tickerSpy.observedTick(1)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(2, 103, 2));
+        assertThat(tickerSpy.observedTick(2)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(3, 103, 2));
+        assertThat(tickerSpy.observedTick(3)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(4, 106, 4));
+        assertThat(tickerSpy.observedTick(9)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(10, 115, 10));
     }
 
     private FakeMarket fakeMarket(final long initialPrice, final FakeMarket.PriceUpdate priceMovement)
