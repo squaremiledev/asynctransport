@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.fixtures.ResponseApplication;
 import dev.squaremile.asynctcp.fixtures.TimingExtension;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationFactory;
 import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
@@ -23,6 +24,7 @@ import dev.squaremile.tcpgateway.aeroncluster.clusterservice.StreamMultiplexClus
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.TcpGatewayClient;
 import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition;
+import dev.squaremile.transport.aeroncluster.fixtures.ClusterNode;
 
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
@@ -47,36 +49,33 @@ class TransportApplicationTest
     @Test
     void shouldCreateApplicationThatHandlesMessages(@TempDir Path tempDir) throws IOException
     {
+        // Define application
+        final TransportApplicationFactory applicationFactory = transport ->
+                new ListeningApplication(
+                        transport,
+                        fixedLengthDelineation(3),
+                        tcpPort,
+                        events,
+                        (connectionTransport, connectionId) -> new ResponseApplication(connectionTransport, System.out::println, value -> (byte)(value * 10))
+                );
+
+        // Create cluster with the application
         final ClusterDefinition cluster = new ClusterDefinition(
                 node(0, new IngressDefinition.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), endpoints("localhost", freePortPools.get("clusterNode")))
         );
-
-        newSingleThreadExecutor().execute(clusterNode(
+        final ClusterNode clusterNode = clusterNode(
                 cluster.node(0),
                 cluster.memberURIs(),
                 tempDir.resolve("cluster"),
                 tempDir.resolve("aeron"),
-                new StreamMultiplexClusteredService(
-                        new TcpGatewayClient(
-                                1234,
-                                transport ->
-                                        new ListeningApplication(
-                                                transport,
-                                                fixedLengthDelineation(3),
-                                                tcpPort,
-                                                events,
-                                                (connectionTransport, connectionId) -> new ResponseApplication(
-                                                        connectionTransport,
-                                                        System.out::println,
-                                                        value -> (byte)(value * 10)
-                                                )
-                                        )
-                        )
-                )
-        )::start);
+                new StreamMultiplexClusteredService(new TcpGatewayClient(1234, applicationFactory))
+        );
+
+        // When started cluster and Tcp gateway
+        newSingleThreadExecutor().execute(clusterNode::start);
         newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress(), INGRESS_STREAM_ID_DEFAULT, 1234).connect());
 
-        // Given
+        // Then
         runUntil(() -> events.contains(StartedListening.class));
         assertEqual(events.all(), new StartedListening(tcpPort, 1, fixedLengthDelineation(3)));
 
@@ -87,15 +86,11 @@ class TransportApplicationTest
         // Then
         assertThat(events.all(ConnectionAccepted.class).get(0).port()).isEqualTo(tcpPort);
 
-        // DATA SENDING PART
-        byte[] dataToSend = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
-        byte[] expectedReceivedData = new byte[]{10, 20, 30, 40, 50, 60, 70, 80, 90};
-
         // When
-        sampleClient.write(dataToSend);
+        sampleClient.write(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9});
 
         // Then
-        assertThat(readReceivedData(dataToSend.length)).isEqualTo(expectedReceivedData);
+        assertThat(readReceivedData(9)).isEqualTo(new byte[]{10, 20, 30, 40, 50, 60, 70, 80, 90});
     }
 
     private byte[] readReceivedData(final int expectedDataLength)

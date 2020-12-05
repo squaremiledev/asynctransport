@@ -7,7 +7,7 @@ import org.agrona.concurrent.IdleStrategy;
 
 import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
 import dev.squaremile.asynctcp.serialization.internal.TransportEventsDeserialization;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationFactory;
 import io.aeron.cluster.codecs.CloseReason;
 import io.aeron.cluster.service.ClientSession;
 
@@ -15,12 +15,12 @@ public class TcpGatewayClient implements EventHandler
 {
     private final Long2ObjectHashMap<SerializedEventListener> tcpEventsForTcpGatewaySession = new Long2ObjectHashMap<>();
     private final int streamId;
-    private final TransportApplicationOnDutyFactory applicationFactory;
+    private final TransportApplicationFactory applicationFactory;
     private IdleStrategy idleStrategy;
 
     public TcpGatewayClient(
             final int egressStreamId,
-            final TransportApplicationOnDutyFactory applicationFactory
+            final TransportApplicationFactory applicationFactory
     )
     {
         this.streamId = egressStreamId;
