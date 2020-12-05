@@ -3,6 +3,7 @@ package dev.squaremile.transport.usecases.market;
 public class FakeMarket
 {
     private final PriceUpdate priceMovement;
+
     private long currentMidPrice;
 
     public FakeMarket(final long initialMidPrice, final PriceUpdate priceUpdate)
@@ -16,9 +17,9 @@ public class FakeMarket
         return currentMidPrice;
     }
 
-    public FakeMarket tick()
+    public FakeMarket tick(final long currentTime)
     {
-        currentMidPrice = priceMovement.newPrice(currentMidPrice);
+        currentMidPrice = priceMovement.newPrice(currentTime, currentMidPrice);
         return this;
 
     }
@@ -26,6 +27,6 @@ public class FakeMarket
     @FunctionalInterface
     interface PriceUpdate
     {
-        long newPrice(long oldPrice);
+        long newPrice(final long currentTime, long oldPrice);
     }
 }
