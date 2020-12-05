@@ -1,4 +1,4 @@
-package dev.squaremile.tcpgateway.aeroncluster.clusterclient;
+package dev.squaremile.tcpgateway.aeronclusterfix;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,23 +11,22 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
+import dev.squaremile.asynctcp.fix.FixHandler;
 import dev.squaremile.asynctcp.fix.examplecertification.usecases.RespondToLogOnIgnoreRest;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
 import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.StreamMultiplexClusteredService;
-import dev.squaremile.tcpgateway.aeroncluster.clusterservice.TcpGatewayClient;
 import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterNode;
 
-import static dev.squaremile.asynctcp.fix.FixMessageHandlerFactory.createFixMessageHandler;
 import static dev.squaremile.asynctcp.fix.examplecertification.usecases.FixUtils.asciiFixBody;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortPools;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
+import static dev.squaremile.tcpgateway.aeronclusterfix.TcpFixAcceptorFactory.createClusteredTcpFixAcceptor;
+import static dev.squaremile.tcpgateway.aeronclusterfix.TcpFixAcceptorFactory.createTcpGateway;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.endpoints;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.node;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterNode.clusterNode;
@@ -35,7 +34,7 @@ import static io.aeron.cluster.client.AeronCluster.Configuration.INGRESS_STREAM_
 import static java.lang.System.arraycopy;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
-public class SampleFixApplicationTest
+public class TcpFixAcceptorFactoryTest
 {
     private final SampleClient sampleClient = new SampleClient();
     private final EventsSpy events = EventsSpy.spy();
@@ -48,6 +47,7 @@ public class SampleFixApplicationTest
     @Test
     void shouldRunApplication(@TempDir Path tempDir) throws IOException
     {
+        final FixHandler fixHandler = new RespondToLogOnIgnoreRest("someUsername");
         final ClusterDefinition cluster = new ClusterDefinition(
                 node(0, new IngressDefinition.Endpoint(0, "localhost", freePortPools.get("ingress").get(0)), endpoints("localhost", freePortPools.get("clusterNode")))
         );
@@ -56,23 +56,15 @@ public class SampleFixApplicationTest
                 cluster.memberURIs(),
                 tempDir.resolve("cluster"),
                 tempDir.resolve("aeron"),
-                new StreamMultiplexClusteredService(
-                        new TcpGatewayClient(
-                                1234,
-                                transport -> new ListeningApplication(
-                                        transport,
-                                        fixMessage(),
-                                        tcpPort,
-                                        events,
-                                        createFixMessageHandler(new RespondToLogOnIgnoreRest("someUsername"))
-                                )
-                        )
-                )
+                new StreamMultiplexClusteredService(createClusteredTcpFixAcceptor(1234, tcpPort, events, fixHandler))
         );
+
         newSingleThreadExecutor().execute(clusterNode::start);
-        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress(), INGRESS_STREAM_ID_DEFAULT, 1234).connect());
+        newSingleThreadExecutor().execute(() -> createTcpGateway(INGRESS_STREAM_ID_DEFAULT, 1234, cluster.ingress()).connect());
         runUntil(() -> events.contains(StartedListening.class));
         runUntil(completed(() -> sampleClient.connectedTo(tcpPort)));
+
+        // When
         sampleClient.write(logonMessage);
 
         // Then
@@ -89,4 +81,5 @@ public class SampleFixApplicationTest
         )));
         return new String(actualReceivedData);
     }
+
 }

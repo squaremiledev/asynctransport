@@ -13,12 +13,14 @@ test {
 }
 
 dependencies {
-    api project(':asynctcp')
-    api project(':aeroncluster')
+    implementation project(':asynctcp')
+    implementation project(':aeronclustertcpgateway')
+    implementation project(':fix')
 
-    implementation 'org.agrona:agrona:1.6.0'
-    implementation 'io.aeron:aeron-cluster:1.31.1'
+    testImplementation 'org.agrona:agrona:1.6.0'
+    testImplementation 'io.aeron:aeron-cluster:1.31.1'
 
+    testImplementation project(':aeroncluster')
     testImplementation testFixtures(project(':transport'))
     testImplementation testFixtures(project(':asynctcp'))
     testImplementation testFixtures(project(':aeroncluster'))

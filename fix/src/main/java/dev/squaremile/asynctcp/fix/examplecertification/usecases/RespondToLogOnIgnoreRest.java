@@ -3,12 +3,12 @@ package dev.squaremile.asynctcp.fix.examplecertification.usecases;
 import org.agrona.AsciiSequenceView;
 
 
-import dev.squaremile.asynctcp.fix.FixMessageHandler;
+import dev.squaremile.asynctcp.fix.FixHandler;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 
-public class RespondToLogOnIgnoreRest implements FixMessageHandler
+public class RespondToLogOnIgnoreRest implements FixHandler
 {
     private final AsciiSequenceView content = new AsciiSequenceView();
     private final byte[] logonMessage;

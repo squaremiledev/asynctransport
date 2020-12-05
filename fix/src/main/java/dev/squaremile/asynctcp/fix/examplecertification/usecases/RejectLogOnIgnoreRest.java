@@ -3,7 +3,7 @@ package dev.squaremile.asynctcp.fix.examplecertification.usecases;
 import org.agrona.AsciiSequenceView;
 
 
-import dev.squaremile.asynctcp.fix.FixMessageHandler;
+import dev.squaremile.asynctcp.fix.FixHandler;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
@@ -11,7 +11,7 @@ import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import static dev.squaremile.asynctcp.fix.examplecertification.usecases.FixUtils.asciiFixBody;
 
 
-public class RejectLogOnIgnoreRest implements FixMessageHandler
+public class RejectLogOnIgnoreRest implements FixHandler
 {
     private final AsciiSequenceView content = new AsciiSequenceView();
     private final byte[] logoutMessage = asciiFixBody("FIX.4.2", "35=5^49=SellSide^" +
