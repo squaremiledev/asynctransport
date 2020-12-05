@@ -5,10 +5,10 @@ public class FakeMarket
     private final PriceUpdate priceMovement;
     private final TrackedSecurity security = new TrackedSecurity();
 
-    public FakeMarket(final long initialMidPrice, final PriceUpdate priceUpdate)
+    public FakeMarket(final Security security, final PriceUpdate priceMovement)
     {
-        this.priceMovement = priceUpdate;
-        this.security.midPrice(0L, initialMidPrice);
+        this.security.update(security);
+        this.priceMovement = priceMovement;
     }
 
     public long midPrice()
