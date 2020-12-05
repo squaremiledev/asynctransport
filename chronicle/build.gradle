@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'java-test-fixtures'
+    id 'idea'
+}
+
+java {
+    modularity.inferModulePath = true
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    implementation 'net.openhft:chronicle-queue:5.20.115'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
+    testImplementation 'org.assertj:assertj-core:3.16.1'
+}
