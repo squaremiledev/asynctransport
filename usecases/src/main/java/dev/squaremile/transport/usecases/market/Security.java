@@ -5,4 +5,6 @@ public interface Security
     long midPrice();
 
     long lastUpdateTime();
+
+    long lastPriceChange();
 }

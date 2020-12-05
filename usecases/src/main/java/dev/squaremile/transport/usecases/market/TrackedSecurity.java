@@ -4,6 +4,7 @@ public class TrackedSecurity implements Security
 {
     private long updateTime;
     private long currentMidPrice;
+    private long lastPriceChange;
 
     @Override
     public long midPrice()
@@ -18,17 +19,37 @@ public class TrackedSecurity implements Security
         return updateTime;
     }
 
-    public Security update(final Security source)
+    @Override
+    public long lastPriceChange()
+    {
+        return lastPriceChange;
+    }
+
+    public void update(final Security source)
     {
         this.currentMidPrice = source.midPrice();
         this.updateTime = source.lastUpdateTime();
-        return this;
+        this.lastPriceChange = source.lastPriceChange();
     }
 
     public Security midPrice(final long currentTime, final long currentMidPrice)
     {
+        if (this.currentMidPrice != currentMidPrice)
+        {
+            this.currentMidPrice = currentMidPrice;
+            this.lastPriceChange = currentTime;
+        }
         this.updateTime = currentTime;
-        this.currentMidPrice = currentMidPrice;
         return this;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "TrackedSecurity{" +
+               "updateTime=" + updateTime +
+               ", currentMidPrice=" + currentMidPrice +
+               ", lastPriceChange=" + lastPriceChange +
+               '}';
     }
 }

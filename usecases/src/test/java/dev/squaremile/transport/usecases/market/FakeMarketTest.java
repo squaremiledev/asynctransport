@@ -6,6 +6,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+
+import static java.util.stream.IntStream.range;
+
 class FakeMarketTest
 {
     @ParameterizedTest
@@ -42,6 +45,14 @@ class FakeMarketTest
         assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime()).tick(5).midPrice()).isEqualTo(0);
         assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime()).tick(5).tick(10).midPrice()).isEqualTo(5);
         assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + security.lastUpdateTime()).tick(10).tick(11).midPrice()).isEqualTo(110);
+    }
+
+    @Test
+    void shouldAllowSteadyPriceUpdates()
+    {
+        FakeMarket fakeMarket = fakeMarket(100, new IncrementAfterNTimeUnits(10, 3));
+        range(1, 201).forEach(fakeMarket::tick);
+        assertThat(fakeMarket.midPrice()).isEqualTo(160);
     }
 
     private FakeMarket fakeMarket(final long initialPrice, final FakeMarket.PriceUpdate priceMovement)
