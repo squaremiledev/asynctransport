@@ -22,20 +22,21 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 
+import static dev.squaremile.asynctcp.fix.FixMessageHandlerFactory.createFixMessageHandler;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
 
 public class FixCertification
 {
-    public static final FixUseCase USE_CASE_001_ACCEPTED_LOGON = new FixUseCase("FIX.4.2", "UCAcceptLogon", (connectionTransport, connectionId) -> new RespondToLogOnIgnoreRest(connectionTransport));
+    public static final FixUseCase USE_CASE_001_ACCEPTED_LOGON = new FixUseCase("FIX.4.2", "UCAcceptLogon", createFixMessageHandler(new RespondToLogOnIgnoreRest("Username")));
     public static final FixUseCase USE_CASE_002_FIX11_REJECTED_LOGON = new FixUseCase(
             "FIXT.1.1",
             "UCRejectLogon",
-            (connectionTransport, connectionId) -> new RejectLogOnIgnoreRest(connectionTransport)
+            createFixMessageHandler(new RejectLogOnIgnoreRest())
     );
     public static final FixUseCase USE_CASE_002_FIX42_REJECTED_LOGON = new FixUseCase(
             "FIX.4.2",
             "UCRejectLogon",
-            (connectionTransport, connectionId) -> new RejectLogOnIgnoreRest(connectionTransport)
+            createFixMessageHandler(new RejectLogOnIgnoreRest())
     );
     public static final FixUseCase USE_CASE_002_NOT_RESPONDING = new FixUseCase("FIXT.1.1", "UCIgnoreAll", (connectionTransport, connectionId) -> new IgnoreAll());
 

@@ -9,10 +9,4 @@ public class IgnoreAll implements ConnectionApplication
     public void onEvent(final ConnectionEvent event)
     {
     }
-
-    @Override
-    public void work()
-    {
-
-    }
 }

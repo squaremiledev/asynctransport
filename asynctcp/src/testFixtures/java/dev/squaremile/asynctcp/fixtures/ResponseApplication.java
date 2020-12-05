@@ -19,11 +19,6 @@ public class ResponseApplication implements ConnectionApplication
     private final EventListener eventListener;
     private final BiConsumer<MessageReceived, SendMessage> response;
 
-    public interface ByteConverter
-    {
-        byte convert(byte value);
-    }
-
     public ResponseApplication(final ConnectionTransport transport, final EventListener eventListener, final ByteConverter byteConverter)
     {
         this(transport, eventListener, (messageReceived, outSendMessage) ->
@@ -66,9 +61,15 @@ public class ResponseApplication implements ConnectionApplication
         eventListener.onEvent(event);
         if (event instanceof MessageReceived)
         {
+            MessageReceived messageReceived = (MessageReceived)event;
             SendMessage sendMessage = transport.command(SendMessage.class);
-            response.accept((MessageReceived)event, sendMessage);
+            response.accept(messageReceived, sendMessage);
             transport.handle(sendMessage);
         }
+    }
+
+    public interface ByteConverter
+    {
+        byte convert(byte value);
     }
 }

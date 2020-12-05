@@ -19,12 +19,6 @@ class NoOpConnectionApplication implements ConnectionApplication
     }
 
     @Override
-    public void work()
-    {
-
-    }
-
-    @Override
     public void onEvent(final ConnectionEvent event)
     {
 
