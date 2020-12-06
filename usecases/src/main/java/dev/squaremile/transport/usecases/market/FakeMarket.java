@@ -5,7 +5,7 @@ public class FakeMarket
     private final MidPriceUpdate priceMovement;
     private final TrackedSecurity security = new TrackedSecurity();
     private final TickListener tickListener;
-    private final FirmPrice currentMarketMakerFirmPrice = FirmPrice.createNoPrice();
+    private final MarketMaking marketMaking = new MarketMaking();
     private long currentTime;
 
     public FakeMarket(final Security security, final MidPriceUpdate priceMovement, final TickListener tickListener)
@@ -27,24 +27,18 @@ public class FakeMarket
         tickListener.onTick(security);
         this.currentTime = currentTime;
         return this;
-
     }
 
-    public FirmPrice firmPrice()
-    {
-        return currentMarketMakerFirmPrice;
-    }
-
-    public void onFirmPriceUpdate(final long currentTime, final FirmPrice marketMakerFirmPrice)
+    public void onFirmPriceUpdate(final long currentTime, final int marketParticipant, final FirmPrice marketMakerFirmPrice)
     {
         validateTime(currentTime);
-        this.currentMarketMakerFirmPrice.update(marketMakerFirmPrice);
+        marketMaking.updateFirmPrice(marketParticipant, marketMakerFirmPrice);
         tick(currentTime);
     }
 
-    public boolean execute(final int currentTime, final FirmPrice executedQuantity)
+    public boolean execute(final long currentTime, final int executingMarketParticipant, final FirmPrice executedQuantity)
     {
-        if (currentTime >= this.currentTime && this.currentMarketMakerFirmPrice.execute(executedQuantity))
+        if (currentTime >= this.currentTime && marketMaking.execute(executedQuantity))
         {
             tick(currentTime);
             return true;
@@ -58,5 +52,10 @@ public class FakeMarket
         {
             throw new IllegalArgumentException("Provided time " + currentTime + " is behind the current market time " + this.currentTime);
         }
+    }
+
+    public FirmPrice firmPrice(final int marketParticipant)
+    {
+        return marketMaking.firmPrice(marketParticipant);
     }
 }
