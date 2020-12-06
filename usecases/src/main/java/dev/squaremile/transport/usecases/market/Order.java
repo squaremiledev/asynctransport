@@ -7,7 +7,7 @@ public class Order
     private final long bidPrice;
     private final int bidQuantity;
 
-    public Order(final long askPrice, final int askQuantity, final long bidPrice, final int bidQuantity)
+    public Order(final long bidPrice, final int bidQuantity, final long askPrice, final int askQuantity)
     {
         if (
                 (askQuantity != 0 && bidQuantity != 0) ||

@@ -23,6 +23,32 @@ public class MarketMaking
 
     public boolean execute(final long currentTime, final Order order)
     {
-        return firmPrice(knownMarketParticipantId).execute(currentTime, order);
+        Int2ObjectHashMap<FirmPrice>.EntryIterator iterator = participantFirmPrice.entrySet().iterator();
+        FirmPrice bestPrice = null;
+        while (iterator.hasNext())
+        {
+            FirmPrice price = iterator.next().getValue();
+            if (order.askQuantity() > 0)
+            {
+                if (price.bidQuantity() >= order.askQuantity() && (bestPrice == null || price.bidPrice() >= order.askPrice()))
+                {
+                    bestPrice = price;
+                }
+            }
+            else if (order.bidQuantity() > 0)
+            {
+                if (price.askQuantity() >= order.bidQuantity() &&
+                    (
+                            bestPrice == null || (
+                                    price.askPrice() < order.bidPrice()
+                            )
+                    )
+                )
+                {
+                    bestPrice = price;
+                }
+            }
+        }
+        return bestPrice != null && bestPrice.execute(currentTime, order);
     }
 }
