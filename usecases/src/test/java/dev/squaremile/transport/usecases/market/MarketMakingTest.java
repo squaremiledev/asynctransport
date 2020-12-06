@@ -17,7 +17,7 @@ class MarketMakingTest
     @Test
     void shouldFailToExecuteIfNotEnoughMarketDepth()
     {
-        assertThat(marketMaking.execute(1, new FirmPrice(1, 21, 50, 19, 60))).isFalse();
+        assertThat(marketMaking.execute(1, new Order(21, 50, 19, 0))).isFalse();
     }
 
     @Test
@@ -25,7 +25,7 @@ class MarketMakingTest
     {
         marketMaking.updateFirmPrice(0, MARKET_MAKER_A, new FirmPrice(0, 21, 50, 19, 60));
 
-        assertThat(marketMaking.execute(1, new FirmPrice(1, 21, 40, 19, 0))).isTrue();
+        assertThat(marketMaking.execute(1, new Order(21, 40, 19, 0))).isTrue();
 
         assertThat(marketMaking.firmPrice(MARKET_MAKER_A)).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 21, 10, 19, 60));
     }
@@ -39,7 +39,7 @@ class MarketMakingTest
         marketMaking.updateFirmPrice(3, MARKET_MAKER_C, new FirmPrice(3, 20, 60, 18, 60));
         marketMaking.updateFirmPrice(4, MARKET_MAKER_D, new FirmPrice(4, 20, 100, 18, 60));
 
-        assertThat(marketMaking.execute(5, new FirmPrice(5, 21, 55, 18, 0))).isTrue();
+        assertThat(marketMaking.execute(5, new Order(21, 55, 18, 0))).isTrue();
 
         assertThat(marketMaking.firmPrice(MARKET_MAKER_A)).usingRecursiveComparison().isEqualTo(new FirmPrice(0, 21, 40, 18, 60));
         assertThat(marketMaking.firmPrice(MARKET_MAKER_B)).usingRecursiveComparison().isEqualTo(new FirmPrice(0, 19, 50, 18, 60));

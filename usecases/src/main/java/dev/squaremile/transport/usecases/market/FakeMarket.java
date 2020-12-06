@@ -36,9 +36,9 @@ public class FakeMarket
         tick(currentTime);
     }
 
-    public boolean execute(final long currentTime, final int executingMarketParticipant, final FirmPrice executedQuantity)
+    public boolean execute(final long currentTime, final int executingMarketParticipant, final Order order)
     {
-        if (currentTime >= this.currentTime && marketMaking.execute(currentTime, executedQuantity))
+        if (currentTime >= this.currentTime && marketMaking.execute(currentTime, order))
         {
             tick(currentTime);
             return true;

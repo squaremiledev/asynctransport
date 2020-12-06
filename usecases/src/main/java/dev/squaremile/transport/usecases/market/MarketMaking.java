@@ -21,8 +21,8 @@ public class MarketMaking
         this.knownMarketParticipantId = marketParticipantId;
     }
 
-    public boolean execute(final long currentTime, final FirmPrice executedQuantity)
+    public boolean execute(final long currentTime, final Order order)
     {
-        return firmPrice(knownMarketParticipantId).execute(currentTime, executedQuantity);
+        return firmPrice(knownMarketParticipantId).execute(currentTime, order);
     }
 }

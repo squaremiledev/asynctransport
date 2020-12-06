@@ -31,21 +31,21 @@ public class FirmPrice
         this.updateTime = currentTime;
     }
 
-    public boolean execute(final long currentTime, final FirmPrice executedQuantity)
+    public boolean execute(final long currentTime, final Order order)
     {
         if (
-                (executedQuantity.bidQuantity > 0 && executedQuantity.askQuantity > 0) ||
-                executedQuantity.askPrice != askPrice ||
-                executedQuantity.bidPrice != bidPrice ||
-                executedQuantity.askQuantity < 0 ||
-                executedQuantity.bidQuantity < 0 ||
-                executedQuantity.askQuantity > askQuantity ||
-                executedQuantity.bidQuantity > bidQuantity)
+                (order.bidQuantity() > 0 && order.askQuantity() > 0) ||
+                order.askPrice() != askPrice ||
+                order.bidPrice() != bidPrice ||
+                order.askQuantity() < 0 ||
+                order.bidQuantity() < 0 ||
+                order.askQuantity() > askQuantity ||
+                order.bidQuantity() > bidQuantity)
         {
             return false;
         }
-        this.askQuantity -= executedQuantity.askQuantity;
-        this.bidQuantity -= executedQuantity.bidQuantity;
+        this.askQuantity -= order.askQuantity();
+        this.bidQuantity -= order.bidQuantity();
         this.updateTime = currentTime;
         return true;
     }

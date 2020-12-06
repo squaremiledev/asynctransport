@@ -113,7 +113,7 @@ class FakeMarketTest
         FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1));
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 21, 50, 19, 60));
 
-        assertThat(fakeMarket.execute(1002, ARBITRAGEUR, new FirmPrice(0, 21, 10, 19, 0))).isTrue();
+        assertThat(fakeMarket.execute(1002, ARBITRAGEUR, new Order(21, 10, 19, 0))).isTrue();
 
         // Then
         assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(1002, 21, 40, 19, 60));
@@ -125,7 +125,7 @@ class FakeMarketTest
         FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1));
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 21, 50, 19, 60));
 
-        assertThat(fakeMarket.execute(1002, ARBITRAGEUR, new FirmPrice(0, 21, 51, 19, 0))).isFalse();
+        assertThat(fakeMarket.execute(1002, ARBITRAGEUR, new Order(21, 51, 19, 0))).isFalse();
 
         // Then
         assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(1001, 21, 50, 19, 60));
@@ -146,8 +146,8 @@ class FakeMarketTest
         // When
         assertThrows(IllegalArgumentException.class, () -> fakeMarket.tick(1));
         assertThrows(IllegalArgumentException.class, () -> fakeMarket.onFirmPriceUpdate(1, MARKET_MAKER, new FirmPrice(0, 22, 50, 19, 60)));
-        assertThat(fakeMarket.execute(1, ARBITRAGEUR, new FirmPrice(0, 21, 0, 19, 10))).isFalse();
-        assertThat(fakeMarket.execute(1, ARBITRAGEUR, new FirmPrice(0, 22, 0, 19, 10))).isFalse();
+        assertThat(fakeMarket.execute(1, ARBITRAGEUR, new Order(21, 0, 19, 10))).isFalse();
+        assertThat(fakeMarket.execute(1, ARBITRAGEUR, new Order(22, 0, 19, 10))).isFalse();
 
         // Then
         assertThat(securityUpdateTimes).isEqualTo(Arrays.asList(1L, 2L));
