@@ -1,5 +1,6 @@
 package dev.squaremile.transport.usecases.market;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -50,7 +51,7 @@ class FakeMarketTest
     @Test
     void shouldAllowSteadyPriceUpdates()
     {
-        FakeMarket fakeMarket = fakeMarket(100, new IncrementAfterNTimeUnits(10, 3));
+        FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceChange(10, 3));
         range(1, 201).forEach(fakeMarket::tick);
         assertThat(fakeMarket.midPrice()).isEqualTo(160);
     }
@@ -61,7 +62,7 @@ class FakeMarketTest
         final TickerSpy tickerSpy = new TickerSpy();
         FakeMarket fakeMarket = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 100),
-                new IncrementAfterNTimeUnits(2, 3),
+                new PeriodicMidPriceChange(2, 3),
                 tickerSpy
         );
         range(1, 11).forEach(fakeMarket::tick);
@@ -74,7 +75,14 @@ class FakeMarketTest
         assertThat(tickerSpy.observedTick(9)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(10, 115, 10));
     }
 
-    private FakeMarket fakeMarket(final long initialPrice, final PriceUpdate priceMovement)
+    @Test
+    @Disabled
+    void shouldShowNoFirmPricesIfNoMarketMakerUpdates()
+    {
+        //FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceIncrement(10, 1));
+    }
+
+    private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement)
     {
         return new FakeMarket(new TrackedSecurity().midPrice(0, initialPrice), priceMovement, security ->
         {

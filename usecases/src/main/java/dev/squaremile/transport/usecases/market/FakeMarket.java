@@ -2,11 +2,11 @@ package dev.squaremile.transport.usecases.market;
 
 public class FakeMarket
 {
-    private final PriceUpdate priceMovement;
+    private final MidPriceUpdate priceMovement;
     private final TrackedSecurity security = new TrackedSecurity();
     private final TickListener tickListener;
 
-    public FakeMarket(final Security security, final PriceUpdate priceMovement, final TickListener tickListener)
+    public FakeMarket(final Security security, final MidPriceUpdate priceMovement, final TickListener tickListener)
     {
         this.security.update(security);
         this.priceMovement = priceMovement;
@@ -20,7 +20,7 @@ public class FakeMarket
 
     public FakeMarket tick(final long currentTime)
     {
-        security.midPrice(currentTime, priceMovement.newPrice(currentTime, security));
+        security.midPrice(currentTime, priceMovement.newMidPrice(currentTime, security));
         tickListener.onTick(security);
         return this;
 
