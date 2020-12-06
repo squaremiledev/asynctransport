@@ -37,17 +37,19 @@ public class FakeMarket
 
     public void onFirmPriceUpdate(final long currentTime, final FirmPrice marketMakerFirmPrice)
     {
-        // validateTime(currentTime); TODO: test
+        validateTime(currentTime);
         this.currentMarketMakerFirmPrice.update(marketMakerFirmPrice);
         tick(currentTime);
     }
 
     public boolean execute(final int currentTime, final FirmPrice executedQuantity)
     {
-        // validateTime(currentTime); TODO: test
-        boolean result = this.currentMarketMakerFirmPrice.execute(executedQuantity);
-        tick(currentTime);
-        return result;
+        if (currentTime >= this.currentTime && this.currentMarketMakerFirmPrice.execute(executedQuantity))
+        {
+            tick(currentTime);
+            return true;
+        }
+        return false;
     }
 
     private void validateTime(final long currentTime)

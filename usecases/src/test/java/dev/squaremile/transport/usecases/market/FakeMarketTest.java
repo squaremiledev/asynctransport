@@ -139,11 +139,15 @@ class FakeMarketTest
         fakeMarket.onFirmPriceUpdate(1, new FirmPrice(21, 50, 19, 60));
         fakeMarket.tick(2);
 
+        // When
         assertThrows(IllegalArgumentException.class, () -> fakeMarket.tick(1));
-        assertThrows(IllegalArgumentException.class, () -> fakeMarket.onFirmPriceUpdate(1, new FirmPrice(22, 50, 20, 60)));
-        fakeMarket.onFirmPriceUpdate(3, new FirmPrice(24, 50, 23, 60));
+        assertThrows(IllegalArgumentException.class, () -> fakeMarket.onFirmPriceUpdate(1, new FirmPrice(22, 50, 19, 60)));
+        assertThat(fakeMarket.execute(1, new FirmPrice(21, 0, 19, 10))).isFalse();
+        assertThat(fakeMarket.execute(1, new FirmPrice(22, 0, 19, 10))).isFalse();
 
-        assertThat(securityUpdateTimes).isEqualTo(Arrays.asList(1L, 2L, 3L));
+        // Then
+        assertThat(securityUpdateTimes).isEqualTo(Arrays.asList(1L, 2L));
+        assertThat(fakeMarket.firmPrice()).usingRecursiveComparison().isEqualTo(new FirmPrice(21, 50, 19, 60));
     }
 
     @Test
