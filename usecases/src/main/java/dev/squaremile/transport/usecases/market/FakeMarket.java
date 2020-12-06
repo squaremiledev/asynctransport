@@ -32,8 +32,16 @@ public class FakeMarket
         return currentMarketMakerFirmPrice;
     }
 
-    public void onFirmPriceUpdate(final FirmPrice marketMakerFirmPrice)
+    public void onFirmPriceUpdate(final long currentTime, final FirmPrice marketMakerFirmPrice)
     {
         this.currentMarketMakerFirmPrice.update(marketMakerFirmPrice);
+        tick(currentTime);
+    }
+
+    public boolean execute(final int currentTime, final FirmPrice executedQuantity)
+    {
+        boolean result = this.currentMarketMakerFirmPrice.execute(executedQuantity);
+        tick(currentTime);
+        return result;
     }
 }

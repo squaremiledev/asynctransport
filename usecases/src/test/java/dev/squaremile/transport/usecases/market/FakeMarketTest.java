@@ -1,6 +1,5 @@
 package dev.squaremile.transport.usecases.market;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -78,20 +77,20 @@ class FakeMarketTest
     @Test
     void shouldShowNoFirmPricesIfNoMarketMakerUpdates()
     {
-        FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceChange(20, 1));
+        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1));
         assertThat(fakeMarket.firmPrice()).usingRecursiveComparison().isEqualTo(FirmPrice.createNoPrice());
     }
 
     @Test
     void shouldShowMostRecentFirmPrice()
     {
-        FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceChange(20, 1));
+        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1));
         FirmPrice firmPrice1 = new FirmPrice(21, 50, 19, 60);
-        fakeMarket.onFirmPriceUpdate(firmPrice1);
+        fakeMarket.onFirmPriceUpdate(1001, firmPrice1);
 
         // When
         FirmPrice firmPrice2 = new FirmPrice(22, 70, 20, 80);
-        fakeMarket.onFirmPriceUpdate(firmPrice2);
+        fakeMarket.onFirmPriceUpdate(1002, firmPrice2);
         firmPrice2.update(FirmPrice.createNoPrice()); // to verify that the unit under test does not rely on the mutable reference to the price
 
         // Then
@@ -99,12 +98,27 @@ class FakeMarketTest
     }
 
     @Test
-    @Disabled
-    void shouldExecuteFirmPrice()
+    void shouldExecuteFirmPriceAndUpdateIt()
     {
-        FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceChange(20, 1));
-        FirmPrice firmPrice1 = new FirmPrice(21, 50, 19, 60);
-        fakeMarket.onFirmPriceUpdate(firmPrice1);
+        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1));
+        fakeMarket.onFirmPriceUpdate(1001, new FirmPrice(21, 50, 19, 60));
+
+        assertThat(fakeMarket.execute(1002, new FirmPrice(21, 10, 19, 0))).isTrue();
+
+        // Then
+        assertThat(fakeMarket.firmPrice()).usingRecursiveComparison().isEqualTo(new FirmPrice(21, 40, 19, 60));
+    }
+
+    @Test
+    void shouldKeepTheOriginalFirmPriceWhenFailedToExecute()
+    {
+        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1));
+        fakeMarket.onFirmPriceUpdate(1001, new FirmPrice(21, 50, 19, 60));
+
+        assertThat(fakeMarket.execute(1002, new FirmPrice(21, 51, 19, 0))).isFalse();
+
+        // Then
+        assertThat(fakeMarket.firmPrice()).usingRecursiveComparison().isEqualTo(new FirmPrice(21, 50, 19, 60));
     }
 
     private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement)

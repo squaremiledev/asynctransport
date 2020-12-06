@@ -28,6 +28,24 @@ public class FirmPrice
         this.bidQuantity = source.bidQuantity;
     }
 
+    public boolean execute(final FirmPrice executedQuantity)
+    {
+        if (
+                (executedQuantity.bidQuantity > 0 && executedQuantity.askQuantity > 0) ||
+                executedQuantity.askPrice != askPrice ||
+                executedQuantity.bidPrice != bidPrice ||
+                executedQuantity.askQuantity < 0 ||
+                executedQuantity.bidQuantity < 0 ||
+                executedQuantity.askQuantity > askQuantity ||
+                executedQuantity.bidQuantity > bidQuantity)
+        {
+            return false;
+        }
+        this.askQuantity -= executedQuantity.askQuantity;
+        this.bidQuantity -= executedQuantity.bidQuantity;
+        return true;
+    }
+
     @Override
     public String toString()
     {
