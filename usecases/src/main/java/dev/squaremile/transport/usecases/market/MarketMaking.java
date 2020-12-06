@@ -15,14 +15,14 @@ public class MarketMaking
         return participantFirmPrice.computeIfAbsent(marketParticipantId, NO_FIRM_PRICE);
     }
 
-    public void updateFirmPrice(final int marketParticipantId, final FirmPrice marketMakerFirmPrice)
+    public void updateFirmPrice(final long currentTime, final int marketParticipantId, final FirmPrice marketMakerFirmPrice)
     {
-        firmPrice(marketParticipantId).update(marketMakerFirmPrice);
+        firmPrice(marketParticipantId).update(currentTime, marketMakerFirmPrice);
         this.knownMarketParticipantId = marketParticipantId;
     }
 
-    public boolean execute(final FirmPrice executedQuantity)
+    public boolean execute(final long currentTime, final FirmPrice executedQuantity)
     {
-        return firmPrice(knownMarketParticipantId).execute(executedQuantity);
+        return firmPrice(knownMarketParticipantId).execute(currentTime, executedQuantity);
     }
 }
