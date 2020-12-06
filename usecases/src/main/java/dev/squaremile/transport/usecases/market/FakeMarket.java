@@ -6,6 +6,7 @@ public class FakeMarket
     private final TrackedSecurity security = new TrackedSecurity();
     private final TickListener tickListener;
     private final FirmPrice currentMarketMakerFirmPrice = FirmPrice.createNoPrice();
+    private long currentTime;
 
     public FakeMarket(final Security security, final MidPriceUpdate priceMovement, final TickListener tickListener)
     {
@@ -21,8 +22,10 @@ public class FakeMarket
 
     public FakeMarket tick(final long currentTime)
     {
+        validateTime(currentTime);
         security.midPrice(currentTime, priceMovement.newMidPrice(currentTime, security));
         tickListener.onTick(security);
+        this.currentTime = currentTime;
         return this;
 
     }
@@ -34,14 +37,24 @@ public class FakeMarket
 
     public void onFirmPriceUpdate(final long currentTime, final FirmPrice marketMakerFirmPrice)
     {
+        // validateTime(currentTime); TODO: test
         this.currentMarketMakerFirmPrice.update(marketMakerFirmPrice);
         tick(currentTime);
     }
 
     public boolean execute(final int currentTime, final FirmPrice executedQuantity)
     {
+        // validateTime(currentTime); TODO: test
         boolean result = this.currentMarketMakerFirmPrice.execute(executedQuantity);
         tick(currentTime);
         return result;
+    }
+
+    private void validateTime(final long currentTime)
+    {
+        if (this.currentTime > currentTime)
+        {
+            throw new IllegalArgumentException("Provided time " + currentTime + " is behind the current market time " + this.currentTime);
+        }
     }
 }

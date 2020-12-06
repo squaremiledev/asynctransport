@@ -1,10 +1,16 @@
 package dev.squaremile.transport.usecases.market;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 import static java.util.stream.IntStream.range;
@@ -119,6 +125,38 @@ class FakeMarketTest
 
         // Then
         assertThat(fakeMarket.firmPrice()).usingRecursiveComparison().isEqualTo(new FirmPrice(21, 50, 19, 60));
+    }
+
+    @Test
+    void shouldNotAcceptTimeMovingBack()
+    {
+        List<Long> securityUpdateTimes = new ArrayList<>();
+        FakeMarket fakeMarket = new FakeMarket(
+                new TrackedSecurity().midPrice(0, 1_000_000),
+                (currentTime, security) -> security.midPrice() + 1,
+                security -> securityUpdateTimes.add(security.lastUpdateTime())
+        );
+        fakeMarket.onFirmPriceUpdate(1, new FirmPrice(21, 50, 19, 60));
+        fakeMarket.tick(2);
+
+        assertThrows(IllegalArgumentException.class, () -> fakeMarket.tick(1));
+        assertThrows(IllegalArgumentException.class, () -> fakeMarket.onFirmPriceUpdate(1, new FirmPrice(22, 50, 20, 60)));
+        fakeMarket.onFirmPriceUpdate(3, new FirmPrice(24, 50, 23, 60));
+
+        assertThat(securityUpdateTimes).isEqualTo(Arrays.asList(1L, 2L, 3L));
+    }
+
+    @Test
+    @Disabled
+    void shouldHandleUseCases()
+    {
+        FakeMarket fakeMarket = fakeMarket(1_000_000, new PeriodicMidPriceChange(10, 10));
+        fakeMarket.tick(0);
+        long midPriceT0 = fakeMarket.midPrice();
+        System.out.println("fakeMarket.midPrice() = " + fakeMarket.midPrice());
+        fakeMarket.onFirmPriceUpdate(1, new FirmPrice(midPriceT0 + 20, 50, midPriceT0 - 20, 50));
+        System.out.println("fakeMarket.midPrice() = " + fakeMarket.midPrice());
+        System.out.println("fakeMarket.firmPrice() = " + fakeMarket.firmPrice());
     }
 
     private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement)
