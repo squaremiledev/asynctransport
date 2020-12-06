@@ -5,6 +5,7 @@ public class FakeMarket
     private final MidPriceUpdate priceMovement;
     private final TrackedSecurity security = new TrackedSecurity();
     private final TickListener tickListener;
+    private final FirmPrice currentMarketMakerFirmPrice = FirmPrice.createNoPrice();
 
     public FakeMarket(final Security security, final MidPriceUpdate priceMovement, final TickListener tickListener)
     {
@@ -24,5 +25,15 @@ public class FakeMarket
         tickListener.onTick(security);
         return this;
 
+    }
+
+    public FirmPrice firmPrice()
+    {
+        return currentMarketMakerFirmPrice;
+    }
+
+    public void onFirmPriceUpdate(final FirmPrice marketMakerFirmPrice)
+    {
+        this.currentMarketMakerFirmPrice.update(marketMakerFirmPrice);
     }
 }

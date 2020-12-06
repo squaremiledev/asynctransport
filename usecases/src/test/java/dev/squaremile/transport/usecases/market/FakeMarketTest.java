@@ -76,10 +76,35 @@ class FakeMarketTest
     }
 
     @Test
-    @Disabled
     void shouldShowNoFirmPricesIfNoMarketMakerUpdates()
     {
-        //FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceIncrement(10, 1));
+        FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceChange(20, 1));
+        assertThat(fakeMarket.firmPrice()).usingRecursiveComparison().isEqualTo(FirmPrice.createNoPrice());
+    }
+
+    @Test
+    void shouldShowMostRecentFirmPrice()
+    {
+        FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceChange(20, 1));
+        FirmPrice firmPrice1 = new FirmPrice(21, 50, 19, 60);
+        fakeMarket.onFirmPriceUpdate(firmPrice1);
+
+        // When
+        FirmPrice firmPrice2 = new FirmPrice(22, 70, 20, 80);
+        fakeMarket.onFirmPriceUpdate(firmPrice2);
+        firmPrice2.update(FirmPrice.createNoPrice()); // to verify that the unit under test does not rely on the mutable reference to the price
+
+        // Then
+        assertThat(fakeMarket.firmPrice()).usingRecursiveComparison().isEqualTo(new FirmPrice(22, 70, 20, 80));
+    }
+
+    @Test
+    @Disabled
+    void shouldExecuteFirmPrice()
+    {
+        FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceChange(20, 1));
+        FirmPrice firmPrice1 = new FirmPrice(21, 50, 19, 60);
+        fakeMarket.onFirmPriceUpdate(firmPrice1);
     }
 
     private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement)
