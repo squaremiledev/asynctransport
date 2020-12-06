@@ -1,6 +1,6 @@
 package dev.squaremile.transport.usecases.market;
 
-public class IncrementAfterNTimeUnits implements FakeMarket.PriceUpdate
+public class IncrementAfterNTimeUnits implements PriceUpdate
 {
 
     private final int timeUnits;

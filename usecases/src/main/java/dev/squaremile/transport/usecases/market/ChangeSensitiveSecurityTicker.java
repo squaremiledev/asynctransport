@@ -1,12 +1,12 @@
 package dev.squaremile.transport.usecases.market;
 
-public class ChangeSensitiveSecurityTicker implements FakeMarket.TickListener
+public class ChangeSensitiveSecurityTicker implements TickListener
 {
-    private final FakeMarket.TickListener listener;
+    private final TickListener listener;
     private final TrackedSecurity lastAnnouncedSecurityUpdate = new TrackedSecurity();
     private final int maxQuietPeriod;
 
-    public ChangeSensitiveSecurityTicker(final int maxQuietPeriod, final FakeMarket.TickListener listener)
+    public ChangeSensitiveSecurityTicker(final int maxQuietPeriod, final TickListener listener)
     {
         this.listener = listener;
         this.maxQuietPeriod = maxQuietPeriod;

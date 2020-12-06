@@ -3,7 +3,7 @@ package dev.squaremile.transport.usecases.market;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TickerSpy implements FakeMarket.TickListener
+public class TickerSpy implements TickListener
 {
     final List<Security> observedTicks = new ArrayList<>();
 

@@ -25,16 +25,4 @@ public class FakeMarket
         return this;
 
     }
-
-    @FunctionalInterface
-    interface PriceUpdate
-    {
-        long newPrice(long currentTime, Security security);
-    }
-
-    @FunctionalInterface
-    interface TickListener
-    {
-        void onTick(Security security);
-    }
 }

@@ -74,7 +74,7 @@ class FakeMarketTest
         assertThat(tickerSpy.observedTick(9)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(10, 115, 10));
     }
 
-    private FakeMarket fakeMarket(final long initialPrice, final FakeMarket.PriceUpdate priceMovement)
+    private FakeMarket fakeMarket(final long initialPrice, final PriceUpdate priceMovement)
     {
         return new FakeMarket(new TrackedSecurity().midPrice(0, initialPrice), priceMovement, security ->
         {
