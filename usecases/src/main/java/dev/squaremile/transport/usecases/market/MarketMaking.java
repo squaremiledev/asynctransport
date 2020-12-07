@@ -28,27 +28,39 @@ public class MarketMaking
         while (iterator.hasNext())
         {
             FirmPrice price = iterator.next().getValue();
-            if (order.askQuantity() > 0)
+            if (order.side() == Side.ASK)
             {
-                if (price.bidQuantity() >= order.askQuantity() && (bestPrice == null || price.bidPrice() >= order.askPrice()))
-                {
-                    bestPrice = price;
-                }
+                bestPrice = bestBidPrice(order, bestPrice, price);
             }
-            else if (order.bidQuantity() > 0)
+            else if (order.side() == Side.BID)
             {
-                if (price.askQuantity() >= order.bidQuantity() &&
-                    (
-                            bestPrice == null || (
-                                    price.askPrice() < order.bidPrice()
-                            )
-                    )
-                )
-                {
-                    bestPrice = price;
-                }
+                bestPrice = bestAskPrice(order, bestPrice, price);
             }
         }
         return bestPrice != null && bestPrice.execute(currentTime, order);
+    }
+
+    private FirmPrice bestAskPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice price)
+    {
+        if (price.askQuantity() >= order.bidQuantity() && price.askPrice() <= order.bidPrice())
+        {
+            if (bestPriceSoFar == null || (price.askPrice() < bestPriceSoFar.askPrice() || (price.askPrice() == bestPriceSoFar.askPrice() && price.updateTime() < bestPriceSoFar.updateTime())))
+            {
+                bestPriceSoFar = price;
+            }
+        }
+        return bestPriceSoFar;
+    }
+
+    private FirmPrice bestBidPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice price)
+    {
+        if (price.bidQuantity() >= order.askQuantity() && price.bidPrice() >= order.askPrice())
+        {
+            if (bestPriceSoFar == null || (price.bidPrice() > bestPriceSoFar.bidPrice() || (price.bidPrice() == bestPriceSoFar.bidPrice() && price.updateTime() < bestPriceSoFar.updateTime())))
+            {
+                bestPriceSoFar = price;
+            }
+        }
+        return bestPriceSoFar;
     }
 }

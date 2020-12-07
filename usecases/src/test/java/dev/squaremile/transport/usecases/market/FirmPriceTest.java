@@ -13,64 +13,61 @@ class FirmPriceTest
     @Test
     void shouldUpdateAskQuantityWhenExecuted()
     {
-        FirmPrice price = new FirmPrice(0, 21, 50, 19, 70);
+        FirmPrice price = new FirmPrice(0, 19, 70, 21, 50);
 
-        assertThat(price.execute(1, new Order(21, 10, 19, 0))).isTrue();
+        assertThat(price.execute(1, Order.bid(21, 10))).isTrue();
 
-        assertThat(price).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 21, 40, 19, 70));
+        assertThat(price).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 19, 70, 21, 40));
     }
 
     @Test
     void shouldUpdateBidQuantityWhenExecuted()
     {
-        FirmPrice price = new FirmPrice(0, 21, 50, 19, 70);
+        FirmPrice price = new FirmPrice(0, 19, 70, 21, 50);
 
-        assertThat(price.execute(1, new Order(21, 0, 19, 10))).isTrue();
+        assertThat(price.execute(1, Order.ask(19, 10))).isTrue();
 
-        assertThat(price).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 21, 50, 19, 60));
+        assertThat(price).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 19, 60, 21, 50));
     }
 
     @Test
     void shouldAllowExecutingAllAskQuantity()
     {
-        FirmPrice price = new FirmPrice(0, 21, 50, 19, 70);
+        FirmPrice price = new FirmPrice(0, 19, 70, 21, 50);
 
-        assertThat(price.execute(1, new Order(21, 50, 19, 0))).isTrue();
+        assertThat(price.execute(1, Order.bid(21, 50))).isTrue();
 
-        assertThat(price).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 21, 0, 19, 70));
+        assertThat(price).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 19, 70, 21, 0));
     }
 
     @Test
     void shouldAllowExecutingAllBidQuantity()
     {
-        FirmPrice price = new FirmPrice(0, 21, 50, 19, 70);
+        FirmPrice price = new FirmPrice(0, 19, 70, 21, 50);
 
-        assertThat(price.execute(1, new Order(21, 0, 19, 70))).isTrue();
+        assertThat(price.execute(1, Order.ask(19, 70))).isTrue();
 
-        assertThat(price).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 21, 50, 19, 0));
+        assertThat(price).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 19, 0, 21, 50));
     }
 
     @ParameterizedTest
     @CsvSource({
-            "51, 0",
-            "0, 71",
+            "0, 51",
+            "71, 0",
     })
     void shouldPreventFromExecutingBeyondProvidedLiquidity(final int executedAskQuantity, final int executedBidQuantity)
     {
-        assertFailedToExecute(() -> new FirmPrice(0, 21, 50, 19, 70), () -> new Order(21, executedAskQuantity, 19, executedBidQuantity));
+        assertFailedToExecute(() -> new FirmPrice(0, 19, 70, 21, 50), () -> new Order(21, executedBidQuantity, 19, executedAskQuantity));
     }
 
     @Test
-    void shouldPreventFromExecutingWrongPrice()
+    void shouldPreventFromExecutingNonMatchingOrder()
     {
-        assertFailedToExecute(() -> new FirmPrice(0, 21, 50, 19, 70), () -> new Order(22, 10, 19, 0));
-        assertFailedToExecute(() -> new FirmPrice(0, 21, 50, 19, 70), () -> new Order(19, 10, 19, 0));
-        assertFailedToExecute(() -> new FirmPrice(0, 21, 50, 19, 70), () -> new Order(21, 10, 20, 0));
-        assertFailedToExecute(() -> new FirmPrice(0, 21, 50, 19, 70), () -> new Order(21, 10, 21, 0));
-        assertFailedToExecute(() -> new FirmPrice(0, 21, 50, 19, 70), () -> new Order(22, 0, 19, 10));
-        assertFailedToExecute(() -> new FirmPrice(0, 21, 50, 19, 70), () -> new Order(19, 0, 19, 10));
-        assertFailedToExecute(() -> new FirmPrice(0, 21, 50, 19, 70), () -> new Order(21, 0, 20, 10));
-        assertFailedToExecute(() -> new FirmPrice(0, 21, 50, 19, 70), () -> new Order(21, 0, 21, 10));
+        assertFailedToExecute(() -> new FirmPrice(0, 19, 50, 21, 70), () -> new Order(0, 0, 0, 0));
+        assertFailedToExecute(() -> new FirmPrice(0, 19, 50, 21, 70), () -> new Order(21, 0, 0, 0));
+        assertFailedToExecute(() -> new FirmPrice(0, 19, 50, 21, 70), () -> new Order(21, 71, 0, 0));
+        assertFailedToExecute(() -> new FirmPrice(0, 19, 50, 21, 70), () -> new Order(0, 0, 19, 0));
+        assertFailedToExecute(() -> new FirmPrice(0, 19, 50, 21, 70), () -> new Order(0, 0, 19, 51));
     }
 
     private void assertFailedToExecute(final Supplier<FirmPrice> initialFirmPrice, final Supplier<Order> executedQuantity)

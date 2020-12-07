@@ -22,6 +22,16 @@ public class Order
         this.bidQuantity = bidQuantity;
     }
 
+    public static Order bid(final long bidPrice, final int bidQuantity)
+    {
+        return new Order(bidPrice, bidQuantity, 0, 0);
+    }
+
+    public static Order ask(final long askPrice, final int askQuantity)
+    {
+        return new Order(0, 0, askPrice, askQuantity);
+    }
+
     public long askPrice()
     {
         return askPrice;
@@ -40,6 +50,11 @@ public class Order
     public int bidQuantity()
     {
         return bidQuantity;
+    }
+
+    public Side side()
+    {
+        return bidQuantity > 0 ? Side.BID : Side.ASK;
     }
 
     @Override

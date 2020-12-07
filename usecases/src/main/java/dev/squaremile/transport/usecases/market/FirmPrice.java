@@ -3,18 +3,18 @@ package dev.squaremile.transport.usecases.market;
 public class FirmPrice
 {
     private long updateTime;
-    private long askPrice;
-    private int askQuantity;
     private long bidPrice;
     private int bidQuantity;
+    private long askPrice;
+    private int askQuantity;
 
-    public FirmPrice(final int updateTime, final long askPrice, final int askQuantity, final long bidPrice, final int bidQuantity)
+    public FirmPrice(final long updateTime, final long bidPrice, final int bidQuantity, final long askPrice, final int askQuantity)
     {
         this.updateTime = updateTime;
-        this.askPrice = askPrice;
-        this.askQuantity = askQuantity;
         this.bidPrice = bidPrice;
         this.bidQuantity = bidQuantity;
+        this.askPrice = askPrice;
+        this.askQuantity = askQuantity;
     }
 
     public static FirmPrice createNoPrice()
@@ -33,17 +33,19 @@ public class FirmPrice
 
     public boolean execute(final long currentTime, final Order order)
     {
-        if (
-                (order.bidQuantity() > 0 && order.askQuantity() > 0) ||
-                order.bidPrice() != askPrice ||
-                order.askPrice() != bidPrice ||
-                order.askQuantity() < 0 ||
-                order.bidQuantity() < 0 ||
-                order.bidQuantity() > askQuantity ||
-                order.askQuantity() > bidQuantity)
+        if (order.askQuantity() < 0 || order.bidQuantity() < 0 || (order.askQuantity() == 0 && order.bidQuantity() == 0))
         {
             return false;
         }
+        if (order.bidQuantity() > 0 && (order.bidQuantity() > askQuantity || order.bidPrice() < askPrice))
+        {
+            return false;
+        }
+        if (order.askQuantity() > 0 && (order.askQuantity() > bidQuantity || order.askPrice() > bidPrice))
+        {
+            return false;
+        }
+
         this.askQuantity -= order.bidQuantity();
         this.bidQuantity -= order.askQuantity();
         this.updateTime = currentTime;
@@ -80,10 +82,10 @@ public class FirmPrice
     {
         return "FirmPrice{" +
                "updateTime=" + updateTime +
-               ", askPrice=" + askPrice +
-               ", askQuantity=" + askQuantity +
                ", bidPrice=" + bidPrice +
                ", bidQuantity=" + bidQuantity +
+               ", askPrice=" + askPrice +
+               ", askQuantity=" + askQuantity +
                '}';
     }
 }
