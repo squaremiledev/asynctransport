@@ -31,7 +31,7 @@ public class FirmPrice
         this.updateTime = currentTime;
     }
 
-    public boolean execute(final long currentTime, final Order order)
+    public boolean execute(final long currentTime, final Order order, final Order executedOrderResult)
     {
         if (order.askQuantity() < 0 || order.bidQuantity() < 0 || (order.askQuantity() == 0 && order.bidQuantity() == 0))
         {
@@ -45,9 +45,19 @@ public class FirmPrice
         {
             return false;
         }
-
-        this.askQuantity -= order.bidQuantity();
-        this.bidQuantity -= order.askQuantity();
+        switch (order.side())
+        {
+            case BID:
+                this.askQuantity -= order.bidQuantity();
+                executedOrderResult.withBid(askPrice, order.bidQuantity());
+                break;
+            case ASK:
+                this.bidQuantity -= order.askQuantity();
+                executedOrderResult.withAsk(bidPrice, order.askQuantity());
+                break;
+            default:
+                throw new IllegalArgumentException(order.side().name());
+        }
         this.updateTime = currentTime;
         return true;
     }

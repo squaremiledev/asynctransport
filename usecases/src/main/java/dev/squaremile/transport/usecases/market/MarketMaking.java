@@ -8,7 +8,7 @@ public class MarketMaking
 {
     private static final IntFunction<FirmPrice> NO_FIRM_PRICE = participant -> FirmPrice.createNoPrice();
     private final Int2ObjectHashMap<FirmPrice> participantFirmPrice = new Int2ObjectHashMap<>();
-    private int knownMarketParticipantId;
+    private final Order executedOrderResult = new Order(0, 0, 0, 0);
 
     public FirmPrice firmPrice(final int marketParticipantId)
     {
@@ -18,7 +18,6 @@ public class MarketMaking
     public void updateFirmPrice(final long currentTime, final int marketParticipantId, final FirmPrice marketMakerFirmPrice)
     {
         firmPrice(marketParticipantId).update(currentTime, marketMakerFirmPrice);
-        this.knownMarketParticipantId = marketParticipantId;
     }
 
     public boolean execute(final long currentTime, final Order order)
@@ -37,7 +36,7 @@ public class MarketMaking
                 bestPrice = bestAskPrice(order, bestPrice, price);
             }
         }
-        return bestPrice != null && bestPrice.execute(currentTime, order);
+        return bestPrice != null && bestPrice.execute(currentTime, order, executedOrderResult);
     }
 
     private FirmPrice bestAskPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice price)

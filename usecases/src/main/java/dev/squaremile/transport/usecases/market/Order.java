@@ -2,10 +2,10 @@ package dev.squaremile.transport.usecases.market;
 
 public class Order
 {
-    private final long askPrice;
-    private final int askQuantity;
-    private final long bidPrice;
-    private final int bidQuantity;
+    private long askPrice;
+    private int askQuantity;
+    private long bidPrice;
+    private int bidQuantity;
 
     public Order(final long bidPrice, final int bidQuantity, final long askPrice, final int askQuantity)
     {
@@ -31,6 +31,25 @@ public class Order
     {
         return new Order(0, 0, askPrice, askQuantity);
     }
+
+    public Order withBid(final long bidPrice, final int bidQuantity)
+    {
+        this.bidPrice = bidPrice;
+        this.bidQuantity = bidQuantity;
+        this.askPrice = 0;
+        this.askQuantity = 0;
+        return this;
+    }
+
+    public Order withAsk(final long askPrice, final int askQuantity)
+    {
+        this.askPrice = askPrice;
+        this.askQuantity = askQuantity;
+        this.bidPrice = 0;
+        this.bidQuantity = 0;
+        return this;
+    }
+
 
     public long askPrice()
     {
