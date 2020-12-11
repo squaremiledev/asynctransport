@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -25,42 +24,42 @@ class FakeMarketTest
     @ValueSource(longs = {100, 0, -3})
     void shouldProvideInitialMidPrice(final long initialPrice)
     {
-        assertThat(fakeMarket(initialPrice, (currentTime, security) -> security.midPrice()).midPrice()).isEqualTo(initialPrice);
+        assertThat(fakeMarket(initialPrice, (currentTime, security) -> security.midPrice(), new PnL()).midPrice()).isEqualTo(initialPrice);
     }
 
     @Test
     void shouldMoveThePriceEveryTick()
     {
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice()).tick(0L).midPrice()).isEqualTo(100);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice()).tick(0L).tick(0L).midPrice()).isEqualTo(100);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + 2).tick(0L).midPrice()).isEqualTo(102);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + 2).tick(0L).tick(0L).midPrice()).isEqualTo(104);
-        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice() + -3).tick(0L).midPrice()).isEqualTo(197);
-        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice() + -3).tick(0L).tick(0L).midPrice()).isEqualTo(194);
-        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice() + (security.midPrice() / 2)).tick(0L).midPrice()).isEqualTo(15);
-        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice() + (security.midPrice() / 2)).tick(0L).tick(0L).midPrice()).isEqualTo(22);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(), new PnL()).tick(0L).midPrice()).isEqualTo(100);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(), new PnL()).tick(0L).tick(0L).midPrice()).isEqualTo(100);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + 2, new PnL()).tick(0L).midPrice()).isEqualTo(102);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + 2, new PnL()).tick(0L).tick(0L).midPrice()).isEqualTo(104);
+        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice() + -3, new PnL()).tick(0L).midPrice()).isEqualTo(197);
+        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice() + -3, new PnL()).tick(0L).tick(0L).midPrice()).isEqualTo(194);
+        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice() + (security.midPrice() / 2), new PnL()).tick(0L).midPrice()).isEqualTo(15);
+        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice() + (security.midPrice() / 2), new PnL()).tick(0L).tick(0L).midPrice()).isEqualTo(22);
     }
 
     @Test
     void shouldInformAboutTimeWhenCalculatingNewPrice()
     {
-        assertThat(fakeMarket(100L, (currentTime, security) -> security.midPrice() + currentTime / 10).tick(123).midPrice()).isEqualTo(112);
-        assertThat(fakeMarket(100L, (currentTime, security) -> security.midPrice() - currentTime).tick(10).tick(44).midPrice()).isEqualTo(46);
+        assertThat(fakeMarket(100L, (currentTime, security) -> security.midPrice() + currentTime / 10, new PnL()).tick(123).midPrice()).isEqualTo(112);
+        assertThat(fakeMarket(100L, (currentTime, security) -> security.midPrice() - currentTime, new PnL()).tick(10).tick(44).midPrice()).isEqualTo(46);
     }
 
     @Test
     void shouldInformAboutLastUpdateTimeWhenCalculatingNewPrice()
     {
-        assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime()).midPrice()).isEqualTo(100);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime()).tick(5).midPrice()).isEqualTo(0);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime()).tick(5).tick(10).midPrice()).isEqualTo(5);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + security.lastUpdateTime()).tick(10).tick(11).midPrice()).isEqualTo(110);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime(), new PnL()).midPrice()).isEqualTo(100);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime(), new PnL()).tick(5).midPrice()).isEqualTo(0);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime(), new PnL()).tick(5).tick(10).midPrice()).isEqualTo(5);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + security.lastUpdateTime(), new PnL()).tick(10).tick(11).midPrice()).isEqualTo(110);
     }
 
     @Test
     void shouldAllowSteadyPriceUpdates()
     {
-        FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceChange(10, 3));
+        FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceChange(10, 3), new PnL());
         range(1, 201).forEach(fakeMarket::tick);
         assertThat(fakeMarket.midPrice()).isEqualTo(160);
     }
@@ -72,7 +71,8 @@ class FakeMarketTest
         FakeMarket fakeMarket = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 100),
                 new PeriodicMidPriceChange(2, 3),
-                tickerSpy
+                tickerSpy,
+                new PnL()
         );
         range(1, 11).forEach(fakeMarket::tick);
 
@@ -87,14 +87,14 @@ class FakeMarketTest
     @Test
     void shouldShowNoFirmPricesIfNoMarketMakerUpdates()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1));
+        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1), new PnL());
         assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(FirmPrice.createNoPrice());
     }
 
     @Test
     void shouldShowMostRecentFirmPrice()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1));
+        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1), new PnL());
         FirmPrice firmPrice1 = new FirmPrice(0, 19, 60, 21, 50);
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, firmPrice1);
 
@@ -108,21 +108,39 @@ class FakeMarketTest
     }
 
     @Test
-    void shouldExecuteFirmPriceAndUpdateIt()
+    void shouldExecuteFirmPriceAndUpdateItWhenBidding()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1));
-        fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 19, 60, 21, 50));
+        PnL pnL = new PnL();
+        FakeMarket fakeMarket = fakeMarket(20, (currentTime, security) -> security.midPrice(), pnL);
+        fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 19, 60, 22, 50));
 
-        assertThat(fakeMarket.execute(1002, ARBITRAGEUR, Order.bid(21, 10))).isTrue();
+        assertThat(fakeMarket.execute(1002, ARBITRAGEUR, Order.bid(22, 10))).isTrue();
 
         // Then
-        assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(1002, 19, 60, 21, 40));
+        assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(1002, 19, 60, 22, 40));
+        assertThat(pnL.estimatedBalanceOf(MARKET_MAKER)).isEqualTo(20);
+        assertThat(pnL.estimatedBalanceOf(ARBITRAGEUR)).isEqualTo(-20);
+    }
+
+    @Test
+    void shouldExecuteFirmPriceAndUpdateItWhenAsking()
+    {
+        PnL pnL = new PnL();
+        FakeMarket fakeMarket = fakeMarket(20, (currentTime, security) -> security.midPrice(), pnL);
+        fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 18, 60, 21, 50));
+
+        assertThat(fakeMarket.execute(1002, ARBITRAGEUR, Order.ask(18, 10))).isTrue();
+
+        // Then
+        assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(1002, 18, 50, 21, 50));
+        assertThat(pnL.estimatedBalanceOf(MARKET_MAKER)).isEqualTo(20);
+        assertThat(pnL.estimatedBalanceOf(ARBITRAGEUR)).isEqualTo(-20);
     }
 
     @Test
     void shouldKeepTheOriginalFirmPriceWhenFailedToExecute()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1));
+        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1), new PnL());
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 19, 60, 21, 50));
 
         assertThat(fakeMarket.execute(1002, ARBITRAGEUR, Order.bid(21, 51))).isFalse();
@@ -138,7 +156,8 @@ class FakeMarketTest
         FakeMarket fakeMarket = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 1_000_000),
                 (currentTime, security) -> security.midPrice() + 1,
-                security -> securityUpdateTimes.add(security.lastUpdateTime())
+                security -> securityUpdateTimes.add(security.lastUpdateTime()),
+                new PnL()
         );
         fakeMarket.onFirmPriceUpdate(1, MARKET_MAKER, new FirmPrice(0, 19, 60, 21, 50));
         fakeMarket.tick(2);
@@ -159,7 +178,8 @@ class FakeMarketTest
     {
         final int originalQuantity = 50;
         long time = 0;
-        FakeMarket market = fakeMarket(1_000_000, new PeriodicMidPriceChange(3, 10));
+        PnL pnL = new PnL();
+        FakeMarket market = fakeMarket(1_000_000, new PeriodicMidPriceChange(3, 10), pnL);
         market.tick(time++);
         // Not enough liquidity for ARBITRAGEUR to execute any orders
         assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
@@ -195,24 +215,24 @@ class FakeMarketTest
         market.tick(time++);
         assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
         market.tick(time++);
+
+        // Unfavourable condition for the market maker occurs
+
+        assertThat(pnL.estimatedBalanceOf(MARKET_MAKER)).isEqualTo(0);
+        assertThat(pnL.estimatedBalanceOf(ARBITRAGEUR)).isEqualTo(0);
         // MARKET_MAKER still has not updated the price - the slowdown lasted longer than expected
         // ARBITRAGEUR finally lucky - free money as the market outpaced market maker's spread
         assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isTrue();
 
         // Estimate the loss
-        final int remainingQuantity = 10;
-        final int executedPrice = 1_000_030;
-        assertThat(market.midPrice()).isEqualTo(1_000_040);
-        assertThat(market.firmPrice(MARKET_MAKER)).usingRecursiveComparison()
-                .isEqualTo(new FirmPrice(time, 999_990, originalQuantity, executedPrice, remainingQuantity));
-        final long marketMakerLoss = (originalQuantity - remainingQuantity) * (market.midPrice() - executedPrice);
-        assertThat(marketMakerLoss).isEqualTo(400);
+        assertThat(pnL.estimatedBalanceOf(MARKET_MAKER)).isEqualTo(-400);
+        assertThat(pnL.estimatedBalanceOf(ARBITRAGEUR)).isEqualTo(400);
     }
 
-    private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement)
+    private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement, final MarketListener marketListener)
     {
         return new FakeMarket(new TrackedSecurity().midPrice(0, initialPrice), priceMovement, security ->
         {
-        });
+        }, marketListener);
     }
 }

@@ -1,5 +1,6 @@
 package dev.squaremile.transport.usecases.market;
 
+import java.util.Map;
 import java.util.function.IntFunction;
 
 import org.agrona.collections.Int2ObjectHashMap;
@@ -8,7 +9,14 @@ public class MarketMaking
 {
     private static final IntFunction<FirmPrice> NO_FIRM_PRICE = participant -> FirmPrice.createNoPrice();
     private final Int2ObjectHashMap<FirmPrice> participantFirmPrice = new Int2ObjectHashMap<>();
-    private final Order executedOrderResult = new Order(0, 0, 0, 0);
+    private final Order executedOrderResult;
+    private final ExecutionListener executionListener;
+
+    public MarketMaking(final ExecutionListener executionListener)
+    {
+        this.executionListener = executionListener;
+        this.executedOrderResult = new Order(0, 0, 0, 0);
+    }
 
     public FirmPrice firmPrice(final int marketParticipantId)
     {
@@ -20,13 +28,15 @@ public class MarketMaking
         firmPrice(marketParticipantId).update(currentTime, marketMakerFirmPrice);
     }
 
-    public boolean execute(final long currentTime, final Order order)
+    public boolean execute(final long currentTime, final int executingMarketParticipant, final Order order)
     {
         Int2ObjectHashMap<FirmPrice>.EntryIterator iterator = participantFirmPrice.entrySet().iterator();
         FirmPrice bestPrice = null;
+        int matchedMarketMaker = -1;
         while (iterator.hasNext())
         {
-            FirmPrice price = iterator.next().getValue();
+            Map.Entry<Integer, FirmPrice> entry = iterator.next();
+            FirmPrice price = entry.getValue();
             if (order.side() == Side.ASK)
             {
                 bestPrice = bestBidPrice(order, bestPrice, price);
@@ -35,8 +45,18 @@ public class MarketMaking
             {
                 bestPrice = bestAskPrice(order, bestPrice, price);
             }
+            if (bestPrice == price)
+            {
+                // TODO: avoid autoboxing
+                matchedMarketMaker = entry.getKey();
+            }
         }
-        return bestPrice != null && bestPrice.execute(currentTime, order, executedOrderResult);
+        boolean hasExecuted = bestPrice != null && bestPrice.execute(currentTime, order, executedOrderResult);
+        if (hasExecuted)
+        {
+            executionListener.onExecutedOrder(matchedMarketMaker, executingMarketParticipant, executedOrderResult);
+        }
+        return hasExecuted;
     }
 
     private FirmPrice bestAskPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice price)

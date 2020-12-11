@@ -22,6 +22,11 @@ public class Order
         this.bidQuantity = bidQuantity;
     }
 
+    public Order(final Order copySource)
+    {
+        this(copySource.bidPrice, copySource.bidQuantity, copySource.askPrice, copySource.askQuantity);
+    }
+
     public static Order bid(final long bidPrice, final int bidQuantity)
     {
         return new Order(bidPrice, bidQuantity, 0, 0);
