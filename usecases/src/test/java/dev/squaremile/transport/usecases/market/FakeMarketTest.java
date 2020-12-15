@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
+import static dev.squaremile.transport.usecases.market.FirmPrice.spreadFirmPrice;
 import static java.util.stream.IntStream.range;
 
 class FakeMarketTest
@@ -159,72 +160,51 @@ class FakeMarketTest
                 security -> securityUpdateTimes.add(security.lastUpdateTime()),
                 new PnL()
         );
-        fakeMarket.onFirmPriceUpdate(1, MARKET_MAKER, new FirmPrice(0, 19, 60, 21, 50));
+        fakeMarket.onFirmPriceUpdate(1, MARKET_MAKER, new FirmPrice(0, 19, 60, 23, 50));
         fakeMarket.tick(2);
 
         // When
         assertThrows(IllegalArgumentException.class, () -> fakeMarket.tick(1));
         assertThrows(IllegalArgumentException.class, () -> fakeMarket.onFirmPriceUpdate(1, MARKET_MAKER, new FirmPrice(0, 19, 60, 22, 50)));
         assertThat(fakeMarket.execute(1, ARBITRAGEUR, Order.ask(19, 10))).isFalse();
-        assertThat(fakeMarket.execute(1, ARBITRAGEUR, Order.ask(19, 10))).isFalse();
 
         // Then
         assertThat(securityUpdateTimes).isEqualTo(Arrays.asList(1L, 2L));
-        assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 19, 60, 21, 50));
+        assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 19, 60, 23, 50));
     }
 
     @Test
     void shouldSimulateMarketMakerLosingMoneyDueToFirmPriceUpdateDelayInVolatileMarketConditions()
     {
         final int originalQuantity = 50;
-        long time = 0;
-        PnL pnL = new PnL();
-        FakeMarket market = fakeMarket(1_000_000, new PeriodicMidPriceChange(3, 10), pnL);
-        market.tick(time++);
-        // Not enough liquidity for ARBITRAGEUR to execute any orders
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
-        long midPriceT0 = market.midPrice();
-        // MARKET_MAKER keeps updating their firm price with a non skewed spread around the market mid price
-        market.onFirmPriceUpdate(time++, MARKET_MAKER, new FirmPrice(0, midPriceT0 - 20, originalQuantity, midPriceT0 + 20, originalQuantity));
-        market.tick(time++);
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
-        market.tick(time++);
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
-        long midPriceT3 = market.midPrice();
-        long timeT3 = time;
-        // MARKET_MAKER keeps updating their firm price with a non skewed spread around the market mid price
-        market.onFirmPriceUpdate(time++, MARKET_MAKER, new FirmPrice(0, midPriceT3 - 20, originalQuantity, midPriceT3 + 20, originalQuantity));
-        market.tick(time++);
-        // MARKET_MAKER still  spread protected against ARBITRAGEUR - no order executed
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
-        market.tick(time++);
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
-        market.tick(time++);
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
-        market.tick(time++);
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
-        // MARKET_MAKER has not updated the price for a while as it experiences a GC pause / OS jitter / algo issues
-        // their firm price starts looking skewed
-        assertThat(market.midPrice()).isEqualTo(1_000_020);
-        assertThat(market.firmPrice(MARKET_MAKER)).usingRecursiveComparison()
-                .isEqualTo(new FirmPrice(timeT3, 999_990, originalQuantity, 1_000_030, originalQuantity));
-        market.tick(time++);
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
-        market.tick(time++);
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
-        market.tick(time++);
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse();
-        market.tick(time++);
+        final int spread = 20;
+        final PnL pnL = new PnL();
+        final TimeMachine timeMachine = new TimeMachine(0);
+        final FakeMarket market = fakeMarket(1_000_000, new PeriodicMidPriceChange(3, 10), pnL);
+        timeMachine.tick(
+                // Not enough liquidity for ARBITRAGEUR to execute any orders
+                time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse(),
+                // MARKET_MAKER sends their firm price with a non skewed spread around the market mid price
+                time -> market.onFirmPriceUpdate(time, MARKET_MAKER, spreadFirmPrice(time, originalQuantity, market.midPrice(), spread)),
+                market::tick,
+                // MARKET_MAKER keeps updating their firm price with a non skewed spread around the market mid price
+                time -> market.onFirmPriceUpdate(time, MARKET_MAKER, spreadFirmPrice(timeMachine.time(), originalQuantity, market.midPrice(), spread)),
+                // MARKET_MAKER spread protected against ARBITRAGEUR - no order executed
+                time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse(),
+                market::tick,
+                market::tick,
+                market::tick,
+                market::tick,
+                // MARKET_MAKER still spread protected against ARBITRAGEUR - no order executed
+                time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse()
+        );
 
-        // Unfavourable condition for the market maker occurs
-
+        // MARKET_MAKER has not updated the price for a while as it experiences a GC pause / OS jitter / algo issues - their spread can no longer offset the price movement
+        assertThat(market.midPrice()).isEqualTo(1_000_030);
+        assertThat(market.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(3, 999_980, originalQuantity, 1_000_020, originalQuantity));
         assertThat(pnL.estimatedBalanceOf(MARKET_MAKER)).isEqualTo(0);
         assertThat(pnL.estimatedBalanceOf(ARBITRAGEUR)).isEqualTo(0);
-        // MARKET_MAKER still has not updated the price - the slowdown lasted longer than expected
-        // ARBITRAGEUR finally lucky - free money as the market outpaced market maker's spread
-        assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isTrue();
-
-        // Estimate the loss
+        timeMachine.tick(time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isTrue());
         assertThat(pnL.estimatedBalanceOf(MARKET_MAKER)).isEqualTo(-400);
         assertThat(pnL.estimatedBalanceOf(ARBITRAGEUR)).isEqualTo(400);
     }

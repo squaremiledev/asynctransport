@@ -22,6 +22,11 @@ public class FirmPrice
         return new FirmPrice(0, 0, 0, 0, 0);
     }
 
+    public static FirmPrice spreadFirmPrice(final long updateTime, final int quantity, final long basePrice, final int spread)
+    {
+        return new FirmPrice(updateTime, basePrice - spread, quantity, basePrice + spread, quantity);
+    }
+
     public void update(final long currentTime, final FirmPrice source)
     {
         this.askPrice = source.askPrice;
