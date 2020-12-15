@@ -22,62 +22,62 @@ public class MarketMaking
         return marketMakersFirmPrice.computeIfAbsent(marketParticipantId, NO_FIRM_PRICE);
     }
 
-    public void updateFirmPrice(final long currentTime, final int marketParticipantId, final FirmPrice marketMakerFirmPrice)
+    public void updateFirmPrice(final long currentTime, final int marketMakerId, final FirmPrice firmPrice)
     {
-        firmPrice(marketParticipantId).update(currentTime, marketMakerFirmPrice);
+        firmPrice(marketMakerId).update(currentTime, firmPrice);
     }
 
-    public boolean execute(final long currentTime, final int executingMarketParticipant, final Order aggressiveOrder)
+    public boolean execute(final long currentTime, final int aggressorId, final Order aggressiveOrder)
     {
-        FirmPrice bestPrice = null;
+        FirmPrice bestFirmPrice = null;
         int matchedMarketMakerId = -1;
 
-        final Int2ObjectHashMap<FirmPrice>.EntryIterator iterator = marketMakersFirmPrice.entrySet().iterator();
-        while (iterator.hasNext())
+        final Int2ObjectHashMap<FirmPrice>.EntryIterator marketMakers = marketMakersFirmPrice.entrySet().iterator();
+        while (marketMakers.hasNext())
         {
-            iterator.next();
-            final int marketMakerId = iterator.getIntKey();
-            final FirmPrice price = iterator.getValue();
+            marketMakers.next();
+            final int marketMakerId = marketMakers.getIntKey();
+            final FirmPrice marketMakerFirmPrice = marketMakers.getValue();
             if (aggressiveOrder.side() == Side.ASK)
             {
-                bestPrice = bestPassiveBidPrice(aggressiveOrder, bestPrice, price);
+                bestFirmPrice = bestPassiveBidPrice(aggressiveOrder, bestFirmPrice, marketMakerFirmPrice);
             }
             else if (aggressiveOrder.side() == Side.BID)
             {
-                bestPrice = bestPassiveAskPrice(aggressiveOrder, bestPrice, price);
+                bestFirmPrice = bestPassiveAskPrice(aggressiveOrder, bestFirmPrice, marketMakerFirmPrice);
             }
-            if (bestPrice == price)
+            if (bestFirmPrice == marketMakerFirmPrice)
             {
                 matchedMarketMakerId = marketMakerId;
             }
         }
-        boolean hasExecuted = bestPrice != null && bestPrice.execute(currentTime, aggressiveOrder, executedOrderResult);
+        boolean hasExecuted = bestFirmPrice != null && bestFirmPrice.execute(currentTime, aggressiveOrder, executedOrderResult);
         if (hasExecuted)
         {
-            executionListener.onExecutedOrder(matchedMarketMakerId, executingMarketParticipant, executedOrderResult);
+            executionListener.onExecutedOrder(matchedMarketMakerId, aggressorId, executedOrderResult);
         }
         return hasExecuted;
     }
 
-    private FirmPrice bestPassiveAskPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice price)
+    private FirmPrice bestPassiveAskPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice priceCandidate)
     {
-        if (price.askQuantity() >= order.bidQuantity() && price.askPrice() <= order.bidPrice())
+        if (priceCandidate.askQuantity() >= order.bidQuantity() && priceCandidate.askPrice() <= order.bidPrice())
         {
-            if (bestPriceSoFar == null || (price.askPrice() < bestPriceSoFar.askPrice() || (price.askPrice() == bestPriceSoFar.askPrice() && price.updateTime() < bestPriceSoFar.updateTime())))
+            if (bestPriceSoFar == null || (priceCandidate.askPrice() < bestPriceSoFar.askPrice() || (priceCandidate.askPrice() == bestPriceSoFar.askPrice() && priceCandidate.updateTime() < bestPriceSoFar.updateTime())))
             {
-                bestPriceSoFar = price;
+                bestPriceSoFar = priceCandidate;
             }
         }
         return bestPriceSoFar;
     }
 
-    private FirmPrice bestPassiveBidPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice price)
+    private FirmPrice bestPassiveBidPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice priceCandidate)
     {
-        if (price.bidQuantity() >= order.askQuantity() && price.bidPrice() >= order.askPrice())
+        if (priceCandidate.bidQuantity() >= order.askQuantity() && priceCandidate.bidPrice() >= order.askPrice())
         {
-            if (bestPriceSoFar == null || (price.bidPrice() > bestPriceSoFar.bidPrice() || (price.bidPrice() == bestPriceSoFar.bidPrice() && price.updateTime() < bestPriceSoFar.updateTime())))
+            if (bestPriceSoFar == null || (priceCandidate.bidPrice() > bestPriceSoFar.bidPrice() || (priceCandidate.bidPrice() == bestPriceSoFar.bidPrice() && priceCandidate.updateTime() < bestPriceSoFar.updateTime())))
             {
-                bestPriceSoFar = price;
+                bestPriceSoFar = priceCandidate;
             }
         }
         return bestPriceSoFar;

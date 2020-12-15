@@ -18,19 +18,21 @@ public class ExecutionSpy implements ExecutionListener
     }
 
     @Override
-    public void onExecutedOrder(final int marketMakerId, final int executingMarketParticipant, final Order executedOrder)
+    public void onExecutedOrder(final int passiveParticipantId, final int aggressiveParticipantId, final Order executedOrder)
     {
-        observedTicks.add(new Execution(marketMakerId, executingMarketParticipant, new Order(executedOrder)));
+        observedTicks.add(new Execution(passiveParticipantId, aggressiveParticipantId, new Order(executedOrder)));
     }
 
     static class Execution
     {
-        public final int marketMakerId;
+        public final int passiveParticipantId;
+        public final int aggressiveParticipantId;
         public final Order order;
 
-        public Execution(final int marketMakerId, final int executingMarketParticipant, final Order order)
+        public Execution(final int passiveParticipantId, final int aggressiveParticipantId, final Order order)
         {
-            this.marketMakerId = marketMakerId;
+            this.passiveParticipantId = passiveParticipantId;
+            this.aggressiveParticipantId = aggressiveParticipantId;
             this.order = order;
         }
 
@@ -38,7 +40,7 @@ public class ExecutionSpy implements ExecutionListener
         public String toString()
         {
             return "Execution{" +
-                   "marketMakerId=" + marketMakerId +
+                   "marketMakerId=" + passiveParticipantId +
                    ", order=" + order +
                    '}';
         }

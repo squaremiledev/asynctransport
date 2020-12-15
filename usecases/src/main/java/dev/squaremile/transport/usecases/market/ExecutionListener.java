@@ -2,5 +2,5 @@ package dev.squaremile.transport.usecases.market;
 
 public interface ExecutionListener
 {
-    void onExecutedOrder(int marketMakerId, int executingMarketParticipant, Order executedOrder);
+    void onExecutedOrder(int passiveParticipantId, int aggressiveParticipantId, Order executedOrder);
 }
