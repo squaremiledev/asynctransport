@@ -25,7 +25,7 @@ public class PnL implements MarketListener
         traderPnLs.computeIfAbsent(aggressiveTraderId, __ -> new MutableLong(0)).addAndGet(-pnlFromThisOrder);
     }
 
-    public long estimatedBalanceOf(int traderId)
+    public long estimatedNominalBalanceOf(int traderId)
     {
         return traderPnLs.getOrDefault(traderId, NO_BALANCE).get();
     }

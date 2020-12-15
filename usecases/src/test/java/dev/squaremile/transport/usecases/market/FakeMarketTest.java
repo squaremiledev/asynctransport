@@ -60,7 +60,7 @@ class FakeMarketTest
     @Test
     void shouldAllowSteadyPriceUpdates()
     {
-        FakeMarket fakeMarket = fakeMarket(100, new PeriodicMidPriceChange(10, 3), new PnL());
+        FakeMarket fakeMarket = fakeMarket(100, new Volatility(3, 10), new PnL());
         range(1, 201).forEach(fakeMarket::tick);
         assertThat(fakeMarket.midPrice()).isEqualTo(160);
     }
@@ -71,7 +71,7 @@ class FakeMarketTest
         final TickerSpy tickerSpy = new TickerSpy();
         FakeMarket fakeMarket = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 100),
-                new PeriodicMidPriceChange(2, 3),
+                new Volatility(3, 2),
                 tickerSpy,
                 new PnL()
         );
@@ -88,14 +88,14 @@ class FakeMarketTest
     @Test
     void shouldShowNoFirmPricesIfNoMarketMakerUpdates()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1), new PnL());
+        FakeMarket fakeMarket = fakeMarket(20, new Volatility(1, 10), new PnL());
         assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(FirmPrice.createNoPrice());
     }
 
     @Test
     void shouldShowMostRecentFirmPrice()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1), new PnL());
+        FakeMarket fakeMarket = fakeMarket(20, new Volatility(1, 10), new PnL());
         FirmPrice firmPrice1 = new FirmPrice(0, 19, 60, 21, 50);
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, firmPrice1);
 
@@ -119,8 +119,8 @@ class FakeMarketTest
 
         // Then
         assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(1002, 19, 60, 22, 40));
-        assertThat(pnL.estimatedBalanceOf(MARKET_MAKER)).isEqualTo(20);
-        assertThat(pnL.estimatedBalanceOf(ARBITRAGEUR)).isEqualTo(-20);
+        assertThat(pnL.estimatedNominalBalanceOf(MARKET_MAKER)).isEqualTo(20);
+        assertThat(pnL.estimatedNominalBalanceOf(ARBITRAGEUR)).isEqualTo(-20);
     }
 
     @Test
@@ -134,14 +134,14 @@ class FakeMarketTest
 
         // Then
         assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(1002, 18, 50, 21, 50));
-        assertThat(pnL.estimatedBalanceOf(MARKET_MAKER)).isEqualTo(20);
-        assertThat(pnL.estimatedBalanceOf(ARBITRAGEUR)).isEqualTo(-20);
+        assertThat(pnL.estimatedNominalBalanceOf(MARKET_MAKER)).isEqualTo(20);
+        assertThat(pnL.estimatedNominalBalanceOf(ARBITRAGEUR)).isEqualTo(-20);
     }
 
     @Test
     void shouldKeepTheOriginalFirmPriceWhenFailedToExecute()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new PeriodicMidPriceChange(10, 1), new PnL());
+        FakeMarket fakeMarket = fakeMarket(20, new Volatility(1, 10), new PnL());
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 19, 60, 21, 50));
 
         assertThat(fakeMarket.execute(1002, ARBITRAGEUR, Order.bid(21, 51))).isFalse();
@@ -176,37 +176,56 @@ class FakeMarketTest
     @Test
     void shouldSimulateMarketMakerLosingMoneyDueToFirmPriceUpdateDelayInVolatileMarketConditions()
     {
-        final int originalQuantity = 50;
-        final int spread = 20;
+        final int spreadInPips = 10;
+        final int lotSize = 1_000_000;
+        final int nominalFirmPriceSize = 5 * lotSize;
+        final int nominalOrderSize = 2 * lotSize;
         final PnL pnL = new PnL();
         final TimeMachine timeMachine = new TimeMachine(0);
-        final FakeMarket market = fakeMarket(1_000_000, new PeriodicMidPriceChange(3, 10), pnL);
+        final FakeMarket market = fakeMarket(14500, new Volatility(3, 10), pnL); // ~ a pip every 10/3 milliseconds (Brexit referendum results anyone?)
         timeMachine.tick(
                 // Not enough liquidity for ARBITRAGEUR to execute any orders
-                time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse(),
+                time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, nominalOrderSize))).isFalse(),
                 // MARKET_MAKER sends their firm price with a non skewed spread around the market mid price
-                time -> market.onFirmPriceUpdate(time, MARKET_MAKER, spreadFirmPrice(time, originalQuantity, market.midPrice(), spread)),
+                time -> market.onFirmPriceUpdate(time, MARKET_MAKER, spreadFirmPrice(time, nominalFirmPriceSize, market.midPrice(), spreadInPips)),
                 market::tick,
                 // MARKET_MAKER keeps updating their firm price with a non skewed spread around the market mid price
-                time -> market.onFirmPriceUpdate(time, MARKET_MAKER, spreadFirmPrice(timeMachine.time(), originalQuantity, market.midPrice(), spread)),
+                time -> market.onFirmPriceUpdate(time, MARKET_MAKER, spreadFirmPrice(timeMachine.time(), nominalFirmPriceSize, market.midPrice(), spreadInPips)),
                 // MARKET_MAKER spread protected against ARBITRAGEUR - no order executed
-                time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse(),
-                market::tick,
-                market::tick,
-                market::tick,
-                market::tick,
-                // MARKET_MAKER still spread protected against ARBITRAGEUR - no order executed
-                time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isFalse()
+                time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, nominalOrderSize))).isFalse()
         );
+        timeMachine.tick(44, market::tick);
+        timeMachine.tick(time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, nominalOrderSize))).isFalse());
+        // MARKET_MAKER still spread protected against ARBITRAGEUR - no order executed
+        assertThat(market.midPrice()).isEqualTo(14512L);
+        assertThat(market.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(3, 14490, nominalFirmPriceSize, 14510, nominalFirmPriceSize));
+        timeMachine.tick(time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, nominalOrderSize))).isFalse());
 
         // MARKET_MAKER has not updated the price for a while as it experiences a GC pause / OS jitter / algo issues - their spread can no longer offset the price movement
-        assertThat(market.midPrice()).isEqualTo(1_000_030);
-        assertThat(market.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(3, 999_980, originalQuantity, 1_000_020, originalQuantity));
-        assertThat(pnL.estimatedBalanceOf(MARKET_MAKER)).isEqualTo(0);
-        assertThat(pnL.estimatedBalanceOf(ARBITRAGEUR)).isEqualTo(0);
-        timeMachine.tick(time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 40))).isTrue());
-        assertThat(pnL.estimatedBalanceOf(MARKET_MAKER)).isEqualTo(-400);
-        assertThat(pnL.estimatedBalanceOf(ARBITRAGEUR)).isEqualTo(400);
+        assertThat(market.midPrice()).isEqualTo(14515L);
+        int expectedUpdateTimeBeforeOrderMatched = 3;
+        assertThat(market.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(expectedUpdateTimeBeforeOrderMatched, 14490, nominalFirmPriceSize, 14510, nominalFirmPriceSize));
+        assertThat(pnL.estimatedNominalBalanceOf(MARKET_MAKER)).isEqualTo(0);
+        assertThat(pnL.estimatedNominalBalanceOf(ARBITRAGEUR)).isEqualTo(0);
+        timeMachine.tick(time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 2 * lotSize))).isTrue());
+        timeMachine.tick(time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 2 * lotSize))).isTrue());
+        timeMachine.tick(time -> assertThat(market.execute(time, ARBITRAGEUR, Order.bid(market.midPrice() - 5, 2 * lotSize))).isFalse());
+        long expectedNominalAmountTraded = 20000000L;
+        assertThat(pnL.estimatedNominalBalanceOf(MARKET_MAKER)).isEqualTo(-expectedNominalAmountTraded);
+        assertThat(pnL.estimatedNominalBalanceOf(ARBITRAGEUR)).isEqualTo(expectedNominalAmountTraded);
+        assertThat(market.midPrice()).isEqualTo(14515L);
+        int expectedUpdateTimeAfterOrderMatched = 52;
+        assertThat(market.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(
+                expectedUpdateTimeAfterOrderMatched,
+                14490,
+                nominalFirmPriceSize,
+                14510,
+                nominalFirmPriceSize - 4 * lotSize
+        ));
+
+        // In such volatile conditions, for the spread of 10 pips, 49 ms delay in price updates is enough to lose 20M
+        assertThat(expectedNominalAmountTraded).isEqualTo(20_000_000);
+        assertThat(expectedUpdateTimeAfterOrderMatched - expectedUpdateTimeBeforeOrderMatched).isEqualTo(49);
     }
 
     private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement, final MarketListener marketListener)
