@@ -1,6 +1,5 @@
 package dev.squaremile.transport.usecases.market;
 
-import java.util.Map;
 import java.util.function.IntFunction;
 
 import org.agrona.collections.Int2ObjectHashMap;
@@ -8,7 +7,7 @@ import org.agrona.collections.Int2ObjectHashMap;
 public class MarketMaking
 {
     private static final IntFunction<FirmPrice> NO_FIRM_PRICE = participant -> FirmPrice.createNoPrice();
-    private final Int2ObjectHashMap<FirmPrice> participantFirmPrice = new Int2ObjectHashMap<>();
+    private final Int2ObjectHashMap<FirmPrice> marketMakersFirmPrice = new Int2ObjectHashMap<>();
     private final Order executedOrderResult;
     private final ExecutionListener executionListener;
 
@@ -20,7 +19,7 @@ public class MarketMaking
 
     public FirmPrice firmPrice(final int marketParticipantId)
     {
-        return participantFirmPrice.computeIfAbsent(marketParticipantId, NO_FIRM_PRICE);
+        return marketMakersFirmPrice.computeIfAbsent(marketParticipantId, NO_FIRM_PRICE);
     }
 
     public void updateFirmPrice(final long currentTime, final int marketParticipantId, final FirmPrice marketMakerFirmPrice)
@@ -28,38 +27,39 @@ public class MarketMaking
         firmPrice(marketParticipantId).update(currentTime, marketMakerFirmPrice);
     }
 
-    public boolean execute(final long currentTime, final int executingMarketParticipant, final Order order)
+    public boolean execute(final long currentTime, final int executingMarketParticipant, final Order aggressiveOrder)
     {
-        Int2ObjectHashMap<FirmPrice>.EntryIterator iterator = participantFirmPrice.entrySet().iterator();
         FirmPrice bestPrice = null;
-        int matchedMarketMaker = -1;
+        int matchedMarketMakerId = -1;
+
+        final Int2ObjectHashMap<FirmPrice>.EntryIterator iterator = marketMakersFirmPrice.entrySet().iterator();
         while (iterator.hasNext())
         {
-            Map.Entry<Integer, FirmPrice> entry = iterator.next();
-            FirmPrice price = entry.getValue();
-            if (order.side() == Side.ASK)
+            iterator.next();
+            final int marketMakerId = iterator.getIntKey();
+            final FirmPrice price = iterator.getValue();
+            if (aggressiveOrder.side() == Side.ASK)
             {
-                bestPrice = bestBidPrice(order, bestPrice, price);
+                bestPrice = bestPassiveBidPrice(aggressiveOrder, bestPrice, price);
             }
-            else if (order.side() == Side.BID)
+            else if (aggressiveOrder.side() == Side.BID)
             {
-                bestPrice = bestAskPrice(order, bestPrice, price);
+                bestPrice = bestPassiveAskPrice(aggressiveOrder, bestPrice, price);
             }
             if (bestPrice == price)
             {
-                // TODO: avoid autoboxing
-                matchedMarketMaker = entry.getKey();
+                matchedMarketMakerId = marketMakerId;
             }
         }
-        boolean hasExecuted = bestPrice != null && bestPrice.execute(currentTime, order, executedOrderResult);
+        boolean hasExecuted = bestPrice != null && bestPrice.execute(currentTime, aggressiveOrder, executedOrderResult);
         if (hasExecuted)
         {
-            executionListener.onExecutedOrder(matchedMarketMaker, executingMarketParticipant, executedOrderResult);
+            executionListener.onExecutedOrder(matchedMarketMakerId, executingMarketParticipant, executedOrderResult);
         }
         return hasExecuted;
     }
 
-    private FirmPrice bestAskPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice price)
+    private FirmPrice bestPassiveAskPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice price)
     {
         if (price.askQuantity() >= order.bidQuantity() && price.askPrice() <= order.bidPrice())
         {
@@ -71,7 +71,7 @@ public class MarketMaking
         return bestPriceSoFar;
     }
 
-    private FirmPrice bestBidPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice price)
+    private FirmPrice bestPassiveBidPrice(final Order order, FirmPrice bestPriceSoFar, final FirmPrice price)
     {
         if (price.bidQuantity() >= order.askQuantity() && price.bidPrice() >= order.askPrice())
         {
