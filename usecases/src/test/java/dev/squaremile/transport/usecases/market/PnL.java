@@ -5,28 +5,28 @@ import org.agrona.collections.MutableLong;
 
 public class PnL implements MarketListener
 {
-    private static final MutableLong NO_ENTRIES = new MutableLong(0);
-    private final Int2ObjectHashMap<MutableLong> pnlPerMarketParticipant = new Int2ObjectHashMap<>();
+    private static final MutableLong NO_BALANCE = new MutableLong(0);
+    private final Int2ObjectHashMap<MutableLong> traderPnLs = new Int2ObjectHashMap<>();
 
     @Override
-    public void onExecution(final int marketMakerId, final int executingMarketParticipant, final Security security, final Order executedOrder)
+    public void onExecution(final int passiveTraderId, final int aggressiveTraderId, final Security tradedSecurity, final Order executingOrder)
     {
         long pnlFromThisOrder = 0;
-        switch (executedOrder.side())
+        switch (executingOrder.side())
         {
             case BID:
-                pnlFromThisOrder = (executedOrder.bidPrice() - security.midPrice()) * executedOrder.bidQuantity();
+                pnlFromThisOrder = (executingOrder.bidPrice() - tradedSecurity.midPrice()) * executingOrder.bidQuantity();
                 break;
             case ASK:
-                pnlFromThisOrder = (security.midPrice() - executedOrder.askPrice()) * executedOrder.askQuantity();
+                pnlFromThisOrder = (tradedSecurity.midPrice() - executingOrder.askPrice()) * executingOrder.askQuantity();
                 break;
         }
-        pnlPerMarketParticipant.computeIfAbsent(marketMakerId, __ -> new MutableLong(0)).addAndGet(pnlFromThisOrder);
-        pnlPerMarketParticipant.computeIfAbsent(executingMarketParticipant, __ -> new MutableLong(0)).addAndGet(-pnlFromThisOrder);
+        traderPnLs.computeIfAbsent(passiveTraderId, __ -> new MutableLong(0)).addAndGet(pnlFromThisOrder);
+        traderPnLs.computeIfAbsent(aggressiveTraderId, __ -> new MutableLong(0)).addAndGet(-pnlFromThisOrder);
     }
 
-    public long estimatedBalanceOf(int marketParticipant)
+    public long estimatedBalanceOf(int traderId)
     {
-        return pnlPerMarketParticipant.getOrDefault(marketParticipant, NO_ENTRIES).get();
+        return traderPnLs.getOrDefault(traderId, NO_BALANCE).get();
     }
 }
