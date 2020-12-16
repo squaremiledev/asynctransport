@@ -6,6 +6,7 @@ import java.util.function.BooleanSupplier;
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.lengthBasedDelineation;
 import static dev.squaremile.asynctcp.serialization.api.SerializedMessageListener.NO_OP;
@@ -17,7 +18,9 @@ public class MarketMakerApplication
 
     private final int remotePort;
     private final String remoteHost;
+
     private TransportApplicationOnDuty transportApplication;
+    private int acknowledgedPriceUpdatesCount = 0;
 
     public MarketMakerApplication(final String remoteHost, final int remotePort)
     {
@@ -58,5 +61,16 @@ public class MarketMakerApplication
         }
         this.transportApplication = application;
         return application;
+    }
+
+    public void updatePrice(final FirmPrice firmPrice)
+    {
+        // TODO: handle market updates instead
+        acknowledgedPriceUpdatesCount++;
+    }
+
+    public int acknowledgedPriceUpdatesCount()
+    {
+        return acknowledgedPriceUpdatesCount;
     }
 }
