@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
-import dev.squaremile.asynctcp.transport.testfixtures.Worker;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
