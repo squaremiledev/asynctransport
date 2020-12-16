@@ -1,11 +1,11 @@
-package dev.squaremile.transport.usecases.market;
+package dev.squaremile.transport.usecases.market.domain;
 
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import static dev.squaremile.transport.usecases.market.ExecutionSpy.execution;
+import static dev.squaremile.transport.usecases.market.domain.ExecutionSpy.execution;
 import static java.util.Collections.singletonList;
 
 class MarketMakingTest

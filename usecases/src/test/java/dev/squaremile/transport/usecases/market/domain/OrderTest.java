@@ -1,4 +1,4 @@
-package dev.squaremile.transport.usecases.market;
+package dev.squaremile.transport.usecases.market.domain;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

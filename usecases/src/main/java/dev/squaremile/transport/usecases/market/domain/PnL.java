@@ -1,4 +1,4 @@
-package dev.squaremile.transport.usecases.market;
+package dev.squaremile.transport.usecases.market.domain;
 
 import org.agrona.collections.Int2ObjectHashMap;
 import org.agrona.collections.MutableLong;

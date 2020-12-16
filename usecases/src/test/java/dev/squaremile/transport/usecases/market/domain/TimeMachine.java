@@ -1,4 +1,4 @@
-package dev.squaremile.transport.usecases.market;
+package dev.squaremile.transport.usecases.market.domain;
 
 import java.util.Arrays;
 import java.util.function.LongConsumer;

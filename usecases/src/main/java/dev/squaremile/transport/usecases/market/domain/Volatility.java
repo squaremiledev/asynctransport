@@ -1,4 +1,4 @@
-package dev.squaremile.transport.usecases.market;
+package dev.squaremile.transport.usecases.market.domain;
 
 public class Volatility implements MidPriceUpdate
 {

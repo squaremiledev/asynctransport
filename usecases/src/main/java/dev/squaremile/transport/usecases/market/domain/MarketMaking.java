@@ -1,4 +1,4 @@
-package dev.squaremile.transport.usecases.market;
+package dev.squaremile.transport.usecases.market.domain;
 
 import java.util.function.IntFunction;
 
@@ -63,7 +63,8 @@ public class MarketMaking
     {
         if (priceCandidate.askQuantity() >= order.bidQuantity() && priceCandidate.askPrice() <= order.bidPrice())
         {
-            if (bestPriceSoFar == null || (priceCandidate.askPrice() < bestPriceSoFar.askPrice() || (priceCandidate.askPrice() == bestPriceSoFar.askPrice() && priceCandidate.updateTime() < bestPriceSoFar.updateTime())))
+            if (bestPriceSoFar == null ||
+                (priceCandidate.askPrice() < bestPriceSoFar.askPrice() || (priceCandidate.askPrice() == bestPriceSoFar.askPrice() && priceCandidate.updateTime() < bestPriceSoFar.updateTime())))
             {
                 bestPriceSoFar = priceCandidate;
             }
@@ -75,7 +76,8 @@ public class MarketMaking
     {
         if (priceCandidate.bidQuantity() >= order.askQuantity() && priceCandidate.bidPrice() >= order.askPrice())
         {
-            if (bestPriceSoFar == null || (priceCandidate.bidPrice() > bestPriceSoFar.bidPrice() || (priceCandidate.bidPrice() == bestPriceSoFar.bidPrice() && priceCandidate.updateTime() < bestPriceSoFar.updateTime())))
+            if (bestPriceSoFar == null ||
+                (priceCandidate.bidPrice() > bestPriceSoFar.bidPrice() || (priceCandidate.bidPrice() == bestPriceSoFar.bidPrice() && priceCandidate.updateTime() < bestPriceSoFar.updateTime())))
             {
                 bestPriceSoFar = priceCandidate;
             }

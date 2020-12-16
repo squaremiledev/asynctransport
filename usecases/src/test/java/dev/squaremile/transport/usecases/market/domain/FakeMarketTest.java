@@ -1,4 +1,4 @@
-package dev.squaremile.transport.usecases.market;
+package dev.squaremile.transport.usecases.market.domain;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import static dev.squaremile.transport.usecases.market.FirmPrice.spreadFirmPrice;
+import static dev.squaremile.transport.usecases.market.domain.FirmPrice.spreadFirmPrice;
 import static java.util.stream.IntStream.range;
 
 class FakeMarketTest
