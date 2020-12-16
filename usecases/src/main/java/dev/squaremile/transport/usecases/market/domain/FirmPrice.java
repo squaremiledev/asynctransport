@@ -2,6 +2,7 @@ package dev.squaremile.transport.usecases.market.domain;
 
 public class FirmPrice
 {
+    private long correlationId;
     private long updateTime;
     private long bidPrice;
     private int bidQuantity;
@@ -10,6 +11,19 @@ public class FirmPrice
 
     public FirmPrice(final long updateTime, final long bidPrice, final int bidQuantity, final long askPrice, final int askQuantity)
     {
+        this(0, updateTime, bidPrice, bidQuantity, askPrice, askQuantity);
+    }
+
+    public FirmPrice(
+            final int correlationId,
+            final long updateTime,
+            final long bidPrice,
+            final int bidQuantity,
+            final long askPrice,
+            final int askQuantity
+    )
+    {
+        this.correlationId = correlationId;
         this.updateTime = updateTime;
         this.bidPrice = bidPrice;
         this.bidQuantity = bidQuantity;
@@ -67,6 +81,11 @@ public class FirmPrice
         return true;
     }
 
+    public long correlationId()
+    {
+        return correlationId;
+    }
+
     public long updateTime()
     {
         return updateTime;
@@ -96,7 +115,8 @@ public class FirmPrice
     public String toString()
     {
         return "FirmPrice{" +
-               "updateTime=" + updateTime +
+               "correlationId=" + correlationId +
+               ", updateTime=" + updateTime +
                ", bidPrice=" + bidPrice +
                ", bidQuantity=" + bidQuantity +
                ", askPrice=" + askPrice +

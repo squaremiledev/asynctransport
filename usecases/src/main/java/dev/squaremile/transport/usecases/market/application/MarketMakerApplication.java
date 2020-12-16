@@ -5,7 +5,7 @@ import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 public class MarketMakerApplication
 {
     private final MarketMakerPublisher marketMakerPublisher;
-    private long inFlightFirmPriceUpdateUpdateTime;
+    private long inFlightCorrelationId;
     private int acknowledgedPriceUpdatesCount = 0;
 
     public MarketMakerApplication(final MarketMakerPublisher marketMakerPublisher)
@@ -16,12 +16,12 @@ public class MarketMakerApplication
     public void updatePrice(final FirmPrice firmPrice)
     {
         marketMakerPublisher.publish(firmPrice);
-        inFlightFirmPriceUpdateUpdateTime = firmPrice.updateTime();
+        inFlightCorrelationId = firmPrice.correlationId();
     }
 
-    public void onFirmPriceUpdated(final long value)
+    public void onFirmPriceUpdated(final long correlationId)
     {
-        if (value == inFlightFirmPriceUpdateUpdateTime)
+        if (correlationId == inFlightCorrelationId)
         {
             acknowledgedPriceUpdatesCount++;
         }

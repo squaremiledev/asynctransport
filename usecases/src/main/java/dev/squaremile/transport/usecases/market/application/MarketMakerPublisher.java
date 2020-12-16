@@ -18,7 +18,7 @@ public class MarketMakerPublisher
     {
         // TODO: encode the actual message instead
         SendMessage sendMessage = connectionTransport.command(SendMessage.class);
-        sendMessage.prepare().putLong(sendMessage.offset(), firmPrice.updateTime());
+        sendMessage.prepare().putLong(sendMessage.offset(), firmPrice.correlationId());
         sendMessage.commit(Long.BYTES);
         connectionTransport.handle(sendMessage);
     }
