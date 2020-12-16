@@ -7,6 +7,7 @@ public class MarketMakerApplication
     private final MarketMakerPublisher marketMakerPublisher;
     private long inFlightCorrelationId;
     private int acknowledgedPriceUpdatesCount = 0;
+    private long lastAcknowledgedCorrelationId;
 
     public MarketMakerApplication(final MarketMakerPublisher marketMakerPublisher)
     {
@@ -21,14 +22,17 @@ public class MarketMakerApplication
 
     public void onFirmPriceUpdated(final long correlationId)
     {
-        if (correlationId == inFlightCorrelationId)
-        {
-            acknowledgedPriceUpdatesCount++;
-        }
+        this.lastAcknowledgedCorrelationId = correlationId;
+        this.acknowledgedPriceUpdatesCount++;
     }
 
     public int acknowledgedPriceUpdatesCount()
     {
         return acknowledgedPriceUpdatesCount;
+    }
+
+    public long lastAcknowledgedCorrelationId()
+    {
+        return lastAcknowledgedCorrelationId;
     }
 }

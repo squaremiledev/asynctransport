@@ -25,10 +25,11 @@ class MarketApplicationTest
         assertThat(marketMakerApplication.acknowledgedPriceUpdatesCount()).isEqualTo(0);
 
         // When
-        marketMakerApplication.updatePrice(new FirmPrice(1, currentTimeMillis(), 99, 40, 101, 50));
+        marketMakerApplication.updatePrice(new FirmPrice(5, currentTimeMillis(), 99, 40, 101, 50));
         runUntil(onDutyRunner.reached(() -> marketMakerApplication.acknowledgedPriceUpdatesCount() > 0));
 
         // Then
         assertThat(marketMakerApplication.acknowledgedPriceUpdatesCount()).isEqualTo(1);
+        assertThat(marketMakerApplication.lastAcknowledgedCorrelationId()).isEqualTo(5);
     }
 }
