@@ -8,8 +8,13 @@ import org.agrona.collections.MutableBoolean;
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
+import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 
 import static dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory.onStart;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.lengthBasedDelineation;
@@ -24,6 +29,8 @@ public class MarketApplication
     private final MutableBoolean startedListening = new MutableBoolean(false);
     private final MutableBoolean connected = new MutableBoolean(false);
     private TransportApplicationOnDuty transportApplication;
+    private ConnectionTransport connectionTransport;
+    private ConnectionIdValue connectionId;
 
     public MarketApplication(final int port)
     {
@@ -51,10 +58,10 @@ public class MarketApplication
                 },
                 onStart((connectionTransport, connectionId) ->
                         {
+                            this.connectionTransport = connectionTransport;
+                            this.connectionId = new ConnectionIdValue(connectionId);
                             onConnected.run();
-                            return event ->
-                            {
-                            };
+                            return this::onEvent;
                         })
         ));
         application.onStart();
@@ -69,6 +76,18 @@ public class MarketApplication
         }
         this.transportApplication = application;
         return application;
+    }
+
+    private void onEvent(final ConnectionEvent connectionEvent)
+    {
+        if (connectionEvent instanceof MessageReceived)
+        {
+            MessageReceived messageReceived = (MessageReceived)connectionEvent;
+            SendMessage sendMessage = connectionTransport.command(SendMessage.class);
+            sendMessage.prepare().putLong(sendMessage.offset(), messageReceived.buffer().getLong(messageReceived.offset()));
+            sendMessage.commit(Long.BYTES);
+            connectionTransport.handle(sendMessage);
+        }
     }
 
     public boolean startedListening()

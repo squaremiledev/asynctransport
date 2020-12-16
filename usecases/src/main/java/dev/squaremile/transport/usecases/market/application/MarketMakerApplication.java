@@ -5,7 +5,12 @@ import java.util.function.BooleanSupplier;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
+import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.lengthBasedDelineation;
@@ -21,6 +26,9 @@ public class MarketMakerApplication
 
     private TransportApplicationOnDuty transportApplication;
     private int acknowledgedPriceUpdatesCount = 0;
+    private ConnectionTransport connectionTransport;
+    private ConnectionIdValue connectionId;
+    private long inFlightFirmPriceUpdateUpdateTime;
 
     public MarketMakerApplication(final String remoteHost, final int remotePort)
     {
@@ -43,9 +51,11 @@ public class MarketMakerApplication
                         remoteHost,
                         remotePort,
                         lengthBasedDelineation(SHORT_LITTLE_ENDIAN_FIELD, 0, 0),
-                        (connectionTransport, connectionId) -> event ->
+                        (connectionTransport, connectionId) ->
                         {
-
+                            this.connectionTransport = connectionTransport;
+                            this.connectionId = new ConnectionIdValue(connectionId);
+                            return this::onEvent;
                         }
                 )
         );
@@ -63,10 +73,27 @@ public class MarketMakerApplication
         return application;
     }
 
+    private void onEvent(final ConnectionEvent event)
+    {
+        if (event instanceof MessageReceived)
+        {
+            MessageReceived messageReceived = (MessageReceived)event;
+            long value = messageReceived.buffer().getLong(messageReceived.offset());
+            if (value == inFlightFirmPriceUpdateUpdateTime)
+            {
+                acknowledgedPriceUpdatesCount++;
+            }
+        }
+    }
+
     public void updatePrice(final FirmPrice firmPrice)
     {
-        // TODO: handle market updates instead
-        acknowledgedPriceUpdatesCount++;
+        inFlightFirmPriceUpdateUpdateTime = firmPrice.updateTime();
+        // TODO: encode the actual message instead
+        SendMessage sendMessage = connectionTransport.command(SendMessage.class);
+        sendMessage.prepare().putLong(sendMessage.offset(), inFlightFirmPriceUpdateUpdateTime);
+        sendMessage.commit(Long.BYTES);
+        connectionTransport.handle(sendMessage);
     }
 
     public int acknowledgedPriceUpdatesCount()
