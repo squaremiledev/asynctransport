@@ -14,21 +14,21 @@ import static java.lang.System.currentTimeMillis;
 
 class MarketApplicationTest
 {
-    private final MarketApplicationFixtures fixtures = new MarketApplicationFixtures(freePort());
+    private final MarketApplicationFixtures fixtures = new MarketApplicationFixtures(freePort(), MarketMakerApplication::new);
     private final ThingsOnDutyRunner onDutyRunner = fixtures.onDutyRunner();
-    private final MarketMakerTransportApplication marketMakerTransportApplication = fixtures.marketMakerTransportApplication();
+    private final MarketMakerApplication marketMakerApplication = fixtures.marketMakerApplication();
 
     @Test
     void shouldConfirmReceiptOfThePriceUpdate()
     {
         // Given
-        assertThat(marketMakerTransportApplication.acknowledgedPriceUpdatesCount()).isEqualTo(0);
+        assertThat(marketMakerApplication.acknowledgedPriceUpdatesCount()).isEqualTo(0);
 
         // When
-        marketMakerTransportApplication.updatePrice(new FirmPrice(currentTimeMillis(), 99, 40, 101, 50));
-        runUntil(onDutyRunner.reached(() -> marketMakerTransportApplication.acknowledgedPriceUpdatesCount() > 0));
+        marketMakerApplication.updatePrice(new FirmPrice(currentTimeMillis(), 99, 40, 101, 50));
+        runUntil(onDutyRunner.reached(() -> marketMakerApplication.acknowledgedPriceUpdatesCount() > 0));
 
         // Then
-        assertThat(marketMakerTransportApplication.acknowledgedPriceUpdatesCount()).isEqualTo(1);
+        assertThat(marketMakerApplication.acknowledgedPriceUpdatesCount()).isEqualTo(1);
     }
 }

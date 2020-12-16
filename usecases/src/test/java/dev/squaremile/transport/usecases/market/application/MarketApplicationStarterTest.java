@@ -16,11 +16,11 @@ class MarketApplicationStarterTest
     {
         final int port = freePort();
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port);
-        final MarketMakerApplicationStarter marketMakerApplicationStarter = new MarketMakerApplicationStarter("localhost", port);
+        final MarketMakerApplicationStarter marketMakerApplicationStarter = new MarketMakerApplicationStarter("localhost", port, MarketMakerApplication::new);
 
         // Given
         assertThat(marketApplicationStarter.marketTransportApplication()).isNull();
-        assertThat(marketMakerApplicationStarter.marketMakerTransportApplication()).isNull();
+        assertThat(marketMakerApplicationStarter.marketMakerApplication()).isNull();
 
         // When
         TransportApplicationOnDuty marketTransportOnDuty = marketApplicationStarter.startTransport(1000);
@@ -28,6 +28,6 @@ class MarketApplicationStarterTest
 
         // Then
         assertThat(marketApplicationStarter.marketTransportApplication()).isNotNull();
-        assertThat(marketMakerApplicationStarter.marketMakerTransportApplication()).isNotNull();
+        assertThat(marketMakerApplicationStarter.marketMakerApplication()).isNotNull();
     }
 }

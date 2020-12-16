@@ -11,21 +11,22 @@ import static java.lang.System.currentTimeMillis;
 
 public class MarketMakerApplicationStarter
 {
-
     private final int remotePort;
     private final String remoteHost;
+    private final MarketMakerTransportApplication.MarketMakerApplicationFactory marketMakerApplicationFactory;
 
-    private MarketMakerTransportApplication marketMakerTransportApplication;
+    private MarketMakerApplication marketMakerApplication;
 
-    public MarketMakerApplicationStarter(final String remoteHost, final int remotePort)
+    public MarketMakerApplicationStarter(final String remoteHost, final int remotePort, final MarketMakerTransportApplication.MarketMakerApplicationFactory marketMakerApplicationFactory)
     {
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
+        this.marketMakerApplicationFactory = marketMakerApplicationFactory;
     }
 
     public TransportApplicationOnDuty startTransport(final Runnable runUntilReady, final int timeoutMs)
     {
-        if (marketMakerTransportApplication() != null)
+        if (marketMakerApplication() != null)
         {
             throw new IllegalStateException("Application already started");
         }
@@ -41,27 +42,27 @@ public class MarketMakerApplicationStarter
                                 lengthBasedDelineation(SHORT_LITTLE_ENDIAN_FIELD, 0, 0),
                                 (connectionTransport, connectionId) ->
                                 {
-                                    marketMakerTransportApplication = new MarketMakerTransportApplication(connectionTransport);
-                                    return marketMakerTransportApplication;
+                                    marketMakerApplication = marketMakerApplicationFactory.create(new MarketMakerPublisher(connectionTransport));
+                                    return new MarketMakerTransportApplication(marketMakerApplication);
                                 }
                         )
         );
         application.onStart();
         long startTime = currentTimeMillis();
-        while (marketMakerTransportApplication == null && currentTimeMillis() < startTime + timeoutMs)
+        while (marketMakerApplication == null && currentTimeMillis() < startTime + timeoutMs)
         {
             application.work();
             runUntilReady.run();
         }
-        if (marketMakerTransportApplication == null)
+        if (marketMakerApplication == null)
         {
             throw new IllegalStateException("Unable to satisfy condition within " + timeoutMs + "ms.");
         }
         return application;
     }
 
-    public MarketMakerTransportApplication marketMakerTransportApplication()
+    public MarketMakerApplication marketMakerApplication()
     {
-        return marketMakerTransportApplication;
+        return marketMakerApplication;
     }
 }

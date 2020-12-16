@@ -6,18 +6,16 @@ import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 public class MarketApplicationFixtures
 {
     private final ThingsOnDutyRunner onDutyRunner;
-    private final MarketTransportApplication marketTransportApplication;
-    private final MarketMakerTransportApplication marketMakerTransportApplication;
+    private final MarketMakerApplication marketMakerApplication;
 
-    public MarketApplicationFixtures(final int port)
+    public MarketApplicationFixtures(final int port, final MarketMakerTransportApplication.MarketMakerApplicationFactory makerApplicationFactory)
     {
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port);
-        final MarketMakerApplicationStarter marketMakerApplicationStarterFactory = new MarketMakerApplicationStarter("localhost", port);
+        final MarketMakerApplicationStarter marketMakerApplicationStarterFactory = new MarketMakerApplicationStarter("localhost", port, makerApplicationFactory);
         final TransportApplicationOnDuty marketTransportOnDuty = marketApplicationStarter.startTransport(1000);
         final TransportApplicationOnDuty marketMakerTransportOnDuty = marketMakerApplicationStarterFactory.startTransport(marketTransportOnDuty::work, 1000);
         onDutyRunner = new ThingsOnDutyRunner(marketTransportOnDuty, marketMakerTransportOnDuty);
-        marketTransportApplication = marketApplicationStarter.marketTransportApplication();
-        marketMakerTransportApplication = marketMakerApplicationStarterFactory.marketMakerTransportApplication();
+        marketMakerApplication = marketMakerApplicationStarterFactory.marketMakerApplication();
     }
 
     public ThingsOnDutyRunner onDutyRunner()
@@ -25,13 +23,8 @@ public class MarketApplicationFixtures
         return onDutyRunner;
     }
 
-    public MarketTransportApplication marketTransportApplication()
+    public MarketMakerApplication marketMakerApplication()
     {
-        return marketTransportApplication;
-    }
-
-    public MarketMakerTransportApplication marketMakerTransportApplication()
-    {
-        return marketMakerTransportApplication;
+        return marketMakerApplication;
     }
 }

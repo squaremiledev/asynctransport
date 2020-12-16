@@ -2,30 +2,21 @@ package dev.squaremile.transport.usecases.market.application;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
-import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 
 class MarketMakerTransportApplication implements ConnectionApplication
 {
-    private final ConnectionTransport connectionTransport;
-    private long inFlightFirmPriceUpdateUpdateTime;
-    private int acknowledgedPriceUpdatesCount = 0;
+    private final MarketMakerApplication marketMakerApplication;
 
-    public MarketMakerTransportApplication(final ConnectionTransport connectionTransport)
+    interface MarketMakerApplicationFactory
     {
-        this.connectionTransport = connectionTransport;
+        MarketMakerApplication create(MarketMakerPublisher publisher);
     }
 
-    public void updatePrice(final FirmPrice firmPrice)
+    public MarketMakerTransportApplication(final MarketMakerApplication marketMakerApplication)
     {
-        inFlightFirmPriceUpdateUpdateTime = firmPrice.updateTime();
-        // TODO: encode the actual message instead
-        SendMessage sendMessage = connectionTransport.command(SendMessage.class);
-        sendMessage.prepare().putLong(sendMessage.offset(), inFlightFirmPriceUpdateUpdateTime);
-        sendMessage.commit(Long.BYTES);
-        connectionTransport.handle(sendMessage);
+        this.marketMakerApplication = marketMakerApplication;
     }
 
     @Override
@@ -35,15 +26,8 @@ class MarketMakerTransportApplication implements ConnectionApplication
         {
             MessageReceived messageReceived = (MessageReceived)event;
             long value = messageReceived.buffer().getLong(messageReceived.offset());
-            if (value == inFlightFirmPriceUpdateUpdateTime)
-            {
-                acknowledgedPriceUpdatesCount++;
-            }
+            marketMakerApplication.onFirmPriceUpdated(value);
         }
     }
 
-    public int acknowledgedPriceUpdatesCount()
-    {
-        return acknowledgedPriceUpdatesCount;
-    }
 }
