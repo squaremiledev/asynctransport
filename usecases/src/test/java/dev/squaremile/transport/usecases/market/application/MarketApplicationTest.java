@@ -1,5 +1,6 @@
 package dev.squaremile.transport.usecases.market.application;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +21,7 @@ class MarketApplicationTest
     private final MarketMakerApplication marketMakerApplication = fixtures.marketMakerApplication();
 
     @Test
-    void shouldConfirmReceiptOfThePriceUpdate()
+    void shouldInformMarketMakerAboutSuccessfulPriceUpdate()
     {
         // Given
         assertThat(marketMakerApplication.acknowledgedPriceUpdatesCount()).isEqualTo(0);
@@ -37,5 +38,47 @@ class MarketApplicationTest
                 .isEqualTo(new FirmPrice(5, lastUpdatedFirmPrice.updateTime(), 99, 40, 101, 50));
         assertThat(lastUpdatedFirmPrice.updateTime()).isGreaterThanOrEqualTo(updateTimeMs);
         assertThat(lastUpdatedFirmPrice.updateTime()).isLessThan(updateTimeMs + 100);
+    }
+
+    @Test
+    @Disabled
+    void shouldInformAggressorAboutOrderFailure()
+    {
+
+    }
+
+    @Test
+    @Disabled
+    void shouldInformAggressorAndMarketMakerAboutOrderExecution()
+    {
+
+    }
+
+    @Test
+    @Disabled
+    void shouldNotInformNotInvolvedMarketParticipantsAboutOrderExecution()
+    {
+
+    }
+
+    @Test
+    @Disabled
+    void shouldSendSubscribersMidPriceUpdates()
+    {
+        // does not have to change to receive it
+    }
+
+    @Test
+    @Disabled
+    void shouldStopSendingMidPriceUpdates()
+    {
+
+    }
+
+    @Test
+    @Disabled
+    void shouldSendEstimatedPnLChangesToAffectedMarketParticipants()
+    {
+
     }
 }
