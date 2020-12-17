@@ -17,12 +17,14 @@ import static java.lang.System.currentTimeMillis;
 public class MarketApplicationStarter
 {
     private final int port;
+    private final Clock clock;
     private TransportApplicationOnDuty transportApplication;
     private MarketTransportApplication marketTransportApplication;
 
-    public MarketApplicationStarter(final int port)
+    public MarketApplicationStarter(final int port, final Clock clock)
     {
         this.port = port;
+        this.clock = clock;
     }
 
     public TransportApplicationOnDuty startTransport(final int timeoutMs)
@@ -46,7 +48,7 @@ public class MarketApplicationStarter
                         },
                         onStart((connectionTransport, connectionId) ->
                                 {
-                                    marketTransportApplication = new MarketTransportApplication(connectionTransport);
+                                    marketTransportApplication = new MarketTransportApplication(connectionTransport, clock);
                                     return marketTransportApplication;
                                 })
                 ));

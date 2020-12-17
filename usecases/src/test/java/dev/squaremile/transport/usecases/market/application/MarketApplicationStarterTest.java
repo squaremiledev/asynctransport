@@ -15,7 +15,7 @@ class MarketApplicationStarterTest
     void shouldAcceptMarketMakerConnection()
     {
         final int port = freePort();
-        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port);
+        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, new Clock());
         final MarketMakerApplicationStarter marketMakerApplicationStarter = new MarketMakerApplicationStarter("localhost", port, MarketMakerApplication::new);
 
         // Given

@@ -41,8 +41,27 @@ public class FirmPrice
         return new FirmPrice(updateTime, basePrice - spread, quantity, basePrice + spread, quantity);
     }
 
+    public FirmPrice update(
+            final long correlationId,
+            final long updateTime,
+            final long bidPrice,
+            final int bidQuantity,
+            final long askPrice,
+            final int askQuantity
+    )
+    {
+        this.correlationId = correlationId;
+        this.updateTime = updateTime;
+        this.bidPrice = bidPrice;
+        this.bidQuantity = bidQuantity;
+        this.askPrice = askPrice;
+        this.askQuantity = askQuantity;
+        return this;
+    }
+
     public void update(final long currentTime, final FirmPrice source)
     {
+        this.correlationId = source.correlationId;
         this.askPrice = source.askPrice;
         this.askQuantity = source.askQuantity;
         this.bidPrice = source.bidPrice;

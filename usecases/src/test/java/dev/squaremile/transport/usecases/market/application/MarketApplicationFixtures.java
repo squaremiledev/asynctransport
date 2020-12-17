@@ -8,9 +8,9 @@ public class MarketApplicationFixtures
     private final ThingsOnDutyRunner onDutyRunner;
     private final MarketMakerApplication marketMakerApplication;
 
-    public MarketApplicationFixtures(final int port, final MarketMakerTransportApplication.MarketMakerApplicationFactory makerApplicationFactory)
+    public MarketApplicationFixtures(final int port, final Clock clock, final MarketMakerTransportApplication.MarketMakerApplicationFactory makerApplicationFactory)
     {
-        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port);
+        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, clock);
         final MarketMakerApplicationStarter marketMakerApplicationStarterFactory = new MarketMakerApplicationStarter("localhost", port, makerApplicationFactory);
         final TransportApplicationOnDuty marketTransportOnDuty = marketApplicationStarter.startTransport(1000);
         final TransportApplicationOnDuty marketMakerTransportOnDuty = marketMakerApplicationStarterFactory.startTransport(marketTransportOnDuty::work, 1000);

@@ -1,5 +1,8 @@
 package dev.squaremile.transport.usecases.market.application;
 
+import org.agrona.MutableDirectBuffer;
+
+
 import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
@@ -16,10 +19,15 @@ public class MarketMakerPublisher
 
     public void publish(final FirmPrice firmPrice)
     {
-        // TODO: encode the actual message instead
         SendMessage sendMessage = connectionTransport.command(SendMessage.class);
-        sendMessage.prepare().putLong(sendMessage.offset(), firmPrice.correlationId());
-        sendMessage.commit(Long.BYTES);
+        MutableDirectBuffer buffer = sendMessage.prepare();
+        buffer.putLong(sendMessage.offset(), firmPrice.correlationId());
+        buffer.putLong(sendMessage.offset() + Long.BYTES, firmPrice.updateTime());
+        buffer.putLong(sendMessage.offset() + Long.BYTES * 2, firmPrice.bidPrice());
+        buffer.putLong(sendMessage.offset() + Long.BYTES * 3, firmPrice.bidQuantity());
+        buffer.putLong(sendMessage.offset() + Long.BYTES * 3 + Integer.BYTES, firmPrice.askPrice());
+        buffer.putLong(sendMessage.offset() + Long.BYTES * 4 + Integer.BYTES, firmPrice.askQuantity());
+        sendMessage.commit(Long.BYTES * 4 + Integer.BYTES * 2);
         connectionTransport.handle(sendMessage);
     }
 }
