@@ -16,7 +16,7 @@ class MarketMakerApplicationStarterTest
     {
         final int port = freePort();
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, new Clock());
-        final MarketMakerApplicationStarter marketMakerApplicationStarter = new MarketMakerApplicationStarter("localhost", port);
+        final MarketMakerApplicationStarter marketMakerApplicationStarter = new MarketMakerApplicationStarter("localhost", port, new Clock());
 
         // Given
         assertThat(marketApplicationStarter.application()).isNull();

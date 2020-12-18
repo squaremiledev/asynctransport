@@ -1,8 +1,9 @@
 package dev.squaremile.transport.usecases.market.application;
 
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
+import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 
-public class MarketMakerApplication
+public class MarketMakerApplication implements BusinessApplication
 {
     private final MarketMakerPublisher marketMakerPublisher;
     private final FirmPrice lastUpdatedFirmPrice = FirmPrice.createNoPrice();
@@ -11,6 +12,21 @@ public class MarketMakerApplication
     public MarketMakerApplication(final MarketMakerPublisher marketMakerPublisher)
     {
         this.marketMakerPublisher = marketMakerPublisher;
+    }
+
+    @Override
+    public void onMessage(final MarketMessage marketMessage)
+    {
+        if (marketMessage instanceof FirmPrice)
+        {
+            onFirmPriceUpdated((FirmPrice)marketMessage);
+        }
+    }
+
+    @Override
+    public void onPeriodicWakeUp()
+    {
+
     }
 
     public void updatePrice(final FirmPrice firmPrice)

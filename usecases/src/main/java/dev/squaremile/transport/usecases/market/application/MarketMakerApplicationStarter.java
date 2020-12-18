@@ -7,12 +7,12 @@ public class MarketMakerApplicationStarter
     private final InitiatorStarter initiatorStarter;
     private MarketMakerApplication marketMakerApplication;
 
-    public MarketMakerApplicationStarter(final String remoteHost, final int remotePort)
+    public MarketMakerApplicationStarter(final String remoteHost, final int remotePort, final Clock clock)
     {
         initiatorStarter = new InitiatorStarter(remoteHost, remotePort, (connectionTransport, connectionId) ->
         {
             marketMakerApplication = new MarketMakerApplication(new MarketMakerPublisher(connectionTransport));
-            return new MarketMakerTransportApplication(marketMakerApplication);
+            return new MarketTransportApplication(clock, marketMakerApplication);
         });
     }
 
