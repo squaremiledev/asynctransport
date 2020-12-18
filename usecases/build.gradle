@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'java-library'
     id 'idea'
+    id "vontikov.sbe-generator-plugin" version "0.0.3"
 }
 
 java {
@@ -26,4 +27,14 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     testImplementation 'org.assertj:assertj-core:3.16.1'
+}
+
+sbeGenerator {
+    src {
+        dir = 'src/main/resources/xml'
+        includes = []
+        excludes = []
+    }
+
+    javaCodecsDir = 'src/main/java'
 }

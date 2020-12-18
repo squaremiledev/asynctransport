@@ -1,6 +1,6 @@
 package dev.squaremile.transport.usecases.market.domain;
 
-public class FirmPrice
+public class FirmPrice implements MarketMessage
 {
     private long correlationId;
     private long updateTime;

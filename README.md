@@ -196,5 +196,5 @@ The remaining concerns, such as running the app are kept separate and can be com
 To re-generate sbe codecs
 
 ```
-./gradlew :sbe:sbeGenerateJavaCodecs
+./gradlew :sbe:sbeGenerateJavaCodecs :usecases:sbeGenerateJavaCodecs
 ```

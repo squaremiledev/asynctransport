@@ -4,11 +4,12 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
+import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 
 class MarketMakerTransportApplication implements ConnectionApplication
 {
     private final MarketMakerApplication marketMakerApplication;
-    private final FirmPrice decodedFirmPrice = FirmPrice.createNoPrice();
+    private final Serialization serialization = new Serialization();
 
     public MarketMakerTransportApplication(final MarketMakerApplication marketMakerApplication)
     {
@@ -21,15 +22,11 @@ class MarketMakerTransportApplication implements ConnectionApplication
         if (event instanceof MessageReceived)
         {
             MessageReceived messageReceived = (MessageReceived)event;
-            decodedFirmPrice.update(
-                    messageReceived.buffer().getLong(messageReceived.offset()),
-                    messageReceived.buffer().getLong(messageReceived.offset() + Long.BYTES),
-                    messageReceived.buffer().getLong(messageReceived.offset() + Long.BYTES * 2),
-                    messageReceived.buffer().getInt(messageReceived.offset() + Long.BYTES * 3),
-                    messageReceived.buffer().getLong(messageReceived.offset() + Long.BYTES * 3 + Integer.BYTES),
-                    messageReceived.buffer().getInt(messageReceived.offset() + Long.BYTES * 4 + Integer.BYTES)
-            );
-            marketMakerApplication.onFirmPriceUpdated(decodedFirmPrice);
+            MarketMessage marketMessage = serialization.decode(messageReceived.buffer(), messageReceived.offset());
+            if (marketMessage instanceof FirmPrice)
+            {
+                marketMakerApplication.onFirmPriceUpdated((FirmPrice)marketMessage);
+            }
         }
     }
 

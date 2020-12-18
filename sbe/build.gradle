@@ -11,15 +11,6 @@ sbeGenerator {
     }
 
     javaCodecsDir = 'src/main/java'
-//    javaClassesDir = 'build/generated/classes'
-
-//    cppCodecsDir = 'build/generated/src/main/cpp1'
-//    cppCmakeDir = 'build/generated/cmake-project'
-//
-//    archivesDir = 'build/archives'
-//
-//    javaOptions = [:]
-//    cppOptions = [:]
 }
 
 dependencies {

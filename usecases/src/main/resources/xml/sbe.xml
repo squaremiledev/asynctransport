@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
+                   package="dev.squaremile.transport.usecases.market.schema"
+                   id="1"
+                   version="0"
+                   semanticVersion="5.2"
+                   description=""
+>
+    <types>
+        <composite name="messageHeader" description="Message identifiers and length of message root.">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="templateId" primitiveType="uint16"/>
+            <type name="schemaId" primitiveType="uint16"/>
+            <type name="version" primitiveType="uint16"/>
+        </composite>
+        <composite name="groupSizeEncoding" description="Repeating group dimensions.">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="numInGroup" primitiveType="uint16"/>
+        </composite>
+        <composite name="varStringEncoding" description="Variable length UTF-8 String.">
+            <type name="length" primitiveType="uint32" maxValue="1073741824"/>
+            <type name="varData" primitiveType="uint8" length="0" characterEncoding="UTF-8"/>
+        </composite>
+        <composite name="varAsciiEncoding" description="Variable length ASCII String.">
+            <type name="length" primitiveType="uint32" maxValue="1073741824"/>
+            <type name="varData" primitiveType="uint8" length="0" characterEncoding="ASCII"/>
+        </composite>
+        <composite name="varDataEncoding" description="Variable length binary blob.">
+            <type name="length" primitiveType="uint32" maxValue="1073741824"/>
+            <type name="varData" primitiveType="uint8" length="0"/>
+        </composite>
+    </types>
+
+    <types>
+        <type name="correlationId" primitiveType="int64"/>
+        <type name="correlationValue" primitiveType="int64"/>
+        <type name="timestamp" primitiveType="int64"/>
+        <type name="price" primitiveType="int64"/>
+        <type name="quantity" primitiveType="int32"/>
+    </types>
+
+    <sbe:message name="FirmPrice" id="1">
+        <field name="correlationId" id="1" type="correlationId"/>
+        <field name="updateTime" id="2" type="timestamp"/>
+        <field name="bidPrice" id="3" type="price"/>
+        <field name="bidQuantity" id="4" type="quantity"/>
+        <field name="askPrice" id="5" type="price"/>
+        <field name="askQuantity" id="6" type="quantity"/>
+    </sbe:message>
+
+</sbe:messageSchema>

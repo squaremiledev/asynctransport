@@ -11,6 +11,7 @@ public class MarketMakerPublisher
 {
 
     private final ConnectionTransport connectionTransport;
+    private final Serialization serialization = new Serialization();
 
     public MarketMakerPublisher(final ConnectionTransport connectionTransport)
     {
@@ -21,13 +22,9 @@ public class MarketMakerPublisher
     {
         SendMessage sendMessage = connectionTransport.command(SendMessage.class);
         MutableDirectBuffer buffer = sendMessage.prepare();
-        buffer.putLong(sendMessage.offset(), firmPrice.correlationId());
-        buffer.putLong(sendMessage.offset() + Long.BYTES, firmPrice.updateTime());
-        buffer.putLong(sendMessage.offset() + Long.BYTES * 2, firmPrice.bidPrice());
-        buffer.putLong(sendMessage.offset() + Long.BYTES * 3, firmPrice.bidQuantity());
-        buffer.putLong(sendMessage.offset() + Long.BYTES * 3 + Integer.BYTES, firmPrice.askPrice());
-        buffer.putLong(sendMessage.offset() + Long.BYTES * 4 + Integer.BYTES, firmPrice.askQuantity());
-        sendMessage.commit(Long.BYTES * 4 + Integer.BYTES * 2);
+        int offset = sendMessage.offset();
+        int encodedLength = serialization.encode(firmPrice, buffer, offset);
+        sendMessage.commit(encodedLength);
         connectionTransport.handle(sendMessage);
     }
 }

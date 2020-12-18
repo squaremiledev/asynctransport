@@ -4,8 +4,8 @@
                    id="1"
                    version="0"
                    semanticVersion="5.2"
-                   description="Example base schema which can be extended."
-                   byteOrder="littleEndian">
+                   description=""
+>
     <types>
         <enum name="DelineationType" encodingType="char">
             <validValue name="ASCII_PATTERN">0</validValue>
