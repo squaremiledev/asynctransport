@@ -30,9 +30,4 @@ class MarketMakerTransportApplication implements ConnectionApplication
         }
     }
 
-    interface MarketMakerApplicationFactory
-    {
-        MarketMakerApplication create(MarketMakerPublisher publisher);
-    }
-
 }

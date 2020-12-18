@@ -66,7 +66,7 @@ public class MarketApplicationStarter
         return application;
     }
 
-    public MarketTransportApplication marketTransportApplication()
+    public MarketTransportApplication application()
     {
         return marketTransportApplication;
     }

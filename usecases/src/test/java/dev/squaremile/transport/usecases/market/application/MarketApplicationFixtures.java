@@ -7,15 +7,19 @@ public class MarketApplicationFixtures
 {
     private final ThingsOnDutyRunner onDutyRunner;
     private final MarketMakerApplication marketMakerApplication;
+    private final BuySideApplication buySideApplication;
 
-    public MarketApplicationFixtures(final int port, final Clock clock, final MarketMakerTransportApplication.MarketMakerApplicationFactory makerApplicationFactory)
+    public MarketApplicationFixtures(final int port, final Clock clock)
     {
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, clock);
-        final MarketMakerApplicationStarter marketMakerApplicationStarterFactory = new MarketMakerApplicationStarter("localhost", port, makerApplicationFactory);
+        final MarketMakerApplicationStarter marketMakerApplicationStarter = new MarketMakerApplicationStarter("localhost", port);
+        final BuySideApplicationStarter buySideApplicationStarter = new BuySideApplicationStarter("localhost", port);
         final TransportApplicationOnDuty marketTransportOnDuty = marketApplicationStarter.startTransport(1000);
-        final TransportApplicationOnDuty marketMakerTransportOnDuty = marketMakerApplicationStarterFactory.startTransport(marketTransportOnDuty::work, 1000);
-        onDutyRunner = new ThingsOnDutyRunner(marketTransportOnDuty, marketMakerTransportOnDuty);
-        marketMakerApplication = marketMakerApplicationStarterFactory.marketMakerApplication();
+        final TransportApplicationOnDuty marketMakerTransportOnDuty = marketMakerApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
+        final TransportApplicationOnDuty buySideTransportOnDuty = buySideApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
+        onDutyRunner = new ThingsOnDutyRunner(marketTransportOnDuty, marketMakerTransportOnDuty, buySideTransportOnDuty);
+        marketMakerApplication = marketMakerApplicationStarter.application();
+        buySideApplication = buySideApplicationStarter.application();
     }
 
     public ThingsOnDutyRunner onDutyRunner()
@@ -26,5 +30,10 @@ public class MarketApplicationFixtures
     public MarketMakerApplication marketMakerApplication()
     {
         return marketMakerApplication;
+    }
+
+    public BuySideApplication buySideApplication()
+    {
+        return buySideApplication;
     }
 }

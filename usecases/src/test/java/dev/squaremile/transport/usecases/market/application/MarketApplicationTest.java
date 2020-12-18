@@ -16,9 +16,11 @@ import static java.lang.System.currentTimeMillis;
 class MarketApplicationTest
 {
     private final Clock clock = new Clock();
-    private final MarketApplicationFixtures fixtures = new MarketApplicationFixtures(freePort(), clock, MarketMakerApplication::new);
+    private final MarketApplicationFixtures fixtures = new MarketApplicationFixtures(freePort(), clock);
     private final ThingsOnDutyRunner onDutyRunner = fixtures.onDutyRunner();
     private final MarketMakerApplication marketMakerApplication = fixtures.marketMakerApplication();
+    private final BuySideApplication buySideApplication = fixtures.buySideApplication();
+
 
     @Test
     void shouldInformMarketMakerAboutSuccessfulPriceUpdate()
@@ -41,10 +43,14 @@ class MarketApplicationTest
     }
 
     @Test
-    @Disabled
     void shouldInformAggressorAboutOrderFailure()
     {
+        assertThat(buySideApplication.orderResponsesCount()).isEqualTo(0);
 
+        buySideApplication.sendOrder();
+        runUntil(onDutyRunner.reached(() -> buySideApplication.orderResponsesCount() > 0));
+
+        assertThat(buySideApplication.orderResponsesCount()).isEqualTo(1);
     }
 
     @Test

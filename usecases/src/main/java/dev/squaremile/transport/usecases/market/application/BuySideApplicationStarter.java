@@ -2,17 +2,17 @@ package dev.squaremile.transport.usecases.market.application;
 
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 
-public class MarketMakerApplicationStarter
+public class BuySideApplicationStarter
 {
     private final InitiatorStarter initiatorStarter;
-    private MarketMakerApplication marketMakerApplication;
+    private BuySideApplication application;
 
-    public MarketMakerApplicationStarter(final String remoteHost, final int remotePort)
+    public BuySideApplicationStarter(final String remoteHost, final int remotePort)
     {
         initiatorStarter = new InitiatorStarter(remoteHost, remotePort, (connectionTransport, connectionId) ->
         {
-            marketMakerApplication = new MarketMakerApplication(new MarketMakerPublisher(connectionTransport));
-            return new MarketMakerTransportApplication(marketMakerApplication);
+            application = new BuySideApplication(new BuySidePublisher(connectionTransport));
+            return new BuySideTransportApplication(application);
         });
     }
 
@@ -21,8 +21,8 @@ public class MarketMakerApplicationStarter
         return initiatorStarter.startTransport(runUntilReady, timeoutMs);
     }
 
-    public MarketMakerApplication application()
+    public BuySideApplication application()
     {
-        return marketMakerApplication;
+        return application;
     }
 }
