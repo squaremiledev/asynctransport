@@ -63,8 +63,7 @@ class MarketApplicationTest
     void shouldInformAggressorAndMarketMakerAboutOrderExecution()
     {
         // Given
-        final long updateTimeMs = currentTimeMillis();
-        marketMakerApplication.updatePrice(new FirmPrice(5, updateTimeMs, 99, 40, 101, 50));
+        marketMakerApplication.updatePrice(new FirmPrice(5, currentTimeMillis(), 99, 40, 101, 50));
         runUntil(onDutyRunner.reached(() -> marketMakerApplication.acknowledgedPriceUpdatesCount() == 1));
 
         // When
@@ -74,25 +73,39 @@ class MarketApplicationTest
                                             buySideApplication.executedReportsCount() > 0
         ));
 
+        // Then
         assertThat(buySideApplication.orderResultCount()).isEqualTo(1);
         assertThat(buySideApplication.lastOrderResult()).usingRecursiveComparison().isEqualTo(OrderResult.EXECUTED);
         assertThat(buySideApplication.executedReportsCount()).isEqualTo(1);
         ExecutionReport actualBuySideExecutionReport = buySideApplication.lastExecutedOrder();
         assertThat(actualBuySideExecutionReport).usingRecursiveComparison().isEqualTo(
-                new ExecutionReport().update(0, 1, actualBuySideExecutionReport.security(), Order.ask(99, 30))
+                new ExecutionReport().update(0, 2, actualBuySideExecutionReport.security(), Order.ask(99, 30))
         );
         assertThat(marketMakerApplication.executedReportsCount()).isEqualTo(1);
         ExecutionReport actualMarketMakerExecutionReport = marketMakerApplication.lastExecutedOrder();
         assertThat(actualMarketMakerExecutionReport).usingRecursiveComparison().isEqualTo(
-                new ExecutionReport().update(0, 1, actualMarketMakerExecutionReport.security(), Order.ask(99, 30))
+                new ExecutionReport().update(0, 2, actualMarketMakerExecutionReport.security(), Order.ask(99, 30))
         );
     }
 
     @Test
-    @Disabled
     void shouldNotInformNotInvolvedMarketParticipantsAboutOrderExecution()
     {
+        marketMakerApplication.updatePrice(new FirmPrice(5, currentTimeMillis(), 99, 40, 101, 50));
+        runUntil(onDutyRunner.reached(() -> marketMakerApplication.acknowledgedPriceUpdatesCount() == 1));
+        assertThat(fixtures.anotherMarketMakerApplication().acknowledgedPriceUpdatesCount()).isEqualTo(0);
 
+        // When
+        buySideApplication.sendOrder(Order.ask(99, 30));
+        runUntil(onDutyRunner.reached(() -> buySideApplication.orderResultCount() > 0 &&
+                                            marketMakerApplication.executedReportsCount() > 0 &&
+                                            buySideApplication.executedReportsCount() > 0
+        ));
+
+        // Then
+        assertThat(fixtures.anotherBuySideApplication().orderResultCount()).isEqualTo(0);
+        assertThat(fixtures.anotherBuySideApplication().executedReportsCount()).isEqualTo(0);
+        assertThat(fixtures.anotherMarketMakerApplication().executedReportsCount()).isEqualTo(0);
     }
 
     @Test
