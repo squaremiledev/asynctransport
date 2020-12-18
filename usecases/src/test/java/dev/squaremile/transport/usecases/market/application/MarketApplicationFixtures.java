@@ -12,8 +12,12 @@ public class MarketApplicationFixtures
     public MarketApplicationFixtures(final int port, final Clock clock)
     {
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, clock);
-        final MarketMakerApplicationStarter marketMakerApplicationStarter = new MarketMakerApplicationStarter("localhost", port, clock);
-        final BuySideApplicationStarter buySideApplicationStarter = new BuySideApplicationStarter("localhost", port);
+        final ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter = new ApplicationStarter<>(
+                "localhost", port, clock, (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMakerPublisher(connectionTransport))
+        );
+        final ApplicationStarter<BuySideApplication> buySideApplicationStarter = new ApplicationStarter<>(
+                "localhost", port, clock, (connectionTransport, connectionId) -> new BuySideApplication(new BuySidePublisher(connectionTransport))
+        );
         final TransportApplicationOnDuty marketTransportOnDuty = marketApplicationStarter.startTransport(1000);
         final TransportApplicationOnDuty marketMakerTransportOnDuty = marketMakerApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
         final TransportApplicationOnDuty buySideTransportOnDuty = buySideApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);

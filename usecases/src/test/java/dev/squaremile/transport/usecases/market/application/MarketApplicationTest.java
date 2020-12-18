@@ -58,7 +58,6 @@ class MarketApplicationTest
     }
 
     @Test
-    @Disabled
     void shouldInformAggressorAndMarketMakerAboutOrderExecution()
     {
         // Given

@@ -6,10 +6,6 @@ import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
-import dev.squaremile.transport.usecases.market.domain.PnL;
-import dev.squaremile.transport.usecases.market.domain.TickListener;
-import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
-import dev.squaremile.transport.usecases.market.domain.Volatility;
 
 class MarketApplication implements BusinessApplication
 {
@@ -18,15 +14,10 @@ class MarketApplication implements BusinessApplication
     private final FakeMarket fakeMarket;
     private final MarketPublisher marketPublisher;
 
-    public MarketApplication(final ConnectionTransport connectionTransport, final Clock clock)
+    public MarketApplication(final ConnectionTransport connectionTransport, final Clock clock, final FakeMarket fakeMarket)
     {
         this.clock = clock;
-        this.fakeMarket = new FakeMarket(
-                new TrackedSecurity().midPrice(0, 100),
-                new Volatility(3, 2),
-                TickListener.NO_LISTENER,
-                new PnL()
-        );
+        this.fakeMarket = fakeMarket;
         this.marketPublisher = new MarketPublisher(connectionTransport);
     }
 

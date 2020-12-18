@@ -7,13 +7,13 @@ import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 
 import static java.lang.System.currentTimeMillis;
 
-class MarketTransportApplication implements ConnectionApplication
+class MarketConnectionApplication<T extends BusinessApplication> implements ConnectionApplication
 {
     private final Clock clock;
     private final Serialization serialization = new Serialization();
-    private final BusinessApplication application;
+    private final T application;
 
-    public MarketTransportApplication(final Clock clock, final BusinessApplication application)
+    public MarketConnectionApplication(final Clock clock, final T application)
     {
         this.clock = clock;
         this.application = application;
@@ -36,5 +36,10 @@ class MarketTransportApplication implements ConnectionApplication
     {
         clock.updateCurrentTimeMs(currentTimeMillis());
         application.onPeriodicWakeUp();
+    }
+
+    public T application()
+    {
+        return application;
     }
 }

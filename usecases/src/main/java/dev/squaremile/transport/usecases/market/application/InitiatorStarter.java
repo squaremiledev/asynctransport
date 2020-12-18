@@ -19,8 +19,10 @@ public class InitiatorStarter
     private final String remoteHost;
     private final ConnectionApplicationFactory connectionApplicationFactory;
     private final MutableBoolean started = new MutableBoolean();
+    private final String role;
 
     public InitiatorStarter(
+            final String role,
             final String remoteHost,
             final int remotePort,
             final ConnectionApplicationFactory connectionApplicationFactory
@@ -29,6 +31,7 @@ public class InitiatorStarter
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
         this.connectionApplicationFactory = connectionApplicationFactory;
+        this.role = role;
     }
 
     public TransportApplicationOnDuty startTransport(final Runnable runUntilReady, final int timeoutMs)
@@ -38,7 +41,7 @@ public class InitiatorStarter
             throw new IllegalStateException("Application already started");
         }
         final TransportApplicationOnDuty application = new AsyncTcp().create(
-                "marketMaker",
+                role,
                 1024,
                 NO_OP,
                 transport ->

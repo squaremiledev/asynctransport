@@ -8,6 +8,11 @@ import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.transport.usecases.market.domain.FakeMarket;
+import dev.squaremile.transport.usecases.market.domain.PnL;
+import dev.squaremile.transport.usecases.market.domain.TickListener;
+import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
+import dev.squaremile.transport.usecases.market.domain.Volatility;
 
 import static dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory.onStart;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.lengthBasedDelineation;
@@ -19,7 +24,7 @@ public class MarketApplicationStarter
     private final int port;
     private final Clock clock;
     private TransportApplicationOnDuty transportApplication;
-    private MarketTransportApplication marketTransportApplication;
+    private MarketConnectionApplication<MarketApplication> marketConnectionApplication;
 
     public MarketApplicationStarter(final int port, final Clock clock)
     {
@@ -34,6 +39,12 @@ public class MarketApplicationStarter
             throw new IllegalStateException("Application already started");
         }
         final MutableBoolean startedListening = new MutableBoolean(false);
+        final FakeMarket fakeMarket = new FakeMarket(
+                new TrackedSecurity().midPrice(0, 100),
+                new Volatility(3, 2),
+                TickListener.NO_LISTENER,
+                new PnL()
+        );
         final TransportApplicationOnDuty application = new AsyncTcp().create("marketApp", 1024, SerializedMessageListener.NO_OP, transport ->
                 new ListeningApplication(
                         transport,
@@ -48,8 +59,8 @@ public class MarketApplicationStarter
                         },
                         onStart((connectionTransport, connectionId) ->
                                 {
-                                    marketTransportApplication = new MarketTransportApplication(clock, new MarketApplication(connectionTransport, clock));
-                                    return marketTransportApplication;
+                                    marketConnectionApplication = new MarketConnectionApplication<>(clock, new MarketApplication(connectionTransport, clock, fakeMarket));
+                                    return marketConnectionApplication;
                                 })
                 ));
         application.onStart();
@@ -66,9 +77,9 @@ public class MarketApplicationStarter
         return application;
     }
 
-    public MarketTransportApplication application()
+    public MarketConnectionApplication<MarketApplication> application()
     {
-        return marketTransportApplication;
+        return marketConnectionApplication;
     }
 
 }

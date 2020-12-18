@@ -9,25 +9,26 @@ import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
-class MarketMakerApplicationStarterTest
+class ApplicationStarterTest
 {
     @Test
     void shouldAcceptMarketMakerConnection()
     {
         final int port = freePort();
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, new Clock());
-        final MarketMakerApplicationStarter marketMakerApplicationStarter = new MarketMakerApplicationStarter("localhost", port, new Clock());
+        final ApplicationStarter<MarketMakerApplication> applicationStarter = new ApplicationStarter<>(
+                "localhost", port, new Clock(), (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMakerPublisher(connectionTransport)));
 
         // Given
         assertThat(marketApplicationStarter.application()).isNull();
-        assertThat(marketMakerApplicationStarter.application()).isNull();
+        assertThat(applicationStarter.application()).isNull();
 
         // When
         TransportApplicationOnDuty marketTransportOnDuty = marketApplicationStarter.startTransport(1000);
-        marketMakerApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
+        applicationStarter.startTransport(marketTransportOnDuty::work, 1000);
 
         // Then
         assertThat(marketApplicationStarter.application()).isNotNull();
-        assertThat(marketMakerApplicationStarter.application()).isNotNull();
+        assertThat(applicationStarter.application()).isNotNull();
     }
 }
