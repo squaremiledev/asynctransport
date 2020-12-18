@@ -6,19 +6,35 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
+import dev.squaremile.transport.usecases.market.domain.Order;
 
 class SerializationTest
 {
+
+    private final Serialization serialization = new Serialization();
+    private final MutableDirectBuffer buffer = new ExpandableArrayBuffer();
+
     @Test
     void shouldSerializeFirmPriceUpdate()
     {
-        Serialization serialization = new Serialization();
-        MutableDirectBuffer buffer = new ExpandableArrayBuffer();
-        FirmPrice firmPrice = new FirmPrice(5, 1234, 99, 40, 101, 50);
-        serialization.encode(firmPrice, buffer, 3);
-        MarketMessage decoded = serialization.decode(buffer, 3);
-        Assertions.assertThat(decoded).usingRecursiveComparison().isEqualTo(firmPrice);
+        verifySerialization(new FirmPrice(5, 1234, 99, 40, 101, 50), 3);
+    }
+
+    @Test
+    void shouldSerializeOrder()
+    {
+        verifySerialization(Order.bid(19, 50), 4);
+        verifySerialization(Order.ask(21, 150), 9);
+    }
+
+    private void verifySerialization(final MarketMessage message, final int offset)
+    {
+        serialization.encode(message, buffer, offset);
+        assertThat(serialization.decode(buffer, offset)).usingRecursiveComparison().isEqualTo(message);
     }
 }

@@ -6,29 +6,50 @@ import org.agrona.MutableDirectBuffer;
 
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
+import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.schema.FirmPriceDecoder;
 import dev.squaremile.transport.usecases.market.schema.FirmPriceEncoder;
 import dev.squaremile.transport.usecases.market.schema.MessageHeaderDecoder;
 import dev.squaremile.transport.usecases.market.schema.MessageHeaderEncoder;
+import dev.squaremile.transport.usecases.market.schema.OrderDecoder;
+import dev.squaremile.transport.usecases.market.schema.OrderEncoder;
 
 public class Serialization
 {
     private final FirmPrice decodedFirmPrice = FirmPrice.createNoPrice();
+    private final Order decodedOrder = new Order(0, 0, 0, 0);
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
     private final MessageHeaderDecoder messageHeaderDecoder = new MessageHeaderDecoder();
-    private final FirmPriceEncoder firmPriceUpdateEncoder = new FirmPriceEncoder();
-    private final FirmPriceDecoder firmPriceUpdateDecoder = new FirmPriceDecoder();
+    private final FirmPriceEncoder firmPriceEncoder = new FirmPriceEncoder();
+    private final FirmPriceDecoder firmPriceDecoder = new FirmPriceDecoder();
+    private final OrderEncoder orderEncoder = new OrderEncoder();
+    private final OrderDecoder orderDecoder = new OrderDecoder();
 
-    public int encode(final FirmPrice firmPrice, final MutableDirectBuffer buffer, final int offset)
+    public int encode(final MarketMessage message, final MutableDirectBuffer buffer, final int offset)
     {
-        firmPriceUpdateEncoder.wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
-                .correlationId(firmPrice.correlationId())
-                .updateTime(firmPrice.updateTime())
-                .bidPrice(firmPrice.bidPrice())
-                .bidQuantity(firmPrice.bidQuantity())
-                .askPrice(firmPrice.askPrice())
-                .askQuantity(firmPrice.askQuantity());
-        return messageHeaderEncoder.encodedLength() + firmPriceUpdateEncoder.encodedLength();
+        if (message instanceof FirmPrice)
+        {
+            FirmPrice firmPrice = (FirmPrice)message;
+            firmPriceEncoder.wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
+                    .correlationId(firmPrice.correlationId())
+                    .updateTime(firmPrice.updateTime())
+                    .bidPrice(firmPrice.bidPrice())
+                    .bidQuantity(firmPrice.bidQuantity())
+                    .askPrice(firmPrice.askPrice())
+                    .askQuantity(firmPrice.askQuantity());
+            return messageHeaderEncoder.encodedLength() + firmPriceEncoder.encodedLength();
+        }
+        if (message instanceof Order)
+        {
+            Order order = (Order)message;
+            orderEncoder.wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
+                    .bidPrice(order.bidPrice())
+                    .bidQuantity(order.bidQuantity())
+                    .askPrice(order.askPrice())
+                    .askQuantity(order.askQuantity());
+            return messageHeaderEncoder.encodedLength() + orderEncoder.encodedLength();
+        }
+        return 0;
     }
 
     public MarketMessage decode(final DirectBuffer buffer, final int offset)
@@ -37,21 +58,38 @@ public class Serialization
         if (messageHeaderDecoder.templateId() == FirmPriceDecoder.TEMPLATE_ID)
         {
             int bodyOffset = offset + messageHeaderDecoder.encodedLength();
-            firmPriceUpdateDecoder.wrap(
+            firmPriceDecoder.wrap(
                     buffer,
                     bodyOffset,
                     messageHeaderDecoder.blockLength(),
                     messageHeaderDecoder.version()
             );
             decodedFirmPrice.update(
-                    firmPriceUpdateDecoder.correlationId(),
-                    firmPriceUpdateDecoder.updateTime(),
-                    firmPriceUpdateDecoder.bidPrice(),
-                    firmPriceUpdateDecoder.bidQuantity(),
-                    firmPriceUpdateDecoder.askPrice(),
-                    firmPriceUpdateDecoder.askQuantity()
+                    firmPriceDecoder.correlationId(),
+                    firmPriceDecoder.updateTime(),
+                    firmPriceDecoder.bidPrice(),
+                    firmPriceDecoder.bidQuantity(),
+                    firmPriceDecoder.askPrice(),
+                    firmPriceDecoder.askQuantity()
             );
             return decodedFirmPrice;
+        }
+        if (messageHeaderDecoder.templateId() == OrderDecoder.TEMPLATE_ID)
+        {
+            int bodyOffset = offset + messageHeaderDecoder.encodedLength();
+            orderDecoder.wrap(
+                    buffer,
+                    bodyOffset,
+                    messageHeaderDecoder.blockLength(),
+                    messageHeaderDecoder.version()
+            );
+            decodedOrder.update(
+                    orderDecoder.bidPrice(),
+                    orderDecoder.bidQuantity(),
+                    orderDecoder.askPrice(),
+                    orderDecoder.askQuantity()
+            );
+            return decodedOrder;
         }
         return null;
     }

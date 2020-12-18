@@ -1,6 +1,6 @@
 package dev.squaremile.transport.usecases.market.domain;
 
-public class Order
+public class Order implements MarketMessage
 {
     private long askPrice;
     private int askQuantity;
@@ -16,10 +16,7 @@ public class Order
         {
             throw new IllegalArgumentException();
         }
-        this.askPrice = askPrice;
-        this.askQuantity = askQuantity;
-        this.bidPrice = bidPrice;
-        this.bidQuantity = bidQuantity;
+        update(bidPrice, bidQuantity, askPrice, askQuantity);
     }
 
     public Order(final Order copySource)
@@ -79,6 +76,14 @@ public class Order
     public Side side()
     {
         return bidQuantity > 0 ? Side.BID : Side.ASK;
+    }
+
+    public void update(final long bidPrice, final int bidQuantity, final long askPrice, final int askQuantity)
+    {
+        this.bidPrice = bidPrice;
+        this.bidQuantity = bidQuantity;
+        this.askPrice = askPrice;
+        this.askQuantity = askQuantity;
     }
 
     @Override
