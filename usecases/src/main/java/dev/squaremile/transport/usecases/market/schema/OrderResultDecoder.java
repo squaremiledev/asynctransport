@@ -1,6 +1,7 @@
 /* Generated SBE (Simple Binary Encoding) message codec */
 package dev.squaremile.transport.usecases.market.schema;
 
+import org.agrona.MutableDirectBuffer;
 import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
@@ -55,11 +56,10 @@ public class OrderResultDecoder
     }
 
     public OrderResultDecoder wrap(
-            final DirectBuffer buffer,
-            final int offset,
-            final int actingBlockLength,
-            final int actingVersion
-    )
+        final DirectBuffer buffer,
+        final int offset,
+        final int actingBlockLength,
+        final int actingVersion)
     {
         if (buffer != this.buffer)
         {
@@ -112,14 +112,10 @@ public class OrderResultDecoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "";
-            case TIME_UNIT:
-                return "";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";
@@ -129,6 +125,7 @@ public class OrderResultDecoder
     {
         return ExecutionResult.get(buffer.getByte(offset + 0));
     }
+
 
 
     public String toString()

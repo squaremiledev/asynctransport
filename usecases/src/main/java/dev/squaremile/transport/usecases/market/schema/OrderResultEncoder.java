@@ -2,6 +2,7 @@
 package dev.squaremile.transport.usecases.market.schema;
 
 import org.agrona.MutableDirectBuffer;
+import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
 public class OrderResultEncoder
@@ -65,15 +66,14 @@ public class OrderResultEncoder
     }
 
     public OrderResultEncoder wrapAndApplyHeader(
-            final MutableDirectBuffer buffer, final int offset, final MessageHeaderEncoder headerEncoder
-    )
+        final MutableDirectBuffer buffer, final int offset, final MessageHeaderEncoder headerEncoder)
     {
         headerEncoder
-                .wrap(buffer, offset)
-                .blockLength(BLOCK_LENGTH)
-                .templateId(TEMPLATE_ID)
-                .schemaId(SCHEMA_ID)
-                .version(SCHEMA_VERSION);
+            .wrap(buffer, offset)
+            .blockLength(BLOCK_LENGTH)
+            .templateId(TEMPLATE_ID)
+            .schemaId(SCHEMA_ID)
+            .version(SCHEMA_VERSION);
 
         return wrap(buffer, offset + MessageHeaderEncoder.ENCODED_LENGTH);
     }
@@ -117,14 +117,10 @@ public class OrderResultEncoder
     {
         switch (metaAttribute)
         {
-            case EPOCH:
-                return "";
-            case TIME_UNIT:
-                return "";
-            case SEMANTIC_TYPE:
-                return "";
-            case PRESENCE:
-                return "required";
+            case EPOCH: return "";
+            case TIME_UNIT: return "";
+            case SEMANTIC_TYPE: return "";
+            case PRESENCE: return "required";
         }
 
         return "";
