@@ -14,10 +14,10 @@ test {
 }
 
 dependencies {
-    implementation 'org.agrona:agrona:1.6.0'
+    implementation 'org.agrona:agrona:1.8.0'
     implementation 'io.aeron:aeron-cluster:1.31.1'
 
-    testFixturesImplementation 'org.agrona:agrona:1.6.0'
+    testFixturesImplementation 'org.agrona:agrona:1.8.0'
     testFixturesImplementation 'io.aeron:aeron-cluster:1.31.1'
     testFixturesImplementation testFixtures(project(':transport'))
 

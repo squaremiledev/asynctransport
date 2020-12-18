@@ -17,7 +17,7 @@ dependencies {
     implementation project(':transport')
     implementation project(':serialization')
     implementation project(':asynctcp')
-    implementation 'org.agrona:agrona:1.6.0'
+    implementation 'org.agrona:agrona:1.8.0'
 
     testImplementation testFixtures(project(':transport'))
     testImplementation testFixtures(project(':asynctcp'))

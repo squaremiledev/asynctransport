@@ -28,7 +28,7 @@ test {
 }
 
 dependencies {
-    api 'org.agrona:agrona:1.6.0'
+    api 'org.agrona:agrona:1.8.0'
 
     api project(':transport')
     api project(':serialization')
@@ -38,7 +38,7 @@ dependencies {
     testFixturesImplementation project(':serialization')
     testFixturesImplementation project(':sbe')
     testFixturesImplementation testFixtures(project(':transport'))
-    testFixturesImplementation 'org.agrona:agrona:1.6.0'
+    testFixturesImplementation 'org.agrona:agrona:1.8.0'
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
 
     testImplementation 'org.assertj:assertj-core:3.16.1'
@@ -76,7 +76,7 @@ publishing {
                     def dependency = dependencies.appendNode('dependency')
                     dependency.appendNode('groupId', 'org.agrona')
                     dependency.appendNode('artifactId', 'agrona')
-                    dependency.appendNode('version', '1.6.0')
+                    dependency.appendNode('version', '1.8.0')
                     dependency.appendNode('scope', 'provided')
                 }
 

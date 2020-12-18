@@ -15,8 +15,8 @@ test {
 
 
 dependencies {
-    implementation 'org.agrona:agrona:1.6.0'
-    testFixturesImplementation 'org.agrona:agrona:1.6.0'
+    implementation 'org.agrona:agrona:1.8.0'
+    testFixturesImplementation 'org.agrona:agrona:1.8.0'
     testFixturesImplementation 'org.assertj:assertj-core:3.16.1'
     testImplementation 'org.assertj:assertj-core:3.16.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'

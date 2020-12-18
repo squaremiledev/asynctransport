@@ -14,5 +14,5 @@ sbeGenerator {
 }
 
 dependencies {
-    api 'org.agrona:agrona:1.6.0'
+    api 'org.agrona:agrona:1.8.0'
 }
