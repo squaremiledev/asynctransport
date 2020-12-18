@@ -41,6 +41,7 @@
         <type name="timestamp" primitiveType="int64"/>
         <type name="price" primitiveType="int64"/>
         <type name="quantity" primitiveType="int32"/>
+        <type name="marketParticipantId" primitiveType="int32"/>
     </types>
 
     <sbe:message name="FirmPrice" id="1">
@@ -60,5 +61,15 @@
     <sbe:message name="OrderResult" id="3">
         <field name="result" id="1" type="ExecutionResult"/>
     </sbe:message>
-
+    <sbe:message name="ExecutionReport" id="4">
+        <field name="passiveMarketParticipantId" id="1" type="marketParticipantId"/>
+        <field name="aggressiveMarketParticipantId" id="2" type="marketParticipantId"/>
+        <field name="midPrice" id="3" type="price"/>
+        <field name="lastUpdateTime" id="4" type="timestamp"/>
+        <field name="lastPriceChange" id="5" type="timestamp"/>
+        <field name="bidPrice" id="6" type="price"/>
+        <field name="bidQuantity" id="7" type="quantity"/>
+        <field name="askPrice" id="8" type="price"/>
+        <field name="askQuantity" id="9" type="quantity"/>
+    </sbe:message>
 </sbe:messageSchema>

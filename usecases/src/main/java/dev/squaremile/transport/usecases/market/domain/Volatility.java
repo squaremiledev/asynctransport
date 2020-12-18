@@ -7,15 +7,15 @@ public class Volatility implements MidPriceUpdate
 
     public Volatility(final int delta, final int period)
     {
-        this.period = period;
         this.delta = delta;
+        this.period = period;
     }
 
     @Override
     public long newMidPrice(final long currentTime, final Security security)
     {
         long timeSinceLastChange = currentTime - security.lastPriceChange();
-        if (timeSinceLastChange <= 0)
+        if (security.lastUpdateTime() == 0 || timeSinceLastChange <= 0)
         {
             return security.midPrice();
         }

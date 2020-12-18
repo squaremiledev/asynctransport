@@ -9,8 +9,6 @@ import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.transport.usecases.market.domain.FakeMarket;
-import dev.squaremile.transport.usecases.market.domain.PnL;
-import dev.squaremile.transport.usecases.market.domain.TickListener;
 import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
 import dev.squaremile.transport.usecases.market.domain.Volatility;
 
@@ -39,30 +37,28 @@ public class MarketApplicationStarter
             throw new IllegalStateException("Application already started");
         }
         final MutableBoolean startedListening = new MutableBoolean(false);
-        final FakeMarket fakeMarket = new FakeMarket(
-                new TrackedSecurity().midPrice(0, 100),
-                new Volatility(3, 2),
-                TickListener.NO_LISTENER,
-                new PnL()
-        );
         final TransportApplicationOnDuty application = new AsyncTcp().create("marketApp", 1024, SerializedMessageListener.NO_OP, transport ->
-                new ListeningApplication(
-                        transport,
-                        lengthBasedDelineation(SHORT_LITTLE_ENDIAN_FIELD, 0, 0),
-                        port,
-                        event ->
+        {
+            final MarketEventsPublisher marketEventsPublisher = new MarketEventsPublisher(transport);
+            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), marketEventsPublisher, marketEventsPublisher);
+            return new ListeningApplication(
+                    transport,
+                    lengthBasedDelineation(SHORT_LITTLE_ENDIAN_FIELD, 0, 0),
+                    port,
+                    event ->
+                    {
+                        if (event instanceof StartedListening)
                         {
-                            if (event instanceof StartedListening)
+                            startedListening.set(true);
+                        }
+                    },
+                    onStart((connectionTransport, connectionId) ->
                             {
-                                startedListening.set(true);
-                            }
-                        },
-                        onStart((connectionTransport, connectionId) ->
-                                {
-                                    marketConnectionApplication = new MarketConnectionApplication<>(clock, new MarketApplication(connectionTransport, clock, fakeMarket));
-                                    return marketConnectionApplication;
-                                })
-                ));
+                                marketConnectionApplication = new MarketConnectionApplication<>(clock, new MarketApplication(connectionId, connectionTransport, clock, fakeMarket));
+                                return marketConnectionApplication;
+                            })
+            );
+        });
         application.onStart();
         long startTime = currentTimeMillis();
         while (!startedListening.get() && currentTimeMillis() < startTime + timeoutMs)
@@ -81,5 +77,4 @@ public class MarketApplicationStarter
     {
         return marketConnectionApplication;
     }
-
 }

@@ -21,8 +21,8 @@ class PnLTest
     void shouldAssumeNoProfitIfExecutedPriceMatchesEstimatedMidPrice()
     {
         PnL pnl = new PnL();
-        pnl.onExecution(6, 13, new TrackedSecurity().midPrice(100, 5_000), Order.ask(5_000, 100));
-        pnl.onExecution(7, 14, new TrackedSecurity().midPrice(100, 5_000), Order.bid(5_000, 100));
+        pnl.onExecution(new ExecutionReport().update(6, 13, new TrackedSecurity().midPrice(100, 5_000), Order.ask(5_000, 100)));
+        pnl.onExecution(new ExecutionReport().update(7, 14, new TrackedSecurity().midPrice(100, 5_000), Order.bid(5_000, 100)));
 
         assertThat(pnl.estimatedNominalBalanceOf(6)).isEqualTo(0);
         assertThat(pnl.estimatedNominalBalanceOf(7)).isEqualTo(0);
@@ -34,7 +34,7 @@ class PnLTest
     void shouldBalanceBeIndependentForEachMarketParticipan()
     {
         PnL pnl = new PnL();
-        pnl.onExecution(6, 13, new TrackedSecurity().midPrice(100, 5_000), Order.ask(5_010, 5));
+        pnl.onExecution(new ExecutionReport().update(6, 13, new TrackedSecurity().midPrice(100, 5_000), Order.ask(5_010, 5)));
 
         assertThat(pnl.estimatedNominalBalanceOf(14)).isEqualTo(0);
     }
@@ -43,7 +43,7 @@ class PnLTest
     void shouldAssumeThatPassiveParticipantLosesOutWhenActivePartyExecutesBidWithPriceLowerThanEstimatedMidPrice()
     {
         PnL pnl = new PnL();
-        pnl.onExecution(6, 13, new TrackedSecurity().midPrice(100, 5_000), Order.bid(4_990, 5));
+        pnl.onExecution(new ExecutionReport().update(6, 13, new TrackedSecurity().midPrice(100, 5_000), Order.bid(4_990, 5)));
 
         assertThat(pnl.estimatedNominalBalanceOf(6)).isEqualTo(-50);
         assertThat(pnl.estimatedNominalBalanceOf(13)).isEqualTo(50);
@@ -53,7 +53,7 @@ class PnLTest
     void shouldAssumeThatPassiveParticipantProfitsWhenActivePartyExecutesAskWithPriceLowerThanEstimatedMidPrice()
     {
         PnL pnl = new PnL();
-        pnl.onExecution(6, 13, new TrackedSecurity().midPrice(100, 4_000), Order.ask(3_980, 6));
+        pnl.onExecution(new ExecutionReport().update(6, 13, new TrackedSecurity().midPrice(100, 4_000), Order.ask(3_980, 6)));
 
         assertThat(pnl.estimatedNominalBalanceOf(6)).isEqualTo(120);
         assertThat(pnl.estimatedNominalBalanceOf(13)).isEqualTo(-120);

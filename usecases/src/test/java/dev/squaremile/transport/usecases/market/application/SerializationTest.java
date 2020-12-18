@@ -7,10 +7,12 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
+import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
 
 class SerializationTest
 {
@@ -36,6 +38,13 @@ class SerializationTest
     {
         verifySerialization(OrderResult.NOT_EXECUTED, 5);
         verifySerialization(OrderResult.EXECUTED, 5);
+    }
+
+    @Test
+    void shouldSerializeExecutionReport()
+    {
+        verifySerialization(new ExecutionReport().update(7, 14, new TrackedSecurity().midPrice(100, 5_000), Order.bid(5_001, 200)), 3);
+        verifySerialization(new ExecutionReport().update(7, 14, new TrackedSecurity().midPrice(100, 5_000), Order.ask(5_001, 200)), 3);
     }
 
     private void verifySerialization(final MarketMessage message, final int offset)

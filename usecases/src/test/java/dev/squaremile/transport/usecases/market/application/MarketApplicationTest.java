@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
+import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
@@ -71,6 +72,14 @@ class MarketApplicationTest
 
         assertThat(buySideApplication.orderResultCount()).isEqualTo(1);
         assertThat(buySideApplication.lastOrderResult()).usingRecursiveComparison().isEqualTo(OrderResult.EXECUTED);
+        ExecutionReport actualBuySideExecutionReport = buySideApplication.lastExecutedOrder();
+        assertThat(actualBuySideExecutionReport).usingRecursiveComparison().isEqualTo(
+                new ExecutionReport().update(0, 1, actualBuySideExecutionReport.security(), Order.ask(99, 30))
+        );
+        ExecutionReport actualMarketMakerExecutionReport = marketMakerApplication.lastExecutedOrder();
+        assertThat(actualMarketMakerExecutionReport).usingRecursiveComparison().isEqualTo(
+                new ExecutionReport().update(0, 1, actualMarketMakerExecutionReport.security(), Order.ask(99, 30))
+        );
     }
 
     @Test

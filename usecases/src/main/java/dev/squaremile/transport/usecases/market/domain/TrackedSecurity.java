@@ -45,9 +45,17 @@ public class TrackedSecurity implements Security
         return this;
     }
 
+    public TrackedSecurity update(final long updateTime, final long currentMidPrice, final long lastPriceChange)
+    {
+        this.updateTime = updateTime;
+        this.currentMidPrice = currentMidPrice;
+        this.lastPriceChange = lastPriceChange;
+        return this;
+    }
+
     public Security midPrice(final long currentTime, final long currentMidPrice)
     {
-        if (this.currentMidPrice != currentMidPrice)
+        if (this.lastPriceChange == 0 || this.currentMidPrice != currentMidPrice)
         {
             this.currentMidPrice = currentMidPrice;
             this.lastPriceChange = currentTime;

@@ -9,16 +9,20 @@ public class PnL implements MarketListener
     private final Int2ObjectHashMap<MutableLong> traderPnLs = new Int2ObjectHashMap<>();
 
     @Override
-    public void onExecution(final int passiveTraderId, final int aggressiveTraderId, final Security tradedSecurity, final Order executingOrder)
+    public void onExecution(final ExecutionReport executionReport)
     {
         long pnlFromThisOrder = 0;
-        switch (executingOrder.side())
+        final Order executedOrder = executionReport.executedOrder();
+        final Security tradedSecurity = executionReport.security();
+        int passiveTraderId = executionReport.passiveTraderId();
+        int aggressiveTraderId = executionReport.aggressiveTraderId();
+        switch (executedOrder.side())
         {
             case BID:
-                pnlFromThisOrder = (executingOrder.bidPrice() - tradedSecurity.midPrice()) * executingOrder.bidQuantity();
+                pnlFromThisOrder = (executedOrder.bidPrice() - tradedSecurity.midPrice()) * executedOrder.bidQuantity();
                 break;
             case ASK:
-                pnlFromThisOrder = (tradedSecurity.midPrice() - executingOrder.askPrice()) * executingOrder.askQuantity();
+                pnlFromThisOrder = (tradedSecurity.midPrice() - executedOrder.askPrice()) * executedOrder.askQuantity();
                 break;
         }
         traderPnLs.computeIfAbsent(passiveTraderId, __ -> new MutableLong(0)).addAndGet(pnlFromThisOrder);

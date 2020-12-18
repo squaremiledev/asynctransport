@@ -34,6 +34,11 @@ public class Order implements MarketMessage
         return new Order(0, 0, askPrice, askQuantity);
     }
 
+    public Order update(final Order copySource)
+    {
+        return update(copySource.bidPrice, copySource.bidQuantity, copySource.askPrice, copySource.askQuantity);
+    }
+
     public Order withBid(final long bidPrice, final int bidQuantity)
     {
         this.bidPrice = bidPrice;
@@ -78,12 +83,13 @@ public class Order implements MarketMessage
         return bidQuantity > 0 ? Side.BID : Side.ASK;
     }
 
-    public void update(final long bidPrice, final int bidQuantity, final long askPrice, final int askQuantity)
+    public Order update(final long bidPrice, final int bidQuantity, final long askPrice, final int askQuantity)
     {
         this.bidPrice = bidPrice;
         this.bidQuantity = bidQuantity;
         this.askPrice = askPrice;
         this.askQuantity = askQuantity;
+        return this;
     }
 
     @Override

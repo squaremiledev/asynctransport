@@ -1,5 +1,6 @@
 package dev.squaremile.transport.usecases.market.application;
 
+import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
@@ -7,6 +8,7 @@ import dev.squaremile.transport.usecases.market.domain.OrderResult;
 public class BuySideApplication implements BusinessApplication
 {
     private final BuySidePublisher publisher;
+    private final ExecutionReport lastExecutedOrder = new ExecutionReport();
     private int orderResultCount = 0;
     private OrderResult lastOrderResult;
 
@@ -31,9 +33,19 @@ public class BuySideApplication implements BusinessApplication
         orderResultCount++;
     }
 
+    public void onExecutedOrder(final ExecutionReport executedOrder)
+    {
+        this.lastExecutedOrder.update(executedOrder);
+    }
+
     public OrderResult lastOrderResult()
     {
         return lastOrderResult;
+    }
+
+    public ExecutionReport lastExecutedOrder()
+    {
+        return lastExecutedOrder;
     }
 
     @Override
@@ -42,6 +54,10 @@ public class BuySideApplication implements BusinessApplication
         if (marketMessage instanceof OrderResult)
         {
             onOrderResult((OrderResult)marketMessage);
+        }
+        if (marketMessage instanceof ExecutionReport)
+        {
+            onExecutedOrder((ExecutionReport)marketMessage);
         }
     }
 

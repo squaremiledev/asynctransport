@@ -6,6 +6,7 @@ public class FakeMarket
     private final TrackedSecurity security = new TrackedSecurity();
     private final TickListener tickListener;
     private final MarketMaking marketMaking;
+    private final ExecutionReport executionReport = new ExecutionReport();
     private long currentTime;
 
     public FakeMarket(final Security security, final MidPriceUpdate priceMovement, final TickListener tickListener, final MarketListener marketListener)
@@ -15,7 +16,7 @@ public class FakeMarket
         this.tickListener = tickListener;
         this.marketMaking = new MarketMaking(
                 (passiveParticipantId, aggressiveParticipantId, executedOrder) ->
-                        marketListener.onExecution(passiveParticipantId, aggressiveParticipantId, this.security, executedOrder));
+                        marketListener.onExecution(executionReport.update(passiveParticipantId, aggressiveParticipantId, this.security, executedOrder)));
     }
 
     public long midPrice()

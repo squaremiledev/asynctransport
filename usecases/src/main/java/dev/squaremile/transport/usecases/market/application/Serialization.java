@@ -4,10 +4,14 @@ import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
 
+import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
+import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
+import dev.squaremile.transport.usecases.market.schema.ExecutionReportDecoder;
+import dev.squaremile.transport.usecases.market.schema.ExecutionReportEncoder;
 import dev.squaremile.transport.usecases.market.schema.ExecutionResult;
 import dev.squaremile.transport.usecases.market.schema.FirmPriceDecoder;
 import dev.squaremile.transport.usecases.market.schema.FirmPriceEncoder;
@@ -22,6 +26,8 @@ public class Serialization
 {
     private final FirmPrice decodedFirmPrice = FirmPrice.createNoPrice();
     private final Order decodedOrder = new Order(0, 0, 0, 0);
+    private final ExecutionReport decodedExecutionReport = new ExecutionReport();
+    private final TrackedSecurity decodedSecurity = new TrackedSecurity();
     private final MessageHeaderEncoder messageHeaderEncoder = new MessageHeaderEncoder();
     private final MessageHeaderDecoder messageHeaderDecoder = new MessageHeaderDecoder();
     private final FirmPriceEncoder firmPriceEncoder = new FirmPriceEncoder();
@@ -30,6 +36,8 @@ public class Serialization
     private final OrderDecoder orderDecoder = new OrderDecoder();
     private final OrderResultEncoder orderResultEncoder = new OrderResultEncoder();
     private final OrderResultDecoder orderResultDecoder = new OrderResultDecoder();
+    private final ExecutionReportDecoder executionReportDecoder = new ExecutionReportDecoder();
+    private final ExecutionReportEncoder executionReportEncoder = new ExecutionReportEncoder();
 
     private static ExecutionResult toExecutionResult(final OrderResult orderResult)
     {
@@ -87,6 +95,21 @@ public class Serialization
             orderResultEncoder.result(toExecutionResult((OrderResult)message));
             return messageHeaderEncoder.encodedLength() + orderResultEncoder.encodedLength();
         }
+        if (message instanceof ExecutionReport)
+        {
+            ExecutionReport executionReport = (ExecutionReport)message;
+            executionReportEncoder.wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
+                    .passiveMarketParticipantId(executionReport.passiveTraderId())
+                    .aggressiveMarketParticipantId(executionReport.aggressiveTraderId())
+                    .midPrice(executionReport.security().midPrice())
+                    .lastUpdateTime(executionReport.security().lastUpdateTime())
+                    .lastPriceChange(executionReport.security().lastPriceChange())
+                    .bidPrice(executionReport.executedOrder().bidPrice())
+                    .bidQuantity(executionReport.executedOrder().bidQuantity())
+                    .askPrice(executionReport.executedOrder().askPrice())
+                    .askQuantity(executionReport.executedOrder().askQuantity());
+            return messageHeaderEncoder.encodedLength() + executionReportEncoder.encodedLength();
+        }
         return 0;
     }
 
@@ -139,6 +162,25 @@ public class Serialization
                     messageHeaderDecoder.version()
             );
             return toOrderResult(orderResultDecoder.result());
+        }
+        if (messageHeaderDecoder.templateId() == ExecutionReportDecoder.TEMPLATE_ID)
+        {
+            int bodyOffset = offset + messageHeaderDecoder.encodedLength();
+            executionReportDecoder.wrap(
+                    buffer,
+                    bodyOffset,
+                    messageHeaderDecoder.blockLength(),
+                    messageHeaderDecoder.version()
+            );
+            decodedSecurity.update(executionReportDecoder.lastUpdateTime(), executionReportDecoder.midPrice(), executionReportDecoder.lastPriceChange());
+            decodedOrder.update(executionReportDecoder.bidPrice(), executionReportDecoder.bidQuantity(), executionReportDecoder.askPrice(), executionReportDecoder.askQuantity());
+            decodedExecutionReport.update(
+                    executionReportDecoder.passiveMarketParticipantId(),
+                    executionReportDecoder.aggressiveMarketParticipantId(),
+                    decodedSecurity,
+                    decodedOrder
+            );
+            return decodedExecutionReport;
         }
         return null;
     }
