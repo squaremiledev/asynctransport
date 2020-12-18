@@ -7,6 +7,7 @@ public class BuySideApplication
 {
     private final BuySidePublisher publisher;
     private int orderResultCount = 0;
+    private OrderResult lastOrderResult;
 
     public BuySideApplication(final BuySidePublisher publisher)
     {
@@ -25,6 +26,12 @@ public class BuySideApplication
 
     public void onOrderResult(final OrderResult orderResult)
     {
+        this.lastOrderResult = orderResult;
         orderResultCount++;
+    }
+
+    public OrderResult lastOrderResult()
+    {
+        return lastOrderResult;
     }
 }

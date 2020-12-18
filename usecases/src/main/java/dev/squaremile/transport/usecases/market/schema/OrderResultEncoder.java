@@ -2,12 +2,11 @@
 package dev.squaremile.transport.usecases.market.schema;
 
 import org.agrona.MutableDirectBuffer;
-import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
 public class OrderResultEncoder
 {
-    public static final int BLOCK_LENGTH = 0;
+    public static final int BLOCK_LENGTH = 1;
     public static final int TEMPLATE_ID = 3;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
@@ -66,14 +65,15 @@ public class OrderResultEncoder
     }
 
     public OrderResultEncoder wrapAndApplyHeader(
-        final MutableDirectBuffer buffer, final int offset, final MessageHeaderEncoder headerEncoder)
+            final MutableDirectBuffer buffer, final int offset, final MessageHeaderEncoder headerEncoder
+    )
     {
         headerEncoder
-            .wrap(buffer, offset)
-            .blockLength(BLOCK_LENGTH)
-            .templateId(TEMPLATE_ID)
-            .schemaId(SCHEMA_ID)
-            .version(SCHEMA_VERSION);
+                .wrap(buffer, offset)
+                .blockLength(BLOCK_LENGTH)
+                .templateId(TEMPLATE_ID)
+                .schemaId(SCHEMA_ID)
+                .version(SCHEMA_VERSION);
 
         return wrap(buffer, offset + MessageHeaderEncoder.ENCODED_LENGTH);
     }
@@ -91,6 +91,49 @@ public class OrderResultEncoder
     public void limit(final int limit)
     {
         this.limit = limit;
+    }
+
+    public static int resultId()
+    {
+        return 1;
+    }
+
+    public static int resultSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int resultEncodingOffset()
+    {
+        return 0;
+    }
+
+    public static int resultEncodingLength()
+    {
+        return 1;
+    }
+
+    public static String resultMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH:
+                return "";
+            case TIME_UNIT:
+                return "";
+            case SEMANTIC_TYPE:
+                return "";
+            case PRESENCE:
+                return "required";
+        }
+
+        return "";
+    }
+
+    public OrderResultEncoder result(final ExecutionResult value)
+    {
+        buffer.putByte(offset + 0, value.value());
+        return this;
     }
 
 

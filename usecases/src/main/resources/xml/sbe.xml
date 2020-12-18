@@ -7,6 +7,10 @@
                    description=""
 >
     <types>
+        <enum name="ExecutionResult" encodingType="char">
+            <validValue name="NOT_EXECUTED">0</validValue>
+            <validValue name="EXECUTED">1</validValue>
+        </enum>
         <composite name="messageHeader" description="Message identifiers and length of message root.">
             <type name="blockLength" primitiveType="uint16"/>
             <type name="templateId" primitiveType="uint16"/>
@@ -54,6 +58,7 @@
         <field name="askQuantity" id="6" type="quantity"/>
     </sbe:message>
     <sbe:message name="OrderResult" id="3">
+        <field name="result" id="1" type="ExecutionResult"/>
     </sbe:message>
 
 </sbe:messageSchema>

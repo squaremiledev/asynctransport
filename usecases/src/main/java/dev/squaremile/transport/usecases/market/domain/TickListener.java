@@ -1,7 +1,12 @@
 package dev.squaremile.transport.usecases.market.domain;
 
 @FunctionalInterface
-interface TickListener
+public interface TickListener
 {
+    TickListener NO_LISTENER = security ->
+    {
+
+    };
+
     void onTick(Security security);
 }

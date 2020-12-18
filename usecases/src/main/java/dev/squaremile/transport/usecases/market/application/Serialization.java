@@ -8,6 +8,7 @@ import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
+import dev.squaremile.transport.usecases.market.schema.ExecutionResult;
 import dev.squaremile.transport.usecases.market.schema.FirmPriceDecoder;
 import dev.squaremile.transport.usecases.market.schema.FirmPriceEncoder;
 import dev.squaremile.transport.usecases.market.schema.MessageHeaderDecoder;
@@ -29,6 +30,32 @@ public class Serialization
     private final OrderDecoder orderDecoder = new OrderDecoder();
     private final OrderResultEncoder orderResultEncoder = new OrderResultEncoder();
     private final OrderResultDecoder orderResultDecoder = new OrderResultDecoder();
+
+    private static ExecutionResult toExecutionResult(final OrderResult orderResult)
+    {
+        switch (orderResult)
+        {
+            case NOT_EXECUTED:
+                return ExecutionResult.NOT_EXECUTED;
+            case EXECUTED:
+                return ExecutionResult.EXECUTED;
+            default:
+                throw new IllegalArgumentException(orderResult.name());
+        }
+    }
+
+    private static OrderResult toOrderResult(final ExecutionResult executionResult)
+    {
+        switch (executionResult)
+        {
+            case NOT_EXECUTED:
+                return OrderResult.NOT_EXECUTED;
+            case EXECUTED:
+                return OrderResult.EXECUTED;
+            default:
+                throw new IllegalArgumentException(executionResult.name());
+        }
+    }
 
     public int encode(final MarketMessage message, final MutableDirectBuffer buffer, final int offset)
     {
@@ -57,6 +84,7 @@ public class Serialization
         if (message instanceof OrderResult)
         {
             orderResultEncoder.wrapAndApplyHeader(buffer, offset, messageHeaderEncoder);
+            orderResultEncoder.result(toExecutionResult((OrderResult)message));
             return messageHeaderEncoder.encodedLength() + orderResultEncoder.encodedLength();
         }
         return 0;
@@ -110,7 +138,7 @@ public class Serialization
                     messageHeaderDecoder.blockLength(),
                     messageHeaderDecoder.version()
             );
-            return OrderResult.NOT_EXECUTED;
+            return toOrderResult(orderResultDecoder.result());
         }
         return null;
     }

@@ -1,13 +1,12 @@
 /* Generated SBE (Simple Binary Encoding) message codec */
 package dev.squaremile.transport.usecases.market.schema;
 
-import org.agrona.MutableDirectBuffer;
 import org.agrona.DirectBuffer;
 
 @SuppressWarnings("all")
 public class OrderResultDecoder
 {
-    public static final int BLOCK_LENGTH = 0;
+    public static final int BLOCK_LENGTH = 1;
     public static final int TEMPLATE_ID = 3;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 0;
@@ -56,10 +55,11 @@ public class OrderResultDecoder
     }
 
     public OrderResultDecoder wrap(
-        final DirectBuffer buffer,
-        final int offset,
-        final int actingBlockLength,
-        final int actingVersion)
+            final DirectBuffer buffer,
+            final int offset,
+            final int actingBlockLength,
+            final int actingVersion
+    )
     {
         if (buffer != this.buffer)
         {
@@ -86,6 +86,48 @@ public class OrderResultDecoder
     public void limit(final int limit)
     {
         this.limit = limit;
+    }
+
+    public static int resultId()
+    {
+        return 1;
+    }
+
+    public static int resultSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int resultEncodingOffset()
+    {
+        return 0;
+    }
+
+    public static int resultEncodingLength()
+    {
+        return 1;
+    }
+
+    public static String resultMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        switch (metaAttribute)
+        {
+            case EPOCH:
+                return "";
+            case TIME_UNIT:
+                return "";
+            case SEMANTIC_TYPE:
+                return "";
+            case PRESENCE:
+                return "required";
+        }
+
+        return "";
+    }
+
+    public ExecutionResult result()
+    {
+        return ExecutionResult.get(buffer.getByte(offset + 0));
     }
 
 
@@ -117,6 +159,8 @@ public class OrderResultDecoder
         }
         builder.append(BLOCK_LENGTH);
         builder.append("):");
+        builder.append("result=");
+        builder.append(result());
 
         limit(originalLimit);
 

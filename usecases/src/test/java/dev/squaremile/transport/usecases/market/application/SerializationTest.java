@@ -35,6 +35,7 @@ class SerializationTest
     void shouldSerializeOrderResult()
     {
         verifySerialization(OrderResult.NOT_EXECUTED, 5);
+        verifySerialization(OrderResult.EXECUTED, 5);
     }
 
     private void verifySerialization(final MarketMessage message, final int offset)

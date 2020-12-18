@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.Order;
+import dev.squaremile.transport.usecases.market.domain.OrderResult;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
@@ -47,18 +48,30 @@ class MarketApplicationTest
     void shouldInformAggressorAboutOrderFailure()
     {
         assertThat(buySideApplication.orderResultCount()).isEqualTo(0);
+        assertThat(buySideApplication.lastOrderResult()).isNull();
 
         buySideApplication.sendOrder(Order.bid(100, 50));
         runUntil(onDutyRunner.reached(() -> buySideApplication.orderResultCount() > 0));
 
         assertThat(buySideApplication.orderResultCount()).isEqualTo(1);
+        assertThat(buySideApplication.lastOrderResult()).usingRecursiveComparison().isEqualTo(OrderResult.NOT_EXECUTED);
     }
 
     @Test
     @Disabled
     void shouldInformAggressorAndMarketMakerAboutOrderExecution()
     {
+        // Given
+        final long updateTimeMs = currentTimeMillis();
+        marketMakerApplication.updatePrice(new FirmPrice(5, updateTimeMs, 99, 40, 101, 50));
+        runUntil(onDutyRunner.reached(() -> marketMakerApplication.acknowledgedPriceUpdatesCount() == 1));
 
+        // When
+        buySideApplication.sendOrder(Order.ask(99, 30));
+        runUntil(onDutyRunner.reached(() -> buySideApplication.orderResultCount() > 0));
+
+        assertThat(buySideApplication.orderResultCount()).isEqualTo(1);
+        assertThat(buySideApplication.lastOrderResult()).usingRecursiveComparison().isEqualTo(OrderResult.EXECUTED);
     }
 
     @Test
