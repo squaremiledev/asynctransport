@@ -7,12 +7,15 @@ import org.agrona.MutableDirectBuffer;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.Order;
+import dev.squaremile.transport.usecases.market.domain.OrderResult;
 import dev.squaremile.transport.usecases.market.schema.FirmPriceDecoder;
 import dev.squaremile.transport.usecases.market.schema.FirmPriceEncoder;
 import dev.squaremile.transport.usecases.market.schema.MessageHeaderDecoder;
 import dev.squaremile.transport.usecases.market.schema.MessageHeaderEncoder;
 import dev.squaremile.transport.usecases.market.schema.OrderDecoder;
 import dev.squaremile.transport.usecases.market.schema.OrderEncoder;
+import dev.squaremile.transport.usecases.market.schema.OrderResultDecoder;
+import dev.squaremile.transport.usecases.market.schema.OrderResultEncoder;
 
 public class Serialization
 {
@@ -24,6 +27,8 @@ public class Serialization
     private final FirmPriceDecoder firmPriceDecoder = new FirmPriceDecoder();
     private final OrderEncoder orderEncoder = new OrderEncoder();
     private final OrderDecoder orderDecoder = new OrderDecoder();
+    private final OrderResultEncoder orderResultEncoder = new OrderResultEncoder();
+    private final OrderResultDecoder orderResultDecoder = new OrderResultDecoder();
 
     public int encode(final MarketMessage message, final MutableDirectBuffer buffer, final int offset)
     {
@@ -48,6 +53,11 @@ public class Serialization
                     .askPrice(order.askPrice())
                     .askQuantity(order.askQuantity());
             return messageHeaderEncoder.encodedLength() + orderEncoder.encodedLength();
+        }
+        if (message instanceof OrderResult)
+        {
+            orderResultEncoder.wrapAndApplyHeader(buffer, offset, messageHeaderEncoder);
+            return messageHeaderEncoder.encodedLength() + orderResultEncoder.encodedLength();
         }
         return 0;
     }
@@ -90,6 +100,17 @@ public class Serialization
                     orderDecoder.askQuantity()
             );
             return decodedOrder;
+        }
+        if (messageHeaderDecoder.templateId() == OrderResultDecoder.TEMPLATE_ID)
+        {
+            int bodyOffset = offset + messageHeaderDecoder.encodedLength();
+            orderResultDecoder.wrap(
+                    buffer,
+                    bodyOffset,
+                    messageHeaderDecoder.blockLength(),
+                    messageHeaderDecoder.version()
+            );
+            return OrderResult.NOT_EXECUTED;
         }
         return null;
     }

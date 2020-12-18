@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
+import dev.squaremile.transport.usecases.market.domain.Order;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
@@ -45,12 +46,12 @@ class MarketApplicationTest
     @Test
     void shouldInformAggressorAboutOrderFailure()
     {
-        assertThat(buySideApplication.orderResponsesCount()).isEqualTo(0);
+        assertThat(buySideApplication.orderResultCount()).isEqualTo(0);
 
-        buySideApplication.sendOrder();
-        runUntil(onDutyRunner.reached(() -> buySideApplication.orderResponsesCount() > 0));
+        buySideApplication.sendOrder(Order.bid(100, 50));
+        runUntil(onDutyRunner.reached(() -> buySideApplication.orderResultCount() > 0));
 
-        assertThat(buySideApplication.orderResponsesCount()).isEqualTo(1);
+        assertThat(buySideApplication.orderResultCount()).isEqualTo(1);
     }
 
     @Test

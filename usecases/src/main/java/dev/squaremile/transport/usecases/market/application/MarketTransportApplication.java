@@ -10,6 +10,8 @@ import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
+import dev.squaremile.transport.usecases.market.domain.Order;
+import dev.squaremile.transport.usecases.market.domain.OrderResult;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -41,6 +43,14 @@ class MarketTransportApplication implements ConnectionApplication
                 SendMessage sendMessage = connectionTransport.command(SendMessage.class);
                 MutableDirectBuffer buffer = sendMessage.prepare();
                 int encodedLength = serialization.encode(firmPriceResponse, buffer, sendMessage.offset());
+                sendMessage.commit(encodedLength);
+                connectionTransport.handle(sendMessage);
+            }
+            if (marketMessage instanceof Order)
+            {
+                SendMessage sendMessage = connectionTransport.command(SendMessage.class);
+                MutableDirectBuffer buffer = sendMessage.prepare();
+                int encodedLength = serialization.encode(OrderResult.NOT_EXECUTED, buffer, sendMessage.offset());
                 sendMessage.commit(encodedLength);
                 connectionTransport.handle(sendMessage);
             }

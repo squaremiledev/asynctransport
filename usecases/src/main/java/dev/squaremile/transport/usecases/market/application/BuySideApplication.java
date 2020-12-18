@@ -1,22 +1,30 @@
 package dev.squaremile.transport.usecases.market.application;
 
+import dev.squaremile.transport.usecases.market.domain.Order;
+import dev.squaremile.transport.usecases.market.domain.OrderResult;
+
 public class BuySideApplication
 {
-
-    private int orderResponsesCount = 0;
+    private final BuySidePublisher publisher;
+    private int orderResultCount = 0;
 
     public BuySideApplication(final BuySidePublisher publisher)
     {
-
+        this.publisher = publisher;
     }
 
-    public int orderResponsesCount()
+    public int orderResultCount()
     {
-        return orderResponsesCount;
+        return orderResultCount;
     }
 
-    public void sendOrder()
+    public void sendOrder(final Order order)
     {
-        orderResponsesCount++;
+        publisher.publish(order);
+    }
+
+    public void onOrderResult(final OrderResult orderResult)
+    {
+        orderResultCount++;
     }
 }

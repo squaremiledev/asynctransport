@@ -53,5 +53,7 @@
         <field name="askPrice" id="5" type="price"/>
         <field name="askQuantity" id="6" type="quantity"/>
     </sbe:message>
+    <sbe:message name="OrderResult" id="3">
+    </sbe:message>
 
 </sbe:messageSchema>
