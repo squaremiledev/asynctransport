@@ -11,6 +11,7 @@ public class BuySideApplication implements BusinessApplication
     private final ExecutionReport lastExecutedOrder = new ExecutionReport();
     private int orderResultCount = 0;
     private OrderResult lastOrderResult;
+    private int executedReportsCount = 0;
 
     public BuySideApplication(final BuySidePublisher publisher)
     {
@@ -36,6 +37,7 @@ public class BuySideApplication implements BusinessApplication
     public void onExecutedOrder(final ExecutionReport executedOrder)
     {
         this.lastExecutedOrder.update(executedOrder);
+        this.executedReportsCount++;
     }
 
     public OrderResult lastOrderResult()
@@ -46,6 +48,11 @@ public class BuySideApplication implements BusinessApplication
     public ExecutionReport lastExecutedOrder()
     {
         return lastExecutedOrder;
+    }
+
+    public int executedReportsCount()
+    {
+        return executedReportsCount;
     }
 
     @Override

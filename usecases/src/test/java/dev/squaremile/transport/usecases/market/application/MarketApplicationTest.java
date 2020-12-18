@@ -56,6 +56,7 @@ class MarketApplicationTest
 
         assertThat(buySideApplication.orderResultCount()).isEqualTo(1);
         assertThat(buySideApplication.lastOrderResult()).usingRecursiveComparison().isEqualTo(OrderResult.NOT_EXECUTED);
+        assertThat(marketMakerApplication.executedReportsCount()).isEqualTo(0);
     }
 
     @Test
@@ -68,14 +69,19 @@ class MarketApplicationTest
 
         // When
         buySideApplication.sendOrder(Order.ask(99, 30));
-        runUntil(onDutyRunner.reached(() -> buySideApplication.orderResultCount() > 0));
+        runUntil(onDutyRunner.reached(() -> buySideApplication.orderResultCount() > 0 &&
+                                            marketMakerApplication.executedReportsCount() > 0 &&
+                                            buySideApplication.executedReportsCount() > 0
+        ));
 
         assertThat(buySideApplication.orderResultCount()).isEqualTo(1);
         assertThat(buySideApplication.lastOrderResult()).usingRecursiveComparison().isEqualTo(OrderResult.EXECUTED);
+        assertThat(buySideApplication.executedReportsCount()).isEqualTo(1);
         ExecutionReport actualBuySideExecutionReport = buySideApplication.lastExecutedOrder();
         assertThat(actualBuySideExecutionReport).usingRecursiveComparison().isEqualTo(
                 new ExecutionReport().update(0, 1, actualBuySideExecutionReport.security(), Order.ask(99, 30))
         );
+        assertThat(marketMakerApplication.executedReportsCount()).isEqualTo(1);
         ExecutionReport actualMarketMakerExecutionReport = marketMakerApplication.lastExecutedOrder();
         assertThat(actualMarketMakerExecutionReport).usingRecursiveComparison().isEqualTo(
                 new ExecutionReport().update(0, 1, actualMarketMakerExecutionReport.security(), Order.ask(99, 30))

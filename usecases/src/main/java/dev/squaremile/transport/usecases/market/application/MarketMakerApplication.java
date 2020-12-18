@@ -10,6 +10,7 @@ public class MarketMakerApplication implements BusinessApplication
     private final FirmPrice lastUpdatedFirmPrice = FirmPrice.createNoPrice();
     private final ExecutionReport lastExecutedOrder = new ExecutionReport();
     private int acknowledgedPriceUpdatesCount = 0;
+    private int executedReportsCount = 0;
 
     public MarketMakerApplication(final MarketMakerPublisher marketMakerPublisher)
     {
@@ -49,6 +50,12 @@ public class MarketMakerApplication implements BusinessApplication
     public void onExecutedOrder(final ExecutionReport executedOrder)
     {
         this.lastExecutedOrder.update(executedOrder);
+        this.executedReportsCount++;
+    }
+
+    public int executedReportsCount()
+    {
+        return executedReportsCount;
     }
 
     public int acknowledgedPriceUpdatesCount()
