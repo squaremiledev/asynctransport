@@ -4,12 +4,12 @@ public class Clock
 {
     private long value;
 
-    long currentTimeMs()
+    long currentTime()
     {
         return value;
     }
 
-    void updateCurrentTimeMs(long value)
+    void updateCurrentTime(long value)
     {
         this.value = value;
     }

@@ -14,7 +14,8 @@ import dev.squaremile.transport.usecases.market.domain.OrderResult;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
-import static java.lang.System.currentTimeMillis;
+import static dev.squaremile.transport.usecases.market.domain.CurrentTime.currentTime;
+import static dev.squaremile.transport.usecases.market.domain.CurrentTime.timeFromMs;
 
 class MarketApplicationTest
 {
@@ -32,8 +33,8 @@ class MarketApplicationTest
         assertThat(marketMakerApplication.acknowledgedPriceUpdatesCount()).isEqualTo(0);
 
         // When
-        final long updateTimeMs = currentTimeMillis();
-        marketMakerApplication.updatePrice(new FirmPrice(5, updateTimeMs, 99, 40, 101, 50));
+        final long updateTime = currentTime();
+        marketMakerApplication.updatePrice(new FirmPrice(5, updateTime, 99, 40, 101, 50));
         runUntil(onDutyRunner.reached(() -> marketMakerApplication.acknowledgedPriceUpdatesCount() > 0));
 
         // Then
@@ -41,8 +42,8 @@ class MarketApplicationTest
         FirmPrice lastUpdatedFirmPrice = marketMakerApplication.lastUpdatedFirmPrice();
         assertThat(lastUpdatedFirmPrice).usingRecursiveComparison()
                 .isEqualTo(new FirmPrice(5, lastUpdatedFirmPrice.updateTime(), 99, 40, 101, 50));
-        assertThat(lastUpdatedFirmPrice.updateTime()).isGreaterThanOrEqualTo(updateTimeMs);
-        assertThat(lastUpdatedFirmPrice.updateTime()).isLessThan(updateTimeMs + 100);
+        assertThat(lastUpdatedFirmPrice.updateTime()).isGreaterThanOrEqualTo(updateTime);
+        assertThat(lastUpdatedFirmPrice.updateTime()).isLessThan(updateTime + timeFromMs(100));
     }
 
     @Test
@@ -63,7 +64,7 @@ class MarketApplicationTest
     void shouldInformAggressorAndMarketMakerAboutOrderExecution()
     {
         // Given
-        marketMakerApplication.updatePrice(new FirmPrice(5, currentTimeMillis(), 99, 40, 101, 50));
+        marketMakerApplication.updatePrice(new FirmPrice(5, currentTime(), 99, 40, 101, 50));
         runUntil(onDutyRunner.reached(() -> marketMakerApplication.acknowledgedPriceUpdatesCount() == 1));
 
         // When
@@ -91,7 +92,7 @@ class MarketApplicationTest
     @Test
     void shouldNotInformNotInvolvedMarketParticipantsAboutOrderExecution()
     {
-        marketMakerApplication.updatePrice(new FirmPrice(5, currentTimeMillis(), 99, 40, 101, 50));
+        marketMakerApplication.updatePrice(new FirmPrice(5, currentTime(), 99, 40, 101, 50));
         runUntil(onDutyRunner.reached(() -> marketMakerApplication.acknowledgedPriceUpdatesCount() == 1));
         assertThat(fixtures.anotherMarketMakerApplication().acknowledgedPriceUpdatesCount()).isEqualTo(0);
 

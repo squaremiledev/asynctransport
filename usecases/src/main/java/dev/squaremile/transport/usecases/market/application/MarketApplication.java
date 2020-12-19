@@ -30,7 +30,7 @@ class MarketApplication implements BusinessApplication
     @Override
     public void onMessage(final MarketMessage marketMessage)
     {
-        final long currentTime = clock.currentTimeMs();
+        final long currentTime = clock.currentTime();
         final int marketParticipantId = marketParticipants.fromConnectionId(connectionId);
 
         if (marketMessage instanceof FirmPrice)
@@ -45,6 +45,6 @@ class MarketApplication implements BusinessApplication
 
     public void onPeriodicWakeUp()
     {
-        fakeMarket.tick(clock.currentTimeMs());
+        fakeMarket.tick(clock.currentTime());
     }
 }

@@ -16,16 +16,17 @@ import dev.squaremile.transport.usecases.market.domain.Volatility;
 import static dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory.onStart;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.lengthBasedDelineation;
 import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD;
+import static dev.squaremile.transport.usecases.market.domain.CurrentTime.currentTime;
+import static dev.squaremile.transport.usecases.market.domain.CurrentTime.timeFromMs;
 import static dev.squaremile.transport.usecases.market.domain.MarketListener.marketListeners;
-import static java.lang.System.currentTimeMillis;
 
 public class MarketApplicationStarter
 {
     private final int port;
     private final Clock clock;
+    private final MarketMakerChart chart = new MarketMakerChart(time -> time / 10);
     private TransportApplicationOnDuty transportApplication;
     private MarketConnectionApplication<MarketApplication> marketConnectionApplication;
-    private final MarketMakerChart chart = new MarketMakerChart(time -> time / 10);
 
     public MarketApplicationStarter(final int port, final Clock clock)
     {
@@ -44,8 +45,8 @@ public class MarketApplicationStarter
         {
             final MarketParticipants marketParticipants = new MarketParticipants();
             MarketListener marketListener = marketListeners(
-                    new MarketEventsPublisher(transport, marketParticipants)
-//                    chart
+                    new MarketEventsPublisher(transport, marketParticipants),
+                    chart
             );
             final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), 0, marketListener);
             return new ListeningApplication(
@@ -68,8 +69,8 @@ public class MarketApplicationStarter
             );
         });
         application.onStart();
-        long startTime = currentTimeMillis();
-        while (!startedListening.get() && currentTimeMillis() < startTime + timeoutMs)
+        long startTime = currentTime();
+        while (!startedListening.get() && currentTime() < startTime + timeFromMs(timeoutMs))
         {
             application.work();
         }

@@ -2,10 +2,10 @@ package dev.squaremile.transport.usecases.market.domain;
 
 public class Volatility implements MidPriceUpdate
 {
-    private final int period;
+    private final long period;
     private final int delta;
 
-    public Volatility(final int delta, final int period)
+    public Volatility(final int delta, final long period)
     {
         this.delta = delta;
         this.period = period;

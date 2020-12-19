@@ -5,7 +5,7 @@ import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
 import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 
-import static java.lang.System.currentTimeMillis;
+import static dev.squaremile.transport.usecases.market.domain.CurrentTime.currentTime;
 
 class MarketConnectionApplication<T extends BusinessApplication> implements ConnectionApplication
 {
@@ -22,7 +22,7 @@ class MarketConnectionApplication<T extends BusinessApplication> implements Conn
     @Override
     public void onEvent(final ConnectionEvent connectionEvent)
     {
-        clock.updateCurrentTimeMs(currentTimeMillis());
+        clock.updateCurrentTime(currentTime());
         if (connectionEvent instanceof MessageReceived)
         {
             MessageReceived messageReceived = (MessageReceived)connectionEvent;
@@ -34,7 +34,7 @@ class MarketConnectionApplication<T extends BusinessApplication> implements Conn
     @Override
     public void work()
     {
-        clock.updateCurrentTimeMs(currentTimeMillis());
+        clock.updateCurrentTime(currentTime());
         application.onPeriodicWakeUp();
     }
 

@@ -11,7 +11,8 @@ import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.lengthBasedDelineation;
 import static dev.squaremile.asynctcp.serialization.api.SerializedMessageListener.NO_OP;
 import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD;
-import static java.lang.System.currentTimeMillis;
+import static dev.squaremile.transport.usecases.market.domain.CurrentTime.currentTime;
+import static dev.squaremile.transport.usecases.market.domain.CurrentTime.timeFromMs;
 
 public class InitiatorStarter
 {
@@ -58,8 +59,8 @@ public class InitiatorStarter
                         )
         );
         application.onStart();
-        long startTime = currentTimeMillis();
-        while (!this.started.get() && currentTimeMillis() < startTime + timeoutMs)
+        long startTime = currentTime();
+        while (!this.started.get() && currentTime() < startTime + timeFromMs(timeoutMs))
         {
             application.work();
             runUntilReady.run();
