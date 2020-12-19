@@ -57,7 +57,7 @@ class FakeMarketTest
     @Test
     void shouldAllowSteadyPriceUpdates()
     {
-        FakeMarket fakeMarket = fakeMarket(100, new Volatility(3, 10), new PnL());
+        FakeMarket fakeMarket = fakeMarket(100, new Trend(3, 10), new PnL());
         range(1, 200).forEach(fakeMarket::tick);
         assertThat(fakeMarket.midPrice()).isEqualTo(157);
     }
@@ -68,7 +68,7 @@ class FakeMarketTest
         final TickerSpy tickerSpy = new TickerSpy();
         FakeMarket fakeMarket = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 100),
-                new Volatility(3, 2),
+                new Trend(3, 2),
                 0, tickerSpy,
                 new PnL(),
                 FirmPriceUpdateListener.IGNORE,
@@ -112,14 +112,14 @@ class FakeMarketTest
     @Test
     void shouldShowNoFirmPricesIfNoMarketMakerUpdates()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new Volatility(1, 10), new PnL());
+        FakeMarket fakeMarket = fakeMarket(20, new Trend(1, 10), new PnL());
         assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(FirmPrice.createNoPrice());
     }
 
     @Test
     void shouldShowMostRecentFirmPrice()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new Volatility(1, 10), new PnL());
+        FakeMarket fakeMarket = fakeMarket(20, new Trend(1, 10), new PnL());
         FirmPrice firmPrice1 = new FirmPrice(0, 19, 60, 21, 50);
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, firmPrice1);
 
@@ -165,7 +165,7 @@ class FakeMarketTest
     @Test
     void shouldKeepTheOriginalFirmPriceWhenFailedToExecute()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new Volatility(1, 10), new PnL());
+        FakeMarket fakeMarket = fakeMarket(20, new Trend(1, 10), new PnL());
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 19, 60, 21, 50));
 
         assertThat(fakeMarket.execute(1002, ARBITRAGEUR, Order.bid(21, 51))).isFalse();
@@ -183,7 +183,7 @@ class FakeMarketTest
         final int nominalOrderSize = 2 * lotSize;
         final PnL pnL = new PnL();
         final TimeMachine timeMachine = new TimeMachine();
-        final FakeMarket market = fakeMarket(14500, new Volatility(3, TimeUnit.MILLISECONDS.toNanos(10)), pnL); // ~ a pip every 10/3 milliseconds (Brexit referendum results anyone?)
+        final FakeMarket market = fakeMarket(14500, new Trend(3, TimeUnit.MILLISECONDS.toNanos(10)), pnL); // ~ a pip every 10/3 milliseconds (Brexit referendum results anyone?)
         timeMachine.tick(
                 market::tick,
                 // Not enough liquidity for ARBITRAGEUR to execute any orders

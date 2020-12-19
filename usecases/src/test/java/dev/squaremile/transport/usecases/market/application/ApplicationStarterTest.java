@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.transport.usecases.market.domain.Volatility;
+import dev.squaremile.transport.usecases.market.domain.Trend;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 
@@ -16,7 +16,7 @@ class ApplicationStarterTest
     void shouldAcceptMarketMakerConnection()
     {
         final int port = freePort();
-        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, new Clock(), 0, new Volatility(1, 1), 1_000_000);
+        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, new Clock(), 0, new Trend(1, 1), 1_000_000);
         final ApplicationStarter<MarketMakerApplication> applicationStarter = new ApplicationStarter<>(
                 "localhost", port, new Clock(), (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMakerPublisher(connectionTransport)));
 
