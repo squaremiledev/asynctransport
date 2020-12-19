@@ -16,6 +16,7 @@ public class MarketMakerChart implements MarketListener
     private final TimeUnitConversion timeUnitConversion;
     private long baseTime;
     private boolean baseTimeSet;
+    private long lastUpdateTime = Long.MIN_VALUE;
 
     public MarketMakerChart()
     {
@@ -50,11 +51,16 @@ public class MarketMakerChart implements MarketListener
     public void onTick(final Security security)
     {
         long time = relativeTime(security.lastUpdateTime());
+        if (time == lastUpdateTime)
+        {
+            return;
+        }
         long midPrice = security.midPrice();
         rows.add(String.format("%d,%d;%d;%d,0;0;0,0;0;0",
                                time,
                                midPrice, midPrice, midPrice
         ));
+        lastUpdateTime = time;
     }
 
     private long relativeTime(final long time)

@@ -120,8 +120,21 @@ class MarketApplicationTest
     @Disabled
     void shouldGenerateChart()
     {
-        runUntil(5_000, onDutyRunner.reached(() -> buySideApplication.midPriceUpdatesCount() > 10_000 &&
-                                                   marketMakerApplication.midPriceUpdatesCount() > 10_000));
+        runUntil(onDutyRunner.reached(() -> buySideApplication.midPriceUpdatesCount() > 0 &&
+                                            marketMakerApplication.midPriceUpdatesCount() > 0));
+        int i = 0;
+        int before = marketMakerApplication.midPriceUpdatesCount();
+        long beforeMs = System.currentTimeMillis();
+        while (!Thread.interrupted() && i++ < 80_000)
+        {
+            onDutyRunner.work();
+        }
+        long afterMs = System.currentTimeMillis();
+        int updates = marketMakerApplication.midPriceUpdatesCount() - before;
+        System.out.println("marketMakerApplication.midPriceUpdatesCount() = " + updates);
+        System.out.println("(afterMs - beforeMs) = " + (afterMs - beforeMs));
+        System.out.println(((updates * 1000) / (afterMs - beforeMs)));
         System.out.println(fixtures.chart().generateAsString());
     }
+
 }

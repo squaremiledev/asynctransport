@@ -1,7 +1,11 @@
 package dev.squaremile.transport.usecases.market.application;
 
+import java.util.concurrent.TimeUnit;
+
+
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.transport.usecases.market.domain.Volatility;
 
 public class MarketApplicationFixtures
 {
@@ -14,7 +18,8 @@ public class MarketApplicationFixtures
 
     public MarketApplicationFixtures(final int port, final Clock clock)
     {
-        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, clock);
+        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(
+                port, clock, TimeUnit.MICROSECONDS.toNanos(50), new Volatility(1, TimeUnit.MICROSECONDS.toNanos(10)), 0);
         final ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter = marketMakerApplicationStarter(port, clock);
         final ApplicationStarter<BuySideApplication> buySideApplicationStarter = buySideApplicationStarter(port, clock);
         final ApplicationStarter<MarketMakerApplication> anotherMarketMakerApplicationStarter = marketMakerApplicationStarter(port, clock);

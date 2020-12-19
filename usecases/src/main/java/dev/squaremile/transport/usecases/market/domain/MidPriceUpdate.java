@@ -1,7 +1,7 @@
 package dev.squaremile.transport.usecases.market.domain;
 
 @FunctionalInterface
-interface MidPriceUpdate
+public interface MidPriceUpdate
 {
     long newMidPrice(long currentTime, Security security);
 }

@@ -27,4 +27,11 @@ public class ThingsOnDutyRunner
         };
     }
 
+    public void work()
+    {
+        for (final OnDuty duty : onDuty)
+        {
+            duty.work();
+        }
+    }
 }

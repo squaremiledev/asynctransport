@@ -1,5 +1,7 @@
 package dev.squaremile.transport.usecases.market.application;
 
+import java.util.concurrent.TimeUnit;
+
 import org.agrona.collections.MutableBoolean;
 
 
@@ -10,8 +12,8 @@ import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.transport.usecases.market.domain.FakeMarket;
 import dev.squaremile.transport.usecases.market.domain.MarketListener;
+import dev.squaremile.transport.usecases.market.domain.MidPriceUpdate;
 import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
-import dev.squaremile.transport.usecases.market.domain.Volatility;
 
 import static dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory.onStart;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.lengthBasedDelineation;
@@ -24,14 +26,20 @@ public class MarketApplicationStarter
 {
     private final int port;
     private final Clock clock;
-    private final MarketMakerChart chart = new MarketMakerChart(time -> time / 10);
+    private final MarketMakerChart chart = new MarketMakerChart(TimeUnit.NANOSECONDS::toMillis);
+    private final long tickCoolDownTime;
+    private final MidPriceUpdate priceMovement;
+    private final int initialMidPrice;
     private TransportApplicationOnDuty transportApplication;
     private MarketConnectionApplication<MarketApplication> marketConnectionApplication;
 
-    public MarketApplicationStarter(final int port, final Clock clock)
+    public MarketApplicationStarter(final int port, final Clock clock, final long tickCoolDownTime, final MidPriceUpdate priceMovement, final int initialMidPrice)
     {
         this.port = port;
         this.clock = clock;
+        this.tickCoolDownTime = tickCoolDownTime;
+        this.priceMovement = priceMovement;
+        this.initialMidPrice = initialMidPrice;
     }
 
     public TransportApplicationOnDuty startTransport(final int timeoutMs)
@@ -48,7 +56,7 @@ public class MarketApplicationStarter
                     new MarketEventsPublisher(transport, marketParticipants),
                     chart
             );
-            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), 0, marketListener);
+            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, initialMidPrice), priceMovement, tickCoolDownTime, marketListener);
             return new ListeningApplication(
                     transport,
                     lengthBasedDelineation(SHORT_LITTLE_ENDIAN_FIELD, 0, 0),

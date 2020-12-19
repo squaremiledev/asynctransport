@@ -10,13 +10,13 @@ public class FakeMarket
     private final FirmPriceUpdateListener firmPriceUpdateListener;
     private final OrderResultListener orderResultListener;
     private final FirmPrice firmPriceUpdate = FirmPrice.createNoPrice();
-    private long currentTime;
     private final long tickCoolDownTime;
+    private long currentTime;
 
     public FakeMarket(
             final Security security,
             final MidPriceUpdate priceMovement,
-            final int tickCoolDownTime,
+            final long tickCoolDownTime,
             final MarketListener marketListener
     )
     {
@@ -26,7 +26,7 @@ public class FakeMarket
     public FakeMarket(
             final Security security,
             final MidPriceUpdate priceMovement,
-            final int tickCoolDownTime,
+            final long tickCoolDownTime,
             final TickListener tickListener,
             final ExecutionReportListener executionReportListener,
             final FirmPriceUpdateListener firmPriceUpdateListener,
