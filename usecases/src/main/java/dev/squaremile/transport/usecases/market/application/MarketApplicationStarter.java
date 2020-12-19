@@ -40,10 +40,7 @@ public class MarketApplicationStarter
         final TransportApplicationOnDuty application = new AsyncTcp().create("marketApp", 16 * 1024, SerializedMessageListener.NO_OP, transport ->
         {
             final MarketParticipants marketParticipants = new MarketParticipants();
-            final MarketEventsPublisher marketEventsPublisher = new MarketEventsPublisher(transport, marketParticipants);
-            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), marketEventsPublisher, marketEventsPublisher, marketEventsPublisher,
-                                                         marketEventsPublisher
-            );
+            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), new MarketEventsPublisher(transport, marketParticipants));
             return new ListeningApplication(
                     transport,
                     lengthBasedDelineation(SHORT_LITTLE_ENDIAN_FIELD, 0, 0),

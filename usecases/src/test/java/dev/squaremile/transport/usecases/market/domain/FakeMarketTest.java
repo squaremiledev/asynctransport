@@ -74,7 +74,8 @@ class FakeMarketTest
                 new Volatility(3, 2),
                 tickerSpy,
                 new PnL(),
-                FirmPriceUpdateListener.IGNORE, OrderResultListener.IGNORE
+                FirmPriceUpdateListener.IGNORE,
+                OrderResultListener.IGNORE
         );
         range(1_000_000, 1_000_010).forEach(fakeMarket::tick);
 
@@ -233,11 +234,11 @@ class FakeMarketTest
         assertThat(expectedUpdateTimeAfterOrderMatched - expectedUpdateTimeBeforeOrderMatched).isEqualTo(49);
     }
 
-    private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement, final MarketListener marketListener)
+    private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement, final ExecutionReportListener executionReportListener)
     {
         return new FakeMarket(new TrackedSecurity().midPrice(0, initialPrice), priceMovement,
                               TickListener.IGNORE,
-                              marketListener,
+                              executionReportListener,
                               FirmPriceUpdateListener.IGNORE, OrderResultListener.IGNORE
         );
     }

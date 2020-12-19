@@ -1,6 +1,5 @@
 package dev.squaremile.transport.usecases.market.domain;
 
-public interface MarketListener
+public interface MarketListener extends TickListener, ExecutionReportListener, FirmPriceUpdateListener, OrderResultListener
 {
-    void onExecution(final ExecutionReport executionReport);
 }

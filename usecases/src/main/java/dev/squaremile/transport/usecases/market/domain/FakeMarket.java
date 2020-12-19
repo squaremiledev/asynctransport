@@ -15,8 +15,17 @@ public class FakeMarket
     public FakeMarket(
             final Security security,
             final MidPriceUpdate priceMovement,
+            final MarketListener marketListener
+    )
+    {
+        this(security, priceMovement, marketListener, marketListener, marketListener, marketListener);
+    }
+
+    public FakeMarket(
+            final Security security,
+            final MidPriceUpdate priceMovement,
             final TickListener tickListener,
-            final MarketListener marketListener,
+            final ExecutionReportListener executionReportListener,
             final FirmPriceUpdateListener firmPriceUpdateListener,
             final OrderResultListener orderResultListener
     )
@@ -28,7 +37,7 @@ public class FakeMarket
         this.orderResultListener = orderResultListener;
         this.marketMaking = new MarketMaking(
                 (passiveParticipantId, aggressiveParticipantId, executedOrder) ->
-                        marketListener.onExecution(executionReport.update(passiveParticipantId, aggressiveParticipantId, this.security, executedOrder)));
+                        executionReportListener.onExecution(executionReport.update(passiveParticipantId, aggressiveParticipantId, this.security, executedOrder)));
     }
 
     public long midPrice()

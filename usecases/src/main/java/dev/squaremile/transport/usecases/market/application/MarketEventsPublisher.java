@@ -9,15 +9,12 @@ import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
-import dev.squaremile.transport.usecases.market.domain.FirmPriceUpdateListener;
 import dev.squaremile.transport.usecases.market.domain.MarketListener;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
-import dev.squaremile.transport.usecases.market.domain.OrderResultListener;
 import dev.squaremile.transport.usecases.market.domain.Security;
-import dev.squaremile.transport.usecases.market.domain.TickListener;
 
-public class MarketEventsPublisher implements TickListener, MarketListener, FirmPriceUpdateListener, OrderResultListener
+public class MarketEventsPublisher implements MarketListener
 {
     private final MarketParticipants marketParticipants;
     private final MessageToSend messageToSend;

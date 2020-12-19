@@ -3,7 +3,7 @@ package dev.squaremile.transport.usecases.market.domain;
 import org.agrona.collections.Int2ObjectHashMap;
 import org.agrona.collections.MutableLong;
 
-public class PnL implements MarketListener
+public class PnL implements ExecutionReportListener
 {
     private static final MutableLong NO_BALANCE = new MutableLong(0);
     private final Int2ObjectHashMap<MutableLong> traderPnLs = new Int2ObjectHashMap<>();
