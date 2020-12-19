@@ -2,6 +2,7 @@ package dev.squaremile.transport.usecases.market.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TickerSpy implements TickListener
 {
@@ -16,6 +17,11 @@ public class TickerSpy implements TickListener
     public List<Security> observedTicks()
     {
         return observedTicks;
+    }
+
+    public List<Long> midPrices()
+    {
+        return observedTicks.stream().map(Security::midPrice).collect(Collectors.toList());
     }
 
     public Security observedTick(final int index)

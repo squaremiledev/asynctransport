@@ -2,6 +2,7 @@ package dev.squaremile.transport.usecases.market.domain;
 
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -9,7 +10,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import dev.squaremile.transport.usecases.market.application.CustomTrendSetter;
+
 import static dev.squaremile.transport.usecases.market.domain.FirmPrice.spreadFirmPrice;
+import static java.util.Collections.singletonList;
 import static java.util.stream.IntStream.range;
 
 class FakeMarketTest
@@ -57,7 +61,7 @@ class FakeMarketTest
     @Test
     void shouldAllowSteadyPriceUpdates()
     {
-        FakeMarket fakeMarket = fakeMarket(100, new Trend(3, 10), new PnL());
+        FakeMarket fakeMarket = fakeMarket(100, new PredictableTrend("trend", 3, 10), new PnL());
         range(1, 200).forEach(fakeMarket::tick);
         assertThat(fakeMarket.midPrice()).isEqualTo(157);
     }
@@ -68,7 +72,7 @@ class FakeMarketTest
         final TickerSpy tickerSpy = new TickerSpy();
         FakeMarket fakeMarket = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 100),
-                new Trend(3, 2),
+                new PredictableTrend("trend", 3, 2),
                 0, tickerSpy,
                 new PnL(),
                 FirmPriceUpdateListener.IGNORE,
@@ -112,14 +116,14 @@ class FakeMarketTest
     @Test
     void shouldShowNoFirmPricesIfNoMarketMakerUpdates()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new Trend(1, 10), new PnL());
+        FakeMarket fakeMarket = fakeMarket(20, new PredictableTrend("trend", 1, 10), new PnL());
         assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(FirmPrice.createNoPrice());
     }
 
     @Test
     void shouldShowMostRecentFirmPrice()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new Trend(1, 10), new PnL());
+        FakeMarket fakeMarket = fakeMarket(20, new PredictableTrend("trend", 1, 10), new PnL());
         FirmPrice firmPrice1 = new FirmPrice(0, 19, 60, 21, 50);
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, firmPrice1);
 
@@ -165,7 +169,7 @@ class FakeMarketTest
     @Test
     void shouldKeepTheOriginalFirmPriceWhenFailedToExecute()
     {
-        FakeMarket fakeMarket = fakeMarket(20, new Trend(1, 10), new PnL());
+        FakeMarket fakeMarket = fakeMarket(20, new PredictableTrend("trend", 1, 10), new PnL());
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 19, 60, 21, 50));
 
         assertThat(fakeMarket.execute(1002, ARBITRAGEUR, Order.bid(21, 51))).isFalse();
@@ -183,7 +187,7 @@ class FakeMarketTest
         final int nominalOrderSize = 2 * lotSize;
         final PnL pnL = new PnL();
         final TimeMachine timeMachine = new TimeMachine();
-        final FakeMarket market = fakeMarket(14500, new Trend(3, TimeUnit.MILLISECONDS.toNanos(10)), pnL); // ~ a pip every 10/3 milliseconds (Brexit referendum results anyone?)
+        final FakeMarket market = fakeMarket(14500, new PredictableTrend("trend", 3, TimeUnit.MILLISECONDS.toNanos(10)), pnL); // ~ a pip every 10/3 milliseconds (Brexit referendum results anyone?)
         timeMachine.tick(
                 market::tick,
                 // Not enough liquidity for ARBITRAGEUR to execute any orders
@@ -230,6 +234,29 @@ class FakeMarketTest
         assertThat(expectedUpdateTimeAfterOrderMatched - expectedUpdateTimeBeforeOrderMatched).isEqualTo(TimeUnit.MILLISECONDS.toNanos(49));
     }
 
+    @Test
+    @Disabled
+    void shouldSimulateVolatility()
+    {
+        final TimeMachine timeMachine = new TimeMachine();
+        final TickerSpy midPriceSpy = new TickerSpy();
+        final MidPriceUpdate priceMovement = new Volatility(new CustomTrendSetter(TimeUnit.MILLISECONDS.toNanos(5), singletonList(
+                new RandomizedTrend("moveAround", -50, 100, TimeUnit.MILLISECONDS.toNanos(4))
+        )));
+
+        final FakeMarket market = new FakeMarket(
+                new TrackedSecurity().midPrice(0, 0),
+                priceMovement,
+                0,
+                midPriceSpy,
+                ExecutionReportListener.IGNORE,
+                FirmPriceUpdateListener.IGNORE,
+                OrderResultListener.IGNORE
+        );
+
+        timeMachine.tick(500, market::tick);
+    }
+
     private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement, final ExecutionReportListener executionReportListener)
     {
         return new FakeMarket(new TrackedSecurity().midPrice(0, initialPrice), priceMovement,
@@ -240,4 +267,5 @@ class FakeMarketTest
                               OrderResultListener.IGNORE
         );
     }
+
 }

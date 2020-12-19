@@ -4,12 +4,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TrendTest
+class PredictableTrendTest
 {
     @Test
     void shouldNotMovePriceIfTimeDidNotMoveEnough()
     {
-        Trend trend = new Trend(5, 2);
+        PredictableTrend trend = new PredictableTrend("trend", 5, 2);
         assertThat(trend.newMidPrice(0, new TrackedSecurity(0, 100, 0))).isEqualTo(100);
         assertThat(trend.newMidPrice(1, new TrackedSecurity(0, 100, 0))).isEqualTo(100);
     }
@@ -17,7 +17,7 @@ class TrendTest
     @Test
     void shouldMovePriceAccordingToTimeSinceLastUpdateAndVolatilityFactor()
     {
-        Trend trend = new Trend(5, 2);
+        PredictableTrend trend = new PredictableTrend("trend", 5, 2);
         assertThat(trend.newMidPrice(2, new TrackedSecurity(1, 100, 0))).isEqualTo(105);
         assertThat(trend.newMidPrice(12, new TrackedSecurity(2, 105, 2))).isEqualTo(130);
     }
@@ -25,7 +25,7 @@ class TrendTest
     @Test
     void shouldDecideTheExactPriceChange()
     {
-        Trend trend = new Trend(1, 1);
+        PredictableTrend trend = new PredictableTrend("trend", 1, 1);
         assertThat(trend.newMidPrice(2, new TrackedSecurity(1, 100, 0))).isEqualTo(102);
 
         trend.moveNextPriceBy(1);
