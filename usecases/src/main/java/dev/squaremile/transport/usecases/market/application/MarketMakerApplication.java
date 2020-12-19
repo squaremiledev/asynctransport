@@ -3,6 +3,7 @@ package dev.squaremile.transport.usecases.market.application;
 import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
+import dev.squaremile.transport.usecases.market.domain.Security;
 
 public class MarketMakerApplication implements BusinessApplication
 {
@@ -11,6 +12,7 @@ public class MarketMakerApplication implements BusinessApplication
     private final ExecutionReport lastExecutedOrder = new ExecutionReport();
     private int acknowledgedPriceUpdatesCount = 0;
     private int executedReportsCount = 0;
+    private int securityUpdatesCount = 0;
 
     public MarketMakerApplication(final MarketMakerPublisher marketMakerPublisher)
     {
@@ -28,12 +30,21 @@ public class MarketMakerApplication implements BusinessApplication
         {
             onExecutedOrder((ExecutionReport)marketMessage);
         }
+        if (marketMessage instanceof Security)
+        {
+            onSecurityUpdate((Security)marketMessage);
+        }
     }
 
     @Override
     public void onPeriodicWakeUp()
     {
 
+    }
+
+    private void onSecurityUpdate(final Security security)
+    {
+        securityUpdatesCount++;
     }
 
     public void updatePrice(final FirmPrice firmPrice)
@@ -71,5 +82,10 @@ public class MarketMakerApplication implements BusinessApplication
     public ExecutionReport lastExecutedOrder()
     {
         return lastExecutedOrder;
+    }
+
+    public int midPriceUpdatesCount()
+    {
+        return securityUpdatesCount;
     }
 }

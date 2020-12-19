@@ -1,6 +1,5 @@
 package dev.squaremile.transport.usecases.market.application;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -109,23 +108,9 @@ class MarketApplicationTest
     }
 
     @Test
-    @Disabled
-    void shouldSendSubscribersMidPriceUpdates()
+    void shouldSendMidPriceUpdates()
     {
-        // does not have to change to receive it
-    }
-
-    @Test
-    @Disabled
-    void shouldStopSendingMidPriceUpdates()
-    {
-
-    }
-
-    @Test
-    @Disabled
-    void shouldSendEstimatedPnLChangesToAffectedMarketParticipants()
-    {
-
+        runUntil(onDutyRunner.reached(() -> buySideApplication.midPriceUpdatesCount() > 0 &&
+                                            marketMakerApplication.midPriceUpdatesCount() > 0));
     }
 }

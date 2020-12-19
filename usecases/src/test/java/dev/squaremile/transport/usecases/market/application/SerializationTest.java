@@ -43,8 +43,14 @@ class SerializationTest
     @Test
     void shouldSerializeExecutionReport()
     {
-        verifySerialization(new ExecutionReport().update(7, 14, new TrackedSecurity().midPrice(100, 5_000), Order.bid(5_001, 200)), 3);
-        verifySerialization(new ExecutionReport().update(7, 14, new TrackedSecurity().midPrice(100, 5_000), Order.ask(5_001, 200)), 3);
+        verifySerialization(new ExecutionReport().update(7, 14, new TrackedSecurity().update(100, 5_000, 99), Order.bid(5_001, 200)), 3);
+        verifySerialization(new ExecutionReport().update(7, 14, new TrackedSecurity().update(100, 5_000, 99), Order.ask(5_001, 200)), 3);
+    }
+
+    @Test
+    void shouldSerializeSecurity()
+    {
+        verifySerialization(new TrackedSecurity().update(100, 5_000, 99), 3);
     }
 
     private void verifySerialization(final MarketMessage message, final int offset)

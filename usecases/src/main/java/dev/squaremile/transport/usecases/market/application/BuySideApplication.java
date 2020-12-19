@@ -4,6 +4,7 @@ import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
+import dev.squaremile.transport.usecases.market.domain.Security;
 
 public class BuySideApplication implements BusinessApplication
 {
@@ -12,6 +13,7 @@ public class BuySideApplication implements BusinessApplication
     private int orderResultCount = 0;
     private OrderResult lastOrderResult;
     private int executedReportsCount = 0;
+    private int securityUpdatesCount = 0;
 
     public BuySideApplication(final BuySidePublisher publisher)
     {
@@ -40,6 +42,11 @@ public class BuySideApplication implements BusinessApplication
         this.executedReportsCount++;
     }
 
+    public void onSecurityUpdate(final Security security)
+    {
+        securityUpdatesCount++;
+    }
+
     public OrderResult lastOrderResult()
     {
         return lastOrderResult;
@@ -66,11 +73,20 @@ public class BuySideApplication implements BusinessApplication
         {
             onExecutedOrder((ExecutionReport)marketMessage);
         }
+        if (marketMessage instanceof Security)
+        {
+            onSecurityUpdate((Security)marketMessage);
+        }
     }
 
     @Override
     public void onPeriodicWakeUp()
     {
 
+    }
+
+    public int midPriceUpdatesCount()
+    {
+        return securityUpdatesCount;
     }
 }

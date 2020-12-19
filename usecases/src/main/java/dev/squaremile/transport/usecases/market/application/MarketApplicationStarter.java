@@ -39,7 +39,8 @@ public class MarketApplicationStarter
         final MutableBoolean startedListening = new MutableBoolean(false);
         final TransportApplicationOnDuty application = new AsyncTcp().create("marketApp", 1024, SerializedMessageListener.NO_OP, transport ->
         {
-            final MarketEventsPublisher marketEventsPublisher = new MarketEventsPublisher(transport);
+            final MarketParticipants marketParticipants = new MarketParticipants();
+            final MarketEventsPublisher marketEventsPublisher = new MarketEventsPublisher(transport, marketParticipants);
             final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), marketEventsPublisher, marketEventsPublisher);
             return new ListeningApplication(
                     transport,
@@ -54,7 +55,8 @@ public class MarketApplicationStarter
                     },
                     onStart((connectionTransport, connectionId) ->
                             {
-                                marketConnectionApplication = new MarketConnectionApplication<>(clock, new MarketApplication(connectionId, connectionTransport, clock, fakeMarket));
+                                marketParticipants.onConnected(connectionId);
+                                marketConnectionApplication = new MarketConnectionApplication<>(clock, new MarketApplication(connectionId, connectionTransport, clock, fakeMarket, marketParticipants));
                                 return marketConnectionApplication;
                             })
             );

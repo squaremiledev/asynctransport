@@ -9,6 +9,7 @@ import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
+import dev.squaremile.transport.usecases.market.domain.Security;
 import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
 import dev.squaremile.transport.usecases.market.schema.ExecutionReportDecoder;
 import dev.squaremile.transport.usecases.market.schema.ExecutionReportEncoder;
@@ -21,6 +22,8 @@ import dev.squaremile.transport.usecases.market.schema.OrderDecoder;
 import dev.squaremile.transport.usecases.market.schema.OrderEncoder;
 import dev.squaremile.transport.usecases.market.schema.OrderResultDecoder;
 import dev.squaremile.transport.usecases.market.schema.OrderResultEncoder;
+import dev.squaremile.transport.usecases.market.schema.SecurityDecoder;
+import dev.squaremile.transport.usecases.market.schema.SecurityEncoder;
 
 public class Serialization
 {
@@ -38,6 +41,8 @@ public class Serialization
     private final OrderResultDecoder orderResultDecoder = new OrderResultDecoder();
     private final ExecutionReportDecoder executionReportDecoder = new ExecutionReportDecoder();
     private final ExecutionReportEncoder executionReportEncoder = new ExecutionReportEncoder();
+    private final SecurityDecoder securityDecoder = new SecurityDecoder();
+    private final SecurityEncoder securityEncoder = new SecurityEncoder();
 
     private static ExecutionResult toExecutionResult(final OrderResult orderResult)
     {
@@ -110,6 +115,15 @@ public class Serialization
                     .askQuantity(executionReport.executedOrder().askQuantity());
             return messageHeaderEncoder.encodedLength() + executionReportEncoder.encodedLength();
         }
+        if (message instanceof Security)
+        {
+            Security security = (Security)message;
+            securityEncoder.wrapAndApplyHeader(buffer, offset, messageHeaderEncoder)
+                    .midPrice(security.midPrice())
+                    .lastUpdateTime(security.lastUpdateTime())
+                    .lastPriceChange(security.lastPriceChange());
+            return messageHeaderEncoder.encodedLength() + securityEncoder.encodedLength();
+        }
         return 0;
     }
 
@@ -181,6 +195,18 @@ public class Serialization
                     decodedOrder
             );
             return decodedExecutionReport;
+        }
+        if (messageHeaderDecoder.templateId() == SecurityDecoder.TEMPLATE_ID)
+        {
+            int bodyOffset = offset + messageHeaderDecoder.encodedLength();
+            securityDecoder.wrap(
+                    buffer,
+                    bodyOffset,
+                    messageHeaderDecoder.blockLength(),
+                    messageHeaderDecoder.version()
+            );
+            decodedSecurity.update(securityDecoder.lastUpdateTime(), securityDecoder.midPrice(), securityDecoder.lastPriceChange());
+            return decodedSecurity;
         }
         return null;
     }

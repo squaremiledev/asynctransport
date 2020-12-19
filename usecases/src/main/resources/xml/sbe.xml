@@ -72,4 +72,9 @@
         <field name="askPrice" id="8" type="price"/>
         <field name="askQuantity" id="9" type="quantity"/>
     </sbe:message>
+    <sbe:message name="Security" id="5">
+        <field name="midPrice" id="1" type="price"/>
+        <field name="lastUpdateTime" id="2" type="timestamp"/>
+        <field name="lastPriceChange" id="3" type="timestamp"/>
+    </sbe:message>
 </sbe:messageSchema>

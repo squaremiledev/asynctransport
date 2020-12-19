@@ -1,6 +1,6 @@
 package dev.squaremile.transport.usecases.market.domain;
 
-public interface Security
+public interface Security extends MarketMessage
 {
     long midPrice();
 

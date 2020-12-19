@@ -31,14 +31,14 @@ class FakeMarketTest
     @Test
     void shouldMoveThePriceEveryTick()
     {
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(), new PnL()).tick(0L).midPrice()).isEqualTo(100);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(), new PnL()).tick(0L).tick(0L).midPrice()).isEqualTo(100);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + 2, new PnL()).tick(0L).midPrice()).isEqualTo(102);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + 2, new PnL()).tick(0L).tick(0L).midPrice()).isEqualTo(104);
-        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice() + -3, new PnL()).tick(0L).midPrice()).isEqualTo(197);
-        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice() + -3, new PnL()).tick(0L).tick(0L).midPrice()).isEqualTo(194);
-        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice() + (security.midPrice() / 2), new PnL()).tick(0L).midPrice()).isEqualTo(15);
-        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice() + (security.midPrice() / 2), new PnL()).tick(0L).tick(0L).midPrice()).isEqualTo(22);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(), new PnL()).tick(1L).midPrice()).isEqualTo(100);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(), new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(100);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + 2, new PnL()).tick(1L).midPrice()).isEqualTo(102);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + 2, new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(104);
+        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice() + -3, new PnL()).tick(1L).midPrice()).isEqualTo(197);
+        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice() + -3, new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(194);
+        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice() + (security.midPrice() / 2), new PnL()).tick(1L).midPrice()).isEqualTo(15);
+        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice() + (security.midPrice() / 2), new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(22);
     }
 
     @Test

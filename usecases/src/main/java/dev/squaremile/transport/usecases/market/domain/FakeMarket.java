@@ -26,10 +26,13 @@ public class FakeMarket
 
     public FakeMarket tick(final long currentTime)
     {
-        validateTime(currentTime);
-        security.midPrice(currentTime, priceMovement.newMidPrice(currentTime, security));
-        tickListener.onTick(security);
-        this.currentTime = currentTime;
+        if (this.currentTime != currentTime)
+        {
+            validateTime(currentTime);
+            security.midPrice(currentTime, priceMovement.newMidPrice(currentTime, security));
+            tickListener.onTick(security);
+            this.currentTime = currentTime;
+        }
         return this;
     }
 
