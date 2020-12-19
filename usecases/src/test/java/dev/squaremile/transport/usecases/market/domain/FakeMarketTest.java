@@ -73,7 +73,8 @@ class FakeMarketTest
                 new TrackedSecurity().midPrice(0, 100),
                 new Volatility(3, 2),
                 tickerSpy,
-                new PnL()
+                new PnL(),
+                FirmPriceUpdateListener.IGNORE, OrderResultListener.IGNORE
         );
         range(1_000_000, 1_000_010).forEach(fakeMarket::tick);
 
@@ -160,7 +161,8 @@ class FakeMarketTest
                 new TrackedSecurity().midPrice(0, 1_000_000),
                 (currentTime, security) -> security.midPrice() + 1,
                 security -> securityUpdateTimes.add(security.lastUpdateTime()),
-                new PnL()
+                new PnL(),
+                FirmPriceUpdateListener.IGNORE, OrderResultListener.IGNORE
         );
         fakeMarket.onFirmPriceUpdate(1, MARKET_MAKER, new FirmPrice(0, 19, 60, 23, 50));
         fakeMarket.tick(2);
@@ -233,8 +235,10 @@ class FakeMarketTest
 
     private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement, final MarketListener marketListener)
     {
-        return new FakeMarket(new TrackedSecurity().midPrice(0, initialPrice), priceMovement, security ->
-        {
-        }, marketListener);
+        return new FakeMarket(new TrackedSecurity().midPrice(0, initialPrice), priceMovement,
+                              TickListener.IGNORE,
+                              marketListener,
+                              FirmPriceUpdateListener.IGNORE, OrderResultListener.IGNORE
+        );
     }
 }

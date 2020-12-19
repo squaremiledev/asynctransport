@@ -41,7 +41,9 @@ public class MarketApplicationStarter
         {
             final MarketParticipants marketParticipants = new MarketParticipants();
             final MarketEventsPublisher marketEventsPublisher = new MarketEventsPublisher(transport, marketParticipants);
-            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), marketEventsPublisher, marketEventsPublisher);
+            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), marketEventsPublisher, marketEventsPublisher, marketEventsPublisher,
+                                                         marketEventsPublisher
+            );
             return new ListeningApplication(
                     transport,
                     lengthBasedDelineation(SHORT_LITTLE_ENDIAN_FIELD, 0, 0),
@@ -56,7 +58,7 @@ public class MarketApplicationStarter
                     onStart((connectionTransport, connectionId) ->
                             {
                                 marketParticipants.onConnected(connectionId);
-                                marketConnectionApplication = new MarketConnectionApplication<>(clock, new MarketApplication(connectionId, connectionTransport, clock, fakeMarket, marketParticipants));
+                                marketConnectionApplication = new MarketConnectionApplication<>(clock, new MarketApplication(connectionId, clock, fakeMarket, marketParticipants));
                                 return marketConnectionApplication;
                             })
             );

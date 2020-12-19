@@ -7,13 +7,25 @@ public class FakeMarket
     private final TickListener tickListener;
     private final MarketMaking marketMaking;
     private final ExecutionReport executionReport = new ExecutionReport();
+    private final FirmPriceUpdateListener firmPriceUpdateListener;
+    private final OrderResultListener orderResultListener;
+    private final FirmPrice firmPriceUpdate = FirmPrice.createNoPrice();
     private long currentTime;
 
-    public FakeMarket(final Security security, final MidPriceUpdate priceMovement, final TickListener tickListener, final MarketListener marketListener)
+    public FakeMarket(
+            final Security security,
+            final MidPriceUpdate priceMovement,
+            final TickListener tickListener,
+            final MarketListener marketListener,
+            final FirmPriceUpdateListener firmPriceUpdateListener,
+            final OrderResultListener orderResultListener
+    )
     {
         this.security.update(security);
         this.priceMovement = priceMovement;
         this.tickListener = tickListener;
+        this.firmPriceUpdateListener = firmPriceUpdateListener;
+        this.orderResultListener = orderResultListener;
         this.marketMaking = new MarketMaking(
                 (passiveParticipantId, aggressiveParticipantId, executedOrder) ->
                         marketListener.onExecution(executionReport.update(passiveParticipantId, aggressiveParticipantId, this.security, executedOrder)));
@@ -35,22 +47,26 @@ public class FakeMarket
 
     public void onFirmPriceUpdate(final long currentTime, final int marketParticipant, final FirmPrice marketMakerFirmPrice)
     {
-        validateTime(currentTime);
-        marketMaking.updateFirmPrice(currentTime, marketParticipant, marketMakerFirmPrice);
         tick(currentTime);
+        marketMaking.updateFirmPrice(currentTime, marketParticipant, marketMakerFirmPrice);
+        firmPriceUpdate.update(currentTime, marketMaking.firmPrice(marketParticipant));
+        firmPriceUpdateListener.onFirmPriceUpdate(marketParticipant, firmPriceUpdate);
     }
 
     public boolean execute(final long currentTime, final int executingMarketParticipant, final Order order)
     {
         if (currentTime < this.currentTime)
         {
+            orderResultListener.onOrderResult(executingMarketParticipant, OrderResult.NOT_EXECUTED);
             return false;
         }
         if (marketMaking.execute(currentTime, executingMarketParticipant, order))
         {
+            orderResultListener.onOrderResult(executingMarketParticipant, OrderResult.EXECUTED);
             tick(currentTime);
             return true;
         }
+        orderResultListener.onOrderResult(executingMarketParticipant, OrderResult.NOT_EXECUTED);
         tick(currentTime);
         return false;
     }

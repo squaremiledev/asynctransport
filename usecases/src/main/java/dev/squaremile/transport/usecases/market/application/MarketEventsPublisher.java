@@ -8,12 +8,16 @@ import org.agrona.MutableDirectBuffer;
 import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
+import dev.squaremile.transport.usecases.market.domain.FirmPrice;
+import dev.squaremile.transport.usecases.market.domain.FirmPriceUpdateListener;
 import dev.squaremile.transport.usecases.market.domain.MarketListener;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
+import dev.squaremile.transport.usecases.market.domain.OrderResult;
+import dev.squaremile.transport.usecases.market.domain.OrderResultListener;
 import dev.squaremile.transport.usecases.market.domain.Security;
 import dev.squaremile.transport.usecases.market.domain.TickListener;
 
-public class MarketEventsPublisher implements TickListener, MarketListener
+public class MarketEventsPublisher implements TickListener, MarketListener, FirmPriceUpdateListener, OrderResultListener
 {
     private final MarketParticipants marketParticipants;
     private final MessageToSend messageToSend;
@@ -35,6 +39,18 @@ public class MarketEventsPublisher implements TickListener, MarketListener
     public void onTick(final Security security)
     {
         marketParticipants.forEachConnectedParticipantConnectionId(messageToSend.with(security));
+    }
+
+    @Override
+    public void onFirmPriceUpdate(final int marketMakerId, final FirmPrice firmPrice)
+    {
+        messageToSend.with(firmPrice).accept(marketMakerId);
+    }
+
+    @Override
+    public void onOrderResult(final int marketParticipantId, final OrderResult orderResult)
+    {
+        messageToSend.with(orderResult).accept(marketParticipantId);
     }
 
     private static class MessageToSend implements LongConsumer
