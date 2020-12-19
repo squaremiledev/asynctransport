@@ -42,7 +42,7 @@ public class InitiatorStarter
         }
         final TransportApplicationOnDuty application = new AsyncTcp().create(
                 role,
-                1024,
+                16 * 1024,
                 NO_OP,
                 transport ->
                         new ConnectingApplication(

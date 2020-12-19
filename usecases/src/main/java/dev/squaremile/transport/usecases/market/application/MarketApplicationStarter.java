@@ -37,7 +37,7 @@ public class MarketApplicationStarter
             throw new IllegalStateException("Application already started");
         }
         final MutableBoolean startedListening = new MutableBoolean(false);
-        final TransportApplicationOnDuty application = new AsyncTcp().create("marketApp", 1024, SerializedMessageListener.NO_OP, transport ->
+        final TransportApplicationOnDuty application = new AsyncTcp().create("marketApp", 16 * 1024, SerializedMessageListener.NO_OP, transport ->
         {
             final MarketParticipants marketParticipants = new MarketParticipants();
             final MarketEventsPublisher marketEventsPublisher = new MarketEventsPublisher(transport, marketParticipants);

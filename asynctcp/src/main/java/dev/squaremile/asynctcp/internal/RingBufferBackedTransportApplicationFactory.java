@@ -53,7 +53,11 @@ public class RingBufferBackedTransportApplicationFactory implements TransportApp
                         networkToUser::read,
                         (sourceBuffer, sourceOffset, length) ->
                         {
-                            userToNetwork.write(MSG_TYPE_ID, sourceBuffer, sourceOffset, length);
+                            boolean success = userToNetwork.write(MSG_TYPE_ID, sourceBuffer, sourceOffset, length);
+                            if (!success)
+                            {
+                                throw new IllegalStateException("Unable to write to the buffer");
+                            }
                             serializedMessageListener.onSerialized(sourceBuffer, sourceOffset, length);
                         },
                         serializedMessageListener::onSerialized
