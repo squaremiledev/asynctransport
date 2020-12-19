@@ -1,5 +1,6 @@
 package dev.squaremile.transport.usecases.market.application;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -112,5 +113,14 @@ class MarketApplicationTest
     {
         runUntil(onDutyRunner.reached(() -> buySideApplication.midPriceUpdatesCount() > 0 &&
                                             marketMakerApplication.midPriceUpdatesCount() > 0));
+    }
+
+    @Test
+    @Disabled
+    void shouldGenerateChart()
+    {
+        runUntil(5_000, onDutyRunner.reached(() -> buySideApplication.midPriceUpdatesCount() > 10_000 &&
+                                                   marketMakerApplication.midPriceUpdatesCount() > 10_000));
+        System.out.println(fixtures.chart().generateAsString());
     }
 }

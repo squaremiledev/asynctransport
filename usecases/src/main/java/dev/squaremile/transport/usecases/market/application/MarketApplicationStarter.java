@@ -9,12 +9,14 @@ import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.transport.api.events.StartedListening;
 import dev.squaremile.transport.usecases.market.domain.FakeMarket;
+import dev.squaremile.transport.usecases.market.domain.MarketListener;
 import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
 import dev.squaremile.transport.usecases.market.domain.Volatility;
 
 import static dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory.onStart;
 import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.lengthBasedDelineation;
 import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD;
+import static dev.squaremile.transport.usecases.market.domain.MarketListener.marketListeners;
 import static java.lang.System.currentTimeMillis;
 
 public class MarketApplicationStarter
@@ -23,6 +25,7 @@ public class MarketApplicationStarter
     private final Clock clock;
     private TransportApplicationOnDuty transportApplication;
     private MarketConnectionApplication<MarketApplication> marketConnectionApplication;
+    private final MarketMakerChart chart = new MarketMakerChart(time -> time / 10);
 
     public MarketApplicationStarter(final int port, final Clock clock)
     {
@@ -40,7 +43,11 @@ public class MarketApplicationStarter
         final TransportApplicationOnDuty application = new AsyncTcp().create("marketApp", 16 * 1024, SerializedMessageListener.NO_OP, transport ->
         {
             final MarketParticipants marketParticipants = new MarketParticipants();
-            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), new MarketEventsPublisher(transport, marketParticipants));
+            MarketListener marketListener = marketListeners(
+                    new MarketEventsPublisher(transport, marketParticipants)
+//                    chart
+            );
+            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), marketListener);
             return new ListeningApplication(
                     transport,
                     lengthBasedDelineation(SHORT_LITTLE_ENDIAN_FIELD, 0, 0),
@@ -77,5 +84,10 @@ public class MarketApplicationStarter
     public MarketConnectionApplication<MarketApplication> application()
     {
         return marketConnectionApplication;
+    }
+
+    public MarketMakerChart chart()
+    {
+        return chart;
     }
 }

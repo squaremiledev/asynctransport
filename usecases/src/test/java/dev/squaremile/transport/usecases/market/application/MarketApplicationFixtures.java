@@ -10,6 +10,7 @@ public class MarketApplicationFixtures
     private final BuySideApplication buySideApplication;
     private final MarketMakerApplication anotherMarketMakerApplication;
     private final BuySideApplication anotherBuySideApplication;
+    private final MarketMakerChart chart;
 
     public MarketApplicationFixtures(final int port, final Clock clock)
     {
@@ -24,6 +25,7 @@ public class MarketApplicationFixtures
         final TransportApplicationOnDuty buySideTransportOnDuty = buySideApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
         final TransportApplicationOnDuty anotherBuySideTransportOnDuty = anotherBuySideApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
         onDutyRunner = new ThingsOnDutyRunner(marketTransportOnDuty, marketMakerTransportOnDuty, buySideTransportOnDuty, anotherMarketMakerTransportOnDuty, anotherBuySideTransportOnDuty);
+        chart = marketApplicationStarter.chart();
         marketMakerApplication = marketMakerApplicationStarter.application();
         buySideApplication = buySideApplicationStarter.application();
         anotherMarketMakerApplication = anotherMarketMakerApplicationStarter.application();
@@ -54,6 +56,7 @@ public class MarketApplicationFixtures
         return marketMakerApplication;
     }
 
+
     public BuySideApplication buySideApplication()
     {
         return buySideApplication;
@@ -67,5 +70,10 @@ public class MarketApplicationFixtures
     public BuySideApplication anotherBuySideApplication()
     {
         return anotherBuySideApplication;
+    }
+
+    public MarketMakerChart chart()
+    {
+        return chart;
     }
 }

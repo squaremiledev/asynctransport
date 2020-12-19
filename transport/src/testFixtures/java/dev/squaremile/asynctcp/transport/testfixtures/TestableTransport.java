@@ -10,7 +10,6 @@ import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
 import dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler;
 import dev.squaremile.asynctcp.transport.api.app.TransportEventsListener;
 import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
 import dev.squaremile.asynctcp.transport.internal.domain.StatusEventListener;
 import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
 

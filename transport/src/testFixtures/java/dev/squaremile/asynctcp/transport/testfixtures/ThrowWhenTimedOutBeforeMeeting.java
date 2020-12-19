@@ -4,11 +4,11 @@ import java.util.function.BooleanSupplier;
 
 public class ThrowWhenTimedOutBeforeMeeting implements BooleanSupplier
 {
-    private static final int DEFAULT_TIMEOUT_MS = 1_000;
+    public static final int DEFAULT_TIMEOUT_MS = 1_000;
 
     private final BooleanSupplier condition;
 
-    public ThrowWhenTimedOutBeforeMeeting(final BooleanSupplier condition)
+    public ThrowWhenTimedOutBeforeMeeting(final int timeoutMs, final BooleanSupplier condition)
     {
         final long startTime = System.currentTimeMillis();
         this.condition = () ->
@@ -18,18 +18,23 @@ public class ThrowWhenTimedOutBeforeMeeting implements BooleanSupplier
             {
                 return true;
             }
-            final boolean hasTimedOut = startTime + DEFAULT_TIMEOUT_MS <= System.currentTimeMillis();
+            final boolean hasTimedOut = startTime + timeoutMs <= System.currentTimeMillis();
             if (!hasTimedOut)
             {
                 return false;
             }
-            throw new RuntimeException("Not completed within " + DEFAULT_TIMEOUT_MS + "ms");
+            throw new RuntimeException("Not completed within " + timeoutMs + "ms");
         };
     }
 
     public static BooleanSupplier timeoutOr(final BooleanSupplier condition)
     {
-        return new ThrowWhenTimedOutBeforeMeeting(condition);
+        return timeoutOr(DEFAULT_TIMEOUT_MS, condition);
+    }
+
+    public static BooleanSupplier timeoutOr(final int timeoutMs, final BooleanSupplier condition)
+    {
+        return new ThrowWhenTimedOutBeforeMeeting(timeoutMs, condition);
     }
 
     @Override
