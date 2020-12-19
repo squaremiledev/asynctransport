@@ -1,15 +1,10 @@
 package dev.squaremile.transport.usecases.market.domain;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 import static dev.squaremile.transport.usecases.market.domain.FirmPrice.spreadFirmPrice;
@@ -72,7 +67,7 @@ class FakeMarketTest
         FakeMarket fakeMarket = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 100),
                 new Volatility(3, 2),
-                tickerSpy,
+                0, tickerSpy,
                 new PnL(),
                 FirmPriceUpdateListener.IGNORE,
                 OrderResultListener.IGNORE
@@ -87,6 +82,29 @@ class FakeMarketTest
         assertThat(tickerSpy.observedTick(4)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_004, 106, 1_000_004));
         assertThat(tickerSpy.observedTick(5)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_005, 106, 1_000_004));
         assertThat(tickerSpy.observedTick(9)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_009, 112, 1_000_008));
+    }
+
+    @Test
+    void shouldCoolDownAfterEachTickNotToSendTooManyExcessiveUpdates()
+    {
+        final TickerSpy tickerSpy = new TickerSpy();
+        final MidPriceUpdate currentTimeAsPrice = (currentTime, security) -> currentTime;
+        FakeMarket fakeMarket = new FakeMarket(
+                new TrackedSecurity().midPrice(0, 100),
+                currentTimeAsPrice,
+                5,
+                tickerSpy,
+                ExecutionReportListener.IGNORE,
+                FirmPriceUpdateListener.IGNORE,
+                OrderResultListener.IGNORE
+        );
+        range(1_000_000, 1_000_016).forEach(fakeMarket::tick);
+
+        assertThat(tickerSpy.observedTicks()).hasSize(4);
+        assertThat(tickerSpy.observedTick(0)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_000, 1_000_000, 1_000_000));
+        assertThat(tickerSpy.observedTick(1)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_005, 1_000_005, 1_000_005));
+        assertThat(tickerSpy.observedTick(2)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_010, 1_000_010, 1_000_010));
+        assertThat(tickerSpy.observedTick(3)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_015, 1_000_015, 1_000_015));
     }
 
     @Test
@@ -155,30 +173,6 @@ class FakeMarketTest
     }
 
     @Test
-    void shouldNotAcceptTimeMovingBack()
-    {
-        List<Long> securityUpdateTimes = new ArrayList<>();
-        FakeMarket fakeMarket = new FakeMarket(
-                new TrackedSecurity().midPrice(0, 1_000_000),
-                (currentTime, security) -> security.midPrice() + 1,
-                security -> securityUpdateTimes.add(security.lastUpdateTime()),
-                new PnL(),
-                FirmPriceUpdateListener.IGNORE, OrderResultListener.IGNORE
-        );
-        fakeMarket.onFirmPriceUpdate(1, MARKET_MAKER, new FirmPrice(0, 19, 60, 23, 50));
-        fakeMarket.tick(2);
-
-        // When
-        assertThrows(IllegalArgumentException.class, () -> fakeMarket.tick(1));
-        assertThrows(IllegalArgumentException.class, () -> fakeMarket.onFirmPriceUpdate(1, MARKET_MAKER, new FirmPrice(0, 19, 60, 22, 50)));
-        assertThat(fakeMarket.execute(1, ARBITRAGEUR, Order.ask(19, 10))).isFalse();
-
-        // Then
-        assertThat(securityUpdateTimes).isEqualTo(Arrays.asList(1L, 2L));
-        assertThat(fakeMarket.firmPrice(MARKET_MAKER)).usingRecursiveComparison().isEqualTo(new FirmPrice(1, 19, 60, 23, 50));
-    }
-
-    @Test
     void shouldSimulateMarketMakerLosingMoneyDueToFirmPriceUpdateDelayInVolatileMarketConditions()
     {
         final int spreadInPips = 10;
@@ -237,9 +231,11 @@ class FakeMarketTest
     private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement, final ExecutionReportListener executionReportListener)
     {
         return new FakeMarket(new TrackedSecurity().midPrice(0, initialPrice), priceMovement,
+                              0,
                               TickListener.IGNORE,
                               executionReportListener,
-                              FirmPriceUpdateListener.IGNORE, OrderResultListener.IGNORE
+                              FirmPriceUpdateListener.IGNORE,
+                              OrderResultListener.IGNORE
         );
     }
 }

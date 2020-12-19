@@ -11,19 +11,22 @@ public class FakeMarket
     private final OrderResultListener orderResultListener;
     private final FirmPrice firmPriceUpdate = FirmPrice.createNoPrice();
     private long currentTime;
+    private final long tickCoolDownTime;
 
     public FakeMarket(
             final Security security,
             final MidPriceUpdate priceMovement,
+            final int tickCoolDownTime,
             final MarketListener marketListener
     )
     {
-        this(security, priceMovement, marketListener, marketListener, marketListener, marketListener);
+        this(security, priceMovement, tickCoolDownTime, marketListener, marketListener, marketListener, marketListener);
     }
 
     public FakeMarket(
             final Security security,
             final MidPriceUpdate priceMovement,
+            final int tickCoolDownTime,
             final TickListener tickListener,
             final ExecutionReportListener executionReportListener,
             final FirmPriceUpdateListener firmPriceUpdateListener,
@@ -38,6 +41,7 @@ public class FakeMarket
         this.marketMaking = new MarketMaking(
                 (passiveParticipantId, aggressiveParticipantId, executedOrder) ->
                         executionReportListener.onExecution(executionReport.update(passiveParticipantId, aggressiveParticipantId, this.security, executedOrder)));
+        this.tickCoolDownTime = tickCoolDownTime;
     }
 
     public long midPrice()
@@ -47,6 +51,10 @@ public class FakeMarket
 
     public FakeMarket tick(final long currentTime)
     {
+        if (this.currentTime + tickCoolDownTime > currentTime)
+        {
+            return this;
+        }
         validateTime(currentTime);
         security.midPrice(currentTime, priceMovement.newMidPrice(currentTime, security));
         tickListener.onTick(security);

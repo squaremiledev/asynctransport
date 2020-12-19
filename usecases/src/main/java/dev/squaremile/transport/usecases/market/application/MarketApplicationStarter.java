@@ -47,7 +47,7 @@ public class MarketApplicationStarter
                     new MarketEventsPublisher(transport, marketParticipants)
 //                    chart
             );
-            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), marketListener);
+            final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, 100), new Volatility(1, 1), 0, marketListener);
             return new ListeningApplication(
                     transport,
                     lengthBasedDelineation(SHORT_LITTLE_ENDIAN_FIELD, 0, 0),
