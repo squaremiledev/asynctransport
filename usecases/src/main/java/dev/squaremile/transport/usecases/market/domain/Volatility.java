@@ -17,7 +17,7 @@ public class Volatility implements MidPriceUpdate
     }
 
     @Override
-    public long newMidPrice(final long currentTime, final Security security)
+    public Security newMidPrice(final long currentTime, final TrackedSecurity security)
     {
         return trend(currentTime).newMidPrice(currentTime, security);
     }

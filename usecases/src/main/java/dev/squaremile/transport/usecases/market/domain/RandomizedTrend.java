@@ -5,29 +5,36 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RandomizedTrend implements MidPriceUpdate, Trend
 {
     private final String trendName;
-    private final long period;
-    private final int delta;
+    private final int maxRandomIncrease;
     private final ThreadLocalRandom random = ThreadLocalRandom.current();
-    private final int base;
+    private final int baseDifference;
+    private final long updateFrequency;
 
-    public RandomizedTrend(final String trendName, final int base, final int delta, final long period)
+    public RandomizedTrend(final String trendName, final int baseDifference, final int maxRandomIncrease, final long updateFrequency)
     {
         this.trendName = trendName;
-        this.delta = delta;
-        this.base = base;
-        this.period = period;
+        this.maxRandomIncrease = maxRandomIncrease;
+        this.baseDifference = baseDifference;
+        this.updateFrequency = updateFrequency;
     }
 
     @Override
-    public long newMidPrice(final long currentTime, final Security security)
+    public Security newMidPrice(final long currentTime, final TrackedSecurity security)
     {
-        long timeSinceLastChange = currentTime - security.lastPriceChange();
-        if (security.lastUpdateTime() == 0 || timeSinceLastChange <= 0)
+        if (security.lastUpdateTime() == 0)
         {
-            return security.midPrice();
+            security.midPrice(currentTime, security.midPrice());
+            return security;
         }
-        int totalChange = base + random.nextInt(delta);
-        return security.midPrice() + (timeSinceLastChange / period) * totalChange;
+        long timeSinceLastUpdated = currentTime - security.lastUpdateTime();
+        if (timeSinceLastUpdated < updateFrequency)
+        {
+            return security;
+        }
+        int totalChange = baseDifference + random.nextInt(maxRandomIncrease + 1);
+        long delayFactor = updateFrequency < 1 ? timeSinceLastUpdated : timeSinceLastUpdated / updateFrequency;
+        security.midPrice(currentTime, security.midPrice() + delayFactor * totalChange);
+        return security;
     }
 
     @Override
@@ -39,10 +46,10 @@ public class RandomizedTrend implements MidPriceUpdate, Trend
     @Override
     public String toString()
     {
-        return "Trend{" +
+        return "RandomizedTrend{" +
                "trendName='" + trendName + '\'' +
-               ", period=" + period +
-               ", delta=" + delta +
+               ", maxRandomIncrease=" + maxRandomIncrease +
+               ", baseDifference=" + baseDifference +
                '}';
     }
 }

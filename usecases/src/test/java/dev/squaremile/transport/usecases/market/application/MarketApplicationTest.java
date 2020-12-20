@@ -125,7 +125,7 @@ class MarketApplicationTest
         int i = 0;
         int before = marketMakerApplication.midPriceUpdatesCount();
         long beforeMs = System.currentTimeMillis();
-        while (!Thread.interrupted() && i++ < 80_000)
+        while (!Thread.interrupted() && i++ < 200_000)
         {
             onDutyRunner.work();
         }

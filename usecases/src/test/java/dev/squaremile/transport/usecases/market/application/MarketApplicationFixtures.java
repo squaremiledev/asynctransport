@@ -1,14 +1,15 @@
 package dev.squaremile.transport.usecases.market.application;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.transport.usecases.market.domain.MidPriceUpdate;
-import dev.squaremile.transport.usecases.market.domain.PredictableTrend;
+import dev.squaremile.transport.usecases.market.domain.RandomizedTrend;
 import dev.squaremile.transport.usecases.market.domain.Volatility;
+
+import static java.util.Arrays.asList;
 
 public class MarketApplicationFixtures
 {
@@ -21,11 +22,21 @@ public class MarketApplicationFixtures
 
     public MarketApplicationFixtures(final int port, final Clock clock)
     {
+        RandomizedTrend marketClosedTrend = new RandomizedTrend("marketClosedTrend", 0, 0, TimeUnit.MILLISECONDS.toNanos(1));
+        RandomizedTrend nonVolatileTrend = new RandomizedTrend("trend", -10, 20, TimeUnit.MICROSECONDS.toNanos(500));
+        RandomizedTrend volatileTrend = new RandomizedTrend("trend", -50, 100, TimeUnit.MICROSECONDS.toNanos(200));
         final MidPriceUpdate priceMovement = new Volatility(
-                TimeUnit.MILLISECONDS.toNanos(500),
-                Arrays.asList(
-                        new PredictableTrend("trendUp", 1, TimeUnit.MILLISECONDS.toNanos(1)),
-                        new PredictableTrend("trendDown", -1, TimeUnit.MILLISECONDS.toNanos(1))
+                TimeUnit.MILLISECONDS.toNanos(100),
+                asList(
+                        marketClosedTrend,
+                        marketClosedTrend,
+                        marketClosedTrend,
+                        nonVolatileTrend,
+                        nonVolatileTrend,
+                        nonVolatileTrend,
+                        nonVolatileTrend,
+                        nonVolatileTrend,
+                        volatileTrend
                 )
         );
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(

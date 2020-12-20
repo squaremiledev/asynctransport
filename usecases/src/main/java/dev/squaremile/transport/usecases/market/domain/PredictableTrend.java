@@ -15,21 +15,24 @@ public class PredictableTrend implements Trend
     }
 
     @Override
-    public long newMidPrice(final long currentTime, final Security security)
+    public Security newMidPrice(final long currentTime, final TrackedSecurity security)
     {
         if (moveNextPriceBy != 0)
         {
             long newPrice = security.midPrice() + moveNextPriceBy;
             moveNextPriceBy = 0;
-            return newPrice;
+            security.midPrice(currentTime, newPrice);
+            return security;
         }
 
         long timeSinceLastChange = currentTime - security.lastPriceChange();
         if (security.lastUpdateTime() == 0 || timeSinceLastChange <= 0)
         {
-            return security.midPrice();
+            security.midPrice(currentTime, security.midPrice());
+            return security;
         }
-        return security.midPrice() + (timeSinceLastChange / period) * delta;
+        security.midPrice(currentTime, security.midPrice() + (timeSinceLastChange / period) * delta);
+        return security;
     }
 
     public void moveNextPriceBy(final int value)

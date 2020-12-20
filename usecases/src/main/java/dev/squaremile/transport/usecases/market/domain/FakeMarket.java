@@ -56,7 +56,7 @@ public class FakeMarket
             return this;
         }
         validateTime(currentTime);
-        security.midPrice(currentTime, priceMovement.newMidPrice(currentTime, security));
+        priceMovement.newMidPrice(currentTime, security);
         tickListener.onTick(security);
         this.currentTime = currentTime;
         return this;

@@ -2,7 +2,7 @@ package dev.squaremile.transport.usecases.market.domain;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.Disabled;
+import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import static dev.squaremile.transport.usecases.market.domain.ExecutionReportListener.IGNORE;
 import static dev.squaremile.transport.usecases.market.domain.FirmPrice.spreadFirmPrice;
 import static java.util.Collections.singletonList;
 import static java.util.stream.IntStream.range;
@@ -24,36 +25,33 @@ class FakeMarketTest
     @ValueSource(longs = {100, 0, -3})
     void shouldProvideInitialMidPrice(final long initialPrice)
     {
-        assertThat(fakeMarket(initialPrice, (currentTime, security) -> security.midPrice(), new PnL()).midPrice()).isEqualTo(initialPrice);
+        assertThat(fakeMarket(initialPrice, (currentTime, security) -> security.midPrice(currentTime, security.midPrice()), new PnL()).midPrice()).isEqualTo(initialPrice);
     }
 
     @Test
     void shouldMoveThePriceEveryTick()
     {
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(), new PnL()).tick(1L).midPrice()).isEqualTo(100);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(), new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(100);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + 2, new PnL()).tick(1L).midPrice()).isEqualTo(102);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + 2, new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(104);
-        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice() + -3, new PnL()).tick(1L).midPrice()).isEqualTo(197);
-        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice() + -3, new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(194);
-        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice() + (security.midPrice() / 2), new PnL()).tick(1L).midPrice()).isEqualTo(15);
-        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice() + (security.midPrice() / 2), new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(22);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(currentTime, security.midPrice()), new PnL()).tick(1L).midPrice()).isEqualTo(100);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(currentTime, security.midPrice()), new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(100);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(currentTime, security.midPrice() + 2), new PnL()).tick(1L).midPrice()).isEqualTo(102);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(currentTime, security.midPrice() + 2), new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(104);
+        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice(currentTime, security.midPrice() + -3), new PnL()).tick(1L).midPrice()).isEqualTo(197);
+        assertThat(fakeMarket(200, (currentTime, security) -> security.midPrice(currentTime, security.midPrice() + -3), new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(194);
+        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice(currentTime, security.midPrice() + (security.midPrice() / 2)), new PnL()).tick(1L).midPrice()).isEqualTo(15);
+        assertThat(fakeMarket(10, (currentTime, security) -> security.midPrice(currentTime, security.midPrice() + (security.midPrice() / 2)), new PnL()).tick(1L).tick(2L).midPrice()).isEqualTo(22);
     }
 
     @Test
     void shouldInformAboutTimeWhenCalculatingNewPrice()
     {
-        assertThat(fakeMarket(100L, (currentTime, security) -> security.midPrice() + currentTime / 10, new PnL()).tick(123).midPrice()).isEqualTo(112);
-        assertThat(fakeMarket(100L, (currentTime, security) -> security.midPrice() - currentTime, new PnL()).tick(10).tick(44).midPrice()).isEqualTo(46);
+        assertThat(fakeMarket(100L, (currentTime, security) -> security.midPrice(currentTime, security.midPrice() + currentTime / 10), new PnL()).tick(123).midPrice()).isEqualTo(112);
+        assertThat(fakeMarket(100L, (currentTime, security) -> security.midPrice(currentTime, security.midPrice() - currentTime), new PnL()).tick(10).tick(44).midPrice()).isEqualTo(46);
     }
 
     @Test
     void shouldInformAboutLastUpdateTimeWhenCalculatingNewPrice()
     {
-        assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime(), new PnL()).midPrice()).isEqualTo(100);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime(), new PnL()).tick(5).midPrice()).isEqualTo(0);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.lastUpdateTime(), new PnL()).tick(5).tick(10).midPrice()).isEqualTo(5);
-        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice() + security.lastUpdateTime(), new PnL()).tick(10).tick(11).midPrice()).isEqualTo(110);
+        assertThat(fakeMarket(100, (currentTime, security) -> security.midPrice(currentTime, security.midPrice() + security.lastUpdateTime()), IGNORE).tick(10).tick(11).midPrice()).isEqualTo(110);
     }
 
     @Test
@@ -92,13 +90,13 @@ class FakeMarketTest
     void shouldCoolDownAfterEachTickNotToSendTooManyExcessiveUpdates()
     {
         final TickerSpy tickerSpy = new TickerSpy();
-        final MidPriceUpdate currentTimeAsPrice = (currentTime, security) -> currentTime;
+        final MidPriceUpdate currentTimeAsPrice = (currentTime, security) -> security.midPrice(currentTime, currentTime);
         FakeMarket fakeMarket = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 100),
                 currentTimeAsPrice,
                 5,
                 tickerSpy,
-                ExecutionReportListener.IGNORE,
+                IGNORE,
                 FirmPriceUpdateListener.IGNORE,
                 OrderResultListener.IGNORE
         );
@@ -138,7 +136,7 @@ class FakeMarketTest
     void shouldExecuteFirmPriceAndUpdateItWhenBidding()
     {
         PnL pnL = new PnL();
-        FakeMarket fakeMarket = fakeMarket(20, (currentTime, security) -> security.midPrice(), pnL);
+        FakeMarket fakeMarket = fakeMarket(20, (currentTime, security) -> security.midPrice(currentTime, security.midPrice()), pnL);
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 19, 60, 22, 50));
 
         assertThat(fakeMarket.execute(1002, ARBITRAGEUR, Order.bid(22, 10))).isTrue();
@@ -153,7 +151,7 @@ class FakeMarketTest
     void shouldExecuteFirmPriceAndUpdateItWhenAsking()
     {
         PnL pnL = new PnL();
-        FakeMarket fakeMarket = fakeMarket(20, (currentTime, security) -> security.midPrice(), pnL);
+        FakeMarket fakeMarket = fakeMarket(20, (currentTime, security) -> security.midPrice(currentTime, security.midPrice()), pnL);
         fakeMarket.onFirmPriceUpdate(1001, MARKET_MAKER, new FirmPrice(0, 18, 60, 21, 50));
 
         assertThat(fakeMarket.execute(1002, ARBITRAGEUR, Order.ask(18, 10))).isTrue();
@@ -233,26 +231,33 @@ class FakeMarketTest
     }
 
     @Test
-    @Disabled
     void shouldSimulateVolatility()
     {
         final TimeMachine timeMachine = new TimeMachine();
         final TickerSpy midPriceSpy = new TickerSpy();
-        final MidPriceUpdate priceMovement = new Volatility(TimeUnit.MILLISECONDS.toNanos(5), singletonList(
-                new RandomizedTrend("moveAround", -50, 100, TimeUnit.MILLISECONDS.toNanos(4))
-        ));
+        final long initialPrice = 0;
+        final int priceUpdates = 50_000;
 
+        // When
         final FakeMarket market = new FakeMarket(
-                new TrackedSecurity().midPrice(0, 0),
-                priceMovement,
+                new TrackedSecurity().midPrice(0, initialPrice),
+                new Volatility(TimeUnit.MILLISECONDS.toNanos(5), singletonList(new RandomizedTrend("moveAround", -50, 100, TimeUnit.MILLISECONDS.toNanos(1)))),
                 0,
                 midPriceSpy,
-                ExecutionReportListener.IGNORE,
+                IGNORE,
                 FirmPriceUpdateListener.IGNORE,
                 OrderResultListener.IGNORE
         );
+        timeMachine.tick(priceUpdates, market::tick);
 
-        timeMachine.tick(500, market::tick);
+        // Then
+        assertThat(midPriceSpy.midPrices().size()).isEqualTo(priceUpdates);
+        long minSeenPrice = midPriceSpy.midPrices().stream().mapToLong(value -> value).min().orElse(Long.MAX_VALUE);
+        long maxSeenPrice = midPriceSpy.midPrices().stream().mapToLong(value -> value).max().orElse(Long.MIN_VALUE);
+        long lastPrice = midPriceSpy.midPrices().get(midPriceSpy.midPrices().size() - 1);
+        assertThat(lastPrice).isCloseTo(initialPrice, Offset.offset((long)priceUpdates));
+        assertThat(minSeenPrice).isLessThan(-100);
+        assertThat(maxSeenPrice).isGreaterThan(100);
     }
 
     private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement, final ExecutionReportListener executionReportListener)
