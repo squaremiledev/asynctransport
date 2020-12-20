@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.transport.usecases.market.domain.MidPriceUpdate;
-import dev.squaremile.transport.usecases.market.domain.RandomizedTrend;
+import dev.squaremile.transport.usecases.market.domain.PredictableTrend;
 import dev.squaremile.transport.usecases.market.domain.Volatility;
 
 public class MarketApplicationFixtures
@@ -21,13 +21,13 @@ public class MarketApplicationFixtures
 
     public MarketApplicationFixtures(final int port, final Clock clock)
     {
-        final MidPriceUpdate priceMovement = new Volatility(new CustomTrendSetter(
+        final MidPriceUpdate priceMovement = new Volatility(
                 TimeUnit.MILLISECONDS.toNanos(500),
                 Arrays.asList(
-                        new RandomizedTrend("random", 100, 1, TimeUnit.MICROSECONDS.toNanos(100)),
-                        new RandomizedTrend("random", -100, 1, TimeUnit.MICROSECONDS.toNanos(100))
+                        new PredictableTrend("trendUp", 1, TimeUnit.MILLISECONDS.toNanos(1)),
+                        new PredictableTrend("trendDown", -1, TimeUnit.MILLISECONDS.toNanos(1))
                 )
-        ));
+        );
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(
                 port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 0);
         final ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter = marketMakerApplicationStarter(port, clock);

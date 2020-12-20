@@ -1,36 +1,35 @@
 package dev.squaremile.transport.usecases.market.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Volatility implements MidPriceUpdate
 {
-    private final TrendSetter trendSetter;
-    private Trend currentTrend;
+    private final List<Trend> trends = new ArrayList<>();
+    private final long changeTrendFrequency;
     private long lastTimeTrendChanged;
+    private int nextTrend = 0;
 
-    public Volatility(final TrendSetter trendSetter)
+    public Volatility(final long changeTrendFrequency, final List<Trend> trends)
     {
-        this.trendSetter = trendSetter;
+        this.changeTrendFrequency = changeTrendFrequency;
+        this.trends.addAll(trends);
     }
 
     @Override
     public long newMidPrice(final long currentTime, final Security security)
     {
-        if (currentTrend == null)
-        {
-            lastTimeTrendChanged = currentTime;
-            currentTrend = trendSetter.trend(currentTime, 0);
-            return currentTrend.newMidPrice(currentTime, security);
-        }
-        final Trend nextTrend = trendSetter.trend(currentTime, currentTime - lastTimeTrendChanged);
-        if (!nextTrend.trendName().equals(currentTrend.trendName()))
-        {
-            lastTimeTrendChanged = currentTime;
-        }
-        currentTrend = nextTrend;
-        return currentTrend.newMidPrice(currentTime, security);
+        return trend(currentTime).newMidPrice(currentTime, security);
     }
 
-    public interface TrendSetter
+    private Trend trend(final long currentTime)
     {
-        Trend trend(long currentTime, final long timeSinceTrendChanged);
+        long timeSinceTrendChanged = currentTime - lastTimeTrendChanged;
+        if (timeSinceTrendChanged >= changeTrendFrequency)
+        {
+            nextTrend++;
+            lastTimeTrendChanged = currentTime;
+        }
+        return trends.get(nextTrend % trends.size());
     }
 }

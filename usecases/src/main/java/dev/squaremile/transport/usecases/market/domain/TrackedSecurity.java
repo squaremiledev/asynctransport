@@ -53,7 +53,7 @@ public class TrackedSecurity implements Security
         return this;
     }
 
-    public Security midPrice(final long currentTime, final long currentMidPrice)
+    public TrackedSecurity midPrice(final long currentTime, final long currentMidPrice)
     {
         if (this.lastPriceChange == 0 || this.currentMidPrice != currentMidPrice)
         {

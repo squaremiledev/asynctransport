@@ -1,15 +1,23 @@
 package dev.squaremile.transport.usecases.market.domain;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
+
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+
+import static java.util.Collections.singletonList;
 
 class VolatilityTest
 {
     @Test
     void shouldFollowTheTrend()
     {
-        Volatility volatility = new Volatility((__, i) -> new PredictableTrend("trend", 1, 1));
+        Volatility volatility = new Volatility(1000, singletonList(new PredictableTrend("trend", 1, 1)));
         assertThat(volatility.newMidPrice(0, new TrackedSecurity(0, 100, 0))).isEqualTo(100);
         assertThat(volatility.newMidPrice(1, new TrackedSecurity(0, 100, 0))).isEqualTo(100);
         assertThat(volatility.newMidPrice(2, new TrackedSecurity(1, 100, 0))).isEqualTo(102);
@@ -17,32 +25,27 @@ class VolatilityTest
     }
 
     @Test
+    void shouldNotChangeThePriceAtFirstUseOrIfTheTimeDidNotMove()
+    {
+        assertThat(new Volatility(500, singletonList(new PredictableTrend("trendUp", 10, 1))).newMidPrice(1001, new TrackedSecurity(0, 100, 0))).isEqualTo(100);
+        assertThat(new Volatility(500, singletonList(new PredictableTrend("trendUp", 10, 1))).newMidPrice(1001, new TrackedSecurity(1001, 100, 1001))).isEqualTo(100);
+    }
+
+    @Test
     void shouldDecideOnTheNewTrend()
     {
-        Volatility.TrendSetter alteringTrend = new Volatility.TrendSetter()
-        {
-            private PredictableTrend currentTrend = new PredictableTrend("trendUp", 10, 1);
-
-            @Override
-            public PredictableTrend trend(final long currentTime, final long timeSinceTrendChanged)
-            {
-                if (timeSinceTrendChanged > 10)
-                {
-                    currentTrend = "trendUp".equals(currentTrend.trendName()) ? new PredictableTrend("trendDown", -5, 1) : new PredictableTrend("trendUp", 10, 1);
-                }
-                return currentTrend;
-            }
-        };
-        Volatility volatility = new Volatility(alteringTrend);
-
-        assertThat(volatility.newMidPrice(0, new TrackedSecurity(0, 100, 0))).isEqualTo(100);
-        assertThat(volatility.newMidPrice(1, new TrackedSecurity(0, 100, 0))).isEqualTo(100);
-        assertThat(volatility.newMidPrice(2, new TrackedSecurity(1, 100, 0))).isEqualTo(120);
-        assertThat(volatility.newMidPrice(3, new TrackedSecurity(2, 120, 2))).isEqualTo(130);
-        assertThat(volatility.newMidPrice(10, new TrackedSecurity(3, 130, 3))).isEqualTo(200);
-        assertThat(volatility.newMidPrice(11, new TrackedSecurity(10, 200, 10))).isEqualTo(195);
-        assertThat(volatility.newMidPrice(20, new TrackedSecurity(11, 195, 11))).isEqualTo(150);
-        assertThat(volatility.newMidPrice(21, new TrackedSecurity(20, 150, 20))).isEqualTo(145);
-        assertThat(volatility.newMidPrice(22, new TrackedSecurity(21, 145, 21))).isEqualTo(155);
+        Volatility volatility = new Volatility(4, Arrays.asList(
+                new PredictableTrend("trendUp", 1, 1),
+                new PredictableTrend("trendDown", -1, 1)
+        ));
+        final TrackedSecurity security = new TrackedSecurity().midPrice(0, 10);
+        List<Integer> midPrices = LongStream.range(1001, 1021).mapToObj(time -> (int)security.midPrice(time, volatility.newMidPrice(time, security)).midPrice()).collect(Collectors.toList());
+        assertThat(midPrices).isEqualTo(Arrays.asList(
+                10, 9, 8, 7,
+                8, 9, 10, 11,
+                10, 9, 8, 7,
+                8, 9, 10, 11,
+                10, 9, 8, 7
+        ));
     }
 }

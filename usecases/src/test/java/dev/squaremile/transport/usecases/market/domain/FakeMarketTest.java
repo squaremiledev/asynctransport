@@ -10,8 +10,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.transport.usecases.market.application.CustomTrendSetter;
-
 import static dev.squaremile.transport.usecases.market.domain.FirmPrice.spreadFirmPrice;
 import static java.util.Collections.singletonList;
 import static java.util.stream.IntStream.range;
@@ -240,9 +238,9 @@ class FakeMarketTest
     {
         final TimeMachine timeMachine = new TimeMachine();
         final TickerSpy midPriceSpy = new TickerSpy();
-        final MidPriceUpdate priceMovement = new Volatility(new CustomTrendSetter(TimeUnit.MILLISECONDS.toNanos(5), singletonList(
+        final MidPriceUpdate priceMovement = new Volatility(TimeUnit.MILLISECONDS.toNanos(5), singletonList(
                 new RandomizedTrend("moveAround", -50, 100, TimeUnit.MILLISECONDS.toNanos(4))
-        )));
+        ));
 
         final FakeMarket market = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 0),
