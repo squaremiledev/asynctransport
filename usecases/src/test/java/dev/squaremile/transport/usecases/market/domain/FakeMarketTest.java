@@ -241,7 +241,7 @@ class FakeMarketTest
         // When
         final FakeMarket market = new FakeMarket(
                 new TrackedSecurity().midPrice(0, initialPrice),
-                new Volatility(TimeUnit.MILLISECONDS.toNanos(5), singletonList(new RandomizedTrend("moveAround", -50, 100, TimeUnit.MILLISECONDS.toNanos(1)))),
+                new Volatility(TimeUnit.MILLISECONDS.toNanos(5), 0, singletonList(new RandomizedTrend("moveAround", -50, 100, TimeUnit.MILLISECONDS.toNanos(1)))),
                 0,
                 midPriceSpy,
                 IGNORE,

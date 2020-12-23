@@ -25,18 +25,19 @@ public class MarketApplicationFixtures
         RandomizedTrend marketClosedTrend = new RandomizedTrend("marketClosedTrend", 0, 0, TimeUnit.MILLISECONDS.toNanos(1));
         RandomizedTrend nonVolatileTrend = new RandomizedTrend("trend", -10, 20, TimeUnit.MICROSECONDS.toNanos(500));
         final MidPriceUpdate priceMovement = new Volatility(
-                TimeUnit.MILLISECONDS.toNanos(100),
+                TimeUnit.MILLISECONDS.toNanos(500),
+                TimeUnit.MILLISECONDS.toNanos(300),
                 asList(
-                        marketClosedTrend,
-                        marketClosedTrend,
-                        marketClosedTrend,
                         nonVolatileTrend,
                         nonVolatileTrend,
-                        nonVolatileTrend
+                        nonVolatileTrend,
+                        nonVolatileTrend,
+                        nonVolatileTrend,
+                        marketClosedTrend
                 )
         );
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(
-                port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 0);
+                port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000);
         final ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter = marketMakerApplicationStarter(port, clock);
         final ApplicationStarter<BuySideApplication> buySideApplicationStarter = buySideApplicationStarter(port, clock);
         final ApplicationStarter<MarketMakerApplication> anotherMarketMakerApplicationStarter = marketMakerApplicationStarter(port, clock);

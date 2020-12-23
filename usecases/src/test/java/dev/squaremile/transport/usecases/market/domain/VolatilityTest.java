@@ -17,7 +17,7 @@ class VolatilityTest
     @Test
     void shouldFollowTheTrend()
     {
-        Volatility volatility = new Volatility(1000, singletonList(new PredictableTrend("trend", 1, 1)));
+        Volatility volatility = new Volatility(1000, 0, singletonList(new PredictableTrend("trend", 1, 1)));
         assertThat(volatility.newMidPrice(0, new TrackedSecurity(0, 100, 0)).midPrice()).isEqualTo(100);
         assertThat(volatility.newMidPrice(1, new TrackedSecurity(0, 100, 0)).midPrice()).isEqualTo(100);
         assertThat(volatility.newMidPrice(2, new TrackedSecurity(1, 100, 0)).midPrice()).isEqualTo(102);
@@ -27,14 +27,14 @@ class VolatilityTest
     @Test
     void shouldNotChangeThePriceAtFirstUseOrIfTheTimeDidNotMove()
     {
-        assertThat(new Volatility(500, singletonList(new PredictableTrend("trendUp", 10, 1))).newMidPrice(1001, new TrackedSecurity(0, 100, 0)).midPrice()).isEqualTo(100);
-        assertThat(new Volatility(500, singletonList(new PredictableTrend("trendUp", 10, 1))).newMidPrice(1001, new TrackedSecurity(1001, 100, 1001)).midPrice()).isEqualTo(100);
+        assertThat(new Volatility(500, 0, singletonList(new PredictableTrend("trendUp", 10, 1))).newMidPrice(1001, new TrackedSecurity(0, 100, 0)).midPrice()).isEqualTo(100);
+        assertThat(new Volatility(500, 0, singletonList(new PredictableTrend("trendUp", 10, 1))).newMidPrice(1001, new TrackedSecurity(1001, 100, 1001)).midPrice()).isEqualTo(100);
     }
 
     @Test
     void shouldDecideOnTheNewTrend()
     {
-        Volatility volatility = new Volatility(4, Arrays.asList(
+        Volatility volatility = new Volatility(4, 0, Arrays.asList(
                 new PredictableTrend("trendUp", 1, 1),
                 new PredictableTrend("trendDown", -1, 1)
         ));
@@ -46,6 +46,20 @@ class VolatilityTest
                 10, 11, 12, 13,
                 12, 11, 10, 9,
                 10, 11, 12, 13
+        ));
+    }
+
+    @Test
+    void shouldNotUpdatePriceForPredefinedTime()
+    {
+        Volatility volatility = new Volatility(4, 17, singletonList(new PredictableTrend("trendUp", 1, 1)));
+        final TrackedSecurity security = new TrackedSecurity().midPrice(0, 1001);
+        List<Integer> midPrices = LongStream
+                .of(1001, 1003, 1010, 1012, 1015, 1017, 1020, 1030, 1031, 1032, 1033, 1040)
+                .mapToObj(time -> (int)volatility.newMidPrice(time, security).midPrice())
+                .collect(Collectors.toList());
+        assertThat(midPrices).isEqualTo(Arrays.asList(
+                1001, 1001, 1001, 1001, 1001, 1001, 1001, 1011, 1012, 1013, 1014, 1021
         ));
     }
 }
