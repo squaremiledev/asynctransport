@@ -41,11 +41,11 @@ class VolatilityTest
         final TrackedSecurity security = new TrackedSecurity().midPrice(0, 10);
         List<Integer> midPrices = LongStream.range(1001, 1021).mapToObj(time -> (int)volatility.newMidPrice(time, security).midPrice()).collect(Collectors.toList());
         assertThat(midPrices).isEqualTo(Arrays.asList(
-                10, 9, 8, 7,
-                8, 9, 10, 11,
-                10, 9, 8, 7,
-                8, 9, 10, 11,
-                10, 9, 8, 7
+                10, 11, 12, 13,
+                12, 11, 10, 9,
+                10, 11, 12, 13,
+                12, 11, 10, 9,
+                10, 11, 12, 13
         ));
     }
 }

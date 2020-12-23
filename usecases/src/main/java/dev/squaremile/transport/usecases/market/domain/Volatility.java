@@ -8,7 +8,7 @@ public class Volatility implements MidPriceUpdate
     private final List<Trend> trends = new ArrayList<>();
     private final long changeTrendFrequency;
     private long lastTimeTrendChanged;
-    private int nextTrend = 0;
+    private int nextTrend = -1;
 
     public Volatility(final long changeTrendFrequency, final List<Trend> trends)
     {

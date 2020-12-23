@@ -24,7 +24,6 @@ public class MarketApplicationFixtures
     {
         RandomizedTrend marketClosedTrend = new RandomizedTrend("marketClosedTrend", 0, 0, TimeUnit.MILLISECONDS.toNanos(1));
         RandomizedTrend nonVolatileTrend = new RandomizedTrend("trend", -10, 20, TimeUnit.MICROSECONDS.toNanos(500));
-        RandomizedTrend volatileTrend = new RandomizedTrend("trend", -50, 100, TimeUnit.MICROSECONDS.toNanos(200));
         final MidPriceUpdate priceMovement = new Volatility(
                 TimeUnit.MILLISECONDS.toNanos(100),
                 asList(
@@ -33,10 +32,7 @@ public class MarketApplicationFixtures
                         marketClosedTrend,
                         nonVolatileTrend,
                         nonVolatileTrend,
-                        nonVolatileTrend,
-                        nonVolatileTrend,
-                        nonVolatileTrend,
-                        volatileTrend
+                        nonVolatileTrend
                 )
         );
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(
