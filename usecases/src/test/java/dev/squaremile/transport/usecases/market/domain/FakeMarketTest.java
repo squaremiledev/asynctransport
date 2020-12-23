@@ -78,12 +78,12 @@ class FakeMarketTest
 
         assertThat(tickerSpy.observedTicks()).hasSize(10);
         assertThat(tickerSpy.observedTick(0)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_000, 100, 1_000_000));
-        assertThat(tickerSpy.observedTick(1)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_001, 100, 1_000_000));
+        assertThat(tickerSpy.observedTick(1)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_000, 100, 1_000_000));
         assertThat(tickerSpy.observedTick(2)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_002, 103, 1_000_002));
-        assertThat(tickerSpy.observedTick(3)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_003, 103, 1_000_002));
+        assertThat(tickerSpy.observedTick(3)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_002, 103, 1_000_002));
         assertThat(tickerSpy.observedTick(4)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_004, 106, 1_000_004));
-        assertThat(tickerSpy.observedTick(5)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_005, 106, 1_000_004));
-        assertThat(tickerSpy.observedTick(9)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_009, 112, 1_000_008));
+        assertThat(tickerSpy.observedTick(5)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_004, 106, 1_000_004));
+        assertThat(tickerSpy.observedTick(9)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_008, 112, 1_000_008));
     }
 
     @Test

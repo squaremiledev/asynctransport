@@ -59,7 +59,7 @@ public class FirmPrice implements MarketMessage
         return this;
     }
 
-    public void update(final long currentTime, final FirmPrice source)
+    public FirmPrice update(final long currentTime, final FirmPrice source)
     {
         this.correlationId = source.correlationId;
         this.askPrice = source.askPrice;
@@ -67,6 +67,7 @@ public class FirmPrice implements MarketMessage
         this.bidPrice = source.bidPrice;
         this.bidQuantity = source.bidQuantity;
         this.updateTime = currentTime;
+        return this;
     }
 
     public boolean execute(final long currentTime, final Order order, final Order executedOrderResult)

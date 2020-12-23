@@ -9,6 +9,7 @@ import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.MarketListener;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
 import dev.squaremile.transport.usecases.market.domain.Security;
+import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
 
 public class MarketMakerChart implements MarketListener
 {
@@ -17,15 +18,19 @@ public class MarketMakerChart implements MarketListener
     private long baseTime;
     private boolean baseTimeSet;
     private long lastUpdateTime = Long.MIN_VALUE;
+    private final TrackedSecurity trackedSecurity = new TrackedSecurity();
+    private final FirmPrice trackedFirmPrice = FirmPrice.createNoPrice();
+    private final int coverArea;
 
     public MarketMakerChart()
     {
-        this(time -> time);
+        this(time -> time, 0);
     }
 
-    public MarketMakerChart(final TimeUnitConversion timeUnitConversion)
+    public MarketMakerChart(final TimeUnitConversion timeUnitConversion, final int coverArea)
     {
         this.timeUnitConversion = timeUnitConversion;
+        this.coverArea = coverArea;
         rows.add("Time[s],Mid,Bid,Ask");
     }
 
@@ -38,7 +43,12 @@ public class MarketMakerChart implements MarketListener
     @Override
     public void onFirmPriceUpdate(final int marketMakerId, final FirmPrice firmPrice)
     {
-
+        long time = relativeTime(firmPrice.updateTime());
+        if (time == lastUpdateTime)
+        {
+            return;
+        }
+        addEntry(trackedFirmPrice.update(time, firmPrice).updateTime());
     }
 
     @Override
@@ -55,12 +65,18 @@ public class MarketMakerChart implements MarketListener
         {
             return;
         }
-        long midPrice = security.midPrice();
-        rows.add(String.format("%d,%d;%d;%d,0;0;0,0;0;0",
-                               time,
-                               midPrice, midPrice, midPrice
+        addEntry(trackedSecurity.midPrice(time, security.midPrice()).lastUpdateTime());
+    }
+
+    private void addEntry(final long updateTime)
+    {
+        rows.add(String.format("%d,%d;%d;%d,%d;%d;%d,%d;%d;%d",
+                               updateTime,
+                               trackedSecurity.midPrice(), trackedSecurity.midPrice(), trackedSecurity.midPrice(),
+                               trackedFirmPrice.bidPrice() - coverArea, trackedFirmPrice.bidPrice(), trackedFirmPrice.bidPrice(),
+                               trackedFirmPrice.askPrice(), trackedFirmPrice.askPrice(), trackedFirmPrice.askPrice() + coverArea
         ));
-        lastUpdateTime = time;
+        lastUpdateTime = updateTime;
     }
 
     private long relativeTime(final long time)

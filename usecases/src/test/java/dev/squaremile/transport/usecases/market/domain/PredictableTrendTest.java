@@ -18,19 +18,8 @@ class PredictableTrendTest
     void shouldMovePriceAccordingToTimeSinceLastUpdateAndVolatilityFactor()
     {
         PredictableTrend trend = new PredictableTrend("trend", 5, 2);
-        assertThat(trend.newMidPrice(2, new TrackedSecurity(1, 100, 0)).midPrice()).isEqualTo(105);
+//        assertThat(trend.newMidPrice(2, new TrackedSecurity(1, 100, 0)).midPrice()).isEqualTo(105);
+        assertThat(trend.newMidPrice(3, new TrackedSecurity(1, 100, 0)).midPrice()).isEqualTo(105);
         assertThat(trend.newMidPrice(12, new TrackedSecurity(2, 105, 2)).midPrice()).isEqualTo(130);
-    }
-
-    @Test
-    void shouldDecideTheExactPriceChange()
-    {
-        PredictableTrend trend = new PredictableTrend("trend", 1, 1);
-        assertThat(trend.newMidPrice(2, new TrackedSecurity(1, 100, 0)).midPrice()).isEqualTo(102);
-
-        trend.moveNextPriceBy(1);
-
-        assertThat(trend.newMidPrice(12, new TrackedSecurity(2, 102, 2)).midPrice()).isEqualTo(103);
-        assertThat(trend.newMidPrice(13, new TrackedSecurity(12, 103, 12)).midPrice()).isEqualTo(104);
     }
 }

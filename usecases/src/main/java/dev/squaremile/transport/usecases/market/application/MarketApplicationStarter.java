@@ -26,7 +26,7 @@ public class MarketApplicationStarter
 {
     private final int port;
     private final Clock clock;
-    private final MarketMakerChart chart = new MarketMakerChart(TimeUnit.NANOSECONDS::toMillis);
+    private final MarketMakerChart chart = new MarketMakerChart(TimeUnit.NANOSECONDS::toMillis, 300);
     private final long tickCoolDownTime;
     private final MidPriceUpdate priceMovement;
     private final int initialMidPrice;
@@ -49,7 +49,7 @@ public class MarketApplicationStarter
             throw new IllegalStateException("Application already started");
         }
         final MutableBoolean startedListening = new MutableBoolean(false);
-        final TransportApplicationOnDuty application = new AsyncTcp().create("marketApp", 16 * 1024, SerializedMessageListener.NO_OP, transport ->
+        final TransportApplicationOnDuty application = new AsyncTcp().create("marketApp", 128 * 1024, SerializedMessageListener.NO_OP, transport ->
         {
             final MarketParticipants marketParticipants = new MarketParticipants();
             MarketListener marketListener = marketListeners(

@@ -9,7 +9,7 @@ import dev.squaremile.transport.usecases.market.domain.MidPriceUpdate;
 import dev.squaremile.transport.usecases.market.domain.RandomizedTrend;
 import dev.squaremile.transport.usecases.market.domain.Volatility;
 
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 public class MarketApplicationFixtures
 {
@@ -22,19 +22,11 @@ public class MarketApplicationFixtures
 
     public MarketApplicationFixtures(final int port, final Clock clock)
     {
-        RandomizedTrend marketClosedTrend = new RandomizedTrend("marketClosedTrend", 0, 0, TimeUnit.MILLISECONDS.toNanos(1));
         RandomizedTrend nonVolatileTrend = new RandomizedTrend("trend", -10, 20, TimeUnit.MICROSECONDS.toNanos(500));
         final MidPriceUpdate priceMovement = new Volatility(
-                TimeUnit.MILLISECONDS.toNanos(500),
+                TimeUnit.MINUTES.toNanos(500),
                 TimeUnit.MILLISECONDS.toNanos(300),
-                asList(
-                        nonVolatileTrend,
-                        nonVolatileTrend,
-                        nonVolatileTrend,
-                        nonVolatileTrend,
-                        nonVolatileTrend,
-                        marketClosedTrend
-                )
+                singletonList(nonVolatileTrend)
         );
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(
                 port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000);

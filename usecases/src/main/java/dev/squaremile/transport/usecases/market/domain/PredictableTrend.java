@@ -2,58 +2,28 @@ package dev.squaremile.transport.usecases.market.domain;
 
 public class PredictableTrend implements Trend
 {
-    private final String trendName;
-    private final long period;
-    private final int delta;
-    private int moveNextPriceBy;
+    private final RandomizedTrend trend;
 
     public PredictableTrend(final String trendName, final int delta, final long period)
     {
-        this.trendName = trendName;
-        this.delta = delta;
-        this.period = period;
+        this.trend = new RandomizedTrend(trendName, delta, 0, period);
     }
 
     @Override
     public Security newMidPrice(final long currentTime, final TrackedSecurity security)
     {
-        if (moveNextPriceBy != 0)
-        {
-            long newPrice = security.midPrice() + moveNextPriceBy;
-            moveNextPriceBy = 0;
-            security.midPrice(currentTime, newPrice);
-            return security;
-        }
-
-        long timeSinceLastChange = currentTime - security.lastPriceChange();
-        if (security.lastUpdateTime() == 0 || timeSinceLastChange <= 0)
-        {
-            security.midPrice(currentTime, security.midPrice());
-            return security;
-        }
-        security.midPrice(currentTime, security.midPrice() + (timeSinceLastChange / period) * delta);
-        return security;
-    }
-
-    public void moveNextPriceBy(final int value)
-    {
-        moveNextPriceBy = value;
+        return trend.newMidPrice(currentTime, security);
     }
 
     @Override
     public String trendName()
     {
-        return trendName;
+        return trend.trendName();
     }
 
     @Override
     public String toString()
     {
-        return "Trend{" +
-               "trendName='" + trendName + '\'' +
-               ", period=" + period +
-               ", delta=" + delta +
-               ", moveNextPriceBy=" + moveNextPriceBy +
-               '}';
+        return trend.toString();
     }
 }

@@ -1,5 +1,10 @@
 package dev.squaremile.transport.usecases.market.application;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.agrona.collections.MutableLong;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -118,14 +123,21 @@ class MarketApplicationTest
 
     @Test
     @Disabled
-    void shouldGenerateChart()
+    void shouldGenerateChart() throws IOException
     {
+        final int spread = 100;
+        final int iterations = 200_000;
+        final MutableLong correlationId = new MutableLong(0);
+        fixtures.marketMakerApplication().configureOnSecurityUpdate(security -> fixtures.marketMakerApplication().marketMakerPublisher().publish(
+                fixtures.marketMakerApplication().firmPricePublication().update(
+                        correlationId.incrementAndGet(), security.lastUpdateTime(), security.midPrice() - spread, 100, security.midPrice() + spread, 100)));
+
         runUntil(onDutyRunner.reached(() -> buySideApplication.midPriceUpdatesCount() > 0 &&
                                             marketMakerApplication.midPriceUpdatesCount() > 0));
         int i = 0;
         int before = marketMakerApplication.midPriceUpdatesCount();
         long beforeMs = System.currentTimeMillis();
-        while (!Thread.interrupted() && i++ < 400_000)
+        while (!Thread.interrupted() && i++ < iterations)
         {
             onDutyRunner.work();
         }
@@ -134,7 +146,7 @@ class MarketApplicationTest
         System.out.println("marketMakerApplication.midPriceUpdatesCount() = " + updates);
         System.out.println("(afterMs - beforeMs) = " + (afterMs - beforeMs));
         System.out.println(((updates * 1000) / (afterMs - beforeMs)));
-        System.out.println(fixtures.chart().generateAsString());
+        Files.write(Paths.get("./fileName.txt"), fixtures.chart().generateAsString().getBytes());
     }
 
 }

@@ -18,9 +18,8 @@ class VolatilityTest
     void shouldFollowTheTrend()
     {
         Volatility volatility = new Volatility(1000, 0, singletonList(new PredictableTrend("trend", 1, 1)));
-        assertThat(volatility.newMidPrice(0, new TrackedSecurity(0, 100, 0)).midPrice()).isEqualTo(100);
         assertThat(volatility.newMidPrice(1, new TrackedSecurity(0, 100, 0)).midPrice()).isEqualTo(100);
-        assertThat(volatility.newMidPrice(2, new TrackedSecurity(1, 100, 0)).midPrice()).isEqualTo(102);
+        assertThat(volatility.newMidPrice(2, new TrackedSecurity(1, 102, 0)).midPrice()).isEqualTo(103);
         assertThat(volatility.newMidPrice(3, new TrackedSecurity(2, 102, 2)).midPrice()).isEqualTo(103);
     }
 
@@ -59,7 +58,7 @@ class VolatilityTest
                 .mapToObj(time -> (int)volatility.newMidPrice(time, security).midPrice())
                 .collect(Collectors.toList());
         assertThat(midPrices).isEqualTo(Arrays.asList(
-                1001, 1001, 1001, 1001, 1001, 1001, 1001, 1011, 1012, 1013, 1014, 1021
+                1001, 1001, 1001, 1001, 1001, 1001, 1004, 1014, 1015, 1016, 1017, 1024
         ));
     }
 }

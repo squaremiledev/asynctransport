@@ -2,11 +2,13 @@ package dev.squaremile.transport.usecases.market.application;
 
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
 
 class MarketMakerChartTest
@@ -38,7 +40,7 @@ class MarketMakerChartTest
     @Test
     void shouldUseRelativeTime()
     {
-        MarketMakerChart chart = new MarketMakerChart(TimeUnit.MILLISECONDS::toSeconds);
+        MarketMakerChart chart = new MarketMakerChart(TimeUnit.MILLISECONDS::toSeconds, 0);
 
         chart.onTick(new TrackedSecurity(20_000, 100, 20_000));
         chart.onTick(new TrackedSecurity(30_000, 101, 30_000));
@@ -52,10 +54,29 @@ class MarketMakerChartTest
         );
     }
 
+
+    @Test
+    void shouldUseRelativeTimeOfFirmPrice()
+    {
+        MarketMakerChart chart = new MarketMakerChart(TimeUnit.MILLISECONDS::toSeconds, 0);
+
+        chart.onFirmPriceUpdate(marketMakerId(), FirmPrice.spreadFirmPrice(1000, 50, 100, 4));
+        chart.onFirmPriceUpdate(marketMakerId(), FirmPrice.spreadFirmPrice(2000, 50, 100, 5));
+        chart.onFirmPriceUpdate(marketMakerId(), FirmPrice.spreadFirmPrice(5000, 50, 100, 3));
+
+
+        assertThat(chart.generateAsString()).isEqualTo(
+                "Time[s],Mid,Bid,Ask\n" +
+                "0,0;0;0,96;96;96,104;104;104\n" +
+                "1,0;0;0,95;95;95,105;105;105\n" +
+                "4,0;0;0,97;97;97,103;103;103"
+        );
+    }
+
     @Test
     void shouldSkipToFrequentUpdates()
     {
-        MarketMakerChart chart = new MarketMakerChart(TimeUnit.MILLISECONDS::toSeconds);
+        MarketMakerChart chart = new MarketMakerChart(TimeUnit.MILLISECONDS::toSeconds, 0);
 
         chart.onTick(new TrackedSecurity(20_000, 100, 20_000));
         chart.onTick(new TrackedSecurity(20_999, 101, 30_000));
@@ -70,5 +91,76 @@ class MarketMakerChartTest
                 "10,102;102;102,0;0;0,0;0;0\n" +
                 "11,105;105;105,0;0;0,0;0;0"
         );
+    }
+
+    @Test
+    void shouldPlotFirmPrices()
+    {
+        MarketMakerChart chart = new MarketMakerChart();
+
+        chart.onFirmPriceUpdate(marketMakerId(), FirmPrice.spreadFirmPrice(0, 50, 100, 4));
+
+        assertThat(chart.generateAsString()).isEqualTo(
+                "Time[s],Mid,Bid,Ask\n" +
+                "0,0;0;0,96;96;96,104;104;104"
+        );
+    }
+
+    @Test
+    void shouldIgnoreTooFrequentUpdatesOfFirmPrices()
+    {
+        MarketMakerChart chart = new MarketMakerChart(TimeUnit.MILLISECONDS::toSeconds, 0);
+        chart.onFirmPriceUpdate(marketMakerId(), FirmPrice.spreadFirmPrice(1000, 50, 100, 4));
+
+        chart.onFirmPriceUpdate(marketMakerId(), FirmPrice.spreadFirmPrice(1999, 50, 100, 4));
+        chart.onFirmPriceUpdate(marketMakerId(), FirmPrice.spreadFirmPrice(2000, 50, 100, 4));
+
+        assertThat(chart.generateAsString()).isEqualTo(
+                "Time[s],Mid,Bid,Ask\n" +
+                "0,0;0;0,96;96;96,104;104;104\n" +
+                "1,0;0;0,96;96;96,104;104;104"
+        );
+    }
+
+    @Test
+    void shouldRepeatTheLastMidPrice()
+    {
+        MarketMakerChart chart = new MarketMakerChart();
+        chart.onTick(new TrackedSecurity(0, 95, 0));
+
+        chart.onFirmPriceUpdate(marketMakerId(), FirmPrice.spreadFirmPrice(1, 50, 100, 4));
+
+        assertThat(chart.generateAsString()).isEqualTo(
+                "Time[s],Mid,Bid,Ask\n" +
+                "0,95;95;95,0;0;0,0;0;0\n" +
+                "1,95;95;95,96;96;96,104;104;104"
+        );
+    }
+
+    @Test
+    void shouldRepeatTheLastFirmPrice()
+    {
+        MarketMakerChart chart = new MarketMakerChart();
+        chart.onFirmPriceUpdate(marketMakerId(), FirmPrice.spreadFirmPrice(0, 50, 100, 4));
+
+        chart.onTick(new TrackedSecurity(1, 95, 0));
+
+        assertThat(chart.generateAsString()).isEqualTo(
+                "Time[s],Mid,Bid,Ask\n" +
+                "0,0;0;0,96;96;96,104;104;104\n" +
+                "1,95;95;95,96;96;96,104;104;104"
+        );
+    }
+
+    @Test
+    @Disabled
+    void shouldIncludeEntriesIfTheConvertedTimeRemainsTheSameButTheValuesChanged()
+    {
+
+    }
+
+    private int marketMakerId()
+    {
+        return 7;
     }
 }
