@@ -54,7 +54,7 @@ public class RoundTripTimeTest
         applicationReady.await();
 
         final String remoteHost = "localhost";
-        final int extraDataLength = 1024;
+        final int extraDataLength = 64;
         SourcingConnectionApplication.start(
                 "",
                 remoteHost,

@@ -1,5 +1,6 @@
 package dev.squaremile.asynctcp.fixtures;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -11,11 +12,11 @@ import static java.util.Arrays.stream;
 
 public class ThingsOnDutyRunner
 {
-    private final List<OnDuty> onDuty;
+    private final List<OnDuty> onDuty = new ArrayList<>();
 
     public ThingsOnDutyRunner(final OnDuty... thingsOnDuty)
     {
-        this.onDuty = asList(thingsOnDuty);
+        this.onDuty.addAll(asList(thingsOnDuty));
     }
 
     public BooleanSupplier reached(final BooleanSupplier... conditions)
@@ -29,7 +30,7 @@ public class ThingsOnDutyRunner
 
     public void work()
     {
-        for (final OnDuty duty : onDuty)
+        for (OnDuty duty : onDuty)
         {
             duty.work();
         }

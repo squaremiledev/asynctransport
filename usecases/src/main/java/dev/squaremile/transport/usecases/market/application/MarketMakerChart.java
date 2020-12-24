@@ -1,7 +1,6 @@
 package dev.squaremile.transport.usecases.market.application;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.agrona.ExpandableDirectByteBuffer;
 
 
 import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
@@ -13,14 +12,16 @@ import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
 
 public class MarketMakerChart implements MarketListener
 {
-    private final List<String> rows = new ArrayList<>();
+    private final ExpandableDirectByteBuffer content = new ExpandableDirectByteBuffer();
     private final TimeUnitConversion timeUnitConversion;
-    private long baseTime;
-    private boolean baseTimeSet;
-    private long lastUpdateTime = Long.MIN_VALUE;
     private final TrackedSecurity trackedSecurity = new TrackedSecurity();
     private final FirmPrice trackedFirmPrice = FirmPrice.createNoPrice();
     private final int coverArea;
+    private int position = 0;
+    private int entriesCaptured = 0;
+    private long baseTime;
+    private boolean baseTimeSet;
+    private long lastUpdateTime = Long.MIN_VALUE;
 
     public MarketMakerChart()
     {
@@ -31,7 +32,7 @@ public class MarketMakerChart implements MarketListener
     {
         this.timeUnitConversion = timeUnitConversion;
         this.coverArea = coverArea;
-        rows.add("Time[s],Mid,Bid,Ask");
+        position += content.putStringWithoutLengthAscii(position, "Time[s],Mid,Bid,Ask\n");
     }
 
     @Override
@@ -70,13 +71,37 @@ public class MarketMakerChart implements MarketListener
 
     private void addEntry(final long updateTime)
     {
-        rows.add(String.format("%d,%d;%d;%d,%d;%d;%d,%d;%d;%d",
-                               updateTime,
-                               trackedSecurity.midPrice(), trackedSecurity.midPrice(), trackedSecurity.midPrice(),
-                               trackedFirmPrice.bidPrice() - coverArea, trackedFirmPrice.bidPrice(), trackedFirmPrice.bidPrice(),
-                               trackedFirmPrice.askPrice(), trackedFirmPrice.askPrice(), trackedFirmPrice.askPrice() + coverArea
-        ));
-        lastUpdateTime = updateTime;
+        position += content.putLongAscii(position, updateTime);
+        position += content.putStringWithoutLengthAscii(position, ",");
+
+        position += content.putLongAscii(position, trackedSecurity.midPrice());
+        position += content.putStringWithoutLengthAscii(position, ";");
+
+        position += content.putLongAscii(position, trackedSecurity.midPrice());
+        position += content.putStringWithoutLengthAscii(position, ";");
+
+        position += content.putLongAscii(position, trackedSecurity.midPrice());
+        position += content.putStringWithoutLengthAscii(position, ",");
+
+        position += content.putLongAscii(position, trackedFirmPrice.bidPrice() - coverArea);
+        position += content.putStringWithoutLengthAscii(position, ";");
+
+        position += content.putLongAscii(position, trackedFirmPrice.bidPrice());
+        position += content.putStringWithoutLengthAscii(position, ";");
+
+        position += content.putLongAscii(position, trackedFirmPrice.bidPrice());
+        position += content.putStringWithoutLengthAscii(position, ",");
+
+        position += content.putLongAscii(position, trackedFirmPrice.askPrice());
+        position += content.putStringWithoutLengthAscii(position, ";");
+
+        position += content.putLongAscii(position, trackedFirmPrice.askPrice());
+        position += content.putStringWithoutLengthAscii(position, ";");
+
+        position += content.putLongAscii(position, trackedFirmPrice.askPrice() + coverArea);
+        position += content.putStringWithoutLengthAscii(position, "\n");
+        this.lastUpdateTime = updateTime;
+        this.entriesCaptured++;
     }
 
     private long relativeTime(final long time)
@@ -89,9 +114,14 @@ public class MarketMakerChart implements MarketListener
         return timeUnitConversion.convert(time - baseTime);
     }
 
+    public int entriesCaptured()
+    {
+        return entriesCaptured;
+    }
+
     public String generateAsString()
     {
-        return String.join("\n", rows);
+        return content.getStringWithoutLengthAscii(0, position);
     }
 
     interface TimeUnitConversion

@@ -28,8 +28,9 @@ public class MarketApplicationFixtures
                 TimeUnit.MILLISECONDS.toNanos(300),
                 singletonList(nonVolatileTrend)
         );
+        chart = new MarketMakerChart(TimeUnit.NANOSECONDS::toMicros, 300);
         final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(
-                port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000);
+                port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000, chart);
         final ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter = marketMakerApplicationStarter(port, clock);
         final ApplicationStarter<BuySideApplication> buySideApplicationStarter = buySideApplicationStarter(port, clock);
         final ApplicationStarter<MarketMakerApplication> anotherMarketMakerApplicationStarter = marketMakerApplicationStarter(port, clock);
@@ -40,7 +41,6 @@ public class MarketApplicationFixtures
         final TransportApplicationOnDuty buySideTransportOnDuty = buySideApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
         final TransportApplicationOnDuty anotherBuySideTransportOnDuty = anotherBuySideApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
         onDutyRunner = new ThingsOnDutyRunner(marketTransportOnDuty, marketMakerTransportOnDuty, buySideTransportOnDuty, anotherMarketMakerTransportOnDuty, anotherBuySideTransportOnDuty);
-        chart = marketApplicationStarter.chart();
         marketMakerApplication = marketMakerApplicationStarter.application();
         buySideApplication = buySideApplicationStarter.application();
         anotherMarketMakerApplication = anotherMarketMakerApplicationStarter.application();

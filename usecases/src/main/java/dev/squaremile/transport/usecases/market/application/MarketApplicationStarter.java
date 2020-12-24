@@ -1,7 +1,5 @@
 package dev.squaremile.transport.usecases.market.application;
 
-import java.util.concurrent.TimeUnit;
-
 import org.agrona.collections.MutableBoolean;
 
 
@@ -26,20 +24,21 @@ public class MarketApplicationStarter
 {
     private final int port;
     private final Clock clock;
-    private final MarketMakerChart chart = new MarketMakerChart(TimeUnit.NANOSECONDS::toMillis, 300);
+    private final MarketListener marketListener;
     private final long tickCoolDownTime;
     private final MidPriceUpdate priceMovement;
     private final int initialMidPrice;
     private TransportApplicationOnDuty transportApplication;
     private MarketConnectionApplication<MarketApplication> marketConnectionApplication;
 
-    public MarketApplicationStarter(final int port, final Clock clock, final long tickCoolDownTime, final MidPriceUpdate priceMovement, final int initialMidPrice)
+    public MarketApplicationStarter(final int port, final Clock clock, final long tickCoolDownTime, final MidPriceUpdate priceMovement, final int initialMidPrice, final MarketListener marketListener)
     {
         this.port = port;
         this.clock = clock;
         this.tickCoolDownTime = tickCoolDownTime;
         this.priceMovement = priceMovement;
         this.initialMidPrice = initialMidPrice;
+        this.marketListener = marketListener;
     }
 
     public TransportApplicationOnDuty startTransport(final int timeoutMs)
@@ -54,7 +53,7 @@ public class MarketApplicationStarter
             final MarketParticipants marketParticipants = new MarketParticipants();
             MarketListener marketListener = marketListeners(
                     new MarketEventsPublisher(transport, marketParticipants),
-                    chart
+                    this.marketListener
             );
             final FakeMarket fakeMarket = new FakeMarket(new TrackedSecurity().midPrice(0, initialMidPrice), priceMovement, tickCoolDownTime, marketListener);
             return new ListeningApplication(
@@ -93,10 +92,5 @@ public class MarketApplicationStarter
     public MarketConnectionApplication<MarketApplication> application()
     {
         return marketConnectionApplication;
-    }
-
-    public MarketMakerChart chart()
-    {
-        return chart;
     }
 }

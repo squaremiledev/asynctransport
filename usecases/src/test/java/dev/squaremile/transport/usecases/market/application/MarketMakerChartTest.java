@@ -13,11 +13,10 @@ import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
 
 class MarketMakerChartTest
 {
-
     @Test
     void shouldLabelData()
     {
-        assertThat(new MarketMakerChart().generateAsString()).isEqualTo("Time[s],Mid,Bid,Ask");
+        assertThat(new MarketMakerChart().generateAsString()).isEqualTo("Time[s],Mid,Bid,Ask\n");
     }
 
     @Test
@@ -33,7 +32,7 @@ class MarketMakerChartTest
                 "Time[s],Mid,Bid,Ask\n" +
                 "0,100;100;100,0;0;0,0;0;0\n" +
                 "1,101;101;101,0;0;0,0;0;0\n" +
-                "3,101;101;101,0;0;0,0;0;0"
+                "3,101;101;101,0;0;0,0;0;0\n"
         );
     }
 
@@ -50,7 +49,7 @@ class MarketMakerChartTest
                 "Time[s],Mid,Bid,Ask\n" +
                 "0,100;100;100,0;0;0,0;0;0\n" +
                 "10,101;101;101,0;0;0,0;0;0\n" +
-                "20,103;103;103,0;0;0,0;0;0"
+                "20,103;103;103,0;0;0,0;0;0\n"
         );
     }
 
@@ -69,7 +68,7 @@ class MarketMakerChartTest
                 "Time[s],Mid,Bid,Ask\n" +
                 "0,0;0;0,96;96;96,104;104;104\n" +
                 "1,0;0;0,95;95;95,105;105;105\n" +
-                "4,0;0;0,97;97;97,103;103;103"
+                "4,0;0;0,97;97;97,103;103;103\n"
         );
     }
 
@@ -89,7 +88,7 @@ class MarketMakerChartTest
                 "Time[s],Mid,Bid,Ask\n" +
                 "0,100;100;100,0;0;0,0;0;0\n" +
                 "10,102;102;102,0;0;0,0;0;0\n" +
-                "11,105;105;105,0;0;0,0;0;0"
+                "11,105;105;105,0;0;0,0;0;0\n"
         );
     }
 
@@ -102,7 +101,7 @@ class MarketMakerChartTest
 
         assertThat(chart.generateAsString()).isEqualTo(
                 "Time[s],Mid,Bid,Ask\n" +
-                "0,0;0;0,96;96;96,104;104;104"
+                "0,0;0;0,96;96;96,104;104;104\n"
         );
     }
 
@@ -118,7 +117,7 @@ class MarketMakerChartTest
         assertThat(chart.generateAsString()).isEqualTo(
                 "Time[s],Mid,Bid,Ask\n" +
                 "0,0;0;0,96;96;96,104;104;104\n" +
-                "1,0;0;0,96;96;96,104;104;104"
+                "1,0;0;0,96;96;96,104;104;104\n"
         );
     }
 
@@ -133,7 +132,7 @@ class MarketMakerChartTest
         assertThat(chart.generateAsString()).isEqualTo(
                 "Time[s],Mid,Bid,Ask\n" +
                 "0,95;95;95,0;0;0,0;0;0\n" +
-                "1,95;95;95,96;96;96,104;104;104"
+                "1,95;95;95,96;96;96,104;104;104\n"
         );
     }
 
@@ -148,7 +147,7 @@ class MarketMakerChartTest
         assertThat(chart.generateAsString()).isEqualTo(
                 "Time[s],Mid,Bid,Ask\n" +
                 "0,0;0;0,96;96;96,104;104;104\n" +
-                "1,95;95;95,96;96;96,104;104;104"
+                "1,95;95;95,96;96;96,104;104;104\n"
         );
     }
 

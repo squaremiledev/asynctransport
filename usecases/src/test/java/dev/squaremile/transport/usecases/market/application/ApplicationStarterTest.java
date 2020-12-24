@@ -1,5 +1,7 @@
 package dev.squaremile.transport.usecases.market.application;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,7 +18,8 @@ class ApplicationStarterTest
     void shouldAcceptMarketMakerConnection()
     {
         final int port = freePort();
-        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, new Clock(), 0, new PredictableTrend("trend", 1, 1), 1_000_000);
+        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, new Clock(), 0, new PredictableTrend("trend", 1, 1), 1_000_000,
+                                                                                               new MarketMakerChart(TimeUnit.NANOSECONDS::toMillis, 300));
         final ApplicationStarter<MarketMakerApplication> applicationStarter = new ApplicationStarter<>(
                 "localhost", port, new Clock(), (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMakerPublisher(connectionTransport)));
 
