@@ -24,11 +24,8 @@ import static java.util.Collections.singletonList;
 @Disabled
 class MarketMakingTest
 {
-    private final MarketMakerChart chart;
-    private final ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter;
-    private final MarketApplicationStarter marketApplicationStarter;
-
-    public MarketMakingTest()
+    @Test
+    void runSimulation() throws IOException
     {
         final int port = freePort();
         final Clock clock = new Clock();
@@ -39,26 +36,21 @@ class MarketMakingTest
                 singletonList(new RandomizedTrend("trend", -10, 20, TimeUnit.MICROSECONDS.toNanos(500)))
         );
         final MarketMakerChart chart = new MarketMakerChart(TimeUnit.NANOSECONDS::toMicros, 300);
-        marketApplicationStarter = new MarketApplicationStarter(port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000, chart);
-        marketMakerApplicationStarter = new ApplicationStarter<>("localhost", port, clock, (connectionTransport, connectionId) ->
+        final MarketApplicationStarter marketApplicationStarter = new MarketApplicationStarter(port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000, chart);
+        final ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter = new ApplicationStarter<>("localhost", port, clock, (connectionTransport, connectionId) ->
                 new MarketMakerApplication(new MarketMakerPublisher(connectionTransport))
         );
-        this.chart = chart;
-    }
 
-    @Test
-    void runSimulation() throws IOException
-    {
         final int spread = 100;
         final MutableLong correlationId = new MutableLong(0);
         final TransportApplicationOnDuty marketTransportOnDuty = marketApplicationStarter.startTransport(1000);
         final TransportApplicationOnDuty marketMakerTransportOnDuty = marketMakerApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
-        MarketMakerApplication marketMakerApplication = marketMakerApplicationStarter.application();
+        final MarketMakerApplication marketMakerApplication = marketMakerApplicationStarter.application();
         marketMakerApplication.configureOnSecurityUpdate(security -> marketMakerApplication.marketMakerPublisher().publish(
                 marketMakerApplication.firmPricePublication().update(
                         correlationId.incrementAndGet(), security.lastUpdateTime(), security.midPrice() - spread, 100, security.midPrice() + spread, 100)));
         final ThingsOnDutyRunner onDutyRunner = new ThingsOnDutyRunner(marketTransportOnDuty, marketMakerTransportOnDuty);
-        runUntil(5000, onDutyRunner.reached(() -> marketMakerApplicationStarter.application().midPriceUpdatesCount() > 1000));
+        runUntil(5000, onDutyRunner.reached(() -> marketMakerApplication.midPriceUpdatesCount() > 1000));
         final long iterations = 1_000_000;
         int i = 0;
         long beforeMs = System.currentTimeMillis();
@@ -72,34 +64,7 @@ class MarketMakingTest
         System.out.println("steadyStateTimeElapsedMs = " + Duration.ofMillis(steadyStateTimeElapsedMs));
         System.out.println("iterationsPerSecond = " + iterationsPerSecond);
         System.out.println("entries captured = " + chart.entriesCaptured());
-        Files.write(Paths.get("/tmp/asynctransportmarketmaking/index.html"), chartRendering().getBytes());
+        Files.write(Paths.get("/tmp/asynctransportmarketmaking/index.html"), ChartTemplate.chartRendering().getBytes());
         Files.write(Paths.get("/tmp/asynctransportmarketmaking/data.txt"), chart.generateAsStringBytes());
-    }
-
-    String chartRendering()
-    {
-        return "<html>\n" +
-               "<head>\n" +
-               "<script type=\"text/javascript\"\n" +
-               "  src=\"dygraph.js\"></script>\n" +
-               "<link rel=\"stylesheet\" src=\"dygraph.css\" />\n" +
-               "</head>\n" +
-               "<body>\n" +
-               "<div id=\"graphdiv\" style=\"width:100%\"></div>\n" +
-               "<script type=\"text/javascript\">\n" +
-               "  g = new Dygraph(\n" +
-               "  document.getElementById(\"graphdiv\"),\n" +
-               "   \"/data.txt\", \n" +
-               "  {\n" +
-               "  legend: 'always',\n" +
-               "  title: '',\n" +
-               "  showRoller: true,\n" +
-               "  customBars: true,\n" +
-               "  ylabel: 'price',\n" +
-               "}\n" +
-               ");\n" +
-               "</script>\n" +
-               "</body>\n" +
-               "</html>";
     }
 }
