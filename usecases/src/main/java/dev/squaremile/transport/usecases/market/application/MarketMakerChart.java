@@ -124,6 +124,13 @@ public class MarketMakerChart implements MarketListener
         return content.getStringWithoutLengthAscii(0, position);
     }
 
+    public byte[] generateAsStringBytes()
+    {
+        final byte[] contentAsBytes = new byte[position];
+        content.getBytes(0, contentAsBytes);
+        return contentAsBytes;
+    }
+
     interface TimeUnitConversion
     {
         long convert(long time);

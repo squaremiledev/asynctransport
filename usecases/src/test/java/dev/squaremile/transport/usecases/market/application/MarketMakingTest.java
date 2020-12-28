@@ -73,7 +73,7 @@ class MarketMakingTest
         System.out.println("iterationsPerSecond = " + iterationsPerSecond);
         System.out.println("entries captured = " + chart.entriesCaptured());
         Files.write(Paths.get("/tmp/asynctransportmarketmaking/index.html"), chartRendering().getBytes());
-        Files.write(Paths.get("/tmp/asynctransportmarketmaking/data.txt"), chart.generateAsString().getBytes());
+        Files.write(Paths.get("/tmp/asynctransportmarketmaking/data.txt"), chart.generateAsStringBytes());
     }
 
     String chartRendering()

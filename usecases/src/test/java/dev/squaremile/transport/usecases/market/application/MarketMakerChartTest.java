@@ -11,6 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
 import dev.squaremile.transport.usecases.market.domain.TrackedSecurity;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
+
 class MarketMakerChartTest
 {
     @Test
@@ -149,6 +151,17 @@ class MarketMakerChartTest
                 "0,0;0;0,96;96;96,104;104;104\n" +
                 "1,95;95;95,96;96;96,104;104;104\n"
         );
+    }
+
+    @Test
+    void shouldGenerateStringBytes()
+    {
+        MarketMakerChart chart = new MarketMakerChart();
+        String expectedContent = chart.generateAsString();
+        assertThat(expectedContent).isNotEmpty();
+
+        assertThat(chart.generateAsStringBytes()).isEqualTo(expectedContent.getBytes(US_ASCII));
+
     }
 
     @Test
