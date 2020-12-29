@@ -10,28 +10,18 @@ import dev.squaremile.transport.usecases.market.domain.Security;
 
 public class MarketMakerApplication implements BusinessApplication
 {
-    private static final int SPREAD = 100;
-
     private final MarketMakerPublisher marketMakerPublisher;
     private final FirmPrice lastUpdatedFirmPrice = FirmPrice.createNoPrice();
-    private final FirmPrice firmPricePublication = FirmPrice.createNoPrice();
     private final ExecutionReport lastExecutedOrder = new ExecutionReport();
+    private final Consumer<MarketMessage> marketMessageListener;
     private int acknowledgedPriceUpdatesCount = 0;
     private int executedReportsCount = 0;
     private int securityUpdatesCount = 0;
-    private Consumer<Security> onSecurityUpdate = security ->
-    {
 
-    };
-
-    public MarketMakerApplication(final MarketMakerPublisher marketMakerPublisher)
+    public MarketMakerApplication(final MarketMakerPublisher marketMakerPublisher, final Consumer<MarketMessage> marketMessageListener)
     {
         this.marketMakerPublisher = marketMakerPublisher;
-    }
-
-    public void configureOnSecurityUpdate(final Consumer<Security> onSecurityUpdate)
-    {
-        this.onSecurityUpdate = onSecurityUpdate;
+        this.marketMessageListener = marketMessageListener;
     }
 
     @Override
@@ -59,7 +49,7 @@ public class MarketMakerApplication implements BusinessApplication
 
     private void onSecurityUpdate(final Security security)
     {
-        onSecurityUpdate.accept(security);
+        marketMessageListener.accept(security);
         securityUpdatesCount++;
     }
 
@@ -103,15 +93,5 @@ public class MarketMakerApplication implements BusinessApplication
     public int midPriceUpdatesCount()
     {
         return securityUpdatesCount;
-    }
-
-    public MarketMakerPublisher marketMakerPublisher()
-    {
-        return marketMakerPublisher;
-    }
-
-    public FirmPrice firmPricePublication()
-    {
-        return firmPricePublication;
     }
 }

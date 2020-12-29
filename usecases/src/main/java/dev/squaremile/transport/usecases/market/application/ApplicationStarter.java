@@ -23,6 +23,13 @@ public class ApplicationStarter<T extends BusinessApplication>
         );
     }
 
+    public TransportApplicationOnDuty startTransport(final int timeoutMs)
+    {
+        return startTransport(() ->
+                              {
+                              }, timeoutMs);
+    }
+
     public TransportApplicationOnDuty startTransport(final Runnable runUntilReady, final int timeoutMs)
     {
         return initiatorStarter.startTransport(runUntilReady, timeoutMs);
