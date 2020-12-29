@@ -6,6 +6,7 @@ import org.agrona.MutableDirectBuffer;
 
 import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
+import dev.squaremile.transport.usecases.market.domain.HeartBeat;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
@@ -16,6 +17,8 @@ import dev.squaremile.transport.usecases.market.schema.ExecutionReportEncoder;
 import dev.squaremile.transport.usecases.market.schema.ExecutionResult;
 import dev.squaremile.transport.usecases.market.schema.FirmPriceDecoder;
 import dev.squaremile.transport.usecases.market.schema.FirmPriceEncoder;
+import dev.squaremile.transport.usecases.market.schema.HeartBeatDecoder;
+import dev.squaremile.transport.usecases.market.schema.HeartBeatEncoder;
 import dev.squaremile.transport.usecases.market.schema.MessageHeaderDecoder;
 import dev.squaremile.transport.usecases.market.schema.MessageHeaderEncoder;
 import dev.squaremile.transport.usecases.market.schema.OrderDecoder;
@@ -43,6 +46,8 @@ public class Serialization
     private final ExecutionReportEncoder executionReportEncoder = new ExecutionReportEncoder();
     private final SecurityDecoder securityDecoder = new SecurityDecoder();
     private final SecurityEncoder securityEncoder = new SecurityEncoder();
+    private final HeartBeatEncoder heartBeatEncoder = new HeartBeatEncoder();
+    private final HeartBeat decodedHeartBeat = new HeartBeat();
 
     private static ExecutionResult toExecutionResult(final OrderResult orderResult)
     {
@@ -124,7 +129,12 @@ public class Serialization
                     .lastPriceChange(security.lastPriceChange());
             return messageHeaderEncoder.encodedLength() + securityEncoder.encodedLength();
         }
-        return 0;
+        if (message instanceof HeartBeat)
+        {
+            heartBeatEncoder.wrapAndApplyHeader(buffer, offset, messageHeaderEncoder);
+            return messageHeaderEncoder.encodedLength() + securityEncoder.encodedLength();
+        }
+        throw new IllegalArgumentException(message.getClass().getCanonicalName());
     }
 
     public MarketMessage decode(final DirectBuffer buffer, final int offset)
@@ -207,6 +217,10 @@ public class Serialization
             );
             decodedSecurity.update(securityDecoder.lastUpdateTime(), securityDecoder.midPrice(), securityDecoder.lastPriceChange());
             return decodedSecurity;
+        }
+        if (messageHeaderDecoder.templateId() == HeartBeatDecoder.TEMPLATE_ID)
+        {
+            return decodedHeartBeat;
         }
         return null;
     }

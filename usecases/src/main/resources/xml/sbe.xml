@@ -77,4 +77,6 @@
         <field name="lastUpdateTime" id="2" type="timestamp"/>
         <field name="lastPriceChange" id="3" type="timestamp"/>
     </sbe:message>
+    <sbe:message name="HeartBeat" id="6">
+    </sbe:message>
 </sbe:messageSchema>

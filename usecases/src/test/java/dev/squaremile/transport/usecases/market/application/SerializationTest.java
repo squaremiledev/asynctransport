@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.transport.usecases.market.domain.ExecutionReport;
 import dev.squaremile.transport.usecases.market.domain.FirmPrice;
+import dev.squaremile.transport.usecases.market.domain.HeartBeat;
 import dev.squaremile.transport.usecases.market.domain.MarketMessage;
 import dev.squaremile.transport.usecases.market.domain.Order;
 import dev.squaremile.transport.usecases.market.domain.OrderResult;
@@ -51,6 +52,12 @@ class SerializationTest
     void shouldSerializeSecurity()
     {
         verifySerialization(new TrackedSecurity().update(100, 5_000, 99), 3);
+    }
+
+    @Test
+    void shouldSerializeHeartBeat()
+    {
+        verifySerialization(new HeartBeat(), 4);
     }
 
     private void verifySerialization(final MarketMessage message, final int offset)
