@@ -1,0 +1,90 @@
+package dev.squaremile.transport.casestudy.marketmaking.application;
+
+import java.util.concurrent.TimeUnit;
+
+
+import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.transport.casestudy.marketmaking.domain.MidPriceUpdate;
+import dev.squaremile.transport.casestudy.marketmaking.domain.RandomizedTrend;
+import dev.squaremile.transport.casestudy.marketmaking.domain.Volatility;
+
+import static java.util.Collections.singletonList;
+
+public class MarketApplicationFixtures
+{
+    private final ThingsOnDutyRunner onDutyRunner;
+    private final MarketMakerApplication marketMakerApplication;
+    private final BuySideApplication buySideApplication;
+    private final MarketMakerApplication anotherMarketMakerApplication;
+    private final BuySideApplication anotherBuySideApplication;
+
+    public MarketApplicationFixtures(final int port, final Clock clock)
+    {
+        RandomizedTrend nonVolatileTrend = new RandomizedTrend("trend", -10, 20, TimeUnit.MICROSECONDS.toNanos(500));
+        final MidPriceUpdate priceMovement = new Volatility(
+                TimeUnit.MINUTES.toNanos(500),
+                TimeUnit.MILLISECONDS.toNanos(300),
+                singletonList(nonVolatileTrend)
+        );
+        final MarketMakerChart chart = new MarketMakerChart(TimeUnit.NANOSECONDS::toMicros, 300);
+        final ExchangeApplicationStarter exchangeApplicationStarter = new ExchangeApplicationStarter(
+                port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000, chart);
+        final ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter = marketMakerApplicationStarter(port, clock);
+        final ApplicationStarter<BuySideApplication> buySideApplicationStarter = buySideApplicationStarter(port, clock);
+        final ApplicationStarter<MarketMakerApplication> anotherMarketMakerApplicationStarter = marketMakerApplicationStarter(port, clock);
+        final ApplicationStarter<BuySideApplication> anotherBuySideApplicationStarter = buySideApplicationStarter(port, clock);
+        final TransportApplicationOnDuty marketTransportOnDuty = exchangeApplicationStarter.startTransport(1000);
+        final TransportApplicationOnDuty marketMakerTransportOnDuty = marketMakerApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
+        final TransportApplicationOnDuty anotherMarketMakerTransportOnDuty = anotherMarketMakerApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
+        final TransportApplicationOnDuty buySideTransportOnDuty = buySideApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
+        final TransportApplicationOnDuty anotherBuySideTransportOnDuty = anotherBuySideApplicationStarter.startTransport(marketTransportOnDuty::work, 1000);
+        onDutyRunner = new ThingsOnDutyRunner(marketTransportOnDuty, marketMakerTransportOnDuty, buySideTransportOnDuty, anotherMarketMakerTransportOnDuty, anotherBuySideTransportOnDuty);
+        marketMakerApplication = marketMakerApplicationStarter.application();
+        buySideApplication = buySideApplicationStarter.application();
+        anotherMarketMakerApplication = anotherMarketMakerApplicationStarter.application();
+        anotherBuySideApplication = anotherBuySideApplicationStarter.application();
+    }
+
+    private ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter(final int port, final Clock clock)
+    {
+        return new ApplicationStarter<>(
+                "localhost", port, clock, (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMakerPublisher(connectionTransport), marketMessage ->
+        {
+        })
+        );
+    }
+
+    private ApplicationStarter<BuySideApplication> buySideApplicationStarter(final int port, final Clock clock)
+    {
+        return new ApplicationStarter<>(
+                "localhost", port, clock, (connectionTransport, connectionId) -> new BuySideApplication(new BuySidePublisher(connectionTransport))
+        );
+    }
+
+    public ThingsOnDutyRunner onDutyRunner()
+    {
+        return onDutyRunner;
+    }
+
+    public MarketMakerApplication marketMakerApplication()
+    {
+        return marketMakerApplication;
+    }
+
+
+    public BuySideApplication buySideApplication()
+    {
+        return buySideApplication;
+    }
+
+    public MarketMakerApplication anotherMarketMakerApplication()
+    {
+        return anotherMarketMakerApplication;
+    }
+
+    public BuySideApplication anotherBuySideApplication()
+    {
+        return anotherBuySideApplication;
+    }
+}

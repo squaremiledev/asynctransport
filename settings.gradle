@@ -3,4 +3,4 @@ include 'transport', 'asynctcpacceptance', 'sbe', 'serialization', 'asynctcp',
         'aeroncluster', 'aeronclustertcpgateway',
         'chronicle',
         'fix', 'aeronclusterfix',
-        'usecases'
+        'casestudy'
