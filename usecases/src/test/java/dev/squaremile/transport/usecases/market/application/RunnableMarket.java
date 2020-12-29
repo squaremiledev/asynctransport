@@ -27,7 +27,7 @@ class RunnableMarket implements Runnable
         this.clock = new Clock();
         this.priceMovement = new Volatility(
                 TimeUnit.MINUTES.toNanos(500),
-                TimeUnit.MILLISECONDS.toNanos(300),
+                0,
                 singletonList(new RandomizedTrend("trend", -10, 20, TimeUnit.MICROSECONDS.toNanos(500)))
         );
         this.port = port;

@@ -14,7 +14,6 @@ class SpreadMarketMaking implements BusinessApplication
     final FirmPrice firmPricePublication = FirmPrice.createNoPrice();
     private final int spread;
     private final int warmUpUpdates;
-    private final int tightSpreadUpdatesThreshold;
     private long securityUpdatesCount;
 
     SpreadMarketMaking(final MarketMakerPublisher marketMakerPublisher, final int spread, final int warmUpUpdates)
@@ -22,7 +21,6 @@ class SpreadMarketMaking implements BusinessApplication
         this.marketMakerPublisher = marketMakerPublisher;
         this.spread = spread;
         this.warmUpUpdates = warmUpUpdates;
-        this.tightSpreadUpdatesThreshold = warmUpUpdates / 2;
     }
 
     @Override
@@ -34,30 +32,19 @@ class SpreadMarketMaking implements BusinessApplication
         }
         securityUpdatesCount++;
         Security security = (Security)marketMessage;
-        if (securityUpdatesCount < tightSpreadUpdatesThreshold)
+        if (securityUpdatesCount < warmUpUpdates)
         {
-            marketMakerPublisher.publish(
-                    firmPricePublication.update(
-                            correlationId.incrementAndGet(),
-                            security.lastUpdateTime(),
-                            security.midPrice() - spread * 2,
-                            100,
-                            security.midPrice() + spread * 2,
-                            100
-                    ));
+            return;
         }
-        else
-        {
-            marketMakerPublisher.publish(
-                    firmPricePublication.update(
-                            correlationId.incrementAndGet(),
-                            security.lastUpdateTime(),
-                            security.midPrice() - spread,
-                            100,
-                            security.midPrice() + spread,
-                            100
-                    ));
-        }
+        marketMakerPublisher.publish(
+                firmPricePublication.update(
+                        correlationId.incrementAndGet(),
+                        security.lastUpdateTime(),
+                        security.midPrice() - spread,
+                        100,
+                        security.midPrice() + spread,
+                        100
+                ));
     }
 
     @Override

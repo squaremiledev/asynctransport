@@ -18,7 +18,6 @@ public class MarketMakerChart implements MarketListener
     private final FirmPrice trackedFirmPrice = FirmPrice.createNoPrice();
     private final int coverArea;
     private int position = 0;
-    private int entriesCaptured = 0;
     private long baseTime;
     private boolean baseTimeSet;
     private long lastUpdateTime = Long.MIN_VALUE;
@@ -101,7 +100,6 @@ public class MarketMakerChart implements MarketListener
         position += content.putLongAscii(position, trackedFirmPrice.askPrice() + coverArea);
         position += content.putStringWithoutLengthAscii(position, "\n");
         this.lastUpdateTime = updateTime;
-        this.entriesCaptured++;
     }
 
     private long relativeTime(final long time)
@@ -112,11 +110,6 @@ public class MarketMakerChart implements MarketListener
             baseTimeSet = true;
         }
         return timeUnitConversion.convert(time - baseTime);
-    }
-
-    public int entriesCaptured()
-    {
-        return entriesCaptured;
     }
 
     public String generateAsString()

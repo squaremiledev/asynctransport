@@ -20,27 +20,14 @@ public class FakeMarket
             final MarketListener marketListener
     )
     {
-        this(security, priceMovement, tickCoolDownTime, marketListener, marketListener, marketListener, marketListener);
-    }
-
-    public FakeMarket(
-            final Security security,
-            final MidPriceUpdate priceMovement,
-            final long tickCoolDownTime,
-            final TickListener tickListener,
-            final ExecutionReportListener executionReportListener,
-            final FirmPriceUpdateListener firmPriceUpdateListener,
-            final OrderResultListener orderResultListener
-    )
-    {
         this.security.update(security);
         this.priceMovement = priceMovement;
-        this.tickListener = tickListener;
-        this.firmPriceUpdateListener = firmPriceUpdateListener;
-        this.orderResultListener = orderResultListener;
+        this.tickListener = marketListener;
+        this.firmPriceUpdateListener = marketListener;
+        this.orderResultListener = marketListener;
         this.marketMaking = new MarketMaking(
                 (passiveParticipantId, aggressiveParticipantId, executedOrder) ->
-                        executionReportListener.onExecution(executionReport.update(passiveParticipantId, aggressiveParticipantId, this.security, executedOrder)));
+                        marketListener.onExecution(executionReport.update(passiveParticipantId, aggressiveParticipantId, this.security, executedOrder)));
         this.tickCoolDownTime = tickCoolDownTime;
     }
 

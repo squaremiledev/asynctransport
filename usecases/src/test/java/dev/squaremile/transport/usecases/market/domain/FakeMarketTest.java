@@ -69,10 +69,8 @@ class FakeMarketTest
         FakeMarket fakeMarket = new FakeMarket(
                 new TrackedSecurity().midPrice(0, 100),
                 new PredictableTrend("trend", 3, 2),
-                0, tickerSpy,
-                new PnL(),
-                FirmPriceUpdateListener.IGNORE,
-                OrderResultListener.IGNORE
+                0,
+                new MarketListenerBuilder().with(tickerSpy)
         );
         range(1_000_000, 1_000_010).forEach(fakeMarket::tick);
 
@@ -95,10 +93,7 @@ class FakeMarketTest
                 new TrackedSecurity().midPrice(0, 100),
                 currentTimeAsPrice,
                 5,
-                tickerSpy,
-                IGNORE,
-                FirmPriceUpdateListener.IGNORE,
-                OrderResultListener.IGNORE
+                new MarketListenerBuilder().with(tickerSpy)
         );
         range(1_000_000, 1_000_016).forEach(fakeMarket::tick);
 
@@ -243,10 +238,7 @@ class FakeMarketTest
                 new TrackedSecurity().midPrice(0, initialPrice),
                 new Volatility(TimeUnit.MILLISECONDS.toNanos(5), 0, singletonList(new RandomizedTrend("moveAround", -50, 100, TimeUnit.MILLISECONDS.toNanos(1)))),
                 0,
-                midPriceSpy,
-                IGNORE,
-                FirmPriceUpdateListener.IGNORE,
-                OrderResultListener.IGNORE
+                new MarketListenerBuilder().with(midPriceSpy)
         );
         timeMachine.tick(priceUpdates, market::tick);
 
@@ -262,13 +254,63 @@ class FakeMarketTest
 
     private FakeMarket fakeMarket(final long initialPrice, final MidPriceUpdate priceMovement, final ExecutionReportListener executionReportListener)
     {
-        return new FakeMarket(new TrackedSecurity().midPrice(0, initialPrice), priceMovement,
-                              0,
-                              TickListener.IGNORE,
-                              executionReportListener,
-                              FirmPriceUpdateListener.IGNORE,
-                              OrderResultListener.IGNORE
-        );
+        return new FakeMarket(new TrackedSecurity().midPrice(0, initialPrice), priceMovement, 0, new MarketListenerBuilder().with(executionReportListener));
+    }
+
+    static class MarketListenerBuilder implements MarketListener
+    {
+        private ExecutionReportListener executionReportListener = ExecutionReportListener.IGNORE;
+        private TickListener tickListener = TickListener.IGNORE;
+        private FirmPriceUpdateListener firmPriceUpdateListener = FirmPriceUpdateListener.IGNORE;
+        private OrderResultListener orderResultListener = OrderResultListener.IGNORE;
+
+        public MarketListenerBuilder with(ExecutionReportListener executionReportListener)
+        {
+            this.executionReportListener = executionReportListener;
+            return this;
+        }
+
+        public MarketListenerBuilder with(final TickListener tickListener)
+        {
+            this.tickListener = tickListener;
+            return this;
+        }
+
+        public MarketListenerBuilder with(final FirmPriceUpdateListener firmPriceUpdateListener)
+        {
+            this.firmPriceUpdateListener = firmPriceUpdateListener;
+            return this;
+        }
+
+        public MarketListenerBuilder with(final OrderResultListener orderResultListener)
+        {
+            this.orderResultListener = orderResultListener;
+            return this;
+        }
+
+        @Override
+        public void onExecution(final ExecutionReport executionReport)
+        {
+            executionReportListener.onExecution(executionReport);
+        }
+
+        @Override
+        public void onFirmPriceUpdate(final int marketMakerId, final FirmPrice firmPrice)
+        {
+            firmPriceUpdateListener.onFirmPriceUpdate(marketMakerId, firmPrice);
+        }
+
+        @Override
+        public void onOrderResult(final int marketParticipantId, final OrderResult orderResult)
+        {
+            orderResultListener.onOrderResult(marketParticipantId, orderResult);
+        }
+
+        @Override
+        public void onTick(final Security security)
+        {
+            tickListener.onTick(security);
+        }
     }
 
 }
