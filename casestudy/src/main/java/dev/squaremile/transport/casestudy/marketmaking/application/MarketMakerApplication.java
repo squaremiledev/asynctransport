@@ -1,10 +1,8 @@
 package dev.squaremile.transport.casestudy.marketmaking.application;
 
-import java.util.function.Consumer;
-
-
 import dev.squaremile.transport.casestudy.marketmaking.domain.ExecutionReport;
 import dev.squaremile.transport.casestudy.marketmaking.domain.FirmPrice;
+import dev.squaremile.transport.casestudy.marketmaking.domain.MarketListener;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MarketMessage;
 import dev.squaremile.transport.casestudy.marketmaking.domain.Security;
 
@@ -13,12 +11,12 @@ public class MarketMakerApplication implements MarketApplication
     private final MarketMessagePublisher marketMessagePublisher;
     private final FirmPrice lastUpdatedFirmPrice = FirmPrice.createNoPrice();
     private final ExecutionReport lastExecutedOrder = new ExecutionReport();
-    private final Consumer<MarketMessage> marketMessageListener;
+    private final MarketListener.MarketMessageListener marketMessageListener;
     private int acknowledgedPriceUpdatesCount = 0;
     private int executedReportsCount = 0;
     private int securityUpdatesCount = 0;
 
-    public MarketMakerApplication(final MarketMessagePublisher marketMessagePublisher, final Consumer<MarketMessage> marketMessageListener)
+    public MarketMakerApplication(final MarketMessagePublisher marketMessagePublisher, final MarketListener.MarketMessageListener marketMessageListener)
     {
         this.marketMessagePublisher = marketMessagePublisher;
         this.marketMessageListener = marketMessageListener;
@@ -49,7 +47,7 @@ public class MarketMakerApplication implements MarketApplication
 
     private void onSecurityUpdate(final Security security)
     {
-        marketMessageListener.accept(security);
+        marketMessageListener.onMessage(security);
         securityUpdatesCount++;
     }
 

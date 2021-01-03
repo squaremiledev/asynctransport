@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.transport.casestudy.marketmaking.domain.MarketListener;
 import dev.squaremile.transport.casestudy.marketmaking.domain.PredictableTrend;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
@@ -22,9 +23,7 @@ class ApplicationStarterTest
                                                                                                      new MarketMakerChart(TimeUnit.NANOSECONDS::toMillis, 300)
         );
         final ApplicationStarter<MarketMakerApplication> applicationStarter = new ApplicationStarter<>(
-                "localhost", port, new Clock(), (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMessagePublisher(connectionTransport), marketMessage ->
-        {
-        }));
+                "localhost", port, new Clock(), (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMessagePublisher(connectionTransport), MarketListener.MarketMessageListener.IGNORE));
 
         // Given
         assertThat(applicationStarter.application()).isNull();

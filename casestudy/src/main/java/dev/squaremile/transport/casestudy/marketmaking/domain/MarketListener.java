@@ -45,4 +45,13 @@ public interface MarketListener extends TickListener, ExecutionReportListener, F
             }
         };
     }
+
+    interface MarketMessageListener
+    {
+        MarketMessageListener IGNORE = marketMessage ->
+        {
+        };
+
+        void onMessage(MarketMessage marketMessage);
+    }
 }

@@ -1,29 +1,86 @@
 package dev.squaremile.transport.casestudy.marketmaking.application;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
+import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
 import dev.squaremile.transport.casestudy.marketmaking.domain.ExecutionReport;
 import dev.squaremile.transport.casestudy.marketmaking.domain.FirmPrice;
+import dev.squaremile.transport.casestudy.marketmaking.domain.MidPriceUpdate;
 import dev.squaremile.transport.casestudy.marketmaking.domain.Order;
 import dev.squaremile.transport.casestudy.marketmaking.domain.OrderResult;
+import dev.squaremile.transport.casestudy.marketmaking.domain.RandomizedTrend;
+import dev.squaremile.transport.casestudy.marketmaking.domain.Volatility;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
 import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
 import static dev.squaremile.transport.casestudy.marketmaking.domain.CurrentTime.currentTime;
 import static dev.squaremile.transport.casestudy.marketmaking.domain.CurrentTime.timeFromMs;
+import static dev.squaremile.transport.casestudy.marketmaking.domain.MarketListener.MarketMessageListener.IGNORE;
+import static java.util.Collections.singletonList;
 
 class ExchangeApplicationTest
 {
-    private final Clock clock = new Clock();
-    private final MarketApplicationFixtures fixtures = new MarketApplicationFixtures(freePort(), clock);
-    private final ThingsOnDutyRunner onDutyRunner = fixtures.onDutyRunner();
-    private final MarketMakerApplication marketMakerApplication = fixtures.marketMakerApplication();
-    private final BuySideApplication buySideApplication = fixtures.buySideApplication();
+    private final MarketMakerApplication anotherMarketMakerApplication;
+    private final BuySideApplication anotherBuySideApplication;
+    private final ThingsOnDutyRunner onDutyRunner;
+    private final MarketMakerApplication marketMakerApplication;
+    private final BuySideApplication buySideApplication;
 
+    public ExchangeApplicationTest()
+    {
+        final MidPriceUpdate priceMovement = new Volatility(
+                TimeUnit.MINUTES.toNanos(500),
+                TimeUnit.MILLISECONDS.toNanos(300),
+                singletonList(new RandomizedTrend("trend", -10, 20, TimeUnit.MICROSECONDS.toNanos(500)))
+        );
+        final MarketMakerChart chart = new MarketMakerChart(TimeUnit.NANOSECONDS::toMicros, 300);
+        final Clock clock = new Clock();
+        final int port = freePort();
+        final ExchangeApplicationStarter exchangeApplicationStarter = new ExchangeApplicationStarter(port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000, chart);
+        final ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter = new ApplicationStarter<>(
+                "localhost",
+                port,
+                clock,
+                (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMessagePublisher(connectionTransport), IGNORE)
+        );
+        final ApplicationStarter<MarketMakerApplication> anotherMarketMakerApplicationStarter = new ApplicationStarter<>(
+                "localhost",
+                port,
+                clock,
+                (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMessagePublisher(connectionTransport), IGNORE)
+        );
+        final ApplicationStarter<BuySideApplication> buySideApplicationStarter = new ApplicationStarter<>(
+                "localhost",
+                port,
+                clock,
+                (connectionTransport, connectionId) -> new BuySideApplication(new BuySidePublisher(connectionTransport))
+        );
+        final ApplicationStarter<BuySideApplication> anotherBuySideApplicationStarter = new ApplicationStarter<>(
+                "localhost",
+                port,
+                clock,
+                (connectionTransport, connectionId) -> new BuySideApplication(new BuySidePublisher(connectionTransport))
+        );
+
+        final TransportApplicationOnDuty marketTransportOnDuty = exchangeApplicationStarter.startTransport(1000);
+        onDutyRunner = new ThingsOnDutyRunner(
+                marketTransportOnDuty,
+                marketMakerApplicationStarter.startTransport(marketTransportOnDuty::work, 1000),
+                anotherMarketMakerApplicationStarter.startTransport(marketTransportOnDuty::work, 1000),
+                buySideApplicationStarter.startTransport(marketTransportOnDuty::work, 1000),
+                anotherBuySideApplicationStarter.startTransport(marketTransportOnDuty::work, 1000)
+        );
+        marketMakerApplication = marketMakerApplicationStarter.application();
+        buySideApplication = buySideApplicationStarter.application();
+        anotherMarketMakerApplication = anotherMarketMakerApplicationStarter.application();
+        anotherBuySideApplication = anotherBuySideApplicationStarter.application();
+    }
 
     @Test
     void shouldInformMarketMakerAboutSuccessfulPriceUpdate()
@@ -93,7 +150,7 @@ class ExchangeApplicationTest
     {
         marketMakerApplication.updatePrice(new FirmPrice(5, currentTime(), 99, 40, 101, 50));
         runUntil(onDutyRunner.reached(() -> marketMakerApplication.acknowledgedPriceUpdatesCount() == 1));
-        assertThat(fixtures.anotherMarketMakerApplication().acknowledgedPriceUpdatesCount()).isEqualTo(0);
+        assertThat(anotherMarketMakerApplication.acknowledgedPriceUpdatesCount()).isEqualTo(0);
 
         // When
         buySideApplication.sendOrder(Order.ask(99, 30));
@@ -103,9 +160,9 @@ class ExchangeApplicationTest
         ));
 
         // Then
-        assertThat(fixtures.anotherBuySideApplication().orderResultCount()).isEqualTo(0);
-        assertThat(fixtures.anotherBuySideApplication().executedReportsCount()).isEqualTo(0);
-        assertThat(fixtures.anotherMarketMakerApplication().executedReportsCount()).isEqualTo(0);
+        assertThat(anotherBuySideApplication.orderResultCount()).isEqualTo(0);
+        assertThat(anotherBuySideApplication.executedReportsCount()).isEqualTo(0);
+        assertThat(anotherMarketMakerApplication.executedReportsCount()).isEqualTo(0);
     }
 
     @Test
