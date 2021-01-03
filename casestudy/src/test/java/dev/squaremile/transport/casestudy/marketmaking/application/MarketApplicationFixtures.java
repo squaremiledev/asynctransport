@@ -49,7 +49,7 @@ public class MarketApplicationFixtures
     private ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter(final int port, final Clock clock)
     {
         return new ApplicationStarter<>(
-                "localhost", port, clock, (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMakerPublisher(connectionTransport), marketMessage ->
+                "localhost", port, clock, (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMessagePublisher(connectionTransport), marketMessage ->
         {
         })
         );

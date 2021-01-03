@@ -22,7 +22,7 @@ class ApplicationStarterTest
                                                                                                      new MarketMakerChart(TimeUnit.NANOSECONDS::toMillis, 300)
         );
         final ApplicationStarter<MarketMakerApplication> applicationStarter = new ApplicationStarter<>(
-                "localhost", port, new Clock(), (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMakerPublisher(connectionTransport), marketMessage ->
+                "localhost", port, new Clock(), (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMessagePublisher(connectionTransport), marketMessage ->
         {
         }));
 

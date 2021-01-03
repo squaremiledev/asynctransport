@@ -25,7 +25,7 @@ class MarketMakingTest
     void runSimulation() throws IOException
     {
         final ApplicationStarter<SpreadMarketMaking> marketMakerApplicationStarter = new ApplicationStarter<>(
-                "localhost", runnableMarket.port(), new Clock(), (connectionTransport, connectionId) -> new SpreadMarketMaking(new MarketMakerPublisher(connectionTransport), 100, 20_000));
+                "localhost", runnableMarket.port(), new Clock(), (connectionTransport, connectionId) -> new SpreadMarketMaking(new MarketMessagePublisher(connectionTransport), 100, 20_000));
         final TransportApplicationOnDuty marketMakerTransportOnDuty = marketMakerApplicationStarter.startTransport(1000);
         final SpreadMarketMaking marketMakerApplication = marketMakerApplicationStarter.application();
         final ThingsOnDutyRunner onDutyRunner = new ThingsOnDutyRunner(marketMakerTransportOnDuty);

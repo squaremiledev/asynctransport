@@ -10,7 +10,7 @@ import dev.squaremile.transport.casestudy.marketmaking.domain.Security;
 
 public class MarketMakerApplication implements MarketApplication
 {
-    private final MarketMakerPublisher marketMakerPublisher;
+    private final MarketMessagePublisher marketMessagePublisher;
     private final FirmPrice lastUpdatedFirmPrice = FirmPrice.createNoPrice();
     private final ExecutionReport lastExecutedOrder = new ExecutionReport();
     private final Consumer<MarketMessage> marketMessageListener;
@@ -18,9 +18,9 @@ public class MarketMakerApplication implements MarketApplication
     private int executedReportsCount = 0;
     private int securityUpdatesCount = 0;
 
-    public MarketMakerApplication(final MarketMakerPublisher marketMakerPublisher, final Consumer<MarketMessage> marketMessageListener)
+    public MarketMakerApplication(final MarketMessagePublisher marketMessagePublisher, final Consumer<MarketMessage> marketMessageListener)
     {
-        this.marketMakerPublisher = marketMakerPublisher;
+        this.marketMessagePublisher = marketMessagePublisher;
         this.marketMessageListener = marketMessageListener;
     }
 
@@ -55,7 +55,7 @@ public class MarketMakerApplication implements MarketApplication
 
     public void updatePrice(final FirmPrice firmPrice)
     {
-        marketMakerPublisher.publish(firmPrice);
+        marketMessagePublisher.publish(firmPrice);
     }
 
     public void onFirmPriceUpdated(final FirmPrice updatedFirmPrice)
