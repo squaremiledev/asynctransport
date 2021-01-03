@@ -4,7 +4,7 @@ public class Exchange
 {
     private final MidPriceUpdate priceMovement;
     private final TrackedSecurity security = new TrackedSecurity();
-    private final TickListener tickListener;
+    private final MarketListener marketListener;
     private final MarketMaking marketMaking;
     private final ExecutionReport executionReport = new ExecutionReport();
     private final FirmPriceUpdateListener firmPriceUpdateListener;
@@ -22,7 +22,7 @@ public class Exchange
     {
         this.security.update(security);
         this.priceMovement = priceMovement;
-        this.tickListener = marketListener;
+        this.marketListener = marketListener;
         this.firmPriceUpdateListener = marketListener;
         this.orderResultListener = marketListener;
         this.marketMaking = new MarketMaking(
@@ -44,7 +44,7 @@ public class Exchange
         }
         validateTime(currentTime);
         priceMovement.newMidPrice(currentTime, security);
-        tickListener.onTick(security);
+        marketListener.onTick(security);
         this.currentTime = currentTime;
         return this;
     }
