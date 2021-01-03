@@ -21,8 +21,9 @@ class RunnableMarket implements Runnable
     private final MidPriceUpdate priceMovement;
     private final CountDownLatch onReady;
     private final MarketMakerChart chart;
+    private final long initialDelay;
 
-    public RunnableMarket(final int port)
+    public RunnableMarket(final int port, final long initialDelay)
     {
         this.clock = new Clock();
         this.priceMovement = new Volatility(
@@ -33,6 +34,7 @@ class RunnableMarket implements Runnable
         this.port = port;
         this.chart = new MarketMakerChart(TimeUnit.NANOSECONDS::toMicros, 300);
         this.onReady = new CountDownLatch(1);
+        this.initialDelay = initialDelay;
     }
 
     public int port()
@@ -44,7 +46,7 @@ class RunnableMarket implements Runnable
     public void run()
     {
         final TransportApplicationOnDuty marketTransportOnDuty = new ExchangeApplicationStarter(
-                port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000, chart
+                port, clock, initialDelay, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000, chart
         ).startTransport(1000);
         onReady.countDown();
 

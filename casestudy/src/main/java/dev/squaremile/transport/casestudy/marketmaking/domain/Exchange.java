@@ -11,11 +11,15 @@ public class Exchange
     private final OrderResultListener orderResultListener;
     private final FirmPrice firmPriceUpdate = FirmPrice.createNoPrice();
     private final long tickCoolDownTime;
-    private long currentTime;
+    private final long securityUpdatesInitialDelay;
+    private long lastUpdateTime;
+    private long firstTickTime;
+    private boolean sentFirstSecurityUpdate;
 
     public Exchange(
             final Security security,
             final MidPriceUpdate priceMovement,
+            final long securityUpdatesInitialDelay,
             final long tickCoolDownTime,
             final MarketListener marketListener
     )
@@ -29,6 +33,7 @@ public class Exchange
                 (passiveParticipantId, aggressiveParticipantId, executedOrder) ->
                         marketListener.onExecution(executionReport.update(passiveParticipantId, aggressiveParticipantId, this.security, executedOrder)));
         this.tickCoolDownTime = tickCoolDownTime;
+        this.securityUpdatesInitialDelay = securityUpdatesInitialDelay;
     }
 
     public long midPrice()
@@ -38,14 +43,25 @@ public class Exchange
 
     public Exchange tick(final long currentTime)
     {
-        if (this.currentTime + tickCoolDownTime > currentTime)
+        if (!sentFirstSecurityUpdate && firstTickTime == 0)
         {
-            return this;
+            firstTickTime = currentTime;
         }
-        validateTime(currentTime);
-        priceMovement.newMidPrice(currentTime, security);
-        marketListener.onTick(security);
-        this.currentTime = currentTime;
+        if (lastUpdateTime + tickCoolDownTime <= currentTime)
+        {
+            validateTime(currentTime);
+            if (sentFirstSecurityUpdate || currentTime >= firstTickTime + securityUpdatesInitialDelay)
+            {
+                priceMovement.newMidPrice(currentTime, security);
+                marketListener.onTick(security);
+                sentFirstSecurityUpdate = true;
+                lastUpdateTime = currentTime;
+            }
+            else
+            {
+                marketListener.onHeartBeat(HeartBeat.INSTANCE);
+            }
+        }
         return this;
     }
 
@@ -59,7 +75,7 @@ public class Exchange
 
     public boolean execute(final long currentTime, final int executingMarketParticipant, final Order order)
     {
-        if (currentTime < this.currentTime)
+        if (currentTime < this.lastUpdateTime)
         {
             orderResultListener.onOrderResult(executingMarketParticipant, OrderResult.NOT_EXECUTED);
             return false;
@@ -77,9 +93,9 @@ public class Exchange
 
     private void validateTime(final long currentTime)
     {
-        if (this.currentTime > currentTime)
+        if (this.lastUpdateTime > currentTime)
         {
-            throw new IllegalArgumentException("Provided time " + currentTime + " is behind the current market time " + this.currentTime);
+            throw new IllegalArgumentException("Provided time " + currentTime + " is behind the current market time " + this.lastUpdateTime);
         }
     }
 

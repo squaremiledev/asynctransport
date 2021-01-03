@@ -19,11 +19,15 @@ class ApplicationStarterTest
     void shouldAcceptMarketMakerConnection()
     {
         final int port = freePort();
-        final ExchangeApplicationStarter exchangeApplicationStarter = new ExchangeApplicationStarter(port, new Clock(), 0, new PredictableTrend("trend", 1, 1), 1_000_000,
+        final ExchangeApplicationStarter exchangeApplicationStarter = new ExchangeApplicationStarter(port, new Clock(), 0L, 0, new PredictableTrend("trend", 1, 1), 1_000_000,
                                                                                                      new MarketMakerChart(TimeUnit.NANOSECONDS::toMillis, 300)
         );
         final ApplicationStarter<MarketMakerApplication> applicationStarter = new ApplicationStarter<>(
-                "localhost", port, new Clock(), (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMessagePublisher(connectionTransport), MarketListener.MarketMessageListener.IGNORE));
+                "localhost",
+                port,
+                new Clock(),
+                (connectionTransport, connectionId) -> new MarketMakerApplication(new MarketMessagePublisher(connectionTransport), MarketListener.MarketMessageListener.IGNORE)
+        );
 
         // Given
         assertThat(applicationStarter.application()).isNull();

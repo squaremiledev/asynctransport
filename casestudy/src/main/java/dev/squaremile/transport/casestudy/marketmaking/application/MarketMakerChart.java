@@ -5,6 +5,7 @@ import org.agrona.ExpandableDirectByteBuffer;
 
 import dev.squaremile.transport.casestudy.marketmaking.domain.ExecutionReport;
 import dev.squaremile.transport.casestudy.marketmaking.domain.FirmPrice;
+import dev.squaremile.transport.casestudy.marketmaking.domain.HeartBeat;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MarketListener;
 import dev.squaremile.transport.casestudy.marketmaking.domain.OrderResult;
 import dev.squaremile.transport.casestudy.marketmaking.domain.Security;
@@ -122,6 +123,12 @@ public class MarketMakerChart implements MarketListener
         final byte[] contentAsBytes = new byte[position];
         content.getBytes(0, contentAsBytes);
         return contentAsBytes;
+    }
+
+    @Override
+    public void onHeartBeat(final HeartBeat heartBeat)
+    {
+
     }
 
     interface TimeUnitConversion

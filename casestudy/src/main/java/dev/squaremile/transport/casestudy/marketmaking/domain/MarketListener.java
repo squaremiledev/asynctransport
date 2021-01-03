@@ -1,6 +1,6 @@
 package dev.squaremile.transport.casestudy.marketmaking.domain;
 
-public interface MarketListener extends TickListener, ExecutionReportListener, FirmPriceUpdateListener, OrderResultListener
+public interface MarketListener extends TickListener, ExecutionReportListener, FirmPriceUpdateListener, OrderResultListener, HeartBeatListener
 {
     static MarketListener marketListeners(MarketListener... listeners)
     {
@@ -8,6 +8,15 @@ public interface MarketListener extends TickListener, ExecutionReportListener, F
         System.arraycopy(listeners, 0, marketListeners, 0, listeners.length);
         return new MarketListener()
         {
+            @Override
+            public void onHeartBeat(final HeartBeat heartBeat)
+            {
+                for (final MarketListener marketListener : marketListeners)
+                {
+                    marketListener.onHeartBeat(heartBeat);
+                }
+            }
+
             @Override
             public void onExecution(final ExecutionReport executionReport)
             {

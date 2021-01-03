@@ -42,7 +42,7 @@ class ExchangeApplicationTest
         final MarketMakerChart chart = new MarketMakerChart(TimeUnit.NANOSECONDS::toMicros, 300);
         final Clock clock = new Clock();
         final int port = freePort();
-        final ExchangeApplicationStarter exchangeApplicationStarter = new ExchangeApplicationStarter(port, clock, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000, chart);
+        final ExchangeApplicationStarter exchangeApplicationStarter = new ExchangeApplicationStarter(port, clock, 0L, TimeUnit.MICROSECONDS.toNanos(50), priceMovement, 1000, chart);
         final ApplicationStarter<MarketMakerApplication> marketMakerApplicationStarter = new ApplicationStarter<>(
                 "localhost",
                 port,

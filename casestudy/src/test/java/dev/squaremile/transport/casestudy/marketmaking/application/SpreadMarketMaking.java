@@ -27,27 +27,30 @@ class SpreadMarketMaking implements MarketApplication
     @Override
     public void onMessage(final MarketMessage marketMessage)
     {
-        if (!(marketMessage instanceof Security))
-        {
-            return;
-        }
-        securityUpdatesCount++;
-        if (securityUpdatesCount >= warmUpUpdates)
-        {
-            Security security = (Security)marketMessage;
-            marketMessagePublisher.publish(
-                    firmPricePublication.update(
-                            correlationId.incrementAndGet(),
-                            security.lastUpdateTime(),
-                            security.midPrice() - spread,
-                            100,
-                            security.midPrice() + spread,
-                            100
-                    ));
-        }
-        else
+        if (marketMessage instanceof HeartBeat)
         {
             marketMessagePublisher.publish(HeartBeat.INSTANCE);
+        }
+        else if (marketMessage instanceof Security)
+        {
+            securityUpdatesCount++;
+            if (securityUpdatesCount >= warmUpUpdates)
+            {
+                Security security = (Security)marketMessage;
+                marketMessagePublisher.publish(
+                        firmPricePublication.update(
+                                correlationId.incrementAndGet(),
+                                security.lastUpdateTime(),
+                                security.midPrice() - spread,
+                                100,
+                                security.midPrice() + spread,
+                                100
+                        ));
+            }
+            else
+            {
+                marketMessagePublisher.publish(HeartBeat.INSTANCE);
+            }
         }
     }
 

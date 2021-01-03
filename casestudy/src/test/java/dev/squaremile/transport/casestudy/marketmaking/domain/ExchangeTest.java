@@ -2,7 +2,7 @@ package dev.squaremile.transport.casestudy.marketmaking.domain;
 
 import java.util.concurrent.TimeUnit;
 
-import org.assertj.core.api.Assertions;
+import org.agrona.collections.MutableInteger;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -67,15 +67,17 @@ class ExchangeTest
     void shouldInformAboutTickingSecurity()
     {
         final TickerSpy tickerSpy = new TickerSpy();
+        MutableInteger heartBeatCount = new MutableInteger(0);
         Exchange exchange = new Exchange(
                 new TrackedSecurity().midPrice(0, 100),
                 new PredictableTrend("trend", 3, 2),
-                0,
-                new MarketListenerBuilder().with(tickerSpy)
+                4, 0,
+                new MarketListenerBuilder().with((HeartBeatListener)__ -> heartBeatCount.increment()).with(tickerSpy)
         );
-        range(1_000_000, 1_000_010).forEach(exchange::tick);
+        range(1_000_000 - 4, 1_000_010).forEach(exchange::tick);
 
-        Assertions.assertThat(tickerSpy.observedTicks()).hasSize(10);
+        assertThat(heartBeatCount.get()).isEqualTo(4);
+        assertThat(tickerSpy.observedTicks()).hasSize(10);
         assertThat(tickerSpy.observedTick(0)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_000, 100, 1_000_000));
         assertThat(tickerSpy.observedTick(1)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_000, 100, 1_000_000));
         assertThat(tickerSpy.observedTick(2)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_002, 103, 1_000_002));
@@ -93,12 +95,12 @@ class ExchangeTest
         Exchange exchange = new Exchange(
                 new TrackedSecurity().midPrice(0, 100),
                 currentTimeAsPrice,
-                5,
+                0L, 5,
                 new MarketListenerBuilder().with(tickerSpy)
         );
         range(1_000_000, 1_000_016).forEach(exchange::tick);
 
-        Assertions.assertThat(tickerSpy.observedTicks()).hasSize(4);
+        assertThat(tickerSpy.observedTicks()).hasSize(4);
         assertThat(tickerSpy.observedTick(0)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_000, 1_000_000, 1_000_000));
         assertThat(tickerSpy.observedTick(1)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_005, 1_000_005, 1_000_005));
         assertThat(tickerSpy.observedTick(2)).usingRecursiveComparison().isEqualTo(new TrackedSecurity(1_000_010, 1_000_010, 1_000_010));
@@ -238,7 +240,7 @@ class ExchangeTest
         final Exchange market = new Exchange(
                 new TrackedSecurity().midPrice(0, initialPrice),
                 new Volatility(TimeUnit.MILLISECONDS.toNanos(5), 0, singletonList(new RandomizedTrend("moveAround", -50, 100, TimeUnit.MILLISECONDS.toNanos(1)))),
-                0,
+                0L, 0,
                 new MarketListenerBuilder().with(midPriceSpy)
         );
         timeMachine.tick(priceUpdates, market::tick);
@@ -255,7 +257,7 @@ class ExchangeTest
 
     private Exchange exchange(final long initialPrice, final MidPriceUpdate priceMovement, final ExecutionReportListener executionReportListener)
     {
-        return new Exchange(new TrackedSecurity().midPrice(0, initialPrice), priceMovement, 0, new MarketListenerBuilder().with(executionReportListener));
+        return new Exchange(new TrackedSecurity().midPrice(0, initialPrice), priceMovement, 0L, 0, new MarketListenerBuilder().with(executionReportListener));
     }
 
     static class MarketListenerBuilder implements MarketListener
@@ -264,6 +266,7 @@ class ExchangeTest
         private TickListener tickListener = TickListener.IGNORE;
         private FirmPriceUpdateListener firmPriceUpdateListener = FirmPriceUpdateListener.IGNORE;
         private OrderResultListener orderResultListener = OrderResultListener.IGNORE;
+        private HeartBeatListener heartBeatListener = HeartBeatListener.IGNORE;
 
         public MarketListenerBuilder with(ExecutionReportListener executionReportListener)
         {
@@ -274,6 +277,12 @@ class ExchangeTest
         public MarketListenerBuilder with(final TickListener tickListener)
         {
             this.tickListener = tickListener;
+            return this;
+        }
+
+        public MarketListenerBuilder with(final HeartBeatListener heartBeatListener)
+        {
+            this.heartBeatListener = heartBeatListener;
             return this;
         }
 
@@ -311,6 +320,12 @@ class ExchangeTest
         public void onTick(final Security security)
         {
             tickListener.onTick(security);
+        }
+
+        @Override
+        public void onHeartBeat(final HeartBeat heartBeat)
+        {
+            heartBeatListener.onHeartBeat(heartBeat);
         }
     }
 

@@ -28,12 +28,14 @@ public class ExchangeApplicationStarter
     private final long tickCoolDownTime;
     private final MidPriceUpdate priceMovement;
     private final int initialMidPrice;
+    private final long initialDelay;
     private TransportApplicationOnDuty transportApplication;
     private MarketConnectionApplication<ExchangeApplication> marketConnectionApplication;
 
     public ExchangeApplicationStarter(
             final int port,
             final Clock clock,
+            final long initialDelay,
             final long tickCoolDownTime,
             final MidPriceUpdate priceMovement,
             final int initialMidPrice,
@@ -46,6 +48,7 @@ public class ExchangeApplicationStarter
         this.priceMovement = priceMovement;
         this.initialMidPrice = initialMidPrice;
         this.marketListener = marketListener;
+        this.initialDelay = initialDelay;
     }
 
     public TransportApplicationOnDuty startTransport(final int timeoutMs)
@@ -62,7 +65,7 @@ public class ExchangeApplicationStarter
                     new MarketEventsPublisher(transport, marketParticipants),
                     this.marketListener
             );
-            final Exchange exchange = new Exchange(new TrackedSecurity().midPrice(0, initialMidPrice), priceMovement, tickCoolDownTime, marketListener);
+            final Exchange exchange = new Exchange(new TrackedSecurity().midPrice(0, initialMidPrice), priceMovement, initialDelay, tickCoolDownTime, marketListener);
             return new ListeningApplication(
                     transport,
                     lengthBasedDelineation(SHORT_LITTLE_ENDIAN_FIELD, 0, 0),

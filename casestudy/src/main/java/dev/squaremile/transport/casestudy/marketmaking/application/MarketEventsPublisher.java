@@ -9,6 +9,7 @@ import dev.squaremile.asynctcp.transport.api.app.Transport;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
 import dev.squaremile.transport.casestudy.marketmaking.domain.ExecutionReport;
 import dev.squaremile.transport.casestudy.marketmaking.domain.FirmPrice;
+import dev.squaremile.transport.casestudy.marketmaking.domain.HeartBeat;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MarketListener;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MarketMessage;
 import dev.squaremile.transport.casestudy.marketmaking.domain.OrderResult;
@@ -48,6 +49,13 @@ public class MarketEventsPublisher implements MarketListener
     public void onOrderResult(final int marketParticipantId, final OrderResult orderResult)
     {
         messageToSend.with(orderResult).accept(marketParticipantId);
+    }
+
+    @Override
+    public void onHeartBeat(final HeartBeat heartBeat)
+    {
+        // TODO
+        // messageToSend.with(heartBeat).accept();
     }
 
     private static class MessageToSend implements LongConsumer
