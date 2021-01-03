@@ -1,5 +1,7 @@
 package dev.squaremile.transport.casestudy.marketmaking.application;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.agrona.ExpandableDirectByteBuffer;
 
 
@@ -17,6 +19,7 @@ public class MarketMakerChart implements MarketListener
     private final TimeUnitConversion timeUnitConversion;
     private final TrackedSecurity trackedSecurity = new TrackedSecurity();
     private final FirmPrice trackedFirmPrice = FirmPrice.createNoPrice();
+    private final AtomicLong messagesCount = new AtomicLong(0);
     private final int coverArea;
     private int position = 0;
     private long baseTime;
@@ -36,14 +39,21 @@ public class MarketMakerChart implements MarketListener
     }
 
     @Override
+    public void onHeartBeat(final HeartBeat heartBeat)
+    {
+        messagesCount.incrementAndGet();
+    }
+
+    @Override
     public void onExecution(final ExecutionReport executionReport)
     {
-
+        messagesCount.incrementAndGet();
     }
 
     @Override
     public void onFirmPriceUpdate(final int marketMakerId, final FirmPrice firmPrice)
     {
+        messagesCount.incrementAndGet();
         long time = relativeTime(firmPrice.updateTime());
         if (time == lastUpdateTime)
         {
@@ -55,12 +65,13 @@ public class MarketMakerChart implements MarketListener
     @Override
     public void onOrderResult(final int marketParticipantId, final OrderResult orderResult)
     {
-
+        messagesCount.incrementAndGet();
     }
 
     @Override
     public void onTick(final Security security)
     {
+        messagesCount.incrementAndGet();
         long time = relativeTime(security.lastUpdateTime());
         if (time == lastUpdateTime)
         {
@@ -118,17 +129,16 @@ public class MarketMakerChart implements MarketListener
         return content.getStringWithoutLengthAscii(0, position);
     }
 
+    public long messagesCount()
+    {
+        return messagesCount.get();
+    }
+
     public byte[] generateAsStringBytes()
     {
         final byte[] contentAsBytes = new byte[position];
         content.getBytes(0, contentAsBytes);
         return contentAsBytes;
-    }
-
-    @Override
-    public void onHeartBeat(final HeartBeat heartBeat)
-    {
-
     }
 
     interface TimeUnitConversion

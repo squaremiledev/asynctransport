@@ -14,54 +14,45 @@ class SpreadMarketMaking implements MarketApplication
     private final FirmPrice firmPricePublication = FirmPrice.createNoPrice();
     private final MarketMessagePublisher marketMessagePublisher;
     private final int spread;
-    private final int warmUpUpdates;
-    private long securityUpdatesCount;
+    private long receivedMessagesCount;
 
-    SpreadMarketMaking(final MarketMessagePublisher marketMessagePublisher, final int spread, final int warmUpUpdates)
+    SpreadMarketMaking(final MarketMessagePublisher marketMessagePublisher, final int spread)
     {
         this.marketMessagePublisher = marketMessagePublisher;
         this.spread = spread;
-        this.warmUpUpdates = warmUpUpdates;
     }
 
     @Override
     public void onMessage(final MarketMessage marketMessage)
     {
+        receivedMessagesCount++;
         if (marketMessage instanceof HeartBeat)
         {
             marketMessagePublisher.publish(HeartBeat.INSTANCE);
         }
         else if (marketMessage instanceof Security)
         {
-            securityUpdatesCount++;
-            if (securityUpdatesCount >= warmUpUpdates)
-            {
-                Security security = (Security)marketMessage;
-                marketMessagePublisher.publish(
-                        firmPricePublication.update(
-                                correlationId.incrementAndGet(),
-                                security.lastUpdateTime(),
-                                security.midPrice() - spread,
-                                100,
-                                security.midPrice() + spread,
-                                100
-                        ));
-            }
-            else
-            {
-                marketMessagePublisher.publish(HeartBeat.INSTANCE);
-            }
+            Security security = (Security)marketMessage;
+            marketMessagePublisher.publish(
+                    firmPricePublication.update(
+                            correlationId.incrementAndGet(),
+                            security.lastUpdateTime(),
+                            security.midPrice() - spread,
+                            100,
+                            security.midPrice() + spread,
+                            100
+                    ));
         }
+    }
+
+    public long receivedMessagesCount()
+    {
+        return receivedMessagesCount;
     }
 
     @Override
     public void work()
     {
 
-    }
-
-    public boolean hasWarmedUp()
-    {
-        return securityUpdatesCount > warmUpUpdates;
     }
 }

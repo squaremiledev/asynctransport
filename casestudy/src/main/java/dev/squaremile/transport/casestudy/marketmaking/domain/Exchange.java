@@ -7,8 +7,6 @@ public class Exchange
     private final MarketListener marketListener;
     private final MarketMaking marketMaking;
     private final ExecutionReport executionReport = new ExecutionReport();
-    private final FirmPriceUpdateListener firmPriceUpdateListener;
-    private final OrderResultListener orderResultListener;
     private final FirmPrice firmPriceUpdate = FirmPrice.createNoPrice();
     private final long tickCoolDownTime;
     private final long securityUpdatesInitialDelay;
@@ -27,8 +25,6 @@ public class Exchange
         this.security.update(security);
         this.priceMovement = priceMovement;
         this.marketListener = marketListener;
-        this.firmPriceUpdateListener = marketListener;
-        this.orderResultListener = marketListener;
         this.marketMaking = new MarketMaking(
                 (passiveParticipantId, aggressiveParticipantId, executedOrder) ->
                         marketListener.onExecution(executionReport.update(passiveParticipantId, aggressiveParticipantId, this.security, executedOrder)));
@@ -70,23 +66,23 @@ public class Exchange
         tick(currentTime);
         marketMaking.updateFirmPrice(currentTime, marketParticipant, marketMakerFirmPrice);
         firmPriceUpdate.update(currentTime, marketMaking.firmPrice(marketParticipant));
-        firmPriceUpdateListener.onFirmPriceUpdate(marketParticipant, firmPriceUpdate);
+        marketListener.onFirmPriceUpdate(marketParticipant, firmPriceUpdate);
     }
 
     public boolean execute(final long currentTime, final int executingMarketParticipant, final Order order)
     {
         if (currentTime < this.lastUpdateTime)
         {
-            orderResultListener.onOrderResult(executingMarketParticipant, OrderResult.NOT_EXECUTED);
+            marketListener.onOrderResult(executingMarketParticipant, OrderResult.NOT_EXECUTED);
             return false;
         }
         if (marketMaking.execute(currentTime, executingMarketParticipant, order))
         {
-            orderResultListener.onOrderResult(executingMarketParticipant, OrderResult.EXECUTED);
+            marketListener.onOrderResult(executingMarketParticipant, OrderResult.EXECUTED);
             tick(currentTime);
             return true;
         }
-        orderResultListener.onOrderResult(executingMarketParticipant, OrderResult.NOT_EXECUTED);
+        marketListener.onOrderResult(executingMarketParticipant, OrderResult.NOT_EXECUTED);
         tick(currentTime);
         return false;
     }

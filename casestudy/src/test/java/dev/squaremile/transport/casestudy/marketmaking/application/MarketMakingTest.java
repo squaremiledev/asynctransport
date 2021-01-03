@@ -50,18 +50,24 @@ class MarketMakingTest
     {
         final RunnableMarket runnableMarket = new RunnableMarket(freePort(), TimeUnit.SECONDS.toNanos(3)).runInSeparateThread();
         final ApplicationStarter<SpreadMarketMaking> marketMakerApplicationStarter = new ApplicationStarter<>(
-                "localhost", runnableMarket.port(), new Clock(), (connectionTransport, connectionId) -> new SpreadMarketMaking(new MarketMessagePublisher(connectionTransport), 100, 0));
+                "localhost", runnableMarket.port(), new Clock(), (connectionTransport, connectionId) -> new SpreadMarketMaking(new MarketMessagePublisher(connectionTransport), 100));
         final TransportApplicationOnDuty marketMakerOnDuty = marketMakerApplicationStarter.startTransport(1000);
+        SpreadMarketMaking marketMaker = marketMakerApplicationStarter.application();
         spin(ofSeconds(5), marketMakerOnDuty);
-
+        long messagesReceivedCountAtStart = marketMaker.receivedMessagesCount();
+        long marketSentMessagesCountAtStart = runnableMarket.messagesCount();
         final Instant startTime = Instant.now();
         long iterations = spin(ofSeconds(5), marketMakerOnDuty);
         final Instant endTime = Instant.now();
+        long marketSentMessagesCount = runnableMarket.messagesCount();
+        long messagesReceivedCount = marketMaker.receivedMessagesCount();
 
         System.out.printf(
-                "Run in steady state for %s performing %d iterations per second%n",
+                "Run in steady state for %s performing %d iterations per second, sending %d and receiving %d messages %n",
                 between(startTime, endTime).toString(),
-                iterations / between(startTime, endTime).getSeconds()
+                iterations / between(startTime, endTime).getSeconds(),
+                marketSentMessagesCount - marketSentMessagesCountAtStart,
+                messagesReceivedCount - messagesReceivedCountAtStart
         );
         Files.write(Paths.get("/tmp/asynctransportmarketmaking/index.html"), ChartTemplate.chartRendering().getBytes());
         Files.write(Paths.get("/tmp/asynctransportmarketmaking/data.txt"), runnableMarket.performanceChartContent());

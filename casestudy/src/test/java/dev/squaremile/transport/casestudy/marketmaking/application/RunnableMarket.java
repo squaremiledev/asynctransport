@@ -66,6 +66,11 @@ class RunnableMarket implements Runnable
         return chart.generateAsStringBytes();
     }
 
+    public long messagesCount()
+    {
+        return chart.messagesCount();
+    }
+
     public RunnableMarket runInSeparateThread()
     {
         if (onReady.getCount() < 1)
