@@ -4,6 +4,7 @@ import org.agrona.collections.MutableLong;
 
 
 import dev.squaremile.transport.casestudy.marketmaking.domain.FirmPrice;
+import dev.squaremile.transport.casestudy.marketmaking.domain.HeartBeat;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MarketMessage;
 import dev.squaremile.transport.casestudy.marketmaking.domain.Security;
 
@@ -31,20 +32,23 @@ class SpreadMarketMaking implements MarketApplication
             return;
         }
         securityUpdatesCount++;
-        Security security = (Security)marketMessage;
-        if (securityUpdatesCount < warmUpUpdates)
+        if (securityUpdatesCount >= warmUpUpdates)
         {
-            return;
+            Security security = (Security)marketMessage;
+            marketMessagePublisher.publish(
+                    firmPricePublication.update(
+                            correlationId.incrementAndGet(),
+                            security.lastUpdateTime(),
+                            security.midPrice() - spread,
+                            100,
+                            security.midPrice() + spread,
+                            100
+                    ));
         }
-        marketMessagePublisher.publish(
-                firmPricePublication.update(
-                        correlationId.incrementAndGet(),
-                        security.lastUpdateTime(),
-                        security.midPrice() - spread,
-                        100,
-                        security.midPrice() + spread,
-                        100
-                ));
+        else
+        {
+            marketMessagePublisher.publish(HeartBeat.INSTANCE);
+        }
     }
 
     @Override
