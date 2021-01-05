@@ -24,9 +24,37 @@ a low latency, message-driven, high performance TCP applications written in Java
 
 - easily extendable, with some extensions under active development (Aeron Cluster, Chronicle Queue, Ring Buffer, TCP endpoints simulators)
 
-- ideal for event-sourced systems 
+- ideal for event-sourced systems
+ 
 
 ## Evaluation
+
+### Add dependencies
+
+Maven
+
+```
+<dependency>
+	<groupId>dev.squaremile</groupId>
+	<artifactId>asynctcp</artifactId>
+	<version>0.2.0</version>
+	<type>pom</type>
+</dependency>
+
+<dependency>
+    <groupId>org.agrona</groupId>
+    <artifactId>agrona</artifactId>
+    <version>1.8.0</version>
+    <type>pom</type>
+</dependency>
+```
+
+Gradle
+
+```
+implementation 'dev.squaremile:asynctcp:0.2.0'
+implementation 'org.agrona:agrona:1.8.0'
+```
 
 ### See some examples
 
