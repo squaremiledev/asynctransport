@@ -2,25 +2,41 @@
 
 [![Tests_Java_8_11 Build Status](https://github.com/squaremiledev/asynctransport/workflows/Tests_Java_8_11/badge.svg)](https://github.com/squaremiledev/asynctransport/actions?query=workflow%3ATests_Java_8_11)
 
-This library is an attempt to build a fully composable, library-style (read, non-framework style),
-message-driven, high performance, single threaded tcp server/client.
+The main artifact of the Async Transport family is AsyncTCP.
+AsyncTCP is a fully composable library to be used as a building block for
+a low latency, message-driven, high performance TCP applications written in Java.
 
-I enjoy combining knowledge from technical books with distilled software design experience. One of the applications is this library. 
-It has been primarily designed to be used as a building block for other tools that require some audit
-capabilities, such as test spies and that should not slow down systems under test.
+## Key features:
 
-However, because of a relatively low latency even at higher message rates, it can be also used as a building block for
-(potentially event sourced) systems where part of its communication is done via TCP.
+- compatible with Java 8 and above
+
+- no external dependencies, apart from some Agrona data structures
+
+- purely message driven, with all messages serializable for an audit and replay purposes
+
+- zero allocation in steady state to avoid GC pauses 
+
+- single threaded, single CPU utilisation even for multiple connections
+
+- low latency with single digit microseconds overhead even at hundreds of thousands messages a second on commodity hardware
+
+- no Java NIO/Socket knowledge necessary to use it efficiently
+
+- easily extendable, with some extensions under active development (Aeron Cluster, Chronicle Queue, Ring Buffer, TCP endpoints simulators)
+
+- ideal for event-sourced systems 
+
+## Evaluation
+
+### See some examples
 
 To start write your own application, see dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort class.
 
 To use TCP in a message-driven fashion, look at `dev.squaremile.asynctcp.DeterministicTransportApplicationTest`
 
-## Evaluation
-
 The easiest way to start evaluating if the library can be of some use is to
 
-### 1. Check if it works
+### Check, that the library works
 
 To build:
 
@@ -34,28 +50,9 @@ To run sample app after built:
 telnet localhost 9999
 ```
 
-
-### 2. confirm that this design style is applicable to a particular context.
+### Confirm that this design style is applicable to a particular context.
 
 Go to dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort or try to implement your own Application
-
-### 3. confirm that the overhead is acceptable to be used in a specific context
-
-Let's say you want to test what kind o latency you should expect when sending 100 000 small messages a second on you local machine.
-
-build the library with
-
-`make`
-
-Run the echo server
-
-`java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.EchoConnectionApplication  9998`
-
-Run the message source server
-
-`java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication localhost 9998 100_000 31250 6000000 32`
-
-Where localhost 9998 100000 31250 6000000 32 is remote_host port messageSendingRatePerSecond skippedWarmUpResponses messagesSent sendToReceiveRatio
 
 ## Design objectives
 
@@ -66,6 +63,9 @@ It is also inspired by the [Aeron Cluster](https://github.com/real-logic/aeron/t
 between the application and the infrastructure (ClusteredService interface).
 However, an attempt has been made to make this library even more composable
 and avoid cycles during the setup phase (problematic `onStart(Cluster cluster)`).
+This is to encourage some good functional programming principles during the construction/configuration phase,
+such as immutability and no side effects. Mutability is introduced only when it is
+necessary to meet performance requirements.  
 
 ## Performance
 
@@ -101,26 +101,22 @@ It took 49999 ms between the first measured message sent and the last received
 
 ### Cloud (AWS EC2)
 
-264 000 msg/s, load skewed 1/32 (one box mostly sends, another mostly receives)
+600 000 msg/s, load skewed 1/100 (one box mostly sends, another mostly receives)
 
-- c5n.xlarge boxes, same availability zone, ping ~50 microseconds between boxes
+- c5n.xlarge boxes, same availability zone, ping ~60 microseconds between boxes
 
-- (A) 256k msg/s send -> (B) 256k msg/s received -> (B) 8k msg/s send -> (A) 8k msg/s received
+- (A) 600k msg/s send -> (B) 600k msg/s received -> (B) 6k msg/s send -> (A) 6k msg/s received
 
 ```
-Scenario: remoteHost 172.31.35.37, remotePort 9998, sendingRatePerSecond 256000, skippedWarmUpResponses 80000 , messagesSent 25600000, 800000 expected responses with a response rate 1 for 32
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |            34 |             68 |
-99th percentile        |            48 |             96 |
-99.9th percentile      |            55 |            109 |
-99.99th percentile     |            79 |            157 |
-99.999th percentile    |           112 |            224 |
-worst                  |           419 |            838 |
-
-Based on 720000 measurements.
-It took 89994 ms between the first measured message sent and the last received
+mean                   |            40 |             80 |
+99th percentile        |            74 |            148 |
+99.9th percentile      |           100 |            200 |
+99.99th percentile     |           110 |            219 |
+99.999th percentile    |           128 |            255 |
+worst                  |           128 |            255 |
 ```
 
 For more measurements with different modes, see [test results for AWS EC2 boxes](docs/aws.md).
