@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
+import static org.agrona.LangUtil.rethrowUnchecked;
+
 
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionState;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.SingleConnectionEvents;
@@ -14,6 +16,7 @@ import static java.lang.Math.max;
 
 public class OutgoingStream
 {
+    private final WritableByteChannel channel;
     private final ByteBuffer buffer;
     private final SingleConnectionEvents events;
 
@@ -21,8 +24,9 @@ public class OutgoingStream
     private long totalBytesSent;
     private long totalBytesBuffered;
 
-    OutgoingStream(final SingleConnectionEvents events, final int bufferSize)
+    OutgoingStream(final WritableByteChannel channel, final SingleConnectionEvents events, final int bufferSize)
     {
+        this.channel = channel;
         this.buffer = ByteBuffer.allocate(bufferSize);
         this.events = events;
         this.state = ConnectionState.NO_OUTSTANDING_DATA;
@@ -33,49 +37,55 @@ public class OutgoingStream
         return state;
     }
 
-    ConnectionState sendData(final WritableByteChannel channel, final ByteBuffer newDataToSend, final long commandId) throws IOException
+    void sendData(final ByteBuffer newDataToSend, final long commandId)
     {
-        switch (state)
+        try
         {
-            case NO_OUTSTANDING_DATA:
-                int bytesSentA = sendNewData(0, newDataToSend, channel);
-                if (bytesSentA >= 0)
-                {
-                    events.onEvent(events.dataSentEvent().set(bytesSentA, totalBytesSent, totalBytesBuffered, commandId));
-                }
-                break;
-            case DATA_TO_SEND_BUFFERED:
-                buffer.flip();
-                final int bufferedDataSentResult = channel.write(buffer);
-                final int bufferedBytesSent = max(bufferedDataSentResult, 0);
-                final boolean hasSentAllBufferedData = buffer.remaining() == 0;
-                buffer.compact();
-
-                if (hasSentAllBufferedData)
-                {
-                    int bytesSentB = sendNewData(bufferedBytesSent, newDataToSend, channel);
-                    if (bytesSentB >= 0)
+            switch (state)
+            {
+                case NO_OUTSTANDING_DATA:
+                    int bytesSentA = sendNewData(0, newDataToSend, channel);
+                    if (bytesSentA >= 0)
                     {
-                        events.onEvent(events.dataSentEvent().set(bytesSentB, totalBytesSent, totalBytesBuffered, commandId));
+                        events.onEvent(events.dataSentEvent().set(bytesSentA, totalBytesSent, totalBytesBuffered, commandId));
                     }
-                }
-                else
-                {
-                    final int newBytesUnsent = newDataToSend.remaining();
-                    if (newBytesUnsent > 0)
-                    {
-                        buffer.put(newDataToSend);
-                    }
+                    break;
+                case DATA_TO_SEND_BUFFERED:
+                    buffer.flip();
+                    final int bufferedDataSentResult = channel.write(buffer);
+                    final int bufferedBytesSent = max(bufferedDataSentResult, 0);
+                    final boolean hasSentAllBufferedData = buffer.remaining() == 0;
+                    buffer.compact();
 
-                    totalBytesBuffered += newBytesUnsent;
-                    totalBytesSent += bufferedBytesSent;
-                    events.onEvent(events.dataSentEvent().set(bufferedBytesSent, totalBytesSent, totalBytesBuffered, commandId));
-                }
-                break;
-            case CLOSED:
-                break;
+                    if (hasSentAllBufferedData)
+                    {
+                        int bytesSentB = sendNewData(bufferedBytesSent, newDataToSend, channel);
+                        if (bytesSentB >= 0)
+                        {
+                            events.onEvent(events.dataSentEvent().set(bytesSentB, totalBytesSent, totalBytesBuffered, commandId));
+                        }
+                    }
+                    else
+                    {
+                        final int newBytesUnsent = newDataToSend.remaining();
+                        if (newBytesUnsent > 0)
+                        {
+                            buffer.put(newDataToSend);
+                        }
+
+                        totalBytesBuffered += newBytesUnsent;
+                        totalBytesSent += bufferedBytesSent;
+                        events.onEvent(events.dataSentEvent().set(bufferedBytesSent, totalBytesSent, totalBytesBuffered, commandId));
+                    }
+                    break;
+                case CLOSED:
+                    break;
+            }
         }
-        return state;
+        catch (IOException e)
+        {
+            rethrowUnchecked(e);
+        }
     }
 
     private int sendNewData(final int bufferedBytesSent, final ByteBuffer newDataToSend, final WritableByteChannel channel) throws IOException
@@ -108,5 +118,4 @@ public class OutgoingStream
                ", totalBytesBuffered=" + totalBytesBuffered +
                '}';
     }
-
 }

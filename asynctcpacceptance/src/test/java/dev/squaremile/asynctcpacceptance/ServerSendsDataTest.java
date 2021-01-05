@@ -101,7 +101,7 @@ class ServerSendsDataTest extends TransportTestBase
         //When
         conn.port();
         conn.connectionId();
-        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(new byte[]{}, (long)100));
+        serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(new byte[]{}, 100));
         serverTransport.workUntil(() -> serverTransport.connectionEvents().contains(DataSent.class, conn.connectionId()));
 
         // Then

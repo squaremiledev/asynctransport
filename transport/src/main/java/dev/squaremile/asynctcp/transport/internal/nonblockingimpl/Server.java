@@ -86,7 +86,7 @@ public class Server implements AutoCloseable
                 acceptedSocketChannel.socket().getSendBufferSize() * 16,
                 acceptedSocketChannel.socket().getReceiveBufferSize()
         );
-        return new ConnectionImpl(configuration, new SocketBackedChannel(acceptedSocketChannel), delineation, eventListener::onEvent);
+        return new ConnectionImpl(configuration, new RelativeClock.SystemRelativeClock(), new SocketBackedChannel(acceptedSocketChannel), delineation, eventListener::onEvent);
     }
 
     SocketChannel acceptChannel() throws IOException

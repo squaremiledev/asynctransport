@@ -1,5 +1,7 @@
 package dev.squaremile.asynctcp.transport.internal.nonblockingimpl;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +19,7 @@ import dev.squaremile.asynctcp.transport.testfixtures.ConnectionEventsSpy;
 
 import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.time.Duration.ofMillis;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -346,12 +349,12 @@ class ConnectionImplTest
 
     private ConnectionImpl newConnection(final FakeChannel channel)
     {
-        return new ConnectionImpl(config(), channel, delineation(), events);
+        return new ConnectionImpl(config(), new MonotonicRelativeClock(ofMillis(1)), channel, delineation(), events);
     }
 
     private ConnectionImpl newConnection(final ConnectionConfiguration config)
     {
-        return new ConnectionImpl(config, new FakeChannel(), delineation(), events);
+        return new ConnectionImpl(config, new MonotonicRelativeClock(ofMillis(1)), new FakeChannel(), delineation(), events);
     }
 
     private static ConnectionConfiguration config()
@@ -362,5 +365,22 @@ class ConnectionImplTest
     private static Delineation delineation()
     {
         return new Delineation(Delineation.Type.FIXED_LENGTH, 0, 0, "");
+    }
+
+    private static class MonotonicRelativeClock implements RelativeClock
+    {
+        private long time = 0;
+        private final long incrementNanos;
+
+        private MonotonicRelativeClock(final Duration increment)
+        {
+            incrementNanos = increment.toNanos();
+        }
+
+        @Override
+        public long relativeNanoTime()
+        {
+            return time += incrementNanos;
+        }
     }
 }

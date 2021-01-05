@@ -85,4 +85,10 @@ public class ValidatedConnection implements AutoCloseable, Connection
     {
         return delegate.toString();
     }
+
+    @Override
+    public void work()
+    {
+        delegate.work();
+    }
 }

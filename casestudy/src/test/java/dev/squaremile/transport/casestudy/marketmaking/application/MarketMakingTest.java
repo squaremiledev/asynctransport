@@ -48,12 +48,12 @@ class MarketMakingTest
     @Test
     void runSimulation() throws IOException
     {
-        final RunnableMarket runnableMarket = new RunnableMarket(freePort(), TimeUnit.SECONDS.toNanos(3), TimeUnit.MICROSECONDS.toNanos(50)).runInSeparateThread();
+        final RunnableMarket runnableMarket = new RunnableMarket(freePort(), TimeUnit.SECONDS.toNanos(30), TimeUnit.MICROSECONDS.toNanos(10)).runInSeparateThread();
         final ApplicationStarter<SpreadMarketMaking> marketMakerApplicationStarter = new ApplicationStarter<>(
                 "localhost", runnableMarket.port(), new Clock(), (connectionTransport, connectionId) -> new SpreadMarketMaking(new MarketMessagePublisher(connectionTransport), 100));
         final TransportApplicationOnDuty marketMakerOnDuty = marketMakerApplicationStarter.startTransport(1000);
         SpreadMarketMaking marketMaker = marketMakerApplicationStarter.application();
-        spin(ofSeconds(5), marketMakerOnDuty);
+        spin(ofSeconds(35), marketMakerOnDuty);
         long messagesReceivedCountAtStart = marketMaker.receivedMessagesCount();
         long marketSentMessagesCountAtStart = runnableMarket.messagesCount();
         final Instant startTime = Instant.now();

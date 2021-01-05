@@ -9,6 +9,7 @@ import static org.agrona.LangUtil.rethrowUnchecked;
 
 import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
 import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.transport.api.app.OnDuty;
 import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
 import dev.squaremile.asynctcp.transport.api.commands.SendData;
 import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
@@ -28,20 +29,21 @@ import dev.squaremile.asynctcp.transport.internal.domain.connection.SingleConnec
 
 import static dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionState.CLOSED;
 
-public class ChannelBackedConnection implements AutoCloseable, Connection
+public class ChannelBackedConnection implements AutoCloseable, Connection, OnDuty
 {
     private final Channel channel;
     private final Delineation delineation;
     private final SingleConnectionEvents singleConnectionEvents;
     private final ConnectionCommands connectionCommands;
     private final ConnectionConfiguration configuration;
-    private final OutgoingStream outgoingStream;
-    private long totalBytesReceived;
+    private final BufferedOutgoingStream outgoingStream;
     private final int port;
+    private long totalBytesReceived;
     private ConnectionState connectionState;
 
     ChannelBackedConnection(
             final ConnectionConfiguration configuration,
+            final RelativeClock relativeClock,
             final Channel channel,
             final Delineation delineation,
             final SingleConnectionEvents singleConnectionEvents
@@ -52,7 +54,11 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
         this.delineation = delineation;
         this.singleConnectionEvents = singleConnectionEvents;
         this.connectionCommands = new ConnectionCommands(configuration.connectionId, configuration.outboundPduLimit, delineation);
-        this.outgoingStream = new OutgoingStream(this.singleConnectionEvents, configuration.sendBufferSize);
+        this.outgoingStream = new BufferedOutgoingStream(
+                new OutgoingStream(channel, this.singleConnectionEvents, configuration.sendBufferSize),
+                relativeClock,
+                configuration.sendBufferSize
+        );
         this.connectionState = outgoingStream.state();
         this.port = configuration.connectionId.port();
     }
@@ -149,26 +155,14 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
 
     private void handle(final SendData command)
     {
-        try
-        {
-            connectionState = outgoingStream.sendData(channel, command.data(), command.commandId());
-        }
-        catch (IOException e)
-        {
-            rethrowUnchecked(e);
-        }
+        outgoingStream.sendData(command.data(), command.commandId());
+        connectionState = outgoingStream.state();
     }
 
     private void handle(final SendMessage command)
     {
-        try
-        {
-            connectionState = outgoingStream.sendData(channel, command.data(), command.commandId());
-        }
-        catch (IOException e)
-        {
-            rethrowUnchecked(e);
-        }
+        outgoingStream.sendData(command.data(), command.commandId());
+        connectionState = outgoingStream.state();
     }
 
     private void handle(final ReadData command)
@@ -240,5 +234,11 @@ public class ChannelBackedConnection implements AutoCloseable, Connection
                ", connectionState=" + connectionState +
                ", port=" + port +
                '}';
+    }
+
+    @Override
+    public void work()
+    {
+        outgoingStream.work();
     }
 }

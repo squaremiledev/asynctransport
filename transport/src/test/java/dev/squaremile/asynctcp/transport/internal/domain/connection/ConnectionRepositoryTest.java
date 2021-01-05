@@ -262,5 +262,11 @@ class ConnectionRepositoryTest
             closed = true;
             state = ConnectionState.CLOSED;
         }
+
+        @Override
+        public void work()
+        {
+
+        }
     }
 }

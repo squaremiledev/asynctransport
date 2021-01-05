@@ -37,10 +37,23 @@ public class RoundTripTimeTest
     @Disabled
     void shouldExchangeMessagesAtHighRate() throws InterruptedException
     {
-        int sendingRatePerSecond = 100_000;
+        int sendingRatePerSecond = 10_000;
         int respondToNth = 32;
-        int secondsRun = 50;
-        int secondsWarmUp = 10;
+        int secondsRun = 10;
+        int secondsWarmUp = 40;
+        int messagesSent = sendingRatePerSecond * (secondsWarmUp + secondsRun);
+        int skippedWarmUpResponses = (sendingRatePerSecond * secondsWarmUp) / respondToNth;
+        exchangeMessages(sendingRatePerSecond, respondToNth, messagesSent, skippedWarmUpResponses);
+    }
+
+    @Test
+    @Disabled
+    void shouldExchangeMessagesAtHigherRate() throws InterruptedException
+    {
+        int sendingRatePerSecond = 400_000;
+        int respondToNth = 1000;
+        int secondsRun = 10;
+        int secondsWarmUp = 40;
         int messagesSent = sendingRatePerSecond * (secondsWarmUp + secondsRun);
         int skippedWarmUpResponses = (sendingRatePerSecond * secondsWarmUp) / respondToNth;
         exchangeMessages(sendingRatePerSecond, respondToNth, messagesSent, skippedWarmUpResponses);
@@ -84,19 +97,19 @@ public class RoundTripTimeTest
     void measureRoundTripTime()
     {
         final String remoteHost = "localhost";
-        final int sendingRatePerSecond = 100;
-        final int respondToNth = 4;
-        final int messagesSent = sendingRatePerSecond * 10;
-        final int skippedWarmUpResponses = (sendingRatePerSecond * 5) / respondToNth;
-        final int extraDataLength = 1024;
+        final int sendingRatePerSecond = 200000;
+        final int respondToNth = 32;
+        final int messagesSent = 3000000;
+        final int skippedWarmUpResponses = 61250;
+        final int extraDataLength = 0;
         SourcingConnectionApplication.main(new String[]{
                 remoteHost,
-                Integer.toString(PORT),
+                Integer.toString(9998),
                 Integer.toString(sendingRatePerSecond),
                 Integer.toString(skippedWarmUpResponses),
                 Integer.toString(messagesSent),
                 Integer.toString(respondToNth),
-                String.valueOf(1),
+                String.valueOf(0),
                 Integer.toString(extraDataLength),
                 });
     }

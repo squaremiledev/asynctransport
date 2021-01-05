@@ -1,18 +1,21 @@
 package dev.squaremile.asynctcp.transport.internal.nonblockingimpl;
 
 import java.nio.channels.SelectionKey;
+import java.util.function.Consumer;
 
 import org.agrona.collections.Long2ObjectHashMap;
 
 
+import dev.squaremile.asynctcp.transport.api.app.OnDuty;
 import dev.squaremile.asynctcp.transport.internal.domain.StatusEventListener;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.Connection;
 import dev.squaremile.asynctcp.transport.internal.domain.connection.ConnectionRepository;
 
-public class Connections implements AutoCloseable
+public class Connections implements AutoCloseable, OnDuty
 {
     public final Long2ObjectHashMap<SelectionKey> selectionKeyByConnectionId;
     public final ConnectionRepository connectionRepository;
+    private final Consumer<Connection> connectionWork = OnDuty::work;
 
     public Connections(final StatusEventListener statusEventListener)
     {
@@ -43,7 +46,7 @@ public class Connections implements AutoCloseable
     }
 
     @Override
-    public void close() throws Exception
+    public void close()
     {
         selectionKeyByConnectionId.values().forEach(SelectionKey::cancel);
         selectionKeyByConnectionId.clear();
@@ -53,5 +56,11 @@ public class Connections implements AutoCloseable
     public Connection get(final long connectionId)
     {
         return connectionRepository.findByConnectionId(connectionId);
+    }
+
+    @Override
+    public void work()
+    {
+        connectionRepository.forEach(connectionWork);
     }
 }

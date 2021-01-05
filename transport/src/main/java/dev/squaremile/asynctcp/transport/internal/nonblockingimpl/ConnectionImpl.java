@@ -17,6 +17,7 @@ public class ConnectionImpl implements AutoCloseable, Connection
 
     ConnectionImpl(
             final ConnectionConfiguration configuration,
+            final RelativeClock relativeClock,
             final Channel channel,
             final Delineation delineation,
             final ConnectionEventsListener eventsListener
@@ -33,6 +34,7 @@ public class ConnectionImpl implements AutoCloseable, Connection
                 ),
                 new ChannelBackedConnection(
                         configuration,
+                        relativeClock,
                         channel,
                         delineation,
                         new SingleConnectionEvents(
@@ -100,4 +102,9 @@ public class ConnectionImpl implements AutoCloseable, Connection
         return delegate.toString();
     }
 
+    @Override
+    public void work()
+    {
+        delegate.work();
+    }
 }

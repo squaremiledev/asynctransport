@@ -39,7 +39,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
     void shouldNotifyWhenConnected()
     {
         // Given
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)1, freePort(), rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(1, freePort(), rawStreaming()));
         final int serverPort = serverTransport.events().last(StartedListening.class).port();
         assertThat(serverTransport.statusEvents().contains(NumberOfConnectionsChanged.class)).isFalse();
 
@@ -70,7 +70,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
     void shouldProvideConnectionDetailsForEachConnection()
     {
         // Given
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)5, freePort(), rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(5, freePort(), rawStreaming()));
         final int serverPort = serverTransport.events().last(StartedListening.class).port();
 
         // When
@@ -92,7 +92,7 @@ class ServerReceivesConnectionsTest extends TransportTestBase
     void shouldCloseConnection()
     {
         // Given
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)9, freePort(), rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(9, freePort(), rawStreaming()));
         serverTransport.workUntil(() -> !serverTransport.events().all(StartedListening.class).isEmpty());
         final int serverPort = serverTransport.events().last(StartedListening.class).port();
         assertThrows(SocketException.class, clients.client(1)::write); // throws if not connected when writing
@@ -159,8 +159,8 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         // Given
         final int listeningPort1 = freePort();
         final int listeningPort2 = freePortOtherThan(listeningPort1);
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)5, listeningPort1, rawStreaming()));
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)6, listeningPort2, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(5, listeningPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(6, listeningPort2, rawStreaming()));
         assertThat(serverTransport.events().last(StartedListening.class, event -> event.commandId() == 5).port()).isEqualTo(listeningPort1);
         assertThat(serverTransport.events().last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
 
@@ -195,10 +195,10 @@ class ServerReceivesConnectionsTest extends TransportTestBase
         final int clientPort2 = freePortOtherThan(listeningPort1, listeningPort2, clientPort1);
 
         // When
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)5, listeningPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(5, listeningPort1, rawStreaming()));
         assertThat(serverTransport.events().last(StartedListening.class, event -> event.commandId() == 5).port()).isEqualTo(listeningPort1);
         serverTransport.workUntil(completed(() -> clients.client(1).connectedTo(listeningPort1, clientPort1)));
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)6, listeningPort2, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(6, listeningPort2, rawStreaming()));
         assertThat(serverTransport.events().last(StartedListening.class, event -> event.commandId() == 6).port()).isEqualTo(listeningPort2);
         serverTransport.workUntil(completed(() -> clients.client(2).connectedTo(listeningPort2, clientPort2)));
 

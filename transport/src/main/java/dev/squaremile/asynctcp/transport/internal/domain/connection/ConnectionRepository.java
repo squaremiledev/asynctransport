@@ -1,5 +1,7 @@
 package dev.squaremile.asynctcp.transport.internal.domain.connection;
 
+import java.util.function.Consumer;
+
 import org.agrona.CloseHelper;
 import org.agrona.collections.Long2ObjectHashMap;
 
@@ -15,6 +17,17 @@ public class ConnectionRepository implements AutoCloseable
     public ConnectionRepository(final RepositoryUpdates repositoryUpdates)
     {
         this.repositoryUpdates = repositoryUpdates;
+    }
+
+    public void forEach(final Consumer<Connection> consumer)
+    {
+        Long2ObjectHashMap<Connection>.EntryIterator iterator = connectionsById.entrySet().iterator();
+        while (iterator.hasNext())
+        {
+            iterator.next();
+            Connection value = iterator.getValue();
+            consumer.accept(value);
+        }
     }
 
     public void add(final Connection connection)

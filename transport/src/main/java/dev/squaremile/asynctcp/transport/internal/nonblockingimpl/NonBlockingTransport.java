@@ -148,6 +148,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
                                     socketChannel,
                                     new ConnectionImpl(
                                             configuration,
+                                            new RelativeClock.SystemRelativeClock(),
                                             new SocketBackedChannel(socketChannel),
                                             connectedNotification.command.delineation(),
                                             eventListener::onEvent
@@ -175,6 +176,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
         {
             throw new RuntimeException(e);
         }
+        connections.work();
     }
 
     @Override
