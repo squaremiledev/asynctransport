@@ -16,14 +16,14 @@ import dev.squaremile.asynctcp.api.certification.UseCases;
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 import dev.squaremile.asynctcp.fix.examplecertification.usecases.RejectLogOnIgnoreRest;
 import dev.squaremile.asynctcp.fix.examplecertification.usecases.RespondToLogOnIgnoreRest;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
-import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
+import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
+import dev.squaremile.asynctcp.api.transport.values.ConnectionId;
 
 import static dev.squaremile.asynctcp.fix.FixHandlerFactory.createFixHandler;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixMessage;
 
 public class FixCertification
 {

@@ -5,8 +5,8 @@ import java.util.function.LongConsumer;
 import org.agrona.MutableDirectBuffer;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
+import dev.squaremile.asynctcp.api.transport.app.Transport;
+import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
 import dev.squaremile.transport.casestudy.marketmaking.domain.ExecutionReport;
 import dev.squaremile.transport.casestudy.marketmaking.domain.FirmPrice;
 import dev.squaremile.transport.casestudy.marketmaking.domain.HeartBeat;

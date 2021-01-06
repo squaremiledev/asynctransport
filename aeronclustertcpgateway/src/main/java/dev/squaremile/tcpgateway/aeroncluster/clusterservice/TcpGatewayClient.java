@@ -5,9 +5,9 @@ import org.agrona.collections.Long2ObjectHashMap;
 import org.agrona.concurrent.IdleStrategy;
 
 
-import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
-import dev.squaremile.asynctcp.serialization.internal.TransportEventsDeserialization;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationFactory;
+import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
+import dev.squaremile.asynctcp.internal.serialization.TransportEventsDeserialization;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationFactory;
 import io.aeron.cluster.codecs.CloseReason;
 import io.aeron.cluster.service.ClientSession;
 

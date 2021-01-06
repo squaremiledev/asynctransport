@@ -5,17 +5,17 @@ import java.util.function.LongConsumer;
 import org.agrona.MutableDirectBuffer;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventListener;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
-import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
-import dev.squaremile.asynctcp.transport.api.commands.Listen;
-import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.values.Delineation;
+import dev.squaremile.asynctcp.api.transport.app.Event;
+import dev.squaremile.asynctcp.api.transport.app.EventListener;
+import dev.squaremile.asynctcp.api.transport.app.Transport;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFactory;
+import dev.squaremile.asynctcp.api.transport.commands.CloseConnection;
+import dev.squaremile.asynctcp.api.transport.commands.Listen;
+import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
+import dev.squaremile.asynctcp.api.transport.values.Delineation;
 
 class LongPingPongAppFactory implements TransportApplicationOnDutyFactory
 {

@@ -11,10 +11,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
-import dev.squaremile.asynctcp.transport.api.app.OnDuty;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.OnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 import static java.time.Duration.between;
 import static java.time.Duration.ofSeconds;
 

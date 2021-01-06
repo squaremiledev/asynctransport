@@ -1,7 +1,7 @@
 package dev.squaremile.asynctcp.api.certification;
 
-import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
 
 public class IgnoreAll implements ConnectionApplication
 {

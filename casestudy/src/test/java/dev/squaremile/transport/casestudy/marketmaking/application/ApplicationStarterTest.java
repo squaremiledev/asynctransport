@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MarketListener;
 import dev.squaremile.transport.casestudy.marketmaking.domain.PredictableTrend;
 
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 
 class ApplicationStarterTest
 {

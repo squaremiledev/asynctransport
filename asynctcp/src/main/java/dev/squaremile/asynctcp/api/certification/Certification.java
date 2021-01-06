@@ -9,14 +9,14 @@ import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.api.wiring.OnEventConnectionApplicationFactory;
-import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
-import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.api.values.Delineation;
+import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
+import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.Transport;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFactory;
+import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
+import dev.squaremile.asynctcp.api.transport.values.Delineation;
 
 public class Certification
 {

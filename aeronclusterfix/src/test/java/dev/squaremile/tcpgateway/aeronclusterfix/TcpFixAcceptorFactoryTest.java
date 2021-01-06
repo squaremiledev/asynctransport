@@ -13,18 +13,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.fix.FixHandler;
 import dev.squaremile.asynctcp.fix.examplecertification.usecases.RespondToLogOnIgnoreRest;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
-import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
+import dev.squaremile.asynctcp.fixtures.transport.EventsSpy;
+import dev.squaremile.asynctcp.fixtures.transport.network.SampleClient;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.StreamMultiplexClusteredService;
 import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterNode;
 
 import static dev.squaremile.asynctcp.fix.examplecertification.usecases.FixUtils.asciiFixBody;
-import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortPools;
-import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
+import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortPools;
+import static dev.squaremile.asynctcp.fixtures.transport.Worker.runUntil;
 import static dev.squaremile.tcpgateway.aeronclusterfix.TcpFixAcceptorFactory.createClusteredTcpFixAcceptor;
 import static dev.squaremile.tcpgateway.aeronclusterfix.TcpFixAcceptorFactory.createTcpGateway;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.endpoints;

@@ -8,19 +8,19 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
-import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.transport.api.events.Connected;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.transport.api.values.TransportId;
-import dev.squaremile.asynctcp.transport.internal.domain.NumberOfConnectionsChanged;
+import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
+import dev.squaremile.asynctcp.api.transport.commands.Connect;
+import dev.squaremile.asynctcp.api.transport.events.Connected;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
+import dev.squaremile.asynctcp.api.transport.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.api.transport.values.TransportId;
+import dev.squaremile.asynctcp.internal.transport.domain.NumberOfConnectionsChanged;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
-import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
-import static dev.squaremile.asynctcp.transport.testfixtures.TearDown.closeCleanly;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
+import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.fixtures.transport.TearDown.closeCleanly;
 import static java.util.Collections.singletonList;
 
 

@@ -17,11 +17,11 @@ import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
 import dev.squaremile.asynctcp.fixtures.MessageLog;
 import dev.squaremile.asynctcp.fixtures.TimingExtension;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
 
 import static dev.squaremile.asynctcp.fix.examplecertification.FixCertification.fixCertification;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixMessage;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 
 @ExtendWith(TimingExtension.class)
 public class FixCertificationTest

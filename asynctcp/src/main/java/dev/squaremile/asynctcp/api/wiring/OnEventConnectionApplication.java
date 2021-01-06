@@ -3,9 +3,9 @@ package dev.squaremile.asynctcp.api.wiring;
 import java.util.Optional;
 
 
-import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
 
 class OnEventConnectionApplication implements ConnectionApplication
 {

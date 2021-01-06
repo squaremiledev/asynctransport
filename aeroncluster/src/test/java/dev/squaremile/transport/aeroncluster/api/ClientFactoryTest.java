@@ -16,7 +16,7 @@ import dev.squaremile.transport.aeroncluster.fixtures.applications.NumberGenerat
 import io.aeron.exceptions.RegistrationException;
 import io.github.artsok.RepeatedIfExceptionsTest;
 
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortPools;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortPools;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.node;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.endpoints;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;

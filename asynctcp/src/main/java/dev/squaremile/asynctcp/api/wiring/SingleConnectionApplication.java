@@ -1,8 +1,8 @@
 package dev.squaremile.asynctcp.api.wiring;
 
-import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
+import dev.squaremile.asynctcp.api.transport.values.ConnectionId;
+import dev.squaremile.asynctcp.api.transport.values.ConnectionIdValue;
 
 class SingleConnectionApplication
 {

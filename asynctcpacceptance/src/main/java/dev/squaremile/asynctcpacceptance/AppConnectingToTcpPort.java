@@ -1,13 +1,13 @@
 package dev.squaremile.asynctcpacceptance;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.commands.Connect;
+import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.Event;
+import dev.squaremile.asynctcp.api.transport.app.Transport;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.commands.Connect;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.singletonList;
 

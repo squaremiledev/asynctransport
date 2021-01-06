@@ -2,14 +2,14 @@ package dev.squaremile.tcpgateway.aeronclusterfix;
 
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.fix.FixHandler;
-import dev.squaremile.asynctcp.transport.api.app.EventListener;
+import dev.squaremile.asynctcp.api.transport.app.EventListener;
 import dev.squaremile.tcpgateway.aeroncluster.clusterclient.TcpGatewayConnection;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.EventHandler;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.TcpGatewayClient;
 import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
 
 import static dev.squaremile.asynctcp.fix.FixHandlerFactory.createFixHandler;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixMessage;
 
 class TcpFixAcceptorFactory
 {

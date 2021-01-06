@@ -13,7 +13,7 @@ import org.agrona.concurrent.status.AtomicCounter;
 import static org.agrona.concurrent.AgentRunner.startOnThread;
 
 
-import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
 
 public class NaiveRoundRobinSingleThreadRunner
 {

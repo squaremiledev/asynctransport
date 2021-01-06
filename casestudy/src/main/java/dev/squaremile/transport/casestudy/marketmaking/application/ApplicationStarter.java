@@ -1,8 +1,8 @@
 package dev.squaremile.transport.casestudy.marketmaking.application;
 
-import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.values.ConnectionId;
 
 public class ApplicationStarter<T extends MarketApplication>
 {

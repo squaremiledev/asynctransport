@@ -5,7 +5,7 @@ import java.util.function.LongConsumer;
 import org.agrona.collections.LongArrayList;
 
 
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
+import dev.squaremile.asynctcp.api.transport.values.ConnectionId;
 
 public class MarketParticipants
 {

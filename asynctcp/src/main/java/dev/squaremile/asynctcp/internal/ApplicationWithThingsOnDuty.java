@@ -1,8 +1,8 @@
 package dev.squaremile.asynctcp.internal;
 
-import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.OnDuty;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.Event;
+import dev.squaremile.asynctcp.api.transport.app.OnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 
 public class ApplicationWithThingsOnDuty implements TransportApplicationOnDuty
 {

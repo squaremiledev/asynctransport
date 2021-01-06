@@ -1,7 +1,7 @@
 package dev.squaremile.asynctcp.api.wiring;
 
-import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
 
 class NoOpConnectionApplication implements ConnectionApplication
 {

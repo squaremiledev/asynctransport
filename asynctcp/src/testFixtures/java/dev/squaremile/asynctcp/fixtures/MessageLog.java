@@ -10,13 +10,13 @@ import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENG
 
 
 import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
-import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
-import dev.squaremile.asynctcp.serialization.internal.TransportCommandDecoders;
-import dev.squaremile.asynctcp.serialization.internal.TransportEventDecoders;
-import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
-import dev.squaremile.asynctcp.transport.testfixtures.CommandsProvidingTransport;
+import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
+import dev.squaremile.asynctcp.internal.serialization.TransportCommandDecoders;
+import dev.squaremile.asynctcp.internal.serialization.TransportEventDecoders;
+import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedEventSupplier;
+import dev.squaremile.asynctcp.fixtures.transport.CommandsProvidingTransport;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 
 public class MessageLog implements SerializedMessageListener
 {

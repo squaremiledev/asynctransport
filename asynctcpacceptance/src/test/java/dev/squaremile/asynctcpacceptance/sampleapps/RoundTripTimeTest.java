@@ -11,7 +11,7 @@ import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcpacceptance.EchoApplication;
 import dev.squaremile.asynctcpacceptance.SourcingConnectionApplication;
 
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 @Disabled

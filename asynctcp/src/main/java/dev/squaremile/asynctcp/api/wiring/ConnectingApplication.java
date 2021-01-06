@@ -1,16 +1,16 @@
 package dev.squaremile.asynctcp.api.wiring;
 
-import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.transport.api.events.Connected;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
-import dev.squaremile.asynctcp.transport.api.values.Delineation;
+import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
+import dev.squaremile.asynctcp.api.transport.app.Event;
+import dev.squaremile.asynctcp.api.transport.app.Transport;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.commands.Connect;
+import dev.squaremile.asynctcp.api.transport.events.Connected;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionClosed;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionResetByPeer;
+import dev.squaremile.asynctcp.api.transport.values.Delineation;
 
 public class ConnectingApplication implements TransportApplicationOnDuty
 {

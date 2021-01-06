@@ -21,15 +21,12 @@ test {
 }
 
 dependencies {
-    implementation project(':transport')
-    implementation project(':serialization')
+    implementation project(':asynctcp')
     implementation testFixtures(project(':asynctcp'))
     implementation 'org.agrona:agrona:1.8.0'
     implementation "org.hdrhistogram:HdrHistogram:2.1.12"
 
-    testImplementation testFixtures(project(':transport'))
     testImplementation testFixtures(project(':asynctcp'))
-    testImplementation project(':sbe')
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     testImplementation 'org.assertj:assertj-core:3.16.1'
 }

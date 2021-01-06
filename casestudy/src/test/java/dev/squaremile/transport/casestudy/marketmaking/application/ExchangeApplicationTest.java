@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 import dev.squaremile.transport.casestudy.marketmaking.domain.ExecutionReport;
 import dev.squaremile.transport.casestudy.marketmaking.domain.FirmPrice;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MidPriceUpdate;
@@ -17,8 +17,8 @@ import dev.squaremile.transport.casestudy.marketmaking.domain.OrderResult;
 import dev.squaremile.transport.casestudy.marketmaking.domain.RandomizedTrend;
 import dev.squaremile.transport.casestudy.marketmaking.domain.Volatility;
 
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
-import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.fixtures.transport.Worker.runUntil;
 import static dev.squaremile.transport.casestudy.marketmaking.domain.CurrentTime.currentTime;
 import static dev.squaremile.transport.casestudy.marketmaking.domain.CurrentTime.timeFromMs;
 import static dev.squaremile.transport.casestudy.marketmaking.domain.MarketListener.MarketMessageListener.IGNORE;

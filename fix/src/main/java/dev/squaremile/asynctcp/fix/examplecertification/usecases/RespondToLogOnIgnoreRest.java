@@ -4,9 +4,9 @@ import org.agrona.AsciiSequenceView;
 
 
 import dev.squaremile.asynctcp.fix.FixHandler;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
-import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
-import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
+import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
+import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 
 public class RespondToLogOnIgnoreRest implements FixHandler
 {

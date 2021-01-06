@@ -19,9 +19,9 @@ dependencies {
 
     testFixturesImplementation 'org.agrona:agrona:1.8.0'
     testFixturesImplementation 'io.aeron:aeron-cluster:1.31.1'
-    testFixturesImplementation testFixtures(project(':transport'))
+    testFixturesImplementation testFixtures(project(':asynctcp'))
 
-    testImplementation testFixtures(project(':transport'))
+    testImplementation testFixtures(project(':asynctcp'))
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     testImplementation 'org.assertj:assertj-core:3.16.1'
     testImplementation 'io.github.artsok:rerunner-jupiter:2.1.6'

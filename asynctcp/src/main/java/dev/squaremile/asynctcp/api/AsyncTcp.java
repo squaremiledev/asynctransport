@@ -1,14 +1,14 @@
 package dev.squaremile.asynctcp.api;
 
 import dev.squaremile.asynctcp.internal.RingBufferBackedTransportApplicationFactory;
-import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
-import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
-import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
-import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedCommandSupplier;
-import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
-import dev.squaremile.asynctcp.transport.api.app.TransportOnDuty;
+import dev.squaremile.asynctcp.api.serialization.SerializedCommandListener;
+import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
+import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
+import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedCommandSupplier;
+import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedEventSupplier;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFactory;
+import dev.squaremile.asynctcp.api.transport.app.TransportOnDuty;
 
 public class AsyncTcp implements TransportApplicationFactory
 {

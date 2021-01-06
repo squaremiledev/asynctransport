@@ -1,8 +1,8 @@
 package dev.squaremile.transport.casestudy.marketmaking.application;
 
-import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
+import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 import dev.squaremile.transport.casestudy.marketmaking.domain.CurrentTime;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MarketMessage;
 

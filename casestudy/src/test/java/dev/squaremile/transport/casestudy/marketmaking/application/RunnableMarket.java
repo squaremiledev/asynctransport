@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 import static org.agrona.LangUtil.rethrowUnchecked;
 
 
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MidPriceUpdate;
 import dev.squaremile.transport.casestudy.marketmaking.domain.RandomizedTrend;
 import dev.squaremile.transport.casestudy.marketmaking.domain.Volatility;

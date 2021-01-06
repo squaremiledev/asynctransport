@@ -19,7 +19,6 @@ dependencies {
     implementation 'org.agrona:agrona:1.8.0'
     implementation 'io.aeron:aeron-cluster:1.31.1'
 
-    testImplementation testFixtures(project(':transport'))
     testImplementation testFixtures(project(':asynctcp'))
     testImplementation testFixtures(project(':aeroncluster'))
 

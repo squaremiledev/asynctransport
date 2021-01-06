@@ -21,7 +21,6 @@ dependencies {
     testImplementation 'io.aeron:aeron-cluster:1.31.1'
 
     testImplementation project(':aeroncluster')
-    testImplementation testFixtures(project(':transport'))
     testImplementation testFixtures(project(':asynctcp'))
     testImplementation testFixtures(project(':aeroncluster'))
 

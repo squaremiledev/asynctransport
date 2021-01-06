@@ -1,7 +1,7 @@
 package dev.squaremile.asynctcp.fix;
 
-import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
-import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
+import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 
 public interface FixHandler
 {

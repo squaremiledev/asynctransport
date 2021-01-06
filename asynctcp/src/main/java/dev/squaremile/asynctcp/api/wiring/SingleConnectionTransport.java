@@ -1,11 +1,11 @@
 package dev.squaremile.asynctcp.api.wiring;
 
-import dev.squaremile.asynctcp.transport.api.app.ConnectionCommand;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionUserCommand;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionCommand;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionUserCommand;
+import dev.squaremile.asynctcp.api.transport.app.Transport;
+import dev.squaremile.asynctcp.api.transport.values.ConnectionId;
+import dev.squaremile.asynctcp.api.transport.values.ConnectionIdValue;
 
 class SingleConnectionTransport implements ConnectionTransport
 {

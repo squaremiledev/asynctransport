@@ -10,26 +10,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import dev.squaremile.asynctcp.transport.api.commands.CloseConnection;
-import dev.squaremile.asynctcp.transport.api.commands.Listen;
-import dev.squaremile.asynctcp.transport.api.commands.SendData;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
-import dev.squaremile.asynctcp.transport.api.events.DataReceived;
-import dev.squaremile.asynctcp.transport.api.events.DataSent;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.transport.api.values.CommandId;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionIdValue;
-import dev.squaremile.asynctcp.transport.internal.domain.NumberOfConnectionsChanged;
+import dev.squaremile.asynctcp.api.transport.commands.CloseConnection;
+import dev.squaremile.asynctcp.api.transport.commands.Listen;
+import dev.squaremile.asynctcp.api.transport.commands.SendData;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionClosed;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionResetByPeer;
+import dev.squaremile.asynctcp.api.transport.events.DataReceived;
+import dev.squaremile.asynctcp.api.transport.events.DataSent;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
+import dev.squaremile.asynctcp.api.transport.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.api.transport.values.CommandId;
+import dev.squaremile.asynctcp.api.transport.values.ConnectionId;
+import dev.squaremile.asynctcp.api.transport.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.internal.transport.domain.NumberOfConnectionsChanged;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
-import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
-import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortOtherThan;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
+import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortOtherThan;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 

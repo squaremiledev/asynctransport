@@ -5,14 +5,14 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
-import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.transport.api.commands.SendData;
-import dev.squaremile.asynctcp.transport.api.events.Connected;
-import dev.squaremile.asynctcp.transport.api.events.DataReceived;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
+import dev.squaremile.asynctcp.api.transport.commands.Connect;
+import dev.squaremile.asynctcp.api.transport.commands.SendData;
+import dev.squaremile.asynctcp.api.transport.events.Connected;
+import dev.squaremile.asynctcp.api.transport.events.DataReceived;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 class ClientSendsDataTest extends TransportTestBase

@@ -4,11 +4,11 @@ import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
 
-import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionTransport;
-import dev.squaremile.asynctcp.transport.api.commands.SendMessage;
-import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
+import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
+import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.CORRELATION_ID_OFFSET;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.NO_OPTIONS;

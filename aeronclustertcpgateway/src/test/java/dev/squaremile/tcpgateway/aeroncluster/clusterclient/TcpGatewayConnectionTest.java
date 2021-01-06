@@ -15,10 +15,10 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.commands.Listen;
-import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
+import dev.squaremile.asynctcp.api.transport.app.Event;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.commands.Listen;
+import dev.squaremile.asynctcp.fixtures.transport.network.SampleClient;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.StreamMultiplexClusteredService;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.TcpGatewayClient;
 import dev.squaremile.transport.aeroncluster.api.ClientFactory;
@@ -27,10 +27,10 @@ import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition;
 import io.aeron.logbuffer.Header;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixedLengthDelineation;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortPools;
-import static dev.squaremile.asynctcp.transport.testfixtures.Worker.noExceptionAnd;
-import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixedLengthDelineation;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortPools;
+import static dev.squaremile.asynctcp.fixtures.transport.Worker.noExceptionAnd;
+import static dev.squaremile.asynctcp.fixtures.transport.Worker.runUntil;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.endpoints;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.node;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterNode.clusterNode;

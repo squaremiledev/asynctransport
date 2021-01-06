@@ -14,24 +14,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.fixtures.TimingExtension;
-import dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
-import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.TransportCommand;
-import dev.squaremile.asynctcp.transport.api.app.TransportUserCommand;
-import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.transport.api.commands.Listen;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.transport.api.values.Delineation;
-import dev.squaremile.asynctcp.transport.testfixtures.EventsSpy;
+import dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation;
+import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
+import dev.squaremile.asynctcp.api.transport.app.Event;
+import dev.squaremile.asynctcp.api.transport.app.Transport;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportCommand;
+import dev.squaremile.asynctcp.api.transport.app.TransportUserCommand;
+import dev.squaremile.asynctcp.api.transport.commands.Connect;
+import dev.squaremile.asynctcp.api.transport.commands.Listen;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
+import dev.squaremile.asynctcp.api.transport.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.api.transport.values.Delineation;
+import dev.squaremile.asynctcp.fixtures.transport.EventsSpy;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixMessage;
-import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixMessage;
+import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 
 @ExtendWith(TimingExtension.class)
 public class ValidationTest

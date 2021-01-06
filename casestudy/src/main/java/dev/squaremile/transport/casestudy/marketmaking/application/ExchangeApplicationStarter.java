@@ -5,17 +5,17 @@ import org.agrona.collections.MutableBoolean;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
-import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 import dev.squaremile.transport.casestudy.marketmaking.domain.Exchange;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MarketListener;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MidPriceUpdate;
 import dev.squaremile.transport.casestudy.marketmaking.domain.TrackedSecurity;
 
 import static dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory.onStart;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.lengthBasedDelineation;
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.lengthBasedDelineation;
+import static dev.squaremile.asynctcp.api.transport.values.Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD;
 import static dev.squaremile.transport.casestudy.marketmaking.domain.CurrentTime.currentTime;
 import static dev.squaremile.transport.casestudy.marketmaking.domain.CurrentTime.timeFromMs;
 import static dev.squaremile.transport.casestudy.marketmaking.domain.MarketListener.marketListeners;

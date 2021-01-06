@@ -6,12 +6,12 @@ import org.agrona.collections.MutableBoolean;
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
 import dev.squaremile.asynctcp.api.wiring.ConnectionApplicationFactory;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 import dev.squaremile.transport.casestudy.marketmaking.domain.CurrentTime;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.lengthBasedDelineation;
-import static dev.squaremile.asynctcp.serialization.api.SerializedMessageListener.NO_OP;
-import static dev.squaremile.asynctcp.transport.api.values.Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.lengthBasedDelineation;
+import static dev.squaremile.asynctcp.api.serialization.SerializedMessageListener.NO_OP;
+import static dev.squaremile.asynctcp.api.transport.values.Delineation.Type.SHORT_LITTLE_ENDIAN_FIELD;
 
 public class InitiatorStarter
 {

@@ -159,14 +159,14 @@ You can go to asynctcpacceptance/src/main/java/dev/squaremile/asynctcpacceptance
 package dev.squaremile.asynctcpacceptance.demo;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.commands.Listen;
-import dev.squaremile.asynctcp.transport.api.commands.SendData;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.Event;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.commands.Listen;
+import dev.squaremile.asynctcp.api.transport.commands.SendData;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 
 public class AppFromReadme
 {
@@ -220,5 +220,5 @@ The remaining concerns, such as running the app are kept separate and can be com
 To re-generate sbe codecs
 
 ```
-./gradlew :sbe:sbeGenerateJavaCodecs :usecases:sbeGenerateJavaCodecs
+./gradlew :asynctcp:sbeGenerateJavaCodecs :usecases:sbeGenerateJavaCodecs
 ```

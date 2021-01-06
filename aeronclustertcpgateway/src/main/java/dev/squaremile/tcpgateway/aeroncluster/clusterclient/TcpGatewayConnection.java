@@ -7,10 +7,10 @@ import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.SystemEpochClock;
 
 
-import dev.squaremile.asynctcp.serialization.internal.NonBLockingMessageDrivenTransport;
-import dev.squaremile.asynctcp.serialization.internal.SerializingApplication;
-import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
-import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
+import dev.squaremile.asynctcp.internal.serialization.NonBLockingMessageDrivenTransport;
+import dev.squaremile.asynctcp.internal.serialization.SerializingApplication;
+import dev.squaremile.asynctcp.internal.serialization.delineation.DelineationApplication;
+import dev.squaremile.asynctcp.internal.transport.nonblockingimpl.NonBlockingTransport;
 import dev.squaremile.transport.aeroncluster.api.ClientFactory;
 import dev.squaremile.transport.aeroncluster.api.ClusterClientApplication;
 import dev.squaremile.transport.aeroncluster.api.ClusterClientPublisher;

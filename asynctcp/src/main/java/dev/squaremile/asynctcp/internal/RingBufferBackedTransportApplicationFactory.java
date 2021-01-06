@@ -10,27 +10,27 @@ import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENG
 
 
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
-import dev.squaremile.asynctcp.serialization.api.MessageDrivenTransport;
-import dev.squaremile.asynctcp.serialization.api.SerializedCommandListener;
-import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
-import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
-import dev.squaremile.asynctcp.serialization.internal.NonBLockingMessageDrivenTransport;
-import dev.squaremile.asynctcp.serialization.internal.SerializingApplication;
-import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
-import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationApplication;
-import dev.squaremile.asynctcp.serialization.internal.delineation.DelineationValidatingTransport;
-import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedCommandSupplier;
-import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventDrivenApplication;
-import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedEventSupplier;
-import dev.squaremile.asynctcp.serialization.internal.messaging.SerializedMessageDrivenTransport;
-import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventListener;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDutyFactory;
-import dev.squaremile.asynctcp.transport.internal.nonblockingimpl.NonBlockingTransport;
+import dev.squaremile.asynctcp.api.serialization.MessageDrivenTransport;
+import dev.squaremile.asynctcp.api.serialization.SerializedCommandListener;
+import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
+import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
+import dev.squaremile.asynctcp.internal.serialization.NonBLockingMessageDrivenTransport;
+import dev.squaremile.asynctcp.internal.serialization.SerializingApplication;
+import dev.squaremile.asynctcp.internal.serialization.SerializingTransport;
+import dev.squaremile.asynctcp.internal.serialization.delineation.DelineationApplication;
+import dev.squaremile.asynctcp.internal.serialization.delineation.DelineationValidatingTransport;
+import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedCommandSupplier;
+import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedEventDrivenApplication;
+import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedEventSupplier;
+import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedMessageDrivenTransport;
+import dev.squaremile.asynctcp.api.transport.app.Event;
+import dev.squaremile.asynctcp.api.transport.app.EventListener;
+import dev.squaremile.asynctcp.api.transport.app.Transport;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFactory;
+import dev.squaremile.asynctcp.internal.transport.nonblockingimpl.NonBlockingTransport;
 
-import static dev.squaremile.asynctcp.transport.api.app.TransportCommandHandler.NO_HANDLER;
+import static dev.squaremile.asynctcp.api.transport.app.TransportCommandHandler.NO_HANDLER;
 
 public class RingBufferBackedTransportApplicationFactory implements TransportApplicationFactory
 {

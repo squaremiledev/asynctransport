@@ -4,18 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionApplication;
-import dev.squaremile.asynctcp.transport.api.app.ConnectionEvent;
-import dev.squaremile.asynctcp.transport.api.app.Event;
-import dev.squaremile.asynctcp.transport.api.app.EventListener;
-import dev.squaremile.asynctcp.transport.api.app.Transport;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.commands.Listen;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionClosed;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionResetByPeer;
-import dev.squaremile.asynctcp.transport.api.values.Delineation;
+import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
+import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
+import dev.squaremile.asynctcp.api.transport.app.Event;
+import dev.squaremile.asynctcp.api.transport.app.EventListener;
+import dev.squaremile.asynctcp.api.transport.app.Transport;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.commands.Listen;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionClosed;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionResetByPeer;
+import dev.squaremile.asynctcp.api.transport.values.Delineation;
 
 public class ListeningApplication implements TransportApplicationOnDuty
 {

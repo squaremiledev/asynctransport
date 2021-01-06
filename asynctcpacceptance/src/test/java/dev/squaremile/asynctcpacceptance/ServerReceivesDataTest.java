@@ -14,16 +14,16 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.transport.api.events.DataReceived;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.testfixtures.ConnectionEventsSpy;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.transport.events.DataReceived;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
+import dev.squaremile.asynctcp.fixtures.transport.ConnectionEventsSpy;
 
-import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.transport.testfixtures.DataFixtures.concatenatedData;
-import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.byteArrayWith;
-import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.fixedLengthStringStartingWith;
-import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.stringWith;
+import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
+import static dev.squaremile.asynctcp.fixtures.transport.DataFixtures.concatenatedData;
+import static dev.squaremile.asynctcp.fixtures.transport.StringFixtures.byteArrayWith;
+import static dev.squaremile.asynctcp.fixtures.transport.StringFixtures.fixedLengthStringStartingWith;
+import static dev.squaremile.asynctcp.fixtures.transport.StringFixtures.stringWith;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 

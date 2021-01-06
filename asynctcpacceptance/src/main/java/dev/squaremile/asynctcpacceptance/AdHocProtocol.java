@@ -1,6 +1,6 @@
 package dev.squaremile.asynctcpacceptance;
 
-import dev.squaremile.asynctcp.transport.api.values.Delineation;
+import dev.squaremile.asynctcp.api.transport.values.Delineation;
 
 public class AdHocProtocol
 {

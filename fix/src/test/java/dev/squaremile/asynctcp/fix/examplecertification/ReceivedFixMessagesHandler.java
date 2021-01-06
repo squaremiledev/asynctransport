@@ -7,9 +7,9 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.MessageHandler;
 
 
-import dev.squaremile.asynctcp.serialization.api.SerializedEventListener;
-import dev.squaremile.asynctcp.serialization.internal.TransportEventsDeserialization;
-import dev.squaremile.asynctcp.transport.api.events.MessageReceived;
+import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
+import dev.squaremile.asynctcp.internal.serialization.TransportEventsDeserialization;
+import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 
 public class ReceivedFixMessagesHandler implements MessageHandler
 {

@@ -9,22 +9,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
-import dev.squaremile.asynctcp.transport.api.commands.Listen;
-import dev.squaremile.asynctcp.transport.api.commands.StopListening;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.api.events.StoppedListening;
-import dev.squaremile.asynctcp.transport.api.events.TransportCommandFailed;
-import dev.squaremile.asynctcp.transport.internal.domain.NumberOfConnectionsChanged;
-import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
+import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
+import dev.squaremile.asynctcp.api.transport.commands.Listen;
+import dev.squaremile.asynctcp.api.transport.commands.StopListening;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
+import dev.squaremile.asynctcp.api.transport.events.StoppedListening;
+import dev.squaremile.asynctcp.api.transport.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.internal.transport.domain.NumberOfConnectionsChanged;
+import dev.squaremile.asynctcp.fixtures.transport.network.SampleClient;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.fixedLengthDelineation;
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
-import static dev.squaremile.asynctcp.transport.testfixtures.Assertions.assertEqual;
-import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortOtherThan;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixedLengthDelineation;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
+import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortOtherThan;
 
 
 class ServerListensTest extends TransportTestBase

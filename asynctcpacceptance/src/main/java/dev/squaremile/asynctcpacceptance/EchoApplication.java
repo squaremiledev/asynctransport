@@ -3,9 +3,9 @@ package dev.squaremile.asynctcpacceptance;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
-import dev.squaremile.asynctcp.serialization.api.SerializedMessageListener;
-import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
+import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
+import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 
 import static java.lang.Integer.parseInt;
 

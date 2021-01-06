@@ -8,25 +8,25 @@ import org.agrona.collections.MutableInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
-import dev.squaremile.asynctcp.transport.api.commands.Connect;
-import dev.squaremile.asynctcp.transport.api.commands.Listen;
-import dev.squaremile.asynctcp.transport.api.commands.SendData;
-import dev.squaremile.asynctcp.transport.api.events.Connected;
-import dev.squaremile.asynctcp.transport.api.events.ConnectionAccepted;
-import dev.squaremile.asynctcp.transport.api.events.DataSent;
-import dev.squaremile.asynctcp.transport.api.events.StartedListening;
-import dev.squaremile.asynctcp.transport.api.values.CommandId;
-import dev.squaremile.asynctcp.transport.api.values.ConnectionId;
-import dev.squaremile.asynctcp.transport.testfixtures.TransportUnderTest;
-import dev.squaremile.asynctcp.transport.testfixtures.Worker;
-import dev.squaremile.asynctcp.transport.testfixtures.network.SampleClient;
+import dev.squaremile.asynctcp.api.transport.app.TransportEvent;
+import dev.squaremile.asynctcp.api.transport.commands.Connect;
+import dev.squaremile.asynctcp.api.transport.commands.Listen;
+import dev.squaremile.asynctcp.api.transport.commands.SendData;
+import dev.squaremile.asynctcp.api.transport.events.Connected;
+import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
+import dev.squaremile.asynctcp.api.transport.events.DataSent;
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
+import dev.squaremile.asynctcp.api.transport.values.CommandId;
+import dev.squaremile.asynctcp.api.transport.values.ConnectionId;
+import dev.squaremile.asynctcp.fixtures.transport.TransportUnderTest;
+import dev.squaremile.asynctcp.fixtures.transport.Worker;
+import dev.squaremile.asynctcp.fixtures.transport.network.SampleClient;
 
-import static dev.squaremile.asynctcp.serialization.api.PredefinedTransportDelineation.rawStreaming;
-import static dev.squaremile.asynctcp.transport.testfixtures.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePort;
-import static dev.squaremile.asynctcp.transport.testfixtures.FreePort.freePortOtherThan;
-import static dev.squaremile.asynctcp.transport.testfixtures.StringFixtures.byteArrayWith;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
+import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortOtherThan;
+import static dev.squaremile.asynctcp.fixtures.transport.StringFixtures.byteArrayWith;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 public class TransportDriver

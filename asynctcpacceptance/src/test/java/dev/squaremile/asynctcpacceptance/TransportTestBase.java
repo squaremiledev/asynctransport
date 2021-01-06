@@ -9,11 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.fixtures.TimingExtension;
-import dev.squaremile.asynctcp.transport.api.app.CommandFailed;
-import dev.squaremile.asynctcp.transport.testfixtures.TearDown;
-import dev.squaremile.asynctcp.transport.testfixtures.TransportUnderTest;
+import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
+import dev.squaremile.asynctcp.fixtures.transport.TearDown;
+import dev.squaremile.asynctcp.fixtures.transport.TransportUnderTest;
 
-import static dev.squaremile.asynctcp.transport.testfixtures.Worker.runUntil;
+import static dev.squaremile.asynctcp.fixtures.transport.Worker.runUntil;
 
 @ExtendWith(TimingExtension.class)
 abstract class TransportTestBase

@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 
-import dev.squaremile.asynctcp.transport.api.app.ApplicationOnDuty;
-import dev.squaremile.asynctcp.transport.testfixtures.Worker;
+import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
+import dev.squaremile.asynctcp.fixtures.transport.Worker;
 
 import static java.util.Arrays.asList;
 

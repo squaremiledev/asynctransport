@@ -4,10 +4,10 @@ import org.agrona.ExpandableArrayBuffer;
 import org.agrona.concurrent.IdleStrategy;
 
 
-import dev.squaremile.asynctcp.serialization.internal.SerializingTransport;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplication;
-import dev.squaremile.asynctcp.transport.api.app.TransportApplicationFactory;
-import dev.squaremile.asynctcp.transport.api.app.TransportEvent;
+import dev.squaremile.asynctcp.internal.serialization.SerializingTransport;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplication;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationFactory;
+import dev.squaremile.asynctcp.api.transport.app.TransportEvent;
 import io.aeron.cluster.service.ClientSession;
 
 class TcpGatewaySession
