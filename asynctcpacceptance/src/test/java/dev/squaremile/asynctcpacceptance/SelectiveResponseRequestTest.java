@@ -7,8 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import dev.squaremile.asynctcp.fixtures.TimingExtension;
-
 import static java.util.stream.LongStream.rangeClosed;
 
 @ExtendWith(TimingExtension.class)

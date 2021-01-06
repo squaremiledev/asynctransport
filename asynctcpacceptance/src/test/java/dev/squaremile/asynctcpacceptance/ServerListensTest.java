@@ -21,7 +21,7 @@ import dev.squaremile.asynctcp.fixtures.transport.network.SampleClient;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
-import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcpacceptance.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortOtherThan;

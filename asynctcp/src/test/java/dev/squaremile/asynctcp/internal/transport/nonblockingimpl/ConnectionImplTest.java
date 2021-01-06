@@ -13,11 +13,11 @@ import dev.squaremile.asynctcp.api.transport.events.DataSent;
 import dev.squaremile.asynctcp.api.transport.values.CommandId;
 import dev.squaremile.asynctcp.api.transport.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.api.transport.values.Delineation;
+import dev.squaremile.asynctcp.fixtures.transport.ConnectionEventsSpy;
 import dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionConfiguration;
 import dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionState;
-import dev.squaremile.asynctcp.fixtures.transport.ConnectionEventsSpy;
 
-import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.Assertions.assertEqual;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.time.Duration.ofMillis;
 import static java.util.Arrays.asList;
@@ -33,6 +33,16 @@ class ConnectionImplTest
     private static byte[] bytes(final String s)
     {
         return s.getBytes(US_ASCII);
+    }
+
+    private static ConnectionConfiguration config()
+    {
+        return new ConnectionConfiguration(new ConnectionIdValue(8080, 51), "localhost", 9090, 10, SAMPLE_SEND_BUFFER_SIZE, 30);
+    }
+
+    private static Delineation delineation()
+    {
+        return new Delineation(Delineation.Type.FIXED_LENGTH, 0, 0, "");
     }
 
     @Test
@@ -357,20 +367,10 @@ class ConnectionImplTest
         return new ConnectionImpl(config, new MonotonicRelativeClock(ofMillis(1)), new FakeChannel(), delineation(), events);
     }
 
-    private static ConnectionConfiguration config()
-    {
-        return new ConnectionConfiguration(new ConnectionIdValue(8080, 51), "localhost", 9090, 10, SAMPLE_SEND_BUFFER_SIZE, 30);
-    }
-
-    private static Delineation delineation()
-    {
-        return new Delineation(Delineation.Type.FIXED_LENGTH, 0, 0, "");
-    }
-
     private static class MonotonicRelativeClock implements RelativeClock
     {
-        private long time = 0;
         private final long incrementNanos;
+        private long time = 0;
 
         private MonotonicRelativeClock(final Duration increment)
         {

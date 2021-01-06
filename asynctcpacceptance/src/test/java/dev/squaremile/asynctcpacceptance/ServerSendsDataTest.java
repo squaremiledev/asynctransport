@@ -26,7 +26,7 @@ import dev.squaremile.asynctcp.internal.transport.domain.NumberOfConnectionsChan
 import dev.squaremile.asynctcp.fixtures.transport.FreePort;
 import dev.squaremile.asynctcp.fixtures.transport.Worker;
 
-import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcpacceptance.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortOtherThan;

@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.fixtures.transport;
+package dev.squaremile.asynctcpacceptance;
 
 import java.util.ArrayList;
 import java.util.List;

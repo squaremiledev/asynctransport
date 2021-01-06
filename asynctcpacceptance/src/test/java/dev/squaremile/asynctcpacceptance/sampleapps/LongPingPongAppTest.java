@@ -11,12 +11,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
-import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.api.transport.events.ConnectionClosed;
 import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 import dev.squaremile.asynctcp.api.transport.values.Delineation;
 import dev.squaremile.asynctcp.fixtures.transport.EventsSpy;
+import dev.squaremile.asynctcpacceptance.TimingExtension;
 
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 

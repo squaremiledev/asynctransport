@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.fixtures;
+package dev.squaremile.asynctcpacceptance;
 
 import java.lang.reflect.Method;
 import java.util.logging.Logger;

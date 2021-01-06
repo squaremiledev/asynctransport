@@ -23,7 +23,7 @@ import dev.squaremile.asynctcp.fixtures.transport.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.fixtures.transport.TransportCommandSpy;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
-import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.Assertions.assertEqual;
 
 class SerializingTransportTest
 {

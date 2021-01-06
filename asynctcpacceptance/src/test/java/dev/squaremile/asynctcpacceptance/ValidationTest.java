@@ -13,7 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
-import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation;
 import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
@@ -30,7 +29,7 @@ import dev.squaremile.asynctcp.api.transport.values.Delineation;
 import dev.squaremile.asynctcp.fixtures.transport.EventsSpy;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixMessage;
-import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcpacceptance.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 
 @ExtendWith(TimingExtension.class)

@@ -16,14 +16,12 @@ import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
 import dev.squaremile.asynctcp.fixtures.MessageLog;
-import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
 
 import static dev.squaremile.asynctcp.fix.examplecertification.FixCertification.fixCertification;
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixMessage;
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 
-@ExtendWith(TimingExtension.class)
 public class FixCertificationTest
 {
     private static final int TOTAL_MESSAGES_TO_RECEIVE = 1;

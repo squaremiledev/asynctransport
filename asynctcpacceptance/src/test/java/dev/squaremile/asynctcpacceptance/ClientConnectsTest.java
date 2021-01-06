@@ -18,9 +18,9 @@ import dev.squaremile.asynctcp.api.transport.values.TransportId;
 import dev.squaremile.asynctcp.internal.transport.domain.NumberOfConnectionsChanged;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
-import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 import static dev.squaremile.asynctcp.fixtures.transport.TearDown.closeCleanly;
+import static dev.squaremile.asynctcpacceptance.Assertions.assertEqual;
 import static java.util.Collections.singletonList;
 
 

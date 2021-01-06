@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 
-import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcpacceptance.EchoApplication;
 import dev.squaremile.asynctcpacceptance.SourcingConnectionApplication;
+import dev.squaremile.asynctcpacceptance.TimingExtension;
 
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;

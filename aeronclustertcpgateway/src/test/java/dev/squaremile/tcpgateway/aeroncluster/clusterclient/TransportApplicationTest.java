@@ -6,18 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
-import dev.squaremile.asynctcp.fixtures.ResponseApplication;
-import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationFactory;
 import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.api.transport.events.StartedListening;
+import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
+import dev.squaremile.asynctcp.fixtures.ResponseApplication;
 import dev.squaremile.asynctcp.fixtures.transport.EventsSpy;
 import dev.squaremile.asynctcp.fixtures.transport.network.SampleClient;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.StreamMultiplexClusteredService;
@@ -27,10 +25,10 @@ import dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterNode;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixedLengthDelineation;
-import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortPools;
 import static dev.squaremile.asynctcp.fixtures.transport.Worker.runUntil;
+import static dev.squaremile.tcpgateway.aeroncluster.clusterclient.Assertions.assertEqual;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.endpoints;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.node;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterNode.clusterNode;
@@ -38,7 +36,6 @@ import static io.aeron.cluster.client.AeronCluster.Configuration.INGRESS_STREAM_
 import static java.lang.System.arraycopy;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
-@ExtendWith(TimingExtension.class)
 class TransportApplicationTest
 {
     private final SampleClient sampleClient = new SampleClient();

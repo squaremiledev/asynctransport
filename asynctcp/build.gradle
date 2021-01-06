@@ -11,19 +11,11 @@ plugins {
     id 'maven-publish'
     id 'java-test-fixtures'
     id "com.jfrog.bintray" version "1.8.4"
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
     id "vontikov.sbe-generator-plugin" version "0.0.3"
 }
 
-sbeGenerator {
-    src {
-
-        dir = 'src/main/resources/dev/squaremile/asynctcp/sbe'
-        includes = []
-        excludes = []
-    }
-
-    javaCodecsDir = 'src/main/java'
+repositories {
+    jcenter()
 }
 
 java {
@@ -42,17 +34,11 @@ test {
 dependencies {
     api 'org.agrona:agrona:1.8.0'
     testFixturesImplementation 'org.agrona:agrona:1.8.0'
-    testFixturesImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
-    testFixturesImplementation 'org.assertj:assertj-core:3.16.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     testImplementation 'org.assertj:assertj-core:3.16.1'
 }
 
-shadowJar {
-    classifier null
-    dependencies {
-        exclude(dependency('org.agrona:agrona:.*'))
-    }
+jar {
     manifest {
         attributes('Automatic-Module-Name': 'dev.squaremile.asynctcp')
     }
@@ -64,28 +50,13 @@ distributions {
     }
 }
 
-repositories {
-    jcenter()
-}
 
 publishing {
     publications {
         MyPublication(MavenPublication) {
-            artifact shadowJar
-            artifact sourcesJar
-            artifact javadocJar
+            from components.java
             pom {
-                withXml {
-                    def dependencies = asNode().appendNode('dependencies')
-                    def dependency = dependencies.appendNode('dependency')
-                    dependency.appendNode('groupId', 'org.agrona')
-                    dependency.appendNode('artifactId', 'agrona')
-                    dependency.appendNode('version', '1.8.0')
-                    dependency.appendNode('scope', 'provided')
-                }
-
                 name = 'asynctcp'
-                packaging = 'jar'
                 description = 'Async TCP'
 
                 url = 'https://github.com/squaremiledev/asynctransport'
@@ -134,3 +105,13 @@ bintray {
         }
     }
 }
+
+sbeGenerator {
+    src {
+        dir = 'src/main/resources/dev/squaremile/asynctcp/sbe'
+        includes = []
+        excludes = []
+    }
+    javaCodecsDir = 'src/main/java'
+}
+

@@ -16,7 +16,7 @@ import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 import dev.squaremile.asynctcp.api.transport.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.fixtures.transport.TransportEventsSpy;
 
-import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.Assertions.assertEqual;
 
 class SerializingApplicationTest
 {

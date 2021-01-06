@@ -12,7 +12,6 @@ import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.fixtures.ResponseApplication;
 import dev.squaremile.asynctcp.fixtures.ThingsOnDutyRunner;
-import dev.squaremile.asynctcp.fixtures.TimingExtension;
 import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
 import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFactory;
@@ -22,13 +21,12 @@ import dev.squaremile.asynctcp.fixtures.transport.EventsSpy;
 import dev.squaremile.asynctcp.fixtures.transport.network.SampleClient;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixedLengthDelineation;
-import static dev.squaremile.asynctcp.fixtures.transport.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
 import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
 import static dev.squaremile.asynctcp.fixtures.transport.Worker.runUntil;
 import static java.lang.System.arraycopy;
 
-@ExtendWith(TimingExtension.class)
 class TransportApplicationTest
 {
     private final SampleClient sampleClient = new SampleClient();
