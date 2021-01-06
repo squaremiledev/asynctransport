@@ -14,6 +14,9 @@ public class AsyncTcp implements TransportApplicationFactory
 {
     private final TransportApplicationFactory factory = new RingBufferBackedTransportApplicationFactory();
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public TransportApplicationOnDuty create(
             final String role, final int buffersSize, final SerializedMessageListener serializedMessageListener, final TransportApplicationOnDutyFactory applicationFactory
@@ -22,12 +25,18 @@ public class AsyncTcp implements TransportApplicationFactory
         return factory.create(role, buffersSize, serializedMessageListener, applicationFactory);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public TransportApplicationOnDuty createSharedStack(final String role, final TransportApplicationOnDutyFactory applicationFactory)
     {
         return factory.createSharedStack(role, applicationFactory);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public TransportApplicationOnDuty createWithoutTransport(
             final String role,
@@ -40,6 +49,9 @@ public class AsyncTcp implements TransportApplicationFactory
         return factory.createWithoutTransport(role, applicationFactory, eventSupplier, commandListener, serializedEventListener);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public TransportOnDuty createTransport(
             final String role, final SerializedCommandSupplier commandSupplier, final SerializedEventListener eventListener
