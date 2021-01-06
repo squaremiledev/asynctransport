@@ -251,8 +251,8 @@ class ExchangeTest
         long maxSeenPrice = midPriceSpy.midPrices().stream().mapToLong(value -> value).max().orElse(Long.MIN_VALUE);
         long lastPrice = midPriceSpy.midPrices().get(midPriceSpy.midPrices().size() - 1);
         assertThat(lastPrice).isCloseTo(initialPrice, Offset.offset((long)priceUpdates));
-        assertThat(minSeenPrice).isLessThan(-100);
-        assertThat(maxSeenPrice).isGreaterThan(100);
+        assertThat(minSeenPrice).isLessThan(-50);
+        assertThat(maxSeenPrice).isGreaterThan(50);
     }
 
     private Exchange exchange(final long initialPrice, final MidPriceUpdate priceMovement, final ExecutionReportListener executionReportListener)
