@@ -69,7 +69,9 @@ repositories {
 publishing {
     publications {
         MyPublication(MavenPublication) {
-            artifact(shadowJar)
+            artifact shadowJar
+            artifact sourcesJar
+            artifact javadocJar
             pom {
                 withXml {
                     def dependencies = asNode().appendNode('dependencies')
