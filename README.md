@@ -37,23 +37,15 @@ Maven
 <dependency>
 	<groupId>dev.squaremile</groupId>
 	<artifactId>asynctcp</artifactId>
-	<version>0.2.0</version>
+	<version>0.4.1</version>
 	<type>pom</type>
-</dependency>
-
-<dependency>
-    <groupId>org.agrona</groupId>
-    <artifactId>agrona</artifactId>
-    <version>1.8.0</version>
-    <type>pom</type>
 </dependency>
 ```
 
 Gradle
 
 ```
-implementation 'dev.squaremile:asynctcp:0.2.0'
-implementation 'org.agrona:agrona:1.8.0'
+implementation 'dev.squaremile:asynctcp:0.4.1'
 ```
 
 ### See some examples
@@ -172,9 +164,9 @@ public class AppFromReadme
 {
     public static void main(String[] args)
     {
-        ApplicationOnDuty app = new AsyncTcp().create(
+        ApplicationOnDuty app = new AsyncTcp().createSharedStack(
                 "MyApp",
-                transport -> new EventDrivenApplication()
+                transport -> new TransportApplicationOnDuty()
                 {
 
                     @Override
@@ -196,7 +188,7 @@ public class AppFromReadme
                         if (event instanceof ConnectionAccepted)
                         {
                             ConnectionAccepted connectionAccepted = (ConnectionAccepted)event;
-                            transport.handle(transport.command(connectionAccepted, SendData.class).set("Hi!".getBytes()));
+                            transport.handle(transport.command(connectionAccepted.connectionId(), SendData.class).set("Hi!".getBytes()));
                         }
                     }
                 }
