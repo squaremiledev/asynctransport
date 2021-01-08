@@ -4,12 +4,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 
-import static dev.squaremile.asynctcp.support.transport.ThrowWhenTimedOutBeforeMeeting.DEFAULT_TIMEOUT_MS;
-import static dev.squaremile.asynctcp.support.transport.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
 import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 public class Worker
 {
+    private static final int DEFAULT_TIMEOUT_MS = 1_000;
+
     public static BooleanSupplier noExceptionAnd(final BooleanSupplier condition)
     {
         return () ->
@@ -33,7 +33,22 @@ public class Worker
 
     public static void runUntil(final int timeoutMs, final BooleanSupplier stopCondition)
     {
-        final BooleanSupplier abort = timeoutOr(timeoutMs, stopCondition);
+        long startTime = System.currentTimeMillis();
+        final BooleanSupplier abort = () ->
+        {
+            final boolean conditionMet = stopCondition.getAsBoolean();
+            if (conditionMet)
+            {
+                return true;
+            }
+            final boolean hasTimedOut = startTime + timeoutMs <= System.currentTimeMillis();
+            if (!hasTimedOut)
+            {
+                return false;
+            }
+            throw new RuntimeException("Not completed within " + timeoutMs + "ms");
+        };
+
         while (!abort.getAsBoolean())
         {
             parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
