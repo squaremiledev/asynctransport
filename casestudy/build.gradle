@@ -15,15 +15,7 @@ test {
 
 dependencies {
     implementation project(':asynctcp')
-    implementation project(':aeronclustertcpgateway')
-
-    testImplementation 'org.agrona:agrona:1.8.0'
-    testImplementation 'io.aeron:aeron-cluster:1.31.1'
-
-    testImplementation project(':aeroncluster')
     testImplementation testFixtures(project(':asynctcp'))
-    testImplementation testFixtures(project(':aeroncluster'))
-
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
     testImplementation 'org.assertj:assertj-core:3.16.1'
 }
