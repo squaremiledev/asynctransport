@@ -5,7 +5,7 @@ import java.util.function.BooleanSupplier;
 
 
 import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
-import dev.squaremile.asynctcp.fixtures.transport.Worker;
+import dev.squaremile.asynctcp.support.transport.Worker;
 
 import static java.util.Arrays.asList;
 

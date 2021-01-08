@@ -11,7 +11,7 @@ import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 import dev.squaremile.transport.casestudy.marketmaking.domain.MarketListener;
 import dev.squaremile.transport.casestudy.marketmaking.domain.PredictableTrend;
 
-import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
 
 class ApplicationStarterTest
 {

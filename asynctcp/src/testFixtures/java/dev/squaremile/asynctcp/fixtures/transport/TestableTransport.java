@@ -13,7 +13,7 @@ import dev.squaremile.asynctcp.api.transport.app.TransportUserCommand;
 import dev.squaremile.asynctcp.internal.transport.domain.StatusEventListener;
 import dev.squaremile.asynctcp.internal.transport.nonblockingimpl.NonBlockingTransport;
 
-import static dev.squaremile.asynctcp.fixtures.transport.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
+import static dev.squaremile.asynctcp.support.transport.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
 import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 public class TestableTransport<E extends TransportEventsListener> implements Transport

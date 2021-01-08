@@ -30,7 +30,7 @@ import dev.squaremile.asynctcp.fixtures.transport.EventsSpy;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixMessage;
 import static dev.squaremile.asynctcpacceptance.Assertions.assertEqual;
-import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
 
 @ExtendWith(TimingExtension.class)
 public class ValidationTest

@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.fixtures.transport;
+package dev.squaremile.asynctcp.support.transport;
 
 import java.util.function.BooleanSupplier;
 

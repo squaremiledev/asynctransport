@@ -19,13 +19,13 @@ import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 import dev.squaremile.asynctcp.api.transport.values.CommandId;
 import dev.squaremile.asynctcp.api.transport.values.ConnectionId;
 import dev.squaremile.asynctcp.fixtures.transport.TransportUnderTest;
-import dev.squaremile.asynctcp.fixtures.transport.Worker;
+import dev.squaremile.asynctcp.support.transport.Worker;
 import dev.squaremile.asynctcp.fixtures.transport.network.SampleClient;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
-import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortOtherThan;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePortOtherThan;
 import static dev.squaremile.asynctcp.fixtures.transport.StringFixtures.byteArrayWith;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
@@ -119,7 +119,7 @@ public class TransportDriver
     public StartedListening startListening(final int port)
     {
         final int commandId = nextCommandId++;
-        transport.handle(transport.command(Listen.class).set((long)commandId, port, rawStreaming()));
+        transport.handle(transport.command(Listen.class).set(commandId, port, rawStreaming()));
         transport.work();
         return transport.events().last(StartedListening.class, event -> event.commandId() == commandId);
     }

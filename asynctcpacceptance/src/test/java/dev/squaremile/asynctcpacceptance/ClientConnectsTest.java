@@ -18,7 +18,7 @@ import dev.squaremile.asynctcp.api.transport.values.TransportId;
 import dev.squaremile.asynctcp.internal.transport.domain.NumberOfConnectionsChanged;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
-import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
 import static dev.squaremile.asynctcp.fixtures.transport.TearDown.closeCleanly;
 import static dev.squaremile.asynctcpacceptance.Assertions.assertEqual;
 import static java.util.Collections.singletonList;
@@ -35,7 +35,7 @@ class ClientConnectsTest extends TransportTestBase
         StartedListening serverStartedListening = serverDriver.startListening();
 
         // When
-        clientTransport.handle(clientTransport.command(Connect.class).set(remoteHost, serverStartedListening.port(), (long)101, 1_000, rawStreaming()));
+        clientTransport.handle(clientTransport.command(Connect.class).set(remoteHost, serverStartedListening.port(), 101, 1_000, rawStreaming()));
         spinUntil(() -> !serverTransport.connectionEvents().all(ConnectionAccepted.class).isEmpty() &&
                         !clientTransport.connectionEvents().all(Connected.class).isEmpty());
 
@@ -66,7 +66,7 @@ class ClientConnectsTest extends TransportTestBase
         int portNothingListensOn = freePort();
 
         // When
-        clientTransport.handle(clientTransport.command(Connect.class).set("localhost", portNothingListensOn, (long)102, 1_000, rawStreaming()));
+        clientTransport.handle(clientTransport.command(Connect.class).set("localhost", portNothingListensOn, 102, 1_000, rawStreaming()));
         spinUntilFailure();
 
         // Then
@@ -89,7 +89,7 @@ class ClientConnectsTest extends TransportTestBase
         StartedListening serverStartedListening = serverDriver.startListening();
 
         // When
-        clientTransport.handle(clientTransport.command(Connect.class).set("240.0.0.0", serverStartedListening.port(), (long)101, 50, rawStreaming()));
+        clientTransport.handle(clientTransport.command(Connect.class).set("240.0.0.0", serverStartedListening.port(), 101, 50, rawStreaming()));
         spinUntilFailure();
 
         // Then

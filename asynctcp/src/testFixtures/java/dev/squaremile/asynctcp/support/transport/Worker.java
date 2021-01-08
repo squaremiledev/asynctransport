@@ -1,11 +1,11 @@
-package dev.squaremile.asynctcp.fixtures.transport;
+package dev.squaremile.asynctcp.support.transport;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 
-import static dev.squaremile.asynctcp.fixtures.transport.ThrowWhenTimedOutBeforeMeeting.DEFAULT_TIMEOUT_MS;
-import static dev.squaremile.asynctcp.fixtures.transport.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
+import static dev.squaremile.asynctcp.support.transport.ThrowWhenTimedOutBeforeMeeting.DEFAULT_TIMEOUT_MS;
+import static dev.squaremile.asynctcp.support.transport.ThrowWhenTimedOutBeforeMeeting.timeoutOr;
 import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 public class Worker

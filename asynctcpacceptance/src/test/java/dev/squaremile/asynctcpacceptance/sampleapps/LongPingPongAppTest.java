@@ -18,7 +18,7 @@ import dev.squaremile.asynctcp.api.transport.values.Delineation;
 import dev.squaremile.asynctcp.fixtures.transport.EventsSpy;
 import dev.squaremile.asynctcpacceptance.TimingExtension;
 
-import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
 
 @ExtendWith(TimingExtension.class)
 class LongPingPongAppTest

@@ -11,7 +11,7 @@ import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
 import dev.squaremile.asynctcp.fixtures.transport.TearDown;
 import dev.squaremile.asynctcp.fixtures.transport.TransportUnderTest;
 
-import static dev.squaremile.asynctcp.fixtures.transport.Worker.runUntil;
+import static dev.squaremile.asynctcp.support.transport.Worker.runUntil;
 
 abstract class TransportTestBase
 {

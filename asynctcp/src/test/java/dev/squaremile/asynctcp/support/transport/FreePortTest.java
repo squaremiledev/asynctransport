@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcp.internal.transport.testfixtures;
+package dev.squaremile.asynctcp.support.transport;
 
 import java.util.List;
 import java.util.Map;
@@ -6,9 +6,6 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-
-import dev.squaremile.asynctcp.fixtures.transport.FreePort;
 
 class FreePortTest
 {

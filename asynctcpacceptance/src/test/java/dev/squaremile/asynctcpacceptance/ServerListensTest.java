@@ -23,8 +23,8 @@ import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelin
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 import static dev.squaremile.asynctcpacceptance.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
-import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortOtherThan;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePortOtherThan;
 
 
 class ServerListensTest extends TransportTestBase
@@ -35,7 +35,7 @@ class ServerListensTest extends TransportTestBase
         final int port = freePort();
 
         // Given
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)102, port, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(102, port, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().contains(StartedListening.class));
         assertEqual(serverTransport.events().all(StartedListening.class), new StartedListening(port, 102, rawStreaming()));
 
@@ -61,7 +61,7 @@ class ServerListensTest extends TransportTestBase
     @Tag("tcperror")
     void shouldStopListeningWhenAsked()
     {
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)0, freePort(), rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(0, freePort(), rawStreaming()));
         serverTransport.work();
         serverTransport.workUntil(() -> serverTransport.events().contains(StartedListening.class));
         final int port = serverTransport.events().last(StartedListening.class).port();
@@ -82,7 +82,7 @@ class ServerListensTest extends TransportTestBase
         // Given
         final int port = freePort();
         final int anotherPort = freePortOtherThan(port);
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)2, port, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(2, port, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().contains(StartedListening.class));
 
         // When
@@ -101,12 +101,12 @@ class ServerListensTest extends TransportTestBase
     {
         // When
         final int serverPort1 = freePort();
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)0, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(0, serverPort1, rawStreaming()));
         final int serverPort2 = freePortOtherThan(serverPort1);
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 1);
 
         // When
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)1, serverPort2, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(1, serverPort2, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 2);
 
         // Then
@@ -121,13 +121,13 @@ class ServerListensTest extends TransportTestBase
     {
         // When
         final int serverPort1 = freePort();
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)101, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(101, serverPort1, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 1);
         serverTransport.handle(serverTransport.command(StopListening.class).set(102, serverPort1));
         serverTransport.workUntil(() -> serverTransport.events().all(StoppedListening.class).size() == 1);
 
         // When
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)103, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(103, serverPort1, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 2);
 
         // Then
@@ -141,7 +141,7 @@ class ServerListensTest extends TransportTestBase
     {
         // When
         final int serverPort1 = freePort();
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)101, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(101, serverPort1, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 1);
         clients.client(1).connectedTo(serverPort1);
         serverTransport.workUntil(() -> serverTransport.statusEvents().all(NumberOfConnectionsChanged.class).size() == 1);
@@ -149,7 +149,7 @@ class ServerListensTest extends TransportTestBase
         serverTransport.workUntil(() -> serverTransport.events().all(StoppedListening.class).size() == 1);
 
         // When
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)103, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(103, serverPort1, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 2);
 
         // Then
@@ -163,7 +163,7 @@ class ServerListensTest extends TransportTestBase
     {
         // When
         final int serverPort1 = freePort();
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)101, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(101, serverPort1, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 1);
         clients.client(1).connectedTo(serverPort1);
         serverTransport.workUntil(() -> serverTransport.statusEvents().all(NumberOfConnectionsChanged.class).size() == 1);
@@ -174,7 +174,7 @@ class ServerListensTest extends TransportTestBase
         assertThat(serverTransport.statusEvents().last(NumberOfConnectionsChanged.class).newNumberOfConnections()).isEqualTo(0);
 
         // When
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)103, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(103, serverPort1, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 2);
 
         // Then
@@ -189,12 +189,12 @@ class ServerListensTest extends TransportTestBase
     {
         // When
         final int serverPort1 = freePort();
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)101, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(101, serverPort1, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 1);
         assertThat(serverTransport.statusEvents().all(NumberOfConnectionsChanged.class)).hasSize(0);
 
         // When
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)102, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(102, serverPort1, rawStreaming()));
 
         // Then
         serverTransport.workUntil(() -> serverTransport.events().all(CommandFailed.class).size() == 1);
@@ -209,8 +209,8 @@ class ServerListensTest extends TransportTestBase
     {
         // When
         final int serverPort1 = freePort();
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)101, serverPort1, rawStreaming()));
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)102, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(101, serverPort1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(102, serverPort1, rawStreaming()));
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 1);
 
         // Then
@@ -232,11 +232,11 @@ class ServerListensTest extends TransportTestBase
         assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port2));
         assertThrows(ConnectException.class, () -> new SampleClient().connectedTo(port3));
 
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)5, port1, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(5, port1, rawStreaming()));
         serverTransport.work();
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)6, port2, fixedLengthDelineation(4)));
+        serverTransport.handle(serverTransport.command(Listen.class).set(6, port2, fixedLengthDelineation(4)));
         serverTransport.work();
-        serverTransport.handle(serverTransport.command(Listen.class).set((long)7, port3, rawStreaming()));
+        serverTransport.handle(serverTransport.command(Listen.class).set(7, port3, rawStreaming()));
         serverTransport.work();
         serverTransport.workUntil(() -> serverTransport.events().all(StartedListening.class).size() == 3);
         assertEqual(

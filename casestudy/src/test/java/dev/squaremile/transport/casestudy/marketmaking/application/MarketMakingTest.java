@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import dev.squaremile.asynctcp.api.transport.app.OnDuty;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 
-import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
 import static java.time.Duration.between;
 import static java.time.Duration.ofSeconds;
 

@@ -26,8 +26,8 @@ import dev.squaremile.transport.aeroncluster.fixtures.ClusterNode;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.fixtures.transport.FreePort.freePortPools;
-import static dev.squaremile.asynctcp.fixtures.transport.Worker.runUntil;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePortPools;
+import static dev.squaremile.asynctcp.support.transport.Worker.runUntil;
 import static dev.squaremile.tcpgateway.aeroncluster.clusterclient.Assertions.assertEqual;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.endpoints;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.node;
