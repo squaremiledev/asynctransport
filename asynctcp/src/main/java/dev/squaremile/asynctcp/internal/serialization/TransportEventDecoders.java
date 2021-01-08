@@ -4,18 +4,6 @@ import org.agrona.DirectBuffer;
 import org.agrona.collections.Int2ObjectHashMap;
 
 
-import dev.squaremile.asynctcp.sbe.ConnectedDecoder;
-import dev.squaremile.asynctcp.sbe.ConnectionAcceptedDecoder;
-import dev.squaremile.asynctcp.sbe.ConnectionClosedDecoder;
-import dev.squaremile.asynctcp.sbe.ConnectionCommandFailedDecoder;
-import dev.squaremile.asynctcp.sbe.ConnectionResetByPeerDecoder;
-import dev.squaremile.asynctcp.sbe.DataSentDecoder;
-import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
-import dev.squaremile.asynctcp.sbe.MessageReceivedDecoder;
-import dev.squaremile.asynctcp.sbe.StartedListeningDecoder;
-import dev.squaremile.asynctcp.sbe.StoppedListeningDecoder;
-import dev.squaremile.asynctcp.sbe.TransportCommandFailedDecoder;
-import dev.squaremile.asynctcp.sbe.VarDataEncodingDecoder;
 import dev.squaremile.asynctcp.api.transport.app.TransportEvent;
 import dev.squaremile.asynctcp.api.transport.events.Connected;
 import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
@@ -28,6 +16,18 @@ import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 import dev.squaremile.asynctcp.api.transport.events.StoppedListening;
 import dev.squaremile.asynctcp.api.transport.events.TransportCommandFailed;
 import dev.squaremile.asynctcp.api.transport.values.Delineation;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectedDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectionAcceptedDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectionClosedDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectionCommandFailedDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectionResetByPeerDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.DataSentDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.MessageHeaderDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.MessageReceivedDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.StartedListeningDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.StoppedListeningDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.TransportCommandFailedDecoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.VarDataEncodingDecoder;
 
 public class TransportEventDecoders
 {

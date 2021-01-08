@@ -4,18 +4,6 @@ import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
 
-import dev.squaremile.asynctcp.sbe.ConnectedEncoder;
-import dev.squaremile.asynctcp.sbe.ConnectionAcceptedEncoder;
-import dev.squaremile.asynctcp.sbe.ConnectionClosedEncoder;
-import dev.squaremile.asynctcp.sbe.ConnectionCommandFailedEncoder;
-import dev.squaremile.asynctcp.sbe.ConnectionResetByPeerEncoder;
-import dev.squaremile.asynctcp.sbe.DataSentEncoder;
-import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
-import dev.squaremile.asynctcp.sbe.MessageReceivedEncoder;
-import dev.squaremile.asynctcp.sbe.StartedListeningEncoder;
-import dev.squaremile.asynctcp.sbe.StoppedListeningEncoder;
-import dev.squaremile.asynctcp.sbe.TransportCommandFailedEncoder;
-import dev.squaremile.asynctcp.sbe.VarDataEncodingEncoder;
 import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
 import dev.squaremile.asynctcp.api.transport.app.Event;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
@@ -29,6 +17,18 @@ import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 import dev.squaremile.asynctcp.api.transport.events.StoppedListening;
 import dev.squaremile.asynctcp.api.transport.events.TransportCommandFailed;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectedEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectionAcceptedEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectionClosedEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectionCommandFailedEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectionResetByPeerEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.DataSentEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.MessageHeaderEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.MessageReceivedEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.StartedListeningEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.StoppedListeningEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.TransportCommandFailedEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.VarDataEncodingEncoder;
 
 public class SerializingApplication implements TransportApplicationOnDuty
 {

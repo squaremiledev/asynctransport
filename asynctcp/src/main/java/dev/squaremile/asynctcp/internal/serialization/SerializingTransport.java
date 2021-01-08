@@ -4,13 +4,6 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.Long2ObjectHashMap;
 
 
-import dev.squaremile.asynctcp.sbe.CloseConnectionEncoder;
-import dev.squaremile.asynctcp.sbe.ConnectEncoder;
-import dev.squaremile.asynctcp.sbe.ListenEncoder;
-import dev.squaremile.asynctcp.sbe.MessageHeaderEncoder;
-import dev.squaremile.asynctcp.sbe.SendDataEncoder;
-import dev.squaremile.asynctcp.sbe.SendMessageEncoder;
-import dev.squaremile.asynctcp.sbe.StopListeningEncoder;
 import dev.squaremile.asynctcp.api.serialization.SerializedCommandListener;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionUserCommand;
 import dev.squaremile.asynctcp.api.transport.app.Event;
@@ -29,6 +22,13 @@ import dev.squaremile.asynctcp.api.transport.events.ConnectionAccepted;
 import dev.squaremile.asynctcp.api.transport.events.ConnectionClosed;
 import dev.squaremile.asynctcp.api.transport.events.ConnectionResetByPeer;
 import dev.squaremile.asynctcp.api.transport.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.internal.serialization.sbe.CloseConnectionEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ConnectEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.ListenEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.MessageHeaderEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.SendDataEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.SendMessageEncoder;
+import dev.squaremile.asynctcp.internal.serialization.sbe.StopListeningEncoder;
 import dev.squaremile.asynctcp.internal.transport.domain.CommandFactory;
 import dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionCommands;
 

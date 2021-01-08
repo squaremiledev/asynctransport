@@ -9,12 +9,12 @@ import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import static org.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 
 
-import dev.squaremile.asynctcp.sbe.MessageHeaderDecoder;
 import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
+import dev.squaremile.asynctcp.fixtures.transport.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.internal.serialization.TransportCommandDecoders;
 import dev.squaremile.asynctcp.internal.serialization.TransportEventDecoders;
 import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedEventSupplier;
-import dev.squaremile.asynctcp.fixtures.transport.CommandsProvidingTransport;
+import dev.squaremile.asynctcp.internal.serialization.sbe.MessageHeaderDecoder;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 

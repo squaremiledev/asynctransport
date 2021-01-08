@@ -1,7 +1,7 @@
 package dev.squaremile.asynctcp.internal.serialization;
 
-import dev.squaremile.asynctcp.sbe.DelineationType;
 import dev.squaremile.asynctcp.api.transport.values.Delineation;
+import dev.squaremile.asynctcp.internal.serialization.sbe.DelineationType;
 
 public class DelineationTypeMapping
 {

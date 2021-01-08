@@ -108,7 +108,7 @@ bintray {
 
 sbeGenerator {
     src {
-        dir = 'src/main/resources/dev/squaremile/asynctcp/sbe'
+        dir = 'src/main/resources/dev/squaremile/asynctcp/internal/serialization/sbe'
         includes = []
         excludes = []
     }
