@@ -11,7 +11,6 @@ import dev.squaremile.transport.aeroncluster.api.ClusterClientApplication;
 import dev.squaremile.transport.aeroncluster.api.ClusterClientApplicationFactory;
 import dev.squaremile.transport.aeroncluster.api.ClusterClientPublisher;
 import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
-import io.aeron.CommonContext;
 import io.aeron.cluster.client.AeronCluster;
 import io.aeron.cluster.client.EgressListener;
 import io.aeron.cluster.codecs.EventCode;
@@ -24,10 +23,10 @@ public class ClusterConnection
     private final ApplicationWrapper applicationWrapper;
     private final EmbeddedClusterClient embeddedClusterClient;
 
-    public ClusterConnection(final IngressDefinition ingress, final ClusterClientApplicationFactory factory, final int ingressStreamId, final int egressStreamId)
+    public ClusterConnection(final IngressDefinition ingress, final ClusterClientApplicationFactory factory, final int ingressStreamId, final int egressStreamId, final String aeronDirectory)
     {
         this.applicationWrapper = new ApplicationWrapper(factory);
-        this.embeddedClusterClient = new EmbeddedClusterClient(new ClusterClientContext(ingress, applicationWrapper, ingressStreamId, egressStreamId));
+        this.embeddedClusterClient = new EmbeddedClusterClient(new ClusterClientContext(ingress, applicationWrapper, ingressStreamId, egressStreamId, aeronDirectory));
     }
 
     public void connect()
@@ -106,9 +105,9 @@ public class ClusterConnection
         private final MediaDriverContext mediaDriverContext;
         private final AeronClusterContext aeronClusterContext;
 
-        public ClusterClientContext(IngressDefinition ingress, EgressListener egressListener, final int ingressStreamId, final int egressStreamId)
+        public ClusterClientContext(IngressDefinition ingress, EgressListener egressListener, final int ingressStreamId, final int egressStreamId, final String aeronDirectory)
         {
-            this.mediaDriverContext = new MediaDriverContext();
+            this.mediaDriverContext = new MediaDriverContext(aeronDirectory);
             this.aeronClusterContext = new AeronClusterContext(
                     mediaDriverContext.aeronDirectory(),
                     ingress,
@@ -169,9 +168,9 @@ public class ClusterConnection
     {
         private final String aeronDirectory;
 
-        public MediaDriverContext()
+        public MediaDriverContext(final String aeronDirectory)
         {
-            aeronDirectory = CommonContext.generateRandomDirName();
+            this.aeronDirectory = aeronDirectory;
         }
 
         public String aeronDirectory()

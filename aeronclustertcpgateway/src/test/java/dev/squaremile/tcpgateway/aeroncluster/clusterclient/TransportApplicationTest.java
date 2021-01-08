@@ -70,7 +70,7 @@ class TransportApplicationTest
 
         // When started cluster and Tcp gateway
         newSingleThreadExecutor().execute(clusterNode::start);
-        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress(), INGRESS_STREAM_ID_DEFAULT, 1234).connect());
+        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress(), INGRESS_STREAM_ID_DEFAULT, 1234, tempDir.resolve("aeron_client").toString()).connect());
 
         // Then
         runUntil(() -> events.contains(StartedListening.class));

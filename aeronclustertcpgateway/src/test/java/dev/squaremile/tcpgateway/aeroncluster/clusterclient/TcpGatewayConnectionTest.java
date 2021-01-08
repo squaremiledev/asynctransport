@@ -25,6 +25,7 @@ import dev.squaremile.transport.aeroncluster.api.ClientFactory;
 import dev.squaremile.transport.aeroncluster.api.ClusterClientApplication;
 import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition;
+import io.aeron.CommonContext;
 import io.aeron.logbuffer.Header;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixedLengthDelineation;
@@ -94,6 +95,7 @@ class TcpGatewayConnectionTest
                 cluster.ingress(),
                 INGRESS_STREAM_ID_DEFAULT,
                 nonTcpClientStreamId,
+                tempDir.resolve("aeron_client1").toString(),
                 (aeronCluster, publisher) -> new ClusterClientApplication()
                 {
                     @Override
@@ -112,8 +114,18 @@ class TcpGatewayConnectionTest
                     }
                 }
         ).connect());
-        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress(), INGRESS_STREAM_ID_DEFAULT, tcpGatewayEgressStreamId).connect());
-        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(cluster.ingress(), INGRESS_STREAM_ID_DEFAULT, anotherTcpGatewayEgressStreamId).connect());
+        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(
+                cluster.ingress(),
+                INGRESS_STREAM_ID_DEFAULT,
+                tcpGatewayEgressStreamId,
+                tempDir.resolve("aeron_client2").toString()
+        ).connect());
+        newSingleThreadExecutor().execute(() -> new TcpGatewayConnection(
+                cluster.ingress(),
+                INGRESS_STREAM_ID_DEFAULT,
+                anotherTcpGatewayEgressStreamId,
+                tempDir.resolve("aeron_client3").toString()
+        ).connect());
 
         // Then
         runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(0)) != null));

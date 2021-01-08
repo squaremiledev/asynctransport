@@ -11,9 +11,9 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 import dev.squaremile.asynctcp.fix.FixHandler;
 import dev.squaremile.asynctcp.fix.examplecertification.usecases.RespondToLogOnIgnoreRest;
-import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 import dev.squaremile.asynctcp.fixtures.transport.EventsSpy;
 import dev.squaremile.asynctcp.fixtures.transport.network.SampleClient;
 import dev.squaremile.tcpgateway.aeroncluster.clusterservice.StreamMultiplexClusteredService;
@@ -60,7 +60,7 @@ public class TcpFixAcceptorFactoryTest
         );
 
         newSingleThreadExecutor().execute(clusterNode::start);
-        newSingleThreadExecutor().execute(() -> createTcpGateway(INGRESS_STREAM_ID_DEFAULT, 1234, cluster.ingress()).connect());
+        newSingleThreadExecutor().execute(() -> createTcpGateway(INGRESS_STREAM_ID_DEFAULT, 1234, cluster.ingress(), tempDir.resolve("aeron_client").toString()).connect());
         runUntil(() -> events.contains(StartedListening.class));
         runUntil(completed(() -> sampleClient.connectedTo(tcpPort)));
 

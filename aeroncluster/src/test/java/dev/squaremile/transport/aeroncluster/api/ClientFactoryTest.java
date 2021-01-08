@@ -13,12 +13,13 @@ import dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterNode;
 import dev.squaremile.transport.aeroncluster.fixtures.applications.AccumulatorClusteredService;
 import dev.squaremile.transport.aeroncluster.fixtures.applications.NumberGeneratorClusterClientApp;
+import io.aeron.cluster.client.AeronCluster;
 import io.aeron.exceptions.RegistrationException;
 import io.github.artsok.RepeatedIfExceptionsTest;
 
 import static dev.squaremile.asynctcp.support.transport.FreePort.freePortPools;
-import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.node;
 import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.endpoints;
+import static dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition.node;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 class ClientFactoryTest
@@ -57,6 +58,9 @@ class ClientFactoryTest
 
         new ClientFactory().createConnection(
                 cluster.ingress(),
+                AeronCluster.Configuration.INGRESS_STREAM_ID_DEFAULT,
+                AeronCluster.Configuration.EGRESS_STREAM_ID_DEFAULT,
+                tempDir.resolve("aeron_client").toString(),
                 (aeronCluster, publisher) -> new NumberGeneratorClusterClientApp(aeronCluster, publisher, 5, 200)
         ).connect();
     }
@@ -78,6 +82,9 @@ class ClientFactoryTest
         )::start);
         new ClientFactory().createConnection(
                 cluster.ingress(),
+                AeronCluster.Configuration.INGRESS_STREAM_ID_DEFAULT,
+                AeronCluster.Configuration.EGRESS_STREAM_ID_DEFAULT,
+                tempDir.resolve("aeron_client").toString(),
                 (aeronCluster, publisher) -> new NumberGeneratorClusterClientApp(aeronCluster, publisher, 5, 200)
         ).connect();
     }

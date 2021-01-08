@@ -25,17 +25,19 @@ public class TcpGatewayConnection
     private final IngressDefinition ingress;
     private final int ingressStreamId;
     private final int egressStreamId;
+    private final String aeronDirectory;
 
-    public TcpGatewayConnection(final IngressDefinition ingress, final int ingressStreamId, final int egressStreamId)
+    public TcpGatewayConnection(final IngressDefinition ingress, final int ingressStreamId, final int egressStreamId, final String aeronDirectory)
     {
         this.ingress = ingress;
         this.ingressStreamId = ingressStreamId;
         this.egressStreamId = egressStreamId;
+        this.aeronDirectory = aeronDirectory;
     }
 
     public void connect()
     {
-        clientFactory.createConnection(ingress, ingressStreamId, egressStreamId, TcpGateway::new).connect();
+        clientFactory.createConnection(ingress, ingressStreamId, egressStreamId, aeronDirectory, TcpGateway::new).connect();
     }
 
     private static class TcpGateway implements ClusterClientApplication

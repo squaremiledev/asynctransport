@@ -1,15 +1,13 @@
 package dev.squaremile.transport.aeroncluster.api;
 
 import dev.squaremile.transport.aeroncluster.implementation.ClusterConnection;
-import io.aeron.cluster.client.AeronCluster;
+import io.aeron.CommonContext;
 
 public class ClientFactory
 {
-    public ClusterConnection createConnection(final IngressDefinition ingress, final ClusterClientApplicationFactory factory)
-    {
-        return createConnection(ingress, AeronCluster.Configuration.INGRESS_STREAM_ID_DEFAULT, AeronCluster.Configuration.EGRESS_STREAM_ID_DEFAULT, factory);
-    }
-
+    /**
+     * Resolves the aeron directory automatically
+     */
     public ClusterConnection createConnection(
             final IngressDefinition ingress,
             final int ingressStreamId,
@@ -17,6 +15,17 @@ public class ClientFactory
             final ClusterClientApplicationFactory factory
     )
     {
-        return new ClusterConnection(ingress, factory, ingressStreamId, egressStreamId);
+        return new ClusterConnection(ingress, factory, ingressStreamId, egressStreamId, CommonContext.generateRandomDirName());
+    }
+
+    public ClusterConnection createConnection(
+            final IngressDefinition ingress,
+            final int ingressStreamId,
+            final int egressStreamId,
+            final String aeronDirectory,
+            final ClusterClientApplicationFactory factory
+    )
+    {
+        return new ClusterConnection(ingress, factory, ingressStreamId, egressStreamId, aeronDirectory);
     }
 }
