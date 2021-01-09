@@ -2,10 +2,11 @@ package dev.squaremile.asynctcpacceptance;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
-import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
 import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.api.transport.events.StartedListening;
+import dev.squaremile.asynctcp.api.transport.values.Delineation;
+import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 
 import static java.lang.Integer.parseInt;
 
@@ -21,7 +22,7 @@ public class EchoApplication implements ApplicationOnDuty
                 SerializedMessageListener.NO_OP,
                 transport -> new ListeningApplication(
                         transport,
-                        AdHocProtocol.DELINEATION,
+                        new Delineation(Delineation.Type.INT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
                         port,
                         event ->
                         {

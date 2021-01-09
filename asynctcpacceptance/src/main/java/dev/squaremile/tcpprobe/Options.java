@@ -5,8 +5,9 @@ import org.agrona.MutableDirectBuffer;
 
 public class Options
 {
-    public static final int PLEASE_RESPOND_FLAG = 1;
-    public static final int DO_NOT_RESPOND_FLAG = 0;
+    private static final int PLEASE_RESPOND_FLAG = 1;
+    private static final int DO_NOT_RESPOND_FLAG = 0;
+    private static final int NO_OPTIONS = 0;
 
     private MutableDirectBuffer buffer;
     private DirectBuffer readBuffer;
@@ -37,5 +38,15 @@ public class Options
     public boolean respond()
     {
         return readBuffer.getInt(offset) == PLEASE_RESPOND_FLAG;
+    }
+
+    public void clear()
+    {
+        buffer.putInt(offset, NO_OPTIONS);
+    }
+
+    public int length()
+    {
+        return 4;
     }
 }

@@ -2,7 +2,6 @@ package dev.squaremile.asynctcpacceptance;
 
 import java.util.concurrent.TimeUnit;
 
-import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.collections.MutableBoolean;
 
@@ -18,15 +17,11 @@ import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFacto
 import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
 import dev.squaremile.asynctcp.api.transport.events.DataSent;
 import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
+import dev.squaremile.asynctcp.api.transport.values.Delineation;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
+import dev.squaremile.tcpprobe.Metadata;
 
 import static dev.squaremile.asynctcp.api.serialization.SerializedMessageListener.NO_OP;
-import static dev.squaremile.asynctcpacceptance.AdHocProtocol.CORRELATION_ID_OFFSET;
-import static dev.squaremile.asynctcpacceptance.AdHocProtocol.EXTRA_DATA_OFFSET;
-import static dev.squaremile.asynctcpacceptance.AdHocProtocol.NO_OPTIONS;
-import static dev.squaremile.asynctcpacceptance.AdHocProtocol.OFFSET_OPTIONS;
-import static dev.squaremile.asynctcpacceptance.AdHocProtocol.PLEASE_RESPOND_FLAG;
-import static dev.squaremile.asynctcpacceptance.AdHocProtocol.SEND_TIME_OFFSET;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.nanoTime;
 
@@ -40,6 +35,8 @@ public class SourcingConnectionApplication implements ConnectionApplication
     private final OnMessageReceived onMessageReceived;
     private final SelectiveResponseRequest selectiveResponseRequest;
     private final byte[] extraData;
+    private final Metadata metadata;
+
     long messagesSentCount = 0;
     long awaitingResponsesInFlight = 0;
     long messagesReceivedCount = 0;
@@ -63,6 +60,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
         this.messageDelayNs = TimeUnit.SECONDS.toNanos(1) / sendingRatePerSecond;
         this.onMessageReceived = onMessageReceived;
         this.extraData = generateExtraData(extraDataLength);
+        this.metadata = new Metadata();
     }
 
     private static byte[] generateExtraData(final int extraDataLength)
@@ -127,7 +125,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
                 transport,
                 remoteHost,
                 remotePort,
-                AdHocProtocol.DELINEATION,
+                new Delineation(Delineation.Type.INT_LITTLE_ENDIAN_FIELD, 0, 0, ""),
                 (connectionTransport, connectionId) -> new SourcingConnectionApplication(
                         connectionTransport,
                         messagesSent,
@@ -221,14 +219,13 @@ public class SourcingConnectionApplication implements ConnectionApplication
         }
         else if (event instanceof MessageReceived)
         {
-            long receivedTimeNs = nanoTime();
+            MessageReceived messageReceived = (MessageReceived)event;
+
             messagesReceivedCount++;
             awaitingResponsesInFlight--;
-            MessageReceived messageReceived = (MessageReceived)event;
-            DirectBuffer buffer = messageReceived.buffer();
-            long sendTimeNs = buffer.getLong(messageReceived.offset() + SEND_TIME_OFFSET);
-            validateResponse(buffer.getLong(messageReceived.offset() + CORRELATION_ID_OFFSET));
-            onMessageReceived.onMessageReceived(messagesSentCount, messagesReceivedCount, sendTimeNs, receivedTimeNs);
+            metadata.wrap(messageReceived.buffer(), messageReceived.offset());
+            validateResponse(metadata.correlationId());
+            onMessageReceived.onMessageReceived(messagesSentCount, messagesReceivedCount, metadata.originalTimestampNs(), nanoTime());
             if (selectiveResponseRequest.receivedLast(messagesReceivedCount))
             {
                 isDone.set(true);
@@ -253,11 +250,10 @@ public class SourcingConnectionApplication implements ConnectionApplication
     {
         SendMessage message = connectionTransport.command(SendMessage.class);
         MutableDirectBuffer buffer = message.prepare();
-        buffer.putInt(message.offset() + OFFSET_OPTIONS, expectResponse ? PLEASE_RESPOND_FLAG : NO_OPTIONS);
-        buffer.putLong(message.offset() + SEND_TIME_OFFSET, supposedSendingTimestampNs);
-        buffer.putLong(message.offset() + CORRELATION_ID_OFFSET, correlationId);
-        buffer.putBytes(message.offset() + EXTRA_DATA_OFFSET, extraData);
-        message.commit(EXTRA_DATA_OFFSET + extraData.length);
+        metadata.wrap(buffer, message.offset()).clear().options().respond(expectResponse);
+        metadata.originalTimestampNs(supposedSendingTimestampNs).correlationId(correlationId);
+        buffer.putBytes(message.offset() + metadata.length(), extraData);
+        message.commit(metadata.length() + extraData.length);
         connectionTransport.handle(message);
     }
 
