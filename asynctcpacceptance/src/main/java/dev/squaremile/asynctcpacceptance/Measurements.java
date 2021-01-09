@@ -7,7 +7,7 @@ import org.HdrHistogram.Histogram;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-class Measurements implements SourcingConnectionApplication.OnMessageReceived
+public class Measurements implements OnMessageReceived
 {
     private final Histogram histogram;
     private final String description;
@@ -64,5 +64,10 @@ class Measurements implements SourcingConnectionApplication.OnMessageReceived
         );
         System.out.println();
 
+    }
+
+    public long measurementsCount()
+    {
+        return histogram.getTotalCount();
     }
 }

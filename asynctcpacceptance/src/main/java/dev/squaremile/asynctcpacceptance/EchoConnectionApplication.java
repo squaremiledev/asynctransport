@@ -9,16 +9,17 @@ import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
 import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
 import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
+import dev.squaremile.tcpprobe.Options;
 
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.CORRELATION_ID_OFFSET;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.NO_OPTIONS;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.OFFSET_OPTIONS;
-import static dev.squaremile.asynctcpacceptance.AdHocProtocol.PLEASE_RESPOND_FLAG;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.SEND_TIME_OFFSET;
 
 public class EchoConnectionApplication implements ConnectionApplication
 {
     private final ConnectionTransport connectionTransport;
+    private final Options options = new Options();
 
     public EchoConnectionApplication(final ConnectionTransport connectionTransport)
     {
@@ -31,9 +32,9 @@ public class EchoConnectionApplication implements ConnectionApplication
         if (event instanceof MessageReceived)
         {
             MessageReceived messageReceived = (MessageReceived)event;
+            options.wrap(messageReceived.buffer(), messageReceived.offset());
             DirectBuffer readBuffer = messageReceived.buffer();
-            boolean shouldRespond = readBuffer.getInt(messageReceived.offset() + OFFSET_OPTIONS) == PLEASE_RESPOND_FLAG;
-            if (shouldRespond)
+            if (options.respond())
             {
                 long sendTimeNs = readBuffer.getLong(messageReceived.offset() + SEND_TIME_OFFSET);
                 long correlationId = readBuffer.getLong(messageReceived.offset() + CORRELATION_ID_OFFSET);

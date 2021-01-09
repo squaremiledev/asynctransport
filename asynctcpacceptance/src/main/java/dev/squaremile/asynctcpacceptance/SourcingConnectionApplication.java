@@ -9,7 +9,6 @@ import org.agrona.collections.MutableBoolean;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
-import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
 import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
@@ -19,6 +18,7 @@ import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFacto
 import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
 import dev.squaremile.asynctcp.api.transport.events.DataSent;
 import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
+import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
 
 import static dev.squaremile.asynctcp.api.serialization.SerializedMessageListener.NO_OP;
 import static dev.squaremile.asynctcpacceptance.AdHocProtocol.CORRELATION_ID_OFFSET;
@@ -104,7 +104,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
         start(description, remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, respondToEveryNthRequest, useBuffers, extraDataLength);
     }
 
-    public static void start(
+    public static Measurements start(
             final String description,
             final String remoteHost,
             final int remotePort,
@@ -147,6 +147,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
         source.onStop();
 
         measurements.printResults();
+        return measurements;
     }
 
     private static ApplicationOnDuty createApplication(final boolean useBuffers, final TransportApplicationOnDutyFactory applicationFactory)
@@ -258,11 +259,6 @@ public class SourcingConnectionApplication implements ConnectionApplication
         buffer.putBytes(message.offset() + EXTRA_DATA_OFFSET, extraData);
         message.commit(EXTRA_DATA_OFFSET + extraData.length);
         connectionTransport.handle(message);
-    }
-
-    public interface OnMessageReceived
-    {
-        void onMessageReceived(long messagesSentCount, long messagesReceivedCount, long messageSentTimeNs, long messageReceivedTimeNs);
     }
 
 }

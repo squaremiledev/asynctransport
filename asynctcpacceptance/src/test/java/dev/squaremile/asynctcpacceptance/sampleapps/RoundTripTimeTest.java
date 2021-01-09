@@ -6,8 +6,11 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 import dev.squaremile.asynctcpacceptance.EchoApplication;
+import dev.squaremile.asynctcpacceptance.Measurements;
 import dev.squaremile.asynctcpacceptance.SourcingConnectionApplication;
 import dev.squaremile.asynctcpacceptance.TimingExtension;
 
@@ -30,7 +33,12 @@ public class RoundTripTimeTest
         int secondsWarmUp = 1;
         int messagesSent = sendingRatePerSecond * (secondsWarmUp + secondsRun);
         int skippedWarmUpResponses = (sendingRatePerSecond * secondsWarmUp) / respondToNth;
-        exchangeMessages(sendingRatePerSecond, respondToNth, messagesSent, skippedWarmUpResponses);
+
+        // When
+        Measurements measurements = exchangeMessages(sendingRatePerSecond, respondToNth, messagesSent, skippedWarmUpResponses);
+
+        // Then
+        assertThat(measurements.measurementsCount()).isEqualTo(25);
     }
 
     @Test
@@ -59,7 +67,7 @@ public class RoundTripTimeTest
         exchangeMessages(sendingRatePerSecond, respondToNth, messagesSent, skippedWarmUpResponses);
     }
 
-    private void exchangeMessages(final int sendingRatePerSecond, final int respondToNth, final int messagesSent, final int skippedWarmUpResponses) throws InterruptedException
+    private Measurements exchangeMessages(final int sendingRatePerSecond, final int respondToNth, final int messagesSent, final int skippedWarmUpResponses) throws InterruptedException
     {
         final int port = freePort();
         final CountDownLatch applicationReady = new CountDownLatch(1);
@@ -68,7 +76,7 @@ public class RoundTripTimeTest
 
         final String remoteHost = "localhost";
         final int extraDataLength = 64;
-        SourcingConnectionApplication.start(
+        return SourcingConnectionApplication.start(
                 "",
                 remoteHost,
                 port,
