@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.tcpprobe;
 
 import java.util.concurrent.TimeUnit;
 
@@ -7,7 +7,7 @@ import org.HdrHistogram.Histogram;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-public class Measurements implements OnMessageReceived
+public class Measurements
 {
     private final Histogram histogram;
     private final String description;
@@ -27,7 +27,6 @@ public class Measurements implements OnMessageReceived
         return (int)Math.ceil(value / 2.0);
     }
 
-    @Override
     public void onMessageReceived(final long messagesSentCount, final long messagesReceivedCount, final long messageSentTimeNs, final long messageReceivedTimeNs)
     {
         if (messagesReceivedCount < measureFromNthReceived)
@@ -42,7 +41,7 @@ public class Measurements implements OnMessageReceived
         histogram.recordValue(NANOSECONDS.toMicros(messageReceivedTimeNs - messageSentTimeNs));
     }
 
-    void printResults()
+    public void printResults()
     {
         System.out.println();
         System.out.println("Scenario: " + description);

@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import dev.squaremile.asynctcpacceptance.EchoApplication;
-import dev.squaremile.asynctcpacceptance.Measurements;
 import dev.squaremile.asynctcpacceptance.SourcingConnectionApplication;
 import dev.squaremile.asynctcpacceptance.TimingExtension;
+import dev.squaremile.tcpprobe.Measurements;
 
 import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
@@ -38,6 +38,7 @@ public class RoundTripTimeTest
         Measurements measurements = exchangeMessages(sendingRatePerSecond, respondToNth, messagesSent, skippedWarmUpResponses);
 
         // Then
+        measurements.printResults();
         assertThat(measurements.measurementsCount()).isEqualTo(25);
     }
 
@@ -51,7 +52,7 @@ public class RoundTripTimeTest
         int secondsWarmUp = 40;
         int messagesSent = sendingRatePerSecond * (secondsWarmUp + secondsRun);
         int skippedWarmUpResponses = (sendingRatePerSecond * secondsWarmUp) / respondToNth;
-        exchangeMessages(sendingRatePerSecond, respondToNth, messagesSent, skippedWarmUpResponses);
+        exchangeMessages(sendingRatePerSecond, respondToNth, messagesSent, skippedWarmUpResponses).printResults();
     }
 
     @Test
@@ -64,7 +65,7 @@ public class RoundTripTimeTest
         int secondsWarmUp = 40;
         int messagesSent = sendingRatePerSecond * (secondsWarmUp + secondsRun);
         int skippedWarmUpResponses = (sendingRatePerSecond * secondsWarmUp) / respondToNth;
-        exchangeMessages(sendingRatePerSecond, respondToNth, messagesSent, skippedWarmUpResponses);
+        exchangeMessages(sendingRatePerSecond, respondToNth, messagesSent, skippedWarmUpResponses).printResults();
     }
 
     private Measurements exchangeMessages(final int sendingRatePerSecond, final int respondToNth, final int messagesSent, final int skippedWarmUpResponses) throws InterruptedException

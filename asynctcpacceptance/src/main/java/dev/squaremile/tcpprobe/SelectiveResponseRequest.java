@@ -1,25 +1,25 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.tcpprobe;
 
 public class SelectiveResponseRequest
 {
     private final int totalNumberPfMessagesToSend;
     private final int respondToEveryNthRequest;
 
-    public SelectiveResponseRequest(final int totalNumberPfMessagesToSend, final int respondToEveryNthRequest)
+    public SelectiveResponseRequest(final int totalNumberOfMessagesToSend, final int respondToEveryNthRequest)
     {
-        if (totalNumberPfMessagesToSend <= 0)
+        if (totalNumberOfMessagesToSend <= 0)
         {
-            throw new IllegalArgumentException("Illegal value " + totalNumberPfMessagesToSend);
+            throw new IllegalArgumentException("Illegal value " + totalNumberOfMessagesToSend);
         }
         if (respondToEveryNthRequest <= 0)
         {
             throw new IllegalArgumentException("Illegal value " + respondToEveryNthRequest);
         }
-        if (totalNumberPfMessagesToSend % respondToEveryNthRequest != 0)
+        if (totalNumberOfMessagesToSend % respondToEveryNthRequest != 0)
         {
             throw new IllegalArgumentException("Number of messages to send must be evenly divisible by the response rate");
         }
-        this.totalNumberPfMessagesToSend = totalNumberPfMessagesToSend;
+        this.totalNumberPfMessagesToSend = totalNumberOfMessagesToSend;
         this.respondToEveryNthRequest = respondToEveryNthRequest;
     }
 
