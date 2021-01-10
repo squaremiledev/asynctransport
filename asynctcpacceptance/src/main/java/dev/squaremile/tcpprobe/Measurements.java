@@ -22,6 +22,15 @@ public class Measurements
         this.histogram = new Histogram(TimeUnit.SECONDS.toNanos(10), 3);
     }
 
+    private Measurements(final Measurements copySrc)
+    {
+        this.histogram = copySrc.histogram.copy();
+        this.description = copySrc.description;
+        this.measureFromNthReceived = copySrc.measureFromNthReceived;
+        this.firstMeasuredMessageSentNs = copySrc.firstMeasuredMessageSentNs;
+        this.lastMeasuredMessageReceivedNs = copySrc.lastMeasuredMessageReceivedNs;
+    }
+
     private static int half(final double value)
     {
         return (int)Math.ceil(value / 2.0);
@@ -68,5 +77,10 @@ public class Measurements
     public long measurementsCount()
     {
         return histogram.getTotalCount();
+    }
+
+    public Measurements copy()
+    {
+        return new Measurements(this);
     }
 }

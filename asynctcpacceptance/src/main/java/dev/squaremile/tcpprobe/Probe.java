@@ -13,6 +13,7 @@ public class Probe
     private final int respondToEveryNthRequest;
     private final long messageDelayNs;
     private final Metadata metadata = new Metadata();
+
     private long messagesSentCount = 0;
     private long messagesReceivedCount = 0;
     private long awaitingResponsesInFlightCount = 0;
@@ -35,24 +36,35 @@ public class Probe
 
     public int onTime(final long nowNs, final MutableDirectBuffer inboundBuffer, final int outboundOffset)
     {
-        final long sendTimestampNs = calculateNextMessageSendingTimeNs(nowNs);
-        if (sentAllMessages() || nowNs < sendTimestampNs)
+        final long sendTimestampNs;
+        if (startedSendingTimestampNanos == Long.MIN_VALUE)
+        {
+            sendTimestampNs = nowNs;
+            startedSendingTimestampNanos = nowNs;
+        }
+        else
+        {
+            sendTimestampNs = startedSendingTimestampNanos + messagesSentCount * messageDelayNs;
+        }
+
+        if (messagesSentCount >= messagesToSend || nowNs < sendTimestampNs)
         {
             return 0;
         }
-        metadata.wrap(inboundBuffer, outboundOffset).clear().options().respond(expectsResponseForTheNextSendingMessage());
-        metadata.originalTimestampNs(sendTimestampNs).correlationId(messagesSentCount());
+
+        metadata.wrap(inboundBuffer, outboundOffset).clear().options().respond(selectiveResponseRequest.shouldRespond(messagesSentCount));
+        metadata.originalTimestampNs(sendTimestampNs).correlationId(messagesSentCount);
+
         return metadata.length();
     }
 
-    public SelectiveResponseRequest selectiveResponseRequest()
+    public void onMessageSent()
     {
-        return selectiveResponseRequest;
-    }
-
-    public Measurements measurements()
-    {
-        return measurements;
+        if (selectiveResponseRequest.shouldRespond(messagesSentCount))
+        {
+            awaitingResponsesInFlightCount++;
+        }
+        messagesSentCount++;
     }
 
     public void onMessageReceived(final DirectBuffer buffer, final int offset, final long currentTimeNanos)
@@ -67,23 +79,7 @@ public class Probe
         measurements.onMessageReceived(messagesSentCount, messagesReceivedCount, metadata.originalTimestampNs(), currentTimeNanos);
     }
 
-    public boolean sentAllMessages()
-    {
-        return messagesSentCount >= messagesToSend;
-    }
-
-    public long messagesSentCount()
-    {
-        return messagesSentCount;
-    }
-
-    public void onMessageSent()
-    {
-        awaitingResponsesInFlightCount += expectsResponseForTheNextSendingMessage() ? 1 : 0;
-        messagesSentCount++;
-    }
-
-    public boolean receivedAll()
+    public boolean hasReceivedAll()
     {
         boolean receivedAll = selectiveResponseRequest.receivedLast(messagesReceivedCount);
         if (receivedAll && awaitingResponsesInFlightCount != 0)
@@ -94,23 +90,8 @@ public class Probe
         return receivedAll;
     }
 
-    public boolean expectsResponseForTheNextSendingMessage()
+    public Measurements measurementsCopy()
     {
-        return selectiveResponseRequest.shouldRespond(messagesSentCount);
-    }
-
-    public long calculateNextMessageSendingTimeNs(final long nowNs)
-    {
-        final long result;
-        if (startedSendingTimestampNanos != Long.MIN_VALUE)
-        {
-            result = startedSendingTimestampNanos + messagesSentCount * messageDelayNs;
-        }
-        else
-        {
-            result = nowNs;
-            startedSendingTimestampNanos = nowNs;
-        }
-        return result;
+        return measurements.copy();
     }
 }

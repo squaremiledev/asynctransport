@@ -118,7 +118,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
         }
         source.onStop();
 
-        return probe.measurements();
+        return probe.measurementsCopy();
     }
 
     private static ApplicationOnDuty createApplication(final boolean useBuffers, final TransportApplicationOnDutyFactory applicationFactory)
@@ -176,7 +176,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
         {
             MessageReceived messageReceived = (MessageReceived)event;
             probe.onMessageReceived(messageReceived.buffer(), messageReceived.offset(), nanoTime());
-            if (probe.receivedAll())
+            if (probe.hasReceivedAll())
             {
                 isDone.set(true);
             }
