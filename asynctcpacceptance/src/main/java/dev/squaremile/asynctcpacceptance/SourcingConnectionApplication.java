@@ -20,6 +20,7 @@ import dev.squaremile.tcpprobe.Measurements;
 import dev.squaremile.tcpprobe.Probe;
 
 import static dev.squaremile.asynctcp.api.serialization.SerializedMessageListener.NO_OP;
+import static dev.squaremile.tcpprobe.Probe.probe;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.nanoTime;
 
@@ -79,23 +80,30 @@ public class SourcingConnectionApplication implements ConnectionApplication
                 messagesSent, expectedResponses, respondToEveryNthRequest, useBuffers, extraDataLength
         );
         System.out.println("Starting with " + description);
-        Measurements measurements = start(description, remoteHost, remotePort, sendingRatePerSecond, skippedWarmUpResponses, messagesSent, respondToEveryNthRequest, useBuffers, extraDataLength);
+        Measurements measurements = start(
+                remoteHost,
+                remotePort,
+                useBuffers,
+                extraDataLength,
+                probe(description)
+                        .totalNumberOfMessagesToSend(messagesSent)
+                        .skippedResponses(skippedWarmUpResponses)
+                        .respondToEveryNthRequest(respondToEveryNthRequest)
+                        .sendingRatePerSecond(sendingRatePerSecond)
+        );
         measurements.printResults();
     }
 
     public static Measurements start(
-            final String description,
             final String remoteHost,
             final int remotePort,
-            final int sendingRatePerSecond,
-            final int skippedWarmUpResponses,
-            final int totalNumberOfMessagesToSend,
-            final int respondToEveryNthRequest,
             final boolean useBuffers,
-            final int extraDataLength
+            final int extraDataLength,
+            final Probe.Configuration configuration
     )
     {
-        final Probe probe = new Probe(description, totalNumberOfMessagesToSend, skippedWarmUpResponses, respondToEveryNthRequest, sendingRatePerSecond);
+        final Probe probe = configuration.createProbe();
+
         final MutableBoolean isDone = new MutableBoolean(false);
         final ApplicationOnDuty source = createApplication(useBuffers, transport -> new ConnectingApplication(
                 transport,
@@ -160,7 +168,6 @@ public class SourcingConnectionApplication implements ConnectionApplication
             outboundBuffer.putBytes(message.offset() + encodedLength, extraData);
             message.commit(encodedLength + extraData.length);
             connectionTransport.handle(message);
-            probe.onMessageSent();
         }
     }
 

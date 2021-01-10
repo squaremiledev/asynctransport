@@ -2,7 +2,7 @@ package dev.squaremile.tcpprobe;
 
 public class SelectiveResponseRequest
 {
-    private final int totalNumberPfMessagesToSend;
+    private final int totalNumberOfMessagesToSend;
     private final int respondToEveryNthRequest;
 
     public SelectiveResponseRequest(final int totalNumberOfMessagesToSend, final int respondToEveryNthRequest)
@@ -19,7 +19,7 @@ public class SelectiveResponseRequest
         {
             throw new IllegalArgumentException("Number of messages to send must be evenly divisible by the response rate");
         }
-        this.totalNumberPfMessagesToSend = totalNumberOfMessagesToSend;
+        this.totalNumberOfMessagesToSend = totalNumberOfMessagesToSend;
         this.respondToEveryNthRequest = respondToEveryNthRequest;
     }
 
@@ -29,15 +29,15 @@ public class SelectiveResponseRequest
         {
             throw new IllegalArgumentException("Illegal value " + respondToEveryNthRequest);
         }
-        return requestNumber < totalNumberPfMessagesToSend && requestNumber % respondToEveryNthRequest == 0;
+        return requestNumber < totalNumberOfMessagesToSend && requestNumber % respondToEveryNthRequest == 0;
     }
 
     public boolean receivedLast(final long responseNumber)
     {
-        if (responseNumber <= 0)
+        if (responseNumber < 0)
         {
             throw new IllegalArgumentException("Illegal response number " + responseNumber);
         }
-        return responseNumber * respondToEveryNthRequest >= totalNumberPfMessagesToSend;
+        return responseNumber * respondToEveryNthRequest >= totalNumberOfMessagesToSend;
     }
 }

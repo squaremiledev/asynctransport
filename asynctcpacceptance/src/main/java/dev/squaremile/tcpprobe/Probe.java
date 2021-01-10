@@ -19,7 +19,7 @@ public class Probe
     private long awaitingResponsesInFlightCount = 0;
     private long startedSendingTimestampNanos = Long.MIN_VALUE;
 
-    public Probe(final String description, final int totalNumberOfMessagesToSend, final int skippedResponses, final int respondToEveryNthRequest, final int sendingRatePerSecond)
+    private Probe(final String description, final int totalNumberOfMessagesToSend, final int skippedResponses, final int respondToEveryNthRequest, final int sendingRatePerSecond)
     {
         int expectedResponses = totalNumberOfMessagesToSend / respondToEveryNthRequest;
         if (skippedResponses >= expectedResponses)
@@ -34,7 +34,12 @@ public class Probe
         this.messageDelayNs = TimeUnit.SECONDS.toNanos(1) / sendingRatePerSecond;
     }
 
-    public int onTime(final long nowNs, final MutableDirectBuffer inboundBuffer, final int outboundOffset)
+    public static Configuration probe(final String description)
+    {
+        return new Configuration(description);
+    }
+
+    public int onTime(final long nowNs, final MutableDirectBuffer outboundBuffer, final int outboundOffset)
     {
         final long sendTimestampNs;
         if (startedSendingTimestampNanos == Long.MIN_VALUE)
@@ -52,19 +57,14 @@ public class Probe
             return 0;
         }
 
-        metadata.wrap(inboundBuffer, outboundOffset).clear().options().respond(selectiveResponseRequest.shouldRespond(messagesSentCount));
+        metadata.wrap(outboundBuffer, outboundOffset).clear().options().respond(selectiveResponseRequest.shouldRespond(messagesSentCount));
         metadata.originalTimestampNs(sendTimestampNs).correlationId(messagesSentCount);
-
-        return metadata.length();
-    }
-
-    public void onMessageSent()
-    {
         if (selectiveResponseRequest.shouldRespond(messagesSentCount))
         {
             awaitingResponsesInFlightCount++;
         }
         messagesSentCount++;
+        return metadata.length();
     }
 
     public void onMessageReceived(final DirectBuffer buffer, final int offset, final long currentTimeNanos)
@@ -92,6 +92,61 @@ public class Probe
 
     public Measurements measurementsCopy()
     {
+        if (!hasReceivedAll())
+        {
+            throw new IllegalStateException("The report is available after probing is done");
+        }
         return measurements.copy();
+    }
+
+    public static class Configuration
+    {
+        private final String description;
+        private int totalNumberOfMessagesToSend = Integer.MIN_VALUE;
+        private int skippedResponses = Integer.MIN_VALUE;
+        private int respondToEveryNthRequest = Integer.MIN_VALUE;
+        private int sendingRatePerSecond = Integer.MIN_VALUE;
+
+        private Configuration(final String description)
+        {
+            this.description = description;
+        }
+
+        public Configuration totalNumberOfMessagesToSend(final int totalNumberOfMessagesToSend)
+        {
+            this.totalNumberOfMessagesToSend = totalNumberOfMessagesToSend;
+            return this;
+        }
+
+        public Configuration skippedResponses(final int skippedResponses)
+        {
+            this.skippedResponses = skippedResponses;
+            return this;
+        }
+
+        public Configuration respondToEveryNthRequest(final int respondToEveryNthRequest)
+        {
+            this.respondToEveryNthRequest = respondToEveryNthRequest;
+            return this;
+        }
+
+        public Configuration sendingRatePerSecond(final int sendingRatePerSecond)
+        {
+            this.sendingRatePerSecond = sendingRatePerSecond;
+            return this;
+        }
+
+        public Probe createProbe()
+        {
+            if (
+                    totalNumberOfMessagesToSend == Integer.MIN_VALUE ||
+                    skippedResponses == Integer.MIN_VALUE ||
+                    respondToEveryNthRequest == Integer.MIN_VALUE ||
+                    sendingRatePerSecond == Integer.MIN_VALUE)
+            {
+                throw new IllegalArgumentException("Not all configuration hs been set");
+            }
+            return new Probe(description, totalNumberOfMessagesToSend, skippedResponses, respondToEveryNthRequest, sendingRatePerSecond);
+        }
     }
 }

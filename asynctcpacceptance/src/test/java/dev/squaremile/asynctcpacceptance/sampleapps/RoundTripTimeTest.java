@@ -15,6 +15,7 @@ import dev.squaremile.asynctcpacceptance.TimingExtension;
 import dev.squaremile.tcpprobe.Measurements;
 
 import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
+import static dev.squaremile.tcpprobe.Probe.probe;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 @Disabled
@@ -78,15 +79,15 @@ public class RoundTripTimeTest
         final String remoteHost = "localhost";
         final int extraDataLength = 64;
         return SourcingConnectionApplication.start(
-                "",
                 remoteHost,
                 port,
-                sendingRatePerSecond,
-                skippedWarmUpResponses,
-                messagesSent,
-                respondToNth,
                 true,
-                extraDataLength
+                extraDataLength,
+                probe("")
+                        .totalNumberOfMessagesToSend(messagesSent)
+                        .skippedResponses(skippedWarmUpResponses)
+                        .respondToEveryNthRequest(respondToNth)
+                        .sendingRatePerSecond(sendingRatePerSecond)
         );
     }
 

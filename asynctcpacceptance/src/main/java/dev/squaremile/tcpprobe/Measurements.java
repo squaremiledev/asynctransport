@@ -79,6 +79,11 @@ public class Measurements
         return histogram.getTotalCount();
     }
 
+    public Histogram histogramUs()
+    {
+        return histogram;
+    }
+
     public Measurements copy()
     {
         return new Measurements(this);

@@ -19,7 +19,6 @@ class SelectiveResponseRequestTest
         assertThrows(IllegalArgumentException.class, () -> new SelectiveResponseRequest(-1, 1));
         assertThrows(IllegalArgumentException.class, () -> new SelectiveResponseRequest(0, 1));
         assertThrows(IllegalArgumentException.class, () -> new SelectiveResponseRequest(TOTAL, 1).receivedLast(-1));
-        assertThrows(IllegalArgumentException.class, () -> new SelectiveResponseRequest(TOTAL, 1).receivedLast(0));
         assertThrows(IllegalArgumentException.class, () -> new SelectiveResponseRequest(TOTAL, -1));
         assertThrows(IllegalArgumentException.class, () -> new SelectiveResponseRequest(TOTAL, 0));
         assertThrows(IllegalArgumentException.class, () -> new SelectiveResponseRequest(TOTAL, 1).shouldRespond(-1));
