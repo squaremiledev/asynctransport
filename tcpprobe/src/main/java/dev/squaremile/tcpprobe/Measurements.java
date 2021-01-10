@@ -47,7 +47,8 @@ public class Measurements
             firstMeasuredMessageSentNs = messageSentTimeNs;
         }
         lastMeasuredMessageReceivedNs = messageReceivedTimeNs;
-        histogram.recordValue(NANOSECONDS.toMicros(messageReceivedTimeNs - messageSentTimeNs));
+        final long latencyUs = NANOSECONDS.toMicros(messageReceivedTimeNs - messageSentTimeNs);
+        histogram.recordValue(latencyUs);
     }
 
     public void printResults()
