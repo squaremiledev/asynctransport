@@ -2,6 +2,9 @@ package dev.squaremile.tcpprobe;
 
 import java.util.concurrent.TimeUnit;
 
+import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
+
 public class Probe
 {
     private final Measurements measurements;
@@ -9,7 +12,7 @@ public class Probe
     private final int messagesToSend;
     private final int respondToEveryNthRequest;
     private final long messageDelayNs;
-
+    private final Metadata metadata = new Metadata();
     private long messagesSentCount = 0;
     private long messagesReceivedCount = 0;
     private long awaitingResponsesInFlightCount = 0;
@@ -30,6 +33,18 @@ public class Probe
         this.messageDelayNs = TimeUnit.SECONDS.toNanos(1) / sendingRatePerSecond;
     }
 
+    public int onTime(final long nowNs, final MutableDirectBuffer inboundBuffer, final int outboundOffset)
+    {
+        final long sendTimestampNs = calculateNextMessageSendingTimeNs(nowNs);
+        if (sentAllMessages() || nowNs < sendTimestampNs)
+        {
+            return 0;
+        }
+        metadata.wrap(inboundBuffer, outboundOffset).clear().options().respond(expectsResponseForTheNextSendingMessage());
+        metadata.originalTimestampNs(sendTimestampNs).correlationId(messagesSentCount());
+        return metadata.length();
+    }
+
     public SelectiveResponseRequest selectiveResponseRequest()
     {
         return selectiveResponseRequest;
@@ -40,8 +55,9 @@ public class Probe
         return measurements;
     }
 
-    public void onMessageReceived(final Metadata metadata, final long currentTimeNanos)
+    public void onMessageReceived(final DirectBuffer buffer, final int offset, final long currentTimeNanos)
     {
+        metadata.wrap(buffer, offset);
         awaitingResponsesInFlightCount--;
         if (((messagesReceivedCount) * respondToEveryNthRequest) != metadata.correlationId())
         {

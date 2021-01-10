@@ -17,7 +17,6 @@ import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 import dev.squaremile.asynctcp.api.transport.values.Delineation;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
 import dev.squaremile.tcpprobe.Measurements;
-import dev.squaremile.tcpprobe.Metadata;
 import dev.squaremile.tcpprobe.Probe;
 
 import static dev.squaremile.asynctcp.api.serialization.SerializedMessageListener.NO_OP;
@@ -30,7 +29,6 @@ public class SourcingConnectionApplication implements ConnectionApplication
     private final ConnectionTransport connectionTransport;
     private final MutableBoolean isDone;
     private final byte[] extraData;
-    private final Metadata metadata;
 
     public SourcingConnectionApplication(
             final Probe probe,
@@ -43,7 +41,6 @@ public class SourcingConnectionApplication implements ConnectionApplication
         this.connectionTransport = connectionTransport;
         this.isDone = isDone;
         this.extraData = generateExtraData(extraDataLength);
-        this.metadata = new Metadata();
     }
 
     private static byte[] generateExtraData(final int extraDataLength)
@@ -155,24 +152,14 @@ public class SourcingConnectionApplication implements ConnectionApplication
     @Override
     public void work()
     {
-        if (probe.sentAllMessages())
+        final SendMessage message = connectionTransport.command(SendMessage.class);
+        final MutableDirectBuffer outboundBuffer = message.prepare();
+        int encodedLength = probe.onTime(nanoTime(), outboundBuffer, message.offset());
+        if (encodedLength > 0)
         {
-            return;
-        }
-
-        final long nowNs = nanoTime();
-        final long sendTimestampNs = probe.calculateNextMessageSendingTimeNs(nowNs);
-        if (nowNs >= sendTimestampNs)
-        {
-            final SendMessage message = connectionTransport.command(SendMessage.class);
-            final MutableDirectBuffer buffer = message.prepare();
-
-            metadata.wrap(buffer, message.offset()).clear().options().respond(probe.expectsResponseForTheNextSendingMessage());
-            metadata.originalTimestampNs(sendTimestampNs).correlationId(probe.messagesSentCount());
-            buffer.putBytes(message.offset() + metadata.length(), extraData);
-            message.commit(metadata.length() + extraData.length);
+            outboundBuffer.putBytes(message.offset() + encodedLength, extraData);
+            message.commit(encodedLength + extraData.length);
             connectionTransport.handle(message);
-
             probe.onMessageSent();
         }
     }
@@ -188,7 +175,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
         if (event instanceof MessageReceived)
         {
             MessageReceived messageReceived = (MessageReceived)event;
-            probe.onMessageReceived(metadata.wrap(messageReceived.buffer(), messageReceived.offset()), nanoTime());
+            probe.onMessageReceived(messageReceived.buffer(), messageReceived.offset(), nanoTime());
             if (probe.receivedAll())
             {
                 isDone.set(true);
