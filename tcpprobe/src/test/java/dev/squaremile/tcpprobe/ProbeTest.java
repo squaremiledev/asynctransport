@@ -130,6 +130,43 @@ class ProbeTest
         verification.assertMeasured(AbstractHistogram::getMaxValue, ofNanos(10_000));
     }
 
+    @Test
+    void shouldTakeIntoAccountCoordinatedOmissionWhenMultipleMessagesInFlight()
+    {
+        final Probe probe = probe("someProbe")
+                .totalNumberOfMessagesToSend(3)
+                .skippedResponses(0)
+                .respondToEveryNthRequest(1)
+                .sendingRatePerSecond((int)TimeUnit.SECONDS.toMicros(1))
+                .createProbe();
+
+        assertThat(probe.onTime(MICROSECONDS.toNanos(300), buffer, 0)).isGreaterThan(0);
+        assertThat(metadata.wrap(buffer, 0).correlationId()).isEqualTo(0);
+        assertThat(metadata.wrap(buffer, 0).originalTimestampNs()).isEqualTo(MICROSECONDS.toNanos(300));
+
+
+        assertThat(probe.onTime(MICROSECONDS.toNanos(305), buffer, 0)).isGreaterThan(0); // should have sent at 301us
+        assertThat(metadata.wrap(buffer, 0).correlationId()).isEqualTo(1);
+        assertThat(metadata.wrap(buffer, 0).originalTimestampNs()).isEqualTo(MICROSECONDS.toNanos(301));
+
+
+        assertThat(probe.onTime(MICROSECONDS.toNanos(310), buffer, 0)).isGreaterThan(0); // should have sent at 302us
+        assertThat(metadata.wrap(buffer, 0).correlationId()).isEqualTo(2);
+        assertThat(metadata.wrap(buffer, 0).originalTimestampNs()).isEqualTo(MICROSECONDS.toNanos(302));
+
+        metadata.wrap(buffer, 0).clear().correlationId(0).originalTimestampNs(MICROSECONDS.toNanos(300));
+        probe.onMessageReceived(buffer, 0, MICROSECONDS.toNanos(352));
+        metadata.wrap(buffer, 0).clear().correlationId(1).originalTimestampNs(MICROSECONDS.toNanos(301));
+        probe.onMessageReceived(buffer, 0, MICROSECONDS.toNanos(357));
+        metadata.wrap(buffer, 0).clear().correlationId(2).originalTimestampNs(MICROSECONDS.toNanos(302));
+        probe.onMessageReceived(buffer, 0, MICROSECONDS.toNanos(362));
+
+        Verification verification = new Verification(probe.measurementsCopy(), ofNanos(100));
+        verification.assertMeasured(AbstractHistogram::getMinValue, ofNanos(52_000));
+        verification.assertMeasured(histogram -> (long)histogram.getMean(), ofNanos(56_000));
+        verification.assertMeasured(AbstractHistogram::getMaxValue, ofNanos(60_000));
+    }
+
     private static class Verification
     {
         private final Measurements measurements;
