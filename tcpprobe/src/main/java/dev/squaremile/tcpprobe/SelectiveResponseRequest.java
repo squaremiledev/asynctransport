@@ -1,6 +1,6 @@
 package dev.squaremile.tcpprobe;
 
-public class SelectiveResponseRequest
+class SelectiveResponseRequest
 {
     private final int totalNumberOfMessagesToSend;
     private final int respondToEveryNthRequest;

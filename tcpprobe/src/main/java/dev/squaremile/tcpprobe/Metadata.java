@@ -3,7 +3,7 @@ package dev.squaremile.tcpprobe;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
-public class Metadata
+class Metadata
 {
     private static final int SEND_TIME_OFFSET = 0;
     private static final int CORRELATION_ID_OFFSET = 8;

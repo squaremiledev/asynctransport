@@ -3,7 +3,7 @@ package dev.squaremile.tcpprobe;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
-public class Options
+class Options
 {
     private static final int PLEASE_RESPOND_FLAG = 1;
     private static final int DO_NOT_RESPOND_FLAG = 0;

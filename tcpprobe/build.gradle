@@ -1,15 +1,6 @@
 plugins {
     id 'java'
     id 'application'
-    id 'idea'
-}
-
-application {
-    mainClassName = 'dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort'
-}
-
-distZip {
-    archiveFileName = 'asynctcpacceptance.zip'
 }
 
 java {
@@ -22,9 +13,9 @@ test {
 
 dependencies {
     implementation project(':asynctcp')
-    implementation project(':tcpprobe')
     implementation testFixtures(project(':asynctcp'))
     implementation 'org.agrona:agrona:1.8.0'
+    implementation "org.hdrhistogram:HdrHistogram:2.1.12"
 
     testImplementation testFixtures(project(':asynctcp'))
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
