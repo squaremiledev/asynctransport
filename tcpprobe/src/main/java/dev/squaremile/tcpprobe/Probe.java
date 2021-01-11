@@ -52,7 +52,7 @@ public class Probe
         return new Configuration(description);
     }
 
-    public int onTime(final long nowNs, final MutableDirectBuffer outboundBuffer, final int outboundOffset, final int availableLength)
+    public boolean onTime(final long nowNs, final MutableDirectBuffer outboundBuffer, final int outboundOffset, final int availableLength)
     {
         final long sendTimestampNs;
         if (startedSendingTimestampNanos == Long.MIN_VALUE)
@@ -67,7 +67,7 @@ public class Probe
 
         if (messagesSentCount >= messagesToSend || nowNs < sendTimestampNs)
         {
-            return 0;
+            return false;
         }
 
         final boolean shouldRespond = selectiveResponseRequest.shouldRespond(messagesSentCount);
@@ -82,7 +82,7 @@ public class Probe
             awaitingResponsesInFlightCount++;
         }
         messagesSentCount++;
-        return 1;
+        return true;
     }
 
     public void onMessageReceived(final DirectBuffer buffer, final int offset, final long currentTimeNanos)

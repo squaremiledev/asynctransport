@@ -31,14 +31,14 @@ public class EchoConnectionApplication implements ConnectionApplication
         {
             MessageReceived messageReceived = (MessageReceived)event;
             SendMessage message = connectionTransport.command(SendMessage.class);
-            int outboundPayloadLength = probeClient.onMessage(
+            boolean anythingToSend = probeClient.onMessage(
                     messageReceived.buffer(),
                     messageReceived.offset(),
                     message.prepare(),
                     message.offset(),
                     ALL_METADATA_FIELDS_TOTAL_LENGTH
             );
-            if (outboundPayloadLength > 0)
+            if (anythingToSend)
             {
                 message.commit(ALL_METADATA_FIELDS_TOTAL_LENGTH);
                 connectionTransport.handle(message);

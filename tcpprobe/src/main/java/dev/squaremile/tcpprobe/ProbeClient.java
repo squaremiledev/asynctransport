@@ -12,12 +12,12 @@ public class ProbeClient
         metadata = new Metadata(optionsOffset, sendTimeOffset, correlationIdOffset);
     }
 
-    public int onMessage(final DirectBuffer inboundBuffer, final int inboundOffset, final MutableDirectBuffer outboundBuffer, final int outboundOffset, final int outboundAvailableLength)
+    public boolean onMessage(final DirectBuffer inboundBuffer, final int inboundOffset, final MutableDirectBuffer outboundBuffer, final int outboundOffset, final int outboundAvailableLength)
     {
         metadata.wrap(inboundBuffer, inboundOffset);
         if (!metadata.options().respond())
         {
-            return 0;
+            return false;
         }
         long sendTimeNs = metadata.originalTimestampNs();
         long correlationId = metadata.correlationId();
@@ -25,6 +25,6 @@ public class ProbeClient
                 .clear()
                 .originalTimestampNs(sendTimeNs)
                 .correlationId(correlationId);
-        return Metadata.ALL_METADATA_FIELDS_TOTAL_LENGTH;
+        return true;
     }
 }

@@ -68,11 +68,11 @@ class ProbeTest
                 .sendingRatePerSecond(1)
                 .createProbe();
 
-        assertThat(probe.onTime(MILLISECONDS.toNanos(6_000), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0);
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_000), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
         probe.onMessageReceived(buffer, 0, MILLISECONDS.toNanos(6_020));
-        assertThat(probe.onTime(MILLISECONDS.toNanos(7_000), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0);
+        assertThat(probe.onTime(MILLISECONDS.toNanos(7_000), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
         probe.onMessageReceived(buffer, 0, MILLISECONDS.toNanos(7_030));
-        assertThat(probe.onTime(MILLISECONDS.toNanos(8_000), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0);
+        assertThat(probe.onTime(MILLISECONDS.toNanos(8_000), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
         probe.onMessageReceived(buffer, 0, MILLISECONDS.toNanos(8_070));
 
         assertThat(probe.hasReceivedAll()).isTrue();
@@ -96,15 +96,15 @@ class ProbeTest
         final MutableDirectBuffer inboundBuffer = new ExpandableArrayBuffer();
         final MutableDirectBuffer outboundBuffer = new ExpandableArrayBuffer();
 
-        assertThat(probe.onTime(MILLISECONDS.toNanos(6_000), outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0);
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_000), outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
         assertThat(metadata.wrap(outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).correlationId()).isEqualTo(0);
         assertThat(metadata.wrap(outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).originalTimestampNs()).isEqualTo(MILLISECONDS.toNanos(6_000));
 
-        assertThat(probe.onTime(MILLISECONDS.toNanos(7_000), outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0);
+        assertThat(probe.onTime(MILLISECONDS.toNanos(7_000), outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
         assertThat(metadata.wrap(outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).correlationId()).isEqualTo(1);
         assertThat(metadata.wrap(outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).originalTimestampNs()).isEqualTo(MILLISECONDS.toNanos(7_000));
 
-        assertThat(probe.onTime(MILLISECONDS.toNanos(8_000), outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0);
+        assertThat(probe.onTime(MILLISECONDS.toNanos(8_000), outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
         assertThat(metadata.wrap(outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).correlationId()).isEqualTo(2);
         assertThat(metadata.wrap(outboundBuffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).originalTimestampNs()).isEqualTo(MILLISECONDS.toNanos(8_000));
 
@@ -147,15 +147,15 @@ class ProbeTest
         final MutableDirectBuffer outboundBuffer = new ExpandableArrayBuffer();
         final int enoughLength = 100;
 
-        assertThat(probe.onTime(MILLISECONDS.toNanos(6_000), outboundBuffer, 0, enoughLength)).isGreaterThan(0);
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_000), outboundBuffer, 0, enoughLength)).isTrue();
         assertThat(supportingMetadataCodec.wrap(outboundBuffer, 0, enoughLength).correlationId()).isEqualTo(0);
         assertThat(supportingMetadataCodec.wrap(outboundBuffer, 0, enoughLength).originalTimestampNs()).isEqualTo(MILLISECONDS.toNanos(6_000));
 
-        assertThat(probe.onTime(MILLISECONDS.toNanos(7_000), outboundBuffer, 3, enoughLength)).isGreaterThan(0);
+        assertThat(probe.onTime(MILLISECONDS.toNanos(7_000), outboundBuffer, 3, enoughLength)).isTrue();
         assertThat(supportingMetadataCodec.wrap(outboundBuffer, 3, enoughLength).correlationId()).isEqualTo(1);
         assertThat(supportingMetadataCodec.wrap(outboundBuffer, 3, enoughLength).originalTimestampNs()).isEqualTo(MILLISECONDS.toNanos(7_000));
 
-        assertThat(probe.onTime(MILLISECONDS.toNanos(8_000), outboundBuffer, 2, enoughLength)).isGreaterThan(0);
+        assertThat(probe.onTime(MILLISECONDS.toNanos(8_000), outboundBuffer, 2, enoughLength)).isTrue();
         assertThat(supportingMetadataCodec.wrap(outboundBuffer, 2, enoughLength).correlationId()).isEqualTo(2);
         assertThat(supportingMetadataCodec.wrap(outboundBuffer, 2, enoughLength).originalTimestampNs()).isEqualTo(MILLISECONDS.toNanos(8_000));
 
@@ -185,11 +185,11 @@ class ProbeTest
                 .sendingRatePerSecond((int)TimeUnit.SECONDS.toMicros(1))
                 .createProbe();
 
-        assertThat(probe.onTime(MICROSECONDS.toNanos(300), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0);
+        assertThat(probe.onTime(MICROSECONDS.toNanos(300), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
         probe.onMessageReceived(buffer, 0, MICROSECONDS.toNanos(302));
-        assertThat(probe.onTime(MICROSECONDS.toNanos(305), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0); // should have sent at 301us
+        assertThat(probe.onTime(MICROSECONDS.toNanos(305), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue(); // should have sent at 301us
         probe.onMessageReceived(buffer, 0, MICROSECONDS.toNanos(307)); // round trip 2us, but 6us with coordinated omission
-        assertThat(probe.onTime(MICROSECONDS.toNanos(310), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0); // should have sent at 302us
+        assertThat(probe.onTime(MICROSECONDS.toNanos(310), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue(); // should have sent at 302us
         probe.onMessageReceived(buffer, 0, MICROSECONDS.toNanos(312)); // round trip 2us, but 10us with coordinated omission
 
         Verification verification = new Verification(probe.measurementsCopy(), ofNanos(100));
@@ -208,17 +208,17 @@ class ProbeTest
                 .sendingRatePerSecond((int)TimeUnit.SECONDS.toMicros(1))
                 .createProbe();
 
-        assertThat(probe.onTime(MICROSECONDS.toNanos(300), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0);
+        assertThat(probe.onTime(MICROSECONDS.toNanos(300), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
         assertThat(metadata.wrap(buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).correlationId()).isEqualTo(0);
         assertThat(metadata.wrap(buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).originalTimestampNs()).isEqualTo(MICROSECONDS.toNanos(300));
 
 
-        assertThat(probe.onTime(MICROSECONDS.toNanos(305), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0); // should have sent at 301us
+        assertThat(probe.onTime(MICROSECONDS.toNanos(305), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue(); // should have sent at 301us
         assertThat(metadata.wrap(buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).correlationId()).isEqualTo(1);
         assertThat(metadata.wrap(buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).originalTimestampNs()).isEqualTo(MICROSECONDS.toNanos(301));
 
 
-        assertThat(probe.onTime(MICROSECONDS.toNanos(310), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isGreaterThan(0); // should have sent at 302us
+        assertThat(probe.onTime(MICROSECONDS.toNanos(310), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue(); // should have sent at 302us
         assertThat(metadata.wrap(buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).correlationId()).isEqualTo(2);
         assertThat(metadata.wrap(buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH).originalTimestampNs()).isEqualTo(MICROSECONDS.toNanos(302));
 

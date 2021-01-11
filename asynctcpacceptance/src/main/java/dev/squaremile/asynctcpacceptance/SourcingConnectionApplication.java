@@ -167,8 +167,8 @@ public class SourcingConnectionApplication implements ConnectionApplication
     {
         final SendMessage message = connectionTransport.command(SendMessage.class);
         final MutableDirectBuffer outboundBuffer = message.prepare();
-        int encodedLength = probe.onTime(nanoTime(), outboundBuffer, message.offset(), ALL_METADATA_FIELDS_TOTAL_LENGTH);
-        if (encodedLength > 0)
+        boolean anythingToSend = probe.onTime(nanoTime(), outboundBuffer, message.offset(), ALL_METADATA_FIELDS_TOTAL_LENGTH);
+        if (anythingToSend)
         {
             outboundBuffer.putBytes(message.offset() + ALL_METADATA_FIELDS_TOTAL_LENGTH, extraData);
             message.commit(ALL_METADATA_FIELDS_TOTAL_LENGTH + extraData.length);
