@@ -85,6 +85,40 @@ class ProbeTest
     }
 
     @Test
+    void shouldMaintainThePublicationRate()
+    {
+        final Probe probe = probe("someProbe")
+                .totalNumberOfMessagesToSend(3)
+                .skippedResponses(0)
+                .respondToEveryNthRequest(1)
+                .sendingRatePerSecond(250) // every 4 ms
+                .createProbe();
+
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_001), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
+        probe.onMessageReceived(buffer, 0, MILLISECONDS.toNanos(6_002));
+
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_002), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isFalse();
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_003), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isFalse();
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_004), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isFalse();
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_005), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_005), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isFalse();
+        probe.onMessageReceived(buffer, 0, MILLISECONDS.toNanos(6_007));
+
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_008), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isFalse();
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_009), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isTrue();
+        probe.onMessageReceived(buffer, 0, MILLISECONDS.toNanos(6_009));
+
+        assertThat(probe.hasReceivedAll()).isTrue();
+        assertThat(probe.measurementsCopy().measurementsCount()).isEqualTo(3);
+        assertThat(probe.onTime(MILLISECONDS.toNanos(6_019), buffer, 0, ALL_METADATA_FIELDS_TOTAL_LENGTH)).isFalse();
+
+        Verification verification = new Verification(probe.measurementsCopy(), ofMillis(0));
+        verification.assertMeasured(AbstractHistogram::getMinValue, ofMillis(0));
+        verification.assertMeasured(histogram -> (long)histogram.getMean(), ofMillis(1));
+        verification.assertMeasured(AbstractHistogram::getMaxValue, ofMillis(2));
+    }
+
+    @Test
     void shouldCalculateLatencyWhenMultipleMessagesInFlight()
     {
         final Probe probe = probe("someProbe")
