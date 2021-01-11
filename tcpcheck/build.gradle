@@ -1,10 +1,18 @@
 plugins {
     id 'java'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 java {
     modularity.inferModulePath = true
+}
+
+shadowJar {
+    archiveBaseName.set('tcpcheck')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+    mainClassName = 'dev.squaremile.tcpcheck.ping.Ping'
 }
 
 application {
