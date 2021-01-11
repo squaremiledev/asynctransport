@@ -7,6 +7,11 @@ import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
 import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 import dev.squaremile.tcpprobe.ProbeClient;
 
+import static dev.squaremile.tcpprobe.Metadata.ALL_METADATA_FIELDS_TOTAL_LENGTH;
+import static dev.squaremile.tcpprobe.Metadata.DEFAULT_CORRELATION_ID_OFFSET;
+import static dev.squaremile.tcpprobe.Metadata.DEFAULT_OPTIONS_OFFSET;
+import static dev.squaremile.tcpprobe.Metadata.DEFAULT_SEND_TIME_OFFSET;
+
 public class EchoConnectionApplication implements ConnectionApplication
 {
     private final ConnectionTransport connectionTransport;
@@ -16,7 +21,7 @@ public class EchoConnectionApplication implements ConnectionApplication
     public EchoConnectionApplication(final ConnectionTransport connectionTransport)
     {
         this.connectionTransport = connectionTransport;
-        this.probeClient = new ProbeClient();
+        this.probeClient = new ProbeClient(DEFAULT_OPTIONS_OFFSET, DEFAULT_SEND_TIME_OFFSET, DEFAULT_CORRELATION_ID_OFFSET);
     }
 
     @Override
@@ -30,11 +35,12 @@ public class EchoConnectionApplication implements ConnectionApplication
                     messageReceived.buffer(),
                     messageReceived.offset(),
                     message.prepare(),
-                    message.offset()
+                    message.offset(),
+                    ALL_METADATA_FIELDS_TOTAL_LENGTH
             );
             if (outboundPayloadLength > 0)
             {
-                message.commit(outboundPayloadLength);
+                message.commit(ALL_METADATA_FIELDS_TOTAL_LENGTH);
                 connectionTransport.handle(message);
             }
         }

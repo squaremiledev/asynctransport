@@ -20,6 +20,10 @@ import dev.squaremile.tcpprobe.Measurements;
 import dev.squaremile.tcpprobe.Probe;
 
 import static dev.squaremile.asynctcp.api.serialization.SerializedMessageListener.NO_OP;
+import static dev.squaremile.tcpprobe.Metadata.ALL_METADATA_FIELDS_TOTAL_LENGTH;
+import static dev.squaremile.tcpprobe.Metadata.DEFAULT_CORRELATION_ID_OFFSET;
+import static dev.squaremile.tcpprobe.Metadata.DEFAULT_OPTIONS_OFFSET;
+import static dev.squaremile.tcpprobe.Metadata.DEFAULT_SEND_TIME_OFFSET;
 import static dev.squaremile.tcpprobe.Probe.probe;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.nanoTime;
@@ -90,6 +94,7 @@ public class SourcingConnectionApplication implements ConnectionApplication
                         .skippedResponses(skippedWarmUpResponses)
                         .respondToEveryNthRequest(respondToEveryNthRequest)
                         .sendingRatePerSecond(sendingRatePerSecond)
+                        .metadataOffsets(DEFAULT_OPTIONS_OFFSET, DEFAULT_SEND_TIME_OFFSET, DEFAULT_CORRELATION_ID_OFFSET)
         );
         measurements.printResults();
     }
@@ -162,11 +167,11 @@ public class SourcingConnectionApplication implements ConnectionApplication
     {
         final SendMessage message = connectionTransport.command(SendMessage.class);
         final MutableDirectBuffer outboundBuffer = message.prepare();
-        int encodedLength = probe.onTime(nanoTime(), outboundBuffer, message.offset());
+        int encodedLength = probe.onTime(nanoTime(), outboundBuffer, message.offset(), ALL_METADATA_FIELDS_TOTAL_LENGTH);
         if (encodedLength > 0)
         {
-            outboundBuffer.putBytes(message.offset() + encodedLength, extraData);
-            message.commit(encodedLength + extraData.length);
+            outboundBuffer.putBytes(message.offset() + ALL_METADATA_FIELDS_TOTAL_LENGTH, extraData);
+            message.commit(ALL_METADATA_FIELDS_TOTAL_LENGTH + extraData.length);
             connectionTransport.handle(message);
         }
     }

@@ -5,6 +5,11 @@ import java.util.concurrent.TimeUnit;
 import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
+
+import static dev.squaremile.tcpprobe.Metadata.DEFAULT_CORRELATION_ID_OFFSET;
+import static dev.squaremile.tcpprobe.Metadata.DEFAULT_OPTIONS_OFFSET;
+import static dev.squaremile.tcpprobe.Metadata.DEFAULT_SEND_TIME_OFFSET;
+
 public class Probe
 {
     private final Measurements measurements;
@@ -12,14 +17,21 @@ public class Probe
     private final int messagesToSend;
     private final int respondToEveryNthRequest;
     private final long messageDelayNs;
-    private final Metadata metadata = new Metadata();
+    private final Metadata metadata;
 
     private long messagesSentCount = 0;
     private long messagesReceivedCount = 0;
     private long awaitingResponsesInFlightCount = 0;
     private long startedSendingTimestampNanos = Long.MIN_VALUE;
 
-    private Probe(final String description, final int totalNumberOfMessagesToSend, final int skippedResponses, final int respondToEveryNthRequest, final int sendingRatePerSecond)
+    private Probe(
+            final String description,
+            final Metadata metadata,
+            final int totalNumberOfMessagesToSend,
+            final int skippedResponses,
+            final int respondToEveryNthRequest,
+            final int sendingRatePerSecond
+    )
     {
         int expectedResponses = totalNumberOfMessagesToSend / respondToEveryNthRequest;
         if (skippedResponses >= expectedResponses)
@@ -32,6 +44,7 @@ public class Probe
         this.measurements = new Measurements(description, skippedResponses + 1);
         this.selectiveResponseRequest = new SelectiveResponseRequest(totalNumberOfMessagesToSend, respondToEveryNthRequest);
         this.messageDelayNs = TimeUnit.SECONDS.toNanos(1) / sendingRatePerSecond;
+        this.metadata = metadata;
     }
 
     public static Configuration probe(final String description)
@@ -39,7 +52,7 @@ public class Probe
         return new Configuration(description);
     }
 
-    public int onTime(final long nowNs, final MutableDirectBuffer outboundBuffer, final int outboundOffset)
+    public int onTime(final long nowNs, final MutableDirectBuffer outboundBuffer, final int outboundOffset, final int availableLength)
     {
         final long sendTimestampNs;
         if (startedSendingTimestampNanos == Long.MIN_VALUE)
@@ -57,14 +70,19 @@ public class Probe
             return 0;
         }
 
-        metadata.wrap(outboundBuffer, outboundOffset).clear().options().respond(selectiveResponseRequest.shouldRespond(messagesSentCount));
-        metadata.originalTimestampNs(sendTimestampNs).correlationId(messagesSentCount);
-        if (selectiveResponseRequest.shouldRespond(messagesSentCount))
+        final boolean shouldRespond = selectiveResponseRequest.shouldRespond(messagesSentCount);
+        metadata.wrap(outboundBuffer, outboundOffset, availableLength)
+                .clear()
+                .originalTimestampNs(sendTimestampNs)
+                .correlationId(messagesSentCount)
+                .options().respond(shouldRespond);
+
+        if (shouldRespond)
         {
             awaitingResponsesInFlightCount++;
         }
         messagesSentCount++;
-        return metadata.length();
+        return 1;
     }
 
     public void onMessageReceived(final DirectBuffer buffer, final int offset, final long currentTimeNanos)
@@ -76,7 +94,7 @@ public class Probe
             throw new IllegalStateException("A mismatch detected");
         }
         messagesReceivedCount++;
-        measurements.onMessageReceived(messagesSentCount, messagesReceivedCount, metadata.originalTimestampNs(), currentTimeNanos);
+        measurements.onMessageReceived(messagesReceivedCount, metadata.originalTimestampNs(), currentTimeNanos);
     }
 
     public boolean hasReceivedAll()
@@ -107,9 +125,29 @@ public class Probe
         private int respondToEveryNthRequest = Integer.MIN_VALUE;
         private int sendingRatePerSecond = Integer.MIN_VALUE;
 
+        private int optionsOffset = DEFAULT_OPTIONS_OFFSET;
+        private int sendTimeOffset = DEFAULT_SEND_TIME_OFFSET;
+        private int correlationIdOffset = DEFAULT_CORRELATION_ID_OFFSET;
+
         private Configuration(final String description)
         {
             this.description = description;
+        }
+
+
+        public int optionsOffset()
+        {
+            return optionsOffset;
+        }
+
+        public int sendTimeOffset()
+        {
+            return sendTimeOffset;
+        }
+
+        public int correlationIdOffset()
+        {
+            return correlationIdOffset;
         }
 
         public Configuration totalNumberOfMessagesToSend(final int totalNumberOfMessagesToSend)
@@ -136,6 +174,14 @@ public class Probe
             return this;
         }
 
+        public Configuration metadataOffsets(final int optionsOffset, final int sendTimeOffset, final int correlationIdOffset)
+        {
+            this.optionsOffset = optionsOffset;
+            this.sendTimeOffset = sendTimeOffset;
+            this.correlationIdOffset = correlationIdOffset;
+            return this;
+        }
+
         public Probe createProbe()
         {
             if (
@@ -146,7 +192,11 @@ public class Probe
             {
                 throw new IllegalArgumentException("Not all configuration hs been set");
             }
-            return new Probe(description, totalNumberOfMessagesToSend, skippedResponses, respondToEveryNthRequest, sendingRatePerSecond);
+            return new Probe(
+                    description,
+                    new Metadata(optionsOffset, sendTimeOffset, correlationIdOffset),
+                    totalNumberOfMessagesToSend, skippedResponses, respondToEveryNthRequest, sendingRatePerSecond
+            );
         }
     }
 }

@@ -36,7 +36,7 @@ public class Measurements
         return (int)Math.ceil(value / 2.0);
     }
 
-    public void onMessageReceived(final long messagesSentCount, final long messagesReceivedCount, final long messageSentTimeNs, final long messageReceivedTimeNs)
+    public void onMessageReceived(final long messagesReceivedCount, final long messageSentTimeNs, final long messageReceivedTimeNs)
     {
         if (messagesReceivedCount < measureFromNthReceived)
         {
