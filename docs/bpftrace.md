@@ -22,9 +22,7 @@ C) ON, logging all the packets
 
 - [bpftrace script used](tcpwindow.bt)
 
-- market data simulator used: SourcingConnectionApplication.java
-
-- command used: `java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication 172.31.35.37 9998 20000 10000 1000000 32 1 4000`
+- market data simulator used: tcpcheck ping
 
 - Scenario details: remoteHost 172.31.35.37, remotePort 9998, sendingRatePerSecond 20000, skippedWarmUpResponses 10000 , messagesSent 1000000, 31250 expected responses with a response rate 1 for 32, use buffers: true, extra data 4000 bytes
 

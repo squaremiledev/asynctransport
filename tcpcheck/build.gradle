@@ -7,6 +7,10 @@ java {
     modularity.inferModulePath = true
 }
 
+application {
+    mainClass = 'dev.squaremile.tcpcheck.ping.Ping'
+}
+
 test {
     useJUnitPlatform()
 }

@@ -1,4 +1,4 @@
-package dev.squaremile.tcpprobe;
+package dev.squaremile.tcpcheck.probe;
 
 import org.junit.jupiter.api.Test;
 

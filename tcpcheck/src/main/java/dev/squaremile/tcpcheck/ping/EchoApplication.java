@@ -1,4 +1,4 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.tcpcheck.ping;
 
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
@@ -8,9 +8,7 @@ import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 import dev.squaremile.asynctcp.api.transport.values.Delineation;
 import dev.squaremile.asynctcp.api.wiring.ListeningApplication;
 
-import static java.lang.Integer.parseInt;
-
-public class EchoApplication implements ApplicationOnDuty
+class EchoApplication implements ApplicationOnDuty
 {
     private final ApplicationOnDuty applicationOnDuty;
 
@@ -34,19 +32,6 @@ public class EchoApplication implements ApplicationOnDuty
                         (connectionTransport, connectionId) -> new EchoConnectionApplication(connectionTransport)
                 )
         );
-    }
-
-    public static void main(String[] args)
-    {
-        if (args.length != 1)
-        {
-            System.out.println("Usage: EchoApplication port");
-            System.out.println("Example: EchoApplication 9998");
-            return;
-        }
-        start(parseInt(args[0]), () ->
-        {
-        });
     }
 
     public static void start(final int port, final Runnable onReady)

@@ -1,18 +1,18 @@
-package dev.squaremile.asynctcpacceptance;
+package dev.squaremile.tcpcheck.ping;
 
 import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
 import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
 import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
-import dev.squaremile.tcpprobe.ProbeClient;
+import dev.squaremile.tcpcheck.probe.ProbeClient;
 
-import static dev.squaremile.tcpprobe.Metadata.ALL_METADATA_FIELDS_TOTAL_LENGTH;
-import static dev.squaremile.tcpprobe.Metadata.DEFAULT_CORRELATION_ID_OFFSET;
-import static dev.squaremile.tcpprobe.Metadata.DEFAULT_OPTIONS_OFFSET;
-import static dev.squaremile.tcpprobe.Metadata.DEFAULT_SEND_TIME_OFFSET;
+import static dev.squaremile.tcpcheck.probe.Metadata.ALL_METADATA_FIELDS_TOTAL_LENGTH;
+import static dev.squaremile.tcpcheck.probe.Metadata.DEFAULT_CORRELATION_ID_OFFSET;
+import static dev.squaremile.tcpcheck.probe.Metadata.DEFAULT_OPTIONS_OFFSET;
+import static dev.squaremile.tcpcheck.probe.Metadata.DEFAULT_SEND_TIME_OFFSET;
 
-public class EchoConnectionApplication implements ConnectionApplication
+class EchoConnectionApplication implements ConnectionApplication
 {
     private final ConnectionTransport connectionTransport;
     private final ProbeClient probeClient;

@@ -25,12 +25,6 @@ worst ~40 microseconds (one way) ICMP (ping) traffic.
 
 
 ```
-Box A:
-ubuntu@ip-172-31-35-37:~/workspace/asynctransport-master$ java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.EchoApplication 9998
-
-Box B:
-ubuntu@ip-172-31-43-169:~/workspace/asynctransport-master$ java -classpath "./asynctcpacceptance/build/distributions/asynctcpacceptance/lib/*" dev.squaremile.asynctcpacceptance.SourcingConnectionApplication 172.31.35.37 9998 600000 60000 12000000 100 1 64
-
 Scenario: remoteHost 172.31.35.37, remotePort 9998, sendingRatePerSecond 600000, skippedWarmUpResponses 60000 , messagesSent 12000000, 120000 expected responses with a response rate 1 for 100, use buffers: true, extra data 64 bytes
 
 Based on 60000 measurements.

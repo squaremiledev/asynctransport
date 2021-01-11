@@ -1,4 +1,4 @@
-package dev.squaremile.tcpprobe;
+package dev.squaremile.tcpcheck.probe;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -18,11 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-import static dev.squaremile.tcpprobe.Metadata.ALL_METADATA_FIELDS_TOTAL_LENGTH;
-import static dev.squaremile.tcpprobe.Metadata.DEFAULT_CORRELATION_ID_OFFSET;
-import static dev.squaremile.tcpprobe.Metadata.DEFAULT_OPTIONS_OFFSET;
-import static dev.squaremile.tcpprobe.Metadata.DEFAULT_SEND_TIME_OFFSET;
-import static dev.squaremile.tcpprobe.Probe.probe;
+import static dev.squaremile.tcpcheck.probe.Metadata.ALL_METADATA_FIELDS_TOTAL_LENGTH;
+import static dev.squaremile.tcpcheck.probe.Metadata.DEFAULT_CORRELATION_ID_OFFSET;
+import static dev.squaremile.tcpcheck.probe.Metadata.DEFAULT_OPTIONS_OFFSET;
+import static dev.squaremile.tcpcheck.probe.Metadata.DEFAULT_SEND_TIME_OFFSET;
+import static dev.squaremile.tcpcheck.probe.Probe.probe;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofNanos;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;

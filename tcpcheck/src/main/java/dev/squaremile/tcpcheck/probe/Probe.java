@@ -1,4 +1,4 @@
-package dev.squaremile.tcpprobe;
+package dev.squaremile.tcpcheck.probe;
 
 import java.util.concurrent.TimeUnit;
 
@@ -6,9 +6,9 @@ import org.agrona.DirectBuffer;
 import org.agrona.MutableDirectBuffer;
 
 
-import static dev.squaremile.tcpprobe.Metadata.DEFAULT_CORRELATION_ID_OFFSET;
-import static dev.squaremile.tcpprobe.Metadata.DEFAULT_OPTIONS_OFFSET;
-import static dev.squaremile.tcpprobe.Metadata.DEFAULT_SEND_TIME_OFFSET;
+import static dev.squaremile.tcpcheck.probe.Metadata.DEFAULT_CORRELATION_ID_OFFSET;
+import static dev.squaremile.tcpcheck.probe.Metadata.DEFAULT_OPTIONS_OFFSET;
+import static dev.squaremile.tcpcheck.probe.Metadata.DEFAULT_SEND_TIME_OFFSET;
 
 public class Probe
 {
@@ -198,5 +198,22 @@ public class Probe
                     totalNumberOfMessagesToSend, skippedResponses, respondToEveryNthRequest, sendingRatePerSecond
             );
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Probe{" +
+               "measurements=" + measurements +
+               ", selectiveResponseRequest=" + selectiveResponseRequest +
+               ", messagesToSend=" + messagesToSend +
+               ", respondToEveryNthRequest=" + respondToEveryNthRequest +
+               ", messageDelayNs=" + messageDelayNs +
+               ", metadata=" + metadata +
+               ", messagesSentCount=" + messagesSentCount +
+               ", messagesReceivedCount=" + messagesReceivedCount +
+               ", awaitingResponsesInFlightCount=" + awaitingResponsesInFlightCount +
+               ", startedSendingTimestampNanos=" + startedSendingTimestampNanos +
+               '}';
     }
 }
