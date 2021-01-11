@@ -1,2 +1,2 @@
 run:
-	@./gradlew clean test tcpcheck:shadowDistZip && unzip -q tcpcheck/build/distributions/tcpcheck*.zip -d tcpcheck/build/distributions
+	@./gradlew clean test asynctcpacceptance:distZip tcpcheck:shadowDistZip && unzip -q asynctcpacceptance/build/distributions/asynctcpacceptance.zip -d asynctcpacceptance/build/distributions
