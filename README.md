@@ -37,7 +37,7 @@ Maven
 <dependency>
 	<groupId>dev.squaremile</groupId>
 	<artifactId>asynctcp</artifactId>
-	<version>0.6.0</version>
+	<version>0.7.0</version>
 	<type>pom</type>
 </dependency>
 ```
@@ -45,7 +45,7 @@ Maven
 Gradle
 
 ```
-implementation 'dev.squaremile:asynctcp:0.6.0'
+implementation 'dev.squaremile:asynctcp:0.7.0'
 ```
 
 ### See some examples
