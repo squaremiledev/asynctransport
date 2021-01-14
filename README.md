@@ -118,25 +118,77 @@ It took 49999 ms between the first measured message sent and the last received
 
 ### Cloud (AWS EC2)
 
-600 000 msg/s, load skewed 1/100 (one box mostly sends, another mostly receives)
+500 000 msg/s, load skewed 1/1000 (one box mostly sends, another mostly receives)
 
-- c5n.xlarge boxes, same availability zone, ping ~60 microseconds between boxes
+- c5n.xlarge boxes, same availability zone, ping rtt min/avg/max/mdev = 0.059/0.068/0.273/0.013 ms
 
-- (A) 600k msg/s send -> (B) 600k msg/s received -> (B) 6k msg/s send -> (A) 6k msg/s received
+- Ubuntu 20.04.1 LTS, Java OpenJDK Runtime Environment (build 11.0.9+11-Ubuntu-0ubuntu1.20.04)
+
+- (A) 500k msg/s send -> (B) 500k msg/s received -> (B) 500 msg/s send -> (A) 500 msg/s received
+
+Command run on box ip-172-31-35-37:
+
+```
+trcheck-shadow-0.8.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
+```
+
+Command run on box ip-172-31-43-169:
+
+```
+trcheck-shadow-0.8.0-SNAPSHOT/bin/trcheck benchmark client -h 172.31.35.37 -p 9998 --warm-up-time=30 --run-time=30 --send-rate=500000 --respond-rate=1000 --extra-data-length=140
+```
+
+First run
 
 ```
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |            40 |             80 |
-99th percentile        |            74 |            148 |
-99.9th percentile      |           100 |            200 |
-99.99th percentile     |           110 |            219 |
-99.999th percentile    |           128 |            255 |
-worst                  |           128 |            255 |
+mean                   |            41 |             82 |
+99th percentile        |            78 |            156 |
+99.9th percentile      |            97 |            193 |
+99.99th percentile     |           111 |            222 |
+99.999th percentile    |           111 |            222 |
+worst                  |           111 |            222 |
 ```
 
-For more measurements with different modes, see [test results for AWS EC2 boxes](docs/aws.md).
+Second run
+```
+
+Results:
+---------------------------------------------------------
+latency (microseconds) |     ~ one way |     round trip |
+mean                   |            41 |             82 |
+99th percentile        |            74 |            148 |
+99.9th percentile      |            93 |            185 |
+99.99th percentile     |           100 |            199 |
+99.999th percentile    |           102 |            203 |
+worst                  |           102 |            203 |
+```
+
+Third run
+```
+Results:
+---------------------------------------------------------
+latency (microseconds) |     ~ one way |     round trip |
+mean                   |            40 |             79 |
+99th percentile        |            68 |            136 |
+99.9th percentile      |            83 |            166 |
+99.99th percentile     |            92 |            183 |
+99.999th percentile    |            96 |            191 |
+worst                  |            96 |            191 |
+```
+
+Each run based on 15000 measurements.
+It took 29998 ms between the first measured message sent and the last received
+Sent total (including warm up) 29999028 messages of average size (TCP headers excluded) 164 bytes
+Sent total (including warm up) 4919840264 bytes with a throughput of 656.022 Mbps
+
+### Summary
+
+- Average overhead of the library (vs ICMP ping) is between 6 and 7 microseconds one way.
+
+- The latency is stable when the connection has warmed up (enough time to calculate TCP window size etc.)
 
 ## Usage
 
