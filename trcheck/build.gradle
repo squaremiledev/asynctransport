@@ -1,19 +1,22 @@
 plugins {
     id 'java'
     id 'application'
-    id 'idea'
-}
-
-application {
-    mainClassName = 'dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort'
-}
-
-distZip {
-    archiveFileName = 'asynctcpacceptance.zip'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 java {
     modularity.inferModulePath = true
+}
+
+shadowJar {
+    archiveBaseName.set('trcheck')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+    mainClassName = 'dev.squaremile.trcheck.standalone.TrCheck'
+}
+
+application {
+    mainClass = 'dev.squaremile.trcheck.standalone.TrCheck'
 }
 
 test {
@@ -22,9 +25,9 @@ test {
 
 dependencies {
     implementation project(':asynctcp')
-    implementation project(':trcheck')
     implementation testFixtures(project(':asynctcp'))
     implementation 'org.agrona:agrona:1.8.0'
+    implementation "org.hdrhistogram:HdrHistogram:2.1.12"
 
     testImplementation testFixtures(project(':asynctcp'))
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'

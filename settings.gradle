@@ -1,2 +1,2 @@
 rootProject.name = 'asynctransport'
-include 'asynctcpacceptance', 'asynctcp', 'aeroncluster', 'aeronclustertcpgateway', 'chronicle', 'fix', 'aeronclusterfix', 'tcpcheck'
+include 'asynctcpacceptance', 'asynctcp', 'aeroncluster', 'aeronclustertcpgateway', 'chronicle', 'fix', 'aeronclusterfix', 'trcheck'
