@@ -12,7 +12,7 @@ class TrCheckTest
     @Disabled
     void runEchoApplication()
     {
-        TrCheck.main(new String[]{"ping", "server", String.valueOf(PORT)});
+        TrCheck.main(new String[]{"benchmark", "server", "-p", String.valueOf(PORT)});
     }
 
     @Test
@@ -24,14 +24,21 @@ class TrCheckTest
         final int respondToNth = 32;
         final int extraDataLength = 0;
         TrCheck.main(new String[]{
-                "ping",
+                "benchmark",
                 "client",
+                "-h",
                 remoteHost,
+                "-p",
                 Integer.toString(PORT),
+                "-w",
                 Integer.toString(10),
+                "-t",
                 Integer.toString(5),
+                "-s",
                 Integer.toString(sendingRatePerSecond),
+                "-r",
                 Integer.toString(respondToNth),
+                "-x",
                 Integer.toString(extraDataLength),
                 });
     }

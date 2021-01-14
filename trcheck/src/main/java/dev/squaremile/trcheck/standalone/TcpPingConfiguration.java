@@ -4,7 +4,7 @@ import dev.squaremile.trcheck.probe.Probe;
 
 import static dev.squaremile.trcheck.probe.Probe.probe;
 
-class TcpPingConfiguration
+public class TcpPingConfiguration
 {
     private final int sendingRatePerSecond;
     private final int respondToNth;

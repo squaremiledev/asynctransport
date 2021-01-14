@@ -28,6 +28,8 @@ dependencies {
     implementation testFixtures(project(':asynctcp'))
     implementation 'org.agrona:agrona:1.8.0'
     implementation "org.hdrhistogram:HdrHistogram:2.1.12"
+    implementation "info.picocli:picocli:4.6.1"
+
 
     testImplementation testFixtures(project(':asynctcp'))
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
