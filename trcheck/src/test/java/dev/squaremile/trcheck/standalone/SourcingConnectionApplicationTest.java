@@ -2,6 +2,7 @@ package dev.squaremile.trcheck.standalone;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -15,16 +16,26 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 public class SourcingConnectionApplicationTest
 {
+
+    public static final int METADATA_SIZE_IN_BYTES = 24;
+
     @Test
     void shouldExchangeMessages() throws InterruptedException
     {
+        int sendingRatePerSecond = 100;
+        int secondsRun = 2;
+        int secondsWarmUp = 1;
+        int extraData = 64;
+        int respondToNth = 4;
+        int tcpDataPerMessage = METADATA_SIZE_IN_BYTES + extraData;
+
         Measurements measurements = exchangeMessages(
                 new TcpPingConfiguration.Builder()
-                        .sendingRatePerSecond(100)
-                        .respondToNth(4)
-                        .secondsRun(1)
-                        .secondsWarmUp(1)
-                        .extraDataLength(64)
+                        .sendingRatePerSecond(sendingRatePerSecond)
+                        .respondToNth(respondToNth)
+                        .secondsRun(secondsRun)
+                        .secondsWarmUp(secondsWarmUp)
+                        .extraDataLength(extraData)
                         .remoteHost("localhost")
                         .remotePort(freePort())
                         .create()
@@ -32,7 +43,20 @@ public class SourcingConnectionApplicationTest
 
         // Then
         measurements.printResults();
-        assertThat(measurements.measurementsCount()).isEqualTo(25);
+        assertThat(measurements.measurementsCount()).isEqualTo(50);
+        assertThat(measurements.messagesSentCount()).isCloseTo(
+                (secondsWarmUp + secondsRun) * sendingRatePerSecond,
+                Offset.offset((long)respondToNth)
+        );
+        assertThat(measurements.dataSentInBytes()).isCloseTo(
+                (secondsWarmUp + secondsRun) * sendingRatePerSecond * tcpDataPerMessage,
+                Offset.offset((long)respondToNth * tcpDataPerMessage)
+        );
+        assertThat(measurements.averageThroughputMbps()).isCloseTo(
+                (double)((measurements.dataSentInBytes() * 8 * 1000 / measurements.sendingTimeInMs())) / 1_000_000,
+                Offset.offset(0.01)
+        );
+        assertThat(measurements.averageSentMessageSizeInBytes()).isEqualTo(METADATA_SIZE_IN_BYTES + extraData);
     }
 
     @Test

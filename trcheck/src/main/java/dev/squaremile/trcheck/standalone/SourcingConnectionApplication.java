@@ -13,6 +13,7 @@ import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFactory;
 import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
+import dev.squaremile.asynctcp.api.transport.events.DataSent;
 import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 import dev.squaremile.asynctcp.api.transport.values.Delineation;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
@@ -140,6 +141,11 @@ class SourcingConnectionApplication implements ConnectionApplication
             {
                 isDone.set(true);
             }
+        }
+        if (event instanceof DataSent)
+        {
+            DataSent dataSent = (DataSent)event;
+            probe.onDataSent(dataSent.totalBytesSent(), nanoTime());
         }
     }
 }

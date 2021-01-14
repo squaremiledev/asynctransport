@@ -81,7 +81,7 @@ public class Probe
         {
             awaitingResponsesInFlightCount++;
         }
-        messagesSentCount++;
+        measurements.messagesSentCount(++messagesSentCount);
         return true;
     }
 
@@ -115,6 +115,33 @@ public class Probe
             throw new IllegalStateException("The report is available after probing is done");
         }
         return measurements.copy();
+    }
+
+    public void onDataSent(final long totalBytesSentSoFar, final long currentTimeNanos)
+    {
+        measurements.onDataSent(totalBytesSentSoFar, currentTimeNanos);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Probe{" +
+               "measurements=" + measurements +
+               ", selectiveResponseRequest=" + selectiveResponseRequest +
+               ", messagesToSend=" + messagesToSend +
+               ", respondToEveryNthRequest=" + respondToEveryNthRequest +
+               ", messageDelayNs=" + messageDelayNs +
+               ", metadata=" + metadata +
+               ", messagesSentCount=" + messagesSentCount +
+               ", messagesReceivedCount=" + messagesReceivedCount +
+               ", awaitingResponsesInFlightCount=" + awaitingResponsesInFlightCount +
+               ", startedSendingTimestampNanos=" + startedSendingTimestampNanos +
+               '}';
+    }
+
+    public void onMessageSent()
+    {
+
     }
 
     public static class Configuration
@@ -198,22 +225,5 @@ public class Probe
                     totalNumberOfMessagesToSend, skippedResponses, respondToEveryNthRequest, sendingRatePerSecond
             );
         }
-    }
-
-    @Override
-    public String toString()
-    {
-        return "Probe{" +
-               "measurements=" + measurements +
-               ", selectiveResponseRequest=" + selectiveResponseRequest +
-               ", messagesToSend=" + messagesToSend +
-               ", respondToEveryNthRequest=" + respondToEveryNthRequest +
-               ", messageDelayNs=" + messageDelayNs +
-               ", metadata=" + metadata +
-               ", messagesSentCount=" + messagesSentCount +
-               ", messagesReceivedCount=" + messagesReceivedCount +
-               ", awaitingResponsesInFlightCount=" + awaitingResponsesInFlightCount +
-               ", startedSendingTimestampNanos=" + startedSendingTimestampNanos +
-               '}';
     }
 }

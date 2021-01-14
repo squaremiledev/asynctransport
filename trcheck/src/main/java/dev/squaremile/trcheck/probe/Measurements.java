@@ -1,5 +1,6 @@
 package dev.squaremile.trcheck.probe;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.HdrHistogram.Histogram;
@@ -14,6 +15,10 @@ public class Measurements
     private final int measureFromNthReceived;
     private long firstMeasuredMessageSentNs;
     private long lastMeasuredMessageReceivedNs;
+    private long firstTimeDataSentNs = Long.MIN_VALUE;
+    private long lastTimeDataSentNs;
+    private long totalBytesSentSoFar = 0;
+    private long messagesSentCount;
 
     public Measurements(final String description, final int measureFromNthReceived)
     {
@@ -29,6 +34,10 @@ public class Measurements
         this.measureFromNthReceived = copySrc.measureFromNthReceived;
         this.firstMeasuredMessageSentNs = copySrc.firstMeasuredMessageSentNs;
         this.lastMeasuredMessageReceivedNs = copySrc.lastMeasuredMessageReceivedNs;
+        this.totalBytesSentSoFar = copySrc.totalBytesSentSoFar;
+        this.firstTimeDataSentNs = copySrc.firstTimeDataSentNs;
+        this.lastTimeDataSentNs = copySrc.lastTimeDataSentNs;
+        this.messagesSentCount = copySrc.messagesSentCount;
     }
 
     private static int half(final double value)
@@ -51,6 +60,16 @@ public class Measurements
         histogram.recordValue(latencyUs);
     }
 
+    public void onDataSent(long totalBytesSentSoFar, final long currentTimeNanos)
+    {
+        if (firstTimeDataSentNs == Long.MIN_VALUE)
+        {
+            firstTimeDataSentNs = currentTimeNanos;
+        }
+        lastTimeDataSentNs = currentTimeNanos;
+        this.totalBytesSentSoFar = totalBytesSentSoFar;
+    }
+
     public void printResults()
     {
         System.out.println();
@@ -71,6 +90,8 @@ public class Measurements
                 NANOSECONDS.toMillis(lastMeasuredMessageReceivedNs - firstMeasuredMessageSentNs) +
                 " ms between the first measured message sent and the last received"
         );
+        System.out.println("Sent total (including warm up) " + messagesSentCount() + " messages of average size (TCP headers excluded) " + averageSentMessageSizeInBytes() + " bytes");
+        System.out.println("Sent total (including warm up) " + dataSentInBytes() + " bytes with a throughput of " + String.format("%.3f", averageThroughputMbps()) + " Mbps");
         System.out.println();
 
     }
@@ -88,5 +109,35 @@ public class Measurements
     public Measurements copy()
     {
         return new Measurements(this);
+    }
+
+    public long dataSentInBytes()
+    {
+        return totalBytesSentSoFar;
+    }
+
+    public double averageThroughputMbps()
+    {
+        return ((double)(totalBytesSentSoFar * 8 * 1000) / sendingTimeInMs()) / 1_000_000;
+    }
+
+    public long sendingTimeInMs()
+    {
+        return Duration.ofNanos(lastTimeDataSentNs - firstTimeDataSentNs).toMillis();
+    }
+
+    public long averageSentMessageSizeInBytes()
+    {
+        return messagesSentCount == 0 ? 0 : Math.round((double)totalBytesSentSoFar / messagesSentCount);
+    }
+
+    public void messagesSentCount(final long messagesSentCount)
+    {
+        this.messagesSentCount = messagesSentCount;
+    }
+
+    public long messagesSentCount()
+    {
+        return messagesSentCount;
     }
 }
