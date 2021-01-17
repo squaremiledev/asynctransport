@@ -18,7 +18,9 @@ public class Benchmark
         {
             CliParser.Parsed<CliBenchmarkServer> parsed = CliParser.parseArgs(new CliBenchmarkServer(), System.err, System.out, stream(args).skip(1).toArray(String[]::new));
             parsed.exitCode.ifPresent(System::exit);
-            EchoApplication.start(parsed.cli.port, () -> System.out.println("Listening on port " + parsed.cli.port));
+            EchoApplication.start(parsed.cli.port, () -> System.out.println("Listening on port " + parsed.cli.port), () ->
+            {
+            });
             System.exit(0);
         }
         else if ("client".equals(args[0]))

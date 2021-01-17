@@ -1,6 +1,7 @@
 package dev.squaremile.trcheck.standalone;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Disabled;
@@ -109,9 +110,14 @@ public class SourcingConnectionApplicationTest
     private Measurements exchangeMessages(final TcpPingConfiguration config) throws InterruptedException
     {
         final CountDownLatch applicationReady = new CountDownLatch(1);
-        newSingleThreadExecutor().execute(() -> EchoApplication.start(config.remotePort(), applicationReady::countDown));
+        final CountDownLatch applicationShutDown = new CountDownLatch(1);
+        ExecutorService executorService = newSingleThreadExecutor();
+        executorService.execute(() -> EchoApplication.start(config.remotePort(), applicationReady::countDown, applicationShutDown::countDown));
         applicationReady.await();
-        return SourcingConnectionApplication.runPing(config);
+        Measurements measurements = SourcingConnectionApplication.runPing(config);
+        executorService.shutdownNow();
+        applicationShutDown.await();
+        return measurements;
     }
 
 }

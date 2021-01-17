@@ -34,7 +34,7 @@ class EchoApplication implements ApplicationOnDuty
         );
     }
 
-    public static void start(final int port, final Runnable onReady)
+    public static void start(final int port, final Runnable onReady, final Runnable onShutDown)
     {
         final ApplicationOnDuty app = new EchoApplication(port, onReady);
         app.onStart();
@@ -42,6 +42,8 @@ class EchoApplication implements ApplicationOnDuty
         {
             app.work();
         }
+        app.onStop();
+        onShutDown.run();
     }
 
     @Override
