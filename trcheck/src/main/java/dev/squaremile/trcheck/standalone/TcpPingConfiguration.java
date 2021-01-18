@@ -13,6 +13,7 @@ public class TcpPingConfiguration
     private final String remoteHost;
     private final int remotePort;
     private final int extraDataLength;
+    private boolean useRingBuffers;
 
     private TcpPingConfiguration(
             final int sendingRatePerSecond,
@@ -21,7 +22,8 @@ public class TcpPingConfiguration
             final int secondsWarmUp,
             final int extraDataLength,
             final String remoteHost,
-            final int remotePort
+            final int remotePort,
+            boolean useRingBuffers
     )
     {
         this.extraDataLength = extraDataLength;
@@ -36,6 +38,7 @@ public class TcpPingConfiguration
         this.secondsWarmUp = secondsWarmUp;
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
+        this.useRingBuffers = useRingBuffers;
     }
 
     public Probe.Configuration probeConfig()
@@ -84,7 +87,7 @@ public class TcpPingConfiguration
 
     public boolean useBuffers()
     {
-        return true;
+        return useRingBuffers;
     }
 
     @Override
@@ -110,6 +113,7 @@ public class TcpPingConfiguration
         private String remoteHost;
         private int remotePort;
         private int extraDataLength;
+        private boolean useRingBuffers;
 
         public Builder sendingRatePerSecond(final int sendingRatePerSecond)
         {
@@ -153,9 +157,15 @@ public class TcpPingConfiguration
             return this;
         }
 
+        public Builder useRingBuffers(boolean useRingBuffers)
+        {
+            this.useRingBuffers = useRingBuffers;
+            return this;
+        }
+
         public TcpPingConfiguration create()
         {
-            return new TcpPingConfiguration(sendingRatePerSecond, respondToNth, secondsRun, secondsWarmUp, extraDataLength, remoteHost, remotePort);
+            return new TcpPingConfiguration(sendingRatePerSecond, respondToNth, secondsRun, secondsWarmUp, extraDataLength, remoteHost, remotePort, useRingBuffers);
         }
     }
 }

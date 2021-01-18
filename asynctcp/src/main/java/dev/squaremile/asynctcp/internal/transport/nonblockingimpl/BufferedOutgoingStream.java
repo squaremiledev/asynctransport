@@ -1,16 +1,16 @@
 package dev.squaremile.asynctcp.internal.transport.nonblockingimpl;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.TimeUnit;
 
 
 import dev.squaremile.asynctcp.api.transport.app.OnDuty;
 import dev.squaremile.asynctcp.api.transport.values.CommandId;
 import dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionState;
 
+import static dev.squaremile.asynctcp.internal.transport.nonblockingimpl.SocketProtection.socketCoolDownNs;
+
 public class BufferedOutgoingStream implements OnDuty
 {
-    public static final long NEXT_SENDING_SLOT_DELAY = TimeUnit.MICROSECONDS.toNanos(5);
     private final ByteBuffer buffer;
     private final OutgoingStream outgoingStream;
     private final RelativeClock relativeClock;
@@ -18,6 +18,9 @@ public class BufferedOutgoingStream implements OnDuty
     private long nextSendingSlot;
     private boolean requestedToSendData = false;
     private long lastCommandId = CommandId.NO_COMMAND_ID;
+
+    long socketProtectionSendDataRequestCount = 0;
+    long socketProtectionSendDataRequestCountResetNs = 0;
 
     BufferedOutgoingStream(final OutgoingStream outgoingStream, final RelativeClock relativeClock, final int bufferSize)
     {
@@ -28,6 +31,7 @@ public class BufferedOutgoingStream implements OnDuty
 
     void sendData(final ByteBuffer newDataToSend, final long commandId)
     {
+        socketProtectionSendDataRequestCount++;
         requestedToSendData = true;
         lastCommandId = commandId;
         buffer.put(newDataToSend);
@@ -55,7 +59,12 @@ public class BufferedOutgoingStream implements OnDuty
 
     private void sendDataIfReady()
     {
-        if (!requestedToSendData || relativeClock.relativeNanoTime() < nextSendingSlot)
+        if (!requestedToSendData)
+        {
+            return;
+        }
+
+        if (relativeClock.relativeNanoTime() < nextSendingSlot)
         {
             return;
         }
@@ -64,6 +73,9 @@ public class BufferedOutgoingStream implements OnDuty
         outgoingStream.sendData(buffer, lastCommandId);
         buffer.clear();
         requestedToSendData = false;
-        nextSendingSlot = relativeClock.relativeNanoTime() + NEXT_SENDING_SLOT_DELAY;
+        final long nowNs = relativeClock.relativeNanoTime();
+        nextSendingSlot = nowNs + socketCoolDownNs(socketProtectionSendDataRequestCountResetNs, nowNs, socketProtectionSendDataRequestCount);
+        socketProtectionSendDataRequestCount = 0;
+        socketProtectionSendDataRequestCountResetNs = nowNs;
     }
 }

@@ -80,15 +80,28 @@ public class SourcingConnectionApplicationTest
     @Disabled
     void shouldExchangeMessagesAtHigherRate() throws InterruptedException
     {
+        exchangeAtHigherRate(false, 1_800_000, 2000);
+    }
+
+    @Test
+    @Disabled
+    void shouldExchangeMessagesAtHigherRateUsingRingBuffers() throws InterruptedException
+    {
+        exchangeAtHigherRate(true, 1_200_000, 2000);
+    }
+
+    private void exchangeAtHigherRate(final boolean useRingBuffers, final int sendingRatePerSecond, final int respondToNth) throws InterruptedException
+    {
         exchangeMessages(
                 new TcpPingConfiguration.Builder()
-                        .sendingRatePerSecond(400_000)
-                        .respondToNth(1000)
-                        .secondsWarmUp(40)
-                        .secondsRun(10)
+                        .sendingRatePerSecond(sendingRatePerSecond)
+                        .respondToNth(respondToNth)
+                        .secondsWarmUp(30)
+                        .secondsRun(20)
                         .extraDataLength(64)
                         .remoteHost("localhost")
                         .remotePort(freePort())
+                        .useRingBuffers(useRingBuffers)
                         .create()
         ).printResults();
     }

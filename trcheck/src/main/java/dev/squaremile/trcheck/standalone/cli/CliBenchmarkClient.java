@@ -27,6 +27,9 @@ public class CliBenchmarkClient
     @CommandLine.Option(names = {"-x", "--extra-data-length"}, required = true, description = "length of extra data in bytes included in each sent message")
     public Integer extraDataLength;
 
+    @CommandLine.Option(names = {"-u", "--use-ring-buffers"}, description = "use ring buffers to communicate with the transport layer")
+    public boolean useRingBuffers = false;
+
     public TcpPingConfiguration asConfiguration()
     {
         return new TcpPingConfiguration.Builder()
@@ -37,6 +40,7 @@ public class CliBenchmarkClient
                 .sendingRatePerSecond(sendingRatePerSecond)
                 .respondToNth(respondToNth)
                 .extraDataLength(extraDataLength)
+                .useRingBuffers(useRingBuffers)
                 .create();
     }
 }
