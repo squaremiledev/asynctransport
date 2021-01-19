@@ -12,19 +12,25 @@ a low latency, message-driven, high performance TCP applications written in Java
 
 - no external dependencies, apart from some Agrona data structures
 
-- purely message driven, with all messages serializable for an audit and replay purposes
+- purely message driven, with all messages optionally serialized for an audit and replay purposes
+
+- message delineation functionality provided
 
 - zero allocation in steady state to avoid GC pauses 
 
 - single threaded, single CPU utilisation even for multiple connections
 
-- low latency with single digit microseconds overhead even at hundreds of thousands messages a second on commodity hardware
+- low latency end to end TCP connection with single digit microseconds overhead for up to hundreds of thousands messages a second on a commodity hardware
+
+- predictable worst case latency end to end TCP connection for up to millions of messages a second
 
 - no Java NIO/Socket knowledge necessary to use it efficiently
 
 - easily extendable, with some extensions under active development (Aeron Cluster, Chronicle Queue, Ring Buffer, TCP endpoints simulators)
 
 - ideal for event-sourced systems
+
+- useful for measuring a latency distribution and quality of the network stack between boxes (trcheck tool) 
  
 
 ## Evaluation
@@ -50,7 +56,7 @@ implementation 'dev.squaremile:asynctcp:0.8.0'
 
 ### See some examples
 
-To start write your own application, see dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort class.
+To start write your own application, see `dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort` class.
 
 To use TCP in a message-driven fashion, look at `dev.squaremile.asynctcp.DeterministicTransportApplicationTest`
 
@@ -70,10 +76,6 @@ To run sample app after built:
 telnet localhost 9999
 ```
 
-### Confirm that this design style is applicable to a particular context.
-
-Go to dev.squaremile.asynctcpacceptance.AppListeningOnTcpPort or try to implement your own Application
-
 ## Design objectives
 
 The library is built, and enables applications to be built, according to the Object Oriented Programming paradigm,
@@ -82,113 +84,147 @@ following as closely as possible Alan Kay's definition of "messaging, local rete
 It is also inspired by the [Aeron Cluster](https://github.com/real-logic/aeron/tree/master/aeron-cluster)'s boundaries
 between the application and the infrastructure (ClusteredService interface).
 However, an attempt has been made to make this library even more composable
-and avoid cycles during the setup phase (problematic `onStart(Cluster cluster)`).
+and avoid cycles during the setup phase (such as `onStart(Cluster cluster)`).
 This is to encourage some good functional programming principles during the construction/configuration phase,
-such as immutability and no side effects. Mutability is introduced only when it is
-necessary to meet performance requirements.  
+such as immutability and no side effects. Mutability is introduced only to meet the performance requirements.  
 
 ## Performance
 
-Coordinated omission included in all the results.
+In order to test the latencies, a simple echo protocol has been introduced that timestamps messages, adds some additional data,
+sends the messages at the predefined rate to another endpoint and compares the encoded timestamp with the current time when after the full round trip
+the finally arrive at the source again. Coordinated omission is taken into account and included in all the results, so when the message publication is delayed for any reason,
+the time when the message was supposed to be sent is used as the start time, as this is the real delay that would be experienced on the receiving side.
 
 ### Localhost, round trip
 
-200 000 msg/s, load distributed 50/50 between sending and receiving.
+Scenario: A single box exchanges small messages over localhost. Used to measure the library overhead only, without any network overhead.
 
-- Intel i7-4770, 16GB RAM DDR3
+- OpenJDK Runtime Environment (build 1.8.0_275-8u275-b01-0ubuntu1~20.04-b01)
 
-- (A) 100k msg/s send -> (B) 100k msg/s received -> (B) 100k msg/s send -> (A) 100k msg/s received
+- CPU: Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz
 
-``` 
-Scenario: remoteHost localhost, remotePort 9998, sendingRatePerSecond 100000, skippedWarmUpResponses 31250 , messagesSent 6000000, 187500 expected responses with a response rate 1 for 32, use buffers: true, extra data 0 bytes
+#### Medium rate, 60 000 msg/s over TCP
+
+``` bash
+# First command run:
+./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+
+# Second command run:
+./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 60000 -r 1000 -x 0
+```
+
+```
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |             9 |             18 |
-99th percentile        |            15 |             30 |
-99.9th percentile      |            27 |             54 |
-99.99th percentile     |            64 |            127 |
-99.999th percentile    |           164 |            328 |
-worst                  |           220 |            439 |
+mean                   |             7 |             14 |
+99th percentile        |            10 |             19 |
+99.9th percentile      |            15 |             29 |
+99.99th percentile     |            16 |             31 |
+99.999th percentile    |            16 |             31 |
+worst                  |            16 |             31 |
 
-Based on 156250 measurements.
-It took 49999 ms between the first measured message sent and the last received
+Based on 1800 measurements.
+It took 29982 ms between the first measured message sent and the last received
+Sent total (including warm up) 2999001 messages of average size (TCP headers excluded) 24 bytes
+Sent total (including warm up) 71976024 bytes with a throughput of 11.521 Mbps
+```
 
+#### High rate, 2 million msg/s over TCP
+
+``` bash
+# First command run:
+./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+
+# Second command run:
+./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 2000000 -r 4000 -x 0
+```
+
+```
+Results:
+---------------------------------------------------------
+latency (microseconds) |     ~ one way |     round trip |
+mean                   |            47 |             93 |
+99th percentile        |            71 |            141 |
+99.9th percentile      |            90 |            180 |
+99.99th percentile     |           653 |           1306 |
+99.999th percentile    |           699 |           1398 |
+worst                  |           699 |           1398 |
+
+Based on 15000 measurements.
+It took 29998 ms between the first measured message sent and the last received
+Sent total (including warm up) 99996239 messages of average size (TCP headers excluded) 24 bytes
+Sent total (including warm up) 2399907816 bytes with a throughput of 384.008 Mbps
 ```
 
 ### Cloud (AWS EC2)
 
-500 000 msg/s, load skewed 1/1000 (one box mostly sends, another mostly receives)
+Scenario: 2 Boxes with a network connection between them adding an average ping of ~ 70 microseconds 
 
-- c5n.xlarge boxes, same availability zone, ping rtt min/avg/max/mdev = 0.059/0.068/0.273/0.013 ms
+- Instance: c5n.xlarge boxes
+
+- same availability zone, ping rtt min/avg/max/mdev = 0.059/0.068/0.273/0.013 ms
 
 - Ubuntu 20.04.1 LTS, Java OpenJDK Runtime Environment (build 11.0.9+11-Ubuntu-0ubuntu1.20.04)
 
-- (A) 500k msg/s send -> (B) 500k msg/s received -> (B) 500 msg/s send -> (A) 500 msg/s received
+#### Medium rate, 60 000 msg/s over TCP
 
-Command run on box ip-172-31-35-37:
+``` bash
+# Command run on box ip-172-31-35-37:
+trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
 
+# Command run on box ip-172-31-43-169:
+trcheck-shadow-0.8.0/bin/trcheck benchmark client -h 172.31.35.37 -p 9998     --warm-up-time=30 --run-time=200 --send-rate=60000 --respond-rate=1000 --extra-data-length=0
 ```
-trcheck-shadow-0.8.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
-```
-
-Command run on box ip-172-31-43-169:
-
-```
-trcheck-shadow-0.8.0-SNAPSHOT/bin/trcheck benchmark client -h 172.31.35.37 -p 9998 --warm-up-time=30 --run-time=30 --send-rate=500000 --respond-rate=1000 --extra-data-length=140
-```
-
-First run
 
 ```
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |            41 |             82 |
-99th percentile        |            78 |            156 |
-99.9th percentile      |            97 |            193 |
-99.99th percentile     |           111 |            222 |
-99.999th percentile    |           111 |            222 |
-worst                  |           111 |            222 |
+mean                   |            34 |             67 |
+99th percentile        |            48 |             95 |
+99.9th percentile      |            55 |            109 |
+99.99th percentile     |           134 |            267 |
+99.999th percentile    |           136 |            271 |
+worst                  |           136 |            271 |
+
+Based on 12000 measurements.
+It took 199975 ms between the first measured message sent and the last received
+Sent total (including warm up) 13799004 messages of average size (TCP headers excluded) 24 bytes
+Sent total (including warm up) 331176096 bytes with a throughput of 11.521 Mbps
 ```
 
-Second run
+#### High rate, 1 million msg/s over TCP
+
+- 1 million msg/s, load skewed 1/10000 (one box mostly sends, another mostly receives)
+
+- (A) 1M msg/s send -> (B) 1M msg/s received -> (B) 100 msg/s send -> (A) 100 msg/s received
+
+```bash
+# Command run on box ip-172-31-35-37:
+trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+
+# Command run on box ip-172-31-43-169:
+trcheck-shadow-0.8.0/bin/trcheck benchmark client -h 172.31.35.37 -p 9998 \
+    --warm-up-time=30 --run-time=200 --send-rate=1000000 --respond-rate=10000 --extra-data-length=140
 ```
 
-Results:
+```
+Results
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |            41 |             82 |
-99th percentile        |            74 |            148 |
-99.9th percentile      |            93 |            185 |
-99.99th percentile     |           100 |            199 |
-99.999th percentile    |           102 |            203 |
-worst                  |           102 |            203 |
+mean                   |            74 |            147 |
+99th percentile        |           119 |            238 |
+99.9th percentile      |           134 |            268 |
+99.99th percentile     |           182 |            364 |
+99.999th percentile    |           492 |            984 |
+worst                  |           492 |            984 |
+
+Based on 20000 measurements.
+It took 199990 ms between the first measured message sent and the last received
+Sent total (including warm up) 229990177 messages of average size (TCP headers excluded) 164 bytes
+Sent total (including warm up) 37718389028 bytes with a throughput of 1312.007 Mbps
 ```
-
-Third run
-```
-Results:
----------------------------------------------------------
-latency (microseconds) |     ~ one way |     round trip |
-mean                   |            40 |             79 |
-99th percentile        |            68 |            136 |
-99.9th percentile      |            83 |            166 |
-99.99th percentile     |            92 |            183 |
-99.999th percentile    |            96 |            191 |
-worst                  |            96 |            191 |
-```
-
-Each run based on 15000 measurements.
-It took 29998 ms between the first measured message sent and the last received
-Sent total (including warm up) 29999028 messages of average size (TCP headers excluded) 164 bytes
-Sent total (including warm up) 4919840264 bytes with a throughput of 656.022 Mbps
-
-### Summary
-
-- Average overhead of the library (vs ICMP ping) is between 6 and 7 microseconds one way.
-
-- The latency is stable when the connection has warmed up (enough time to calculate TCP window size etc.)
 
 ## Usage
 
@@ -258,8 +294,8 @@ The remaining concerns, such as running the app are kept separate and can be com
 
 ## Maintenance
 
-To re-generate sbe codecs
+To re-generate sbe codecs and build the project
 
 ```
-./gradlew :asynctcp:sbeGenerateJavaCodecs :usecases:sbeGenerateJavaCodecs
+./gradlew :asynctcp:sbeGenerateJavaCodecs && make
 ```
