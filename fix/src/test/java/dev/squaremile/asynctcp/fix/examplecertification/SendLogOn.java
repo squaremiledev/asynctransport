@@ -3,7 +3,6 @@ package dev.squaremile.asynctcp.fix.examplecertification;
 import org.agrona.AsciiSequenceView;
 
 
-import dev.squaremile.asynctcp.fix.examplecertification.usecases.FixUtils;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
@@ -13,6 +12,7 @@ import dev.squaremile.asynctcp.api.transport.events.DataSent;
 import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 import dev.squaremile.asynctcp.api.transport.values.ConnectionId;
 import dev.squaremile.asynctcp.api.transport.values.ConnectionIdValue;
+import dev.squaremile.asynctcp.fix.examplecertification.usecases.FixUtils;
 
 public class SendLogOn implements ConnectionApplication
 {
@@ -90,8 +90,8 @@ public class SendLogOn implements ConnectionApplication
             return;
         }
         SendMessage sendMessage = transport.command(SendMessage.class);
-        sendMessage.prepare().putBytes(sendMessage.offset(), logonMessage);
-        sendMessage.commit(logonMessage.length);
+        sendMessage.prepareToWrite().putBytes(sendMessage.writeOffset(), logonMessage);
+        sendMessage.commitWrite(logonMessage.length);
         transport.handle(sendMessage);
         messagesSent++;
     }

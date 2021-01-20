@@ -30,18 +30,18 @@ class EchoConnectionApplication implements ConnectionApplication
         if (event instanceof MessageReceived)
         {
             MessageReceived messageReceived = (MessageReceived)event;
-            SendMessage message = connectionTransport.command(SendMessage.class);
+            SendMessage sendMessage = connectionTransport.command(SendMessage.class);
             boolean anythingToSend = probeClient.onMessage(
                     messageReceived.buffer(),
                     messageReceived.offset(),
-                    message.prepare(),
-                    message.offset(),
+                    sendMessage.prepareToWrite(),
+                    sendMessage.writeOffset(),
                     ALL_METADATA_FIELDS_TOTAL_LENGTH
             );
             if (anythingToSend)
             {
-                message.commit(ALL_METADATA_FIELDS_TOTAL_LENGTH);
-                connectionTransport.handle(message);
+                sendMessage.commitWrite(ALL_METADATA_FIELDS_TOTAL_LENGTH);
+                connectionTransport.handle(sendMessage);
             }
         }
     }

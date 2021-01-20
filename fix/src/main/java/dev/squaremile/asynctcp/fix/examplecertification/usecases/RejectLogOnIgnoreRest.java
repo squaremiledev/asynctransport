@@ -3,10 +3,10 @@ package dev.squaremile.asynctcp.fix.examplecertification.usecases;
 import org.agrona.AsciiSequenceView;
 
 
-import dev.squaremile.asynctcp.fix.FixHandler;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
 import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
 import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
+import dev.squaremile.asynctcp.fix.FixHandler;
 
 import static dev.squaremile.asynctcp.fix.examplecertification.usecases.FixUtils.asciiFixBody;
 
@@ -27,8 +27,8 @@ public class RejectLogOnIgnoreRest implements FixHandler
             if (FixUtils.isLogon(content, i))
             {
                 final SendMessage sendMessage = transport.command(SendMessage.class);
-                sendMessage.prepare().putBytes(sendMessage.offset(), logoutMessage);
-                sendMessage.commit(logoutMessage.length);
+                sendMessage.prepareToWrite().putBytes(sendMessage.writeOffset(), logoutMessage);
+                sendMessage.commitWrite(logoutMessage.length);
                 transport.handle(sendMessage);
                 break;
             }

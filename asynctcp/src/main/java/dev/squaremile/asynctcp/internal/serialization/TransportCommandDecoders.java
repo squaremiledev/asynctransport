@@ -184,8 +184,8 @@ public class TransportCommandDecoders
                     final int srcDataLength = (int)decoder.data().length();
                     final DirectBuffer srcBuffer = decoder.data().buffer();
                     SendMessage result = transport.command(decoder.connectionId(), SendMessage.class);
-                    result.buffer().putBytes(result.offset(), srcBuffer, srcDataOffset, srcDataLength);
-                    result.setLength(srcDataLength);
+                    result.buffer().putBytes(result.writeOffset(), srcBuffer, srcDataOffset, srcDataLength);
+                    result.setTotalUnsentLength(srcDataLength);
                     this.decodedLength = headerDecoder.encodedLength() + decoder.encodedLength() + srcDataLength;
                     return result;
                 }

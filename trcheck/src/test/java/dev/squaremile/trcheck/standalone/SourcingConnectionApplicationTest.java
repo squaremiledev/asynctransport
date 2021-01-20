@@ -81,7 +81,7 @@ public class SourcingConnectionApplicationTest
     @Disabled
     void shouldExchangeMessagesAtHigherRate() throws InterruptedException
     {
-        exchangeAtHigherRate(false, 1_800_000, 2000);
+        exchangeAtHigherRate(false, 2_100_000, 2000);
     }
 
     @Test
