@@ -43,7 +43,7 @@ Maven
 <dependency>
 	<groupId>dev.squaremile</groupId>
 	<artifactId>asynctcp</artifactId>
-	<version>0.8.0</version>
+	<version>0.9.0-SNAPSHOT</version>
 	<type>pom</type>
 </dependency>
 ```
@@ -51,7 +51,7 @@ Maven
 Gradle
 
 ```
-implementation 'dev.squaremile:asynctcp:0.8.0'
+implementation 'dev.squaremile:asynctcp:0.9.0-SNAPSHOT'
 ```
 
 ### See some examples
@@ -107,10 +107,10 @@ Scenario: A single box exchanges small messages over localhost. Used to measure 
 
 ``` bash
 # First command run:
-./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
 
 # Second command run:
-./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 60000 -r 1000 -x 0
+./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 60000 -r 1000 -x 0
 ```
 
 ```
@@ -134,10 +134,10 @@ Sent total (including warm up) 71976024 bytes with a throughput of 11.521 Mbps
 
 ``` bash
 # First command run:
-./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
 
 # Second command run:
-./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 2000000 -r 4000 -x 0
+./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 2000000 -r 4000 -x 0
 ```
 
 ```
@@ -171,10 +171,10 @@ Scenario: 2 Boxes with a network connection between them adding an average ping 
 
 ``` bash
 # Command run on box ip-172-31-35-37:
-trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
 
 # Command run on box ip-172-31-43-169:
-trcheck-shadow-0.8.0/bin/trcheck benchmark client -h 172.31.35.37 -p 9998     --warm-up-time=30 --run-time=200 --send-rate=60000 --respond-rate=1000 --extra-data-length=0
+trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h 172.31.35.37 -p 9998     --warm-up-time=30 --run-time=200 --send-rate=60000 --respond-rate=1000 --extra-data-length=0
 ```
 
 ```
@@ -202,10 +202,10 @@ Sent total (including warm up) 331176096 bytes with a throughput of 11.521 Mbps
 
 ```bash
 # Command run on box ip-172-31-35-37:
-trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
 
 # Command run on box ip-172-31-43-169:
-trcheck-shadow-0.8.0/bin/trcheck benchmark client -h 172.31.35.37 -p 9998 \
+trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h 172.31.35.37 -p 9998 \
     --warm-up-time=30 --run-time=200 --send-rate=1000000 --respond-rate=10000 --extra-data-length=140
 ```
 

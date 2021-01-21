@@ -22,6 +22,7 @@ public class SendMessage implements ConnectionUserCommand
     private int writeOffset;
     private int totalUnsentLength;
     private long commandId;
+    private final boolean isExclusivePublication;
 
     public SendMessage(final ConnectionId connectionId, final int capacity, final Delineation delineation)
     {
@@ -29,6 +30,17 @@ public class SendMessage implements ConnectionUserCommand
     }
 
     public SendMessage(final int port, final long connectionId, final int capacity, final Delineation delineation)
+    {
+        this(port, connectionId, capacity, delineation, false);
+    }
+
+    private SendMessage(
+            final int port,
+            final long connectionId,
+            final int capacity,
+            final Delineation delineation,
+            final boolean isExclusivePublication
+    )
     {
         this.capacity = capacity;
         this.connectionId = new ConnectionIdValue(port, connectionId);
@@ -38,6 +50,7 @@ public class SendMessage implements ConnectionUserCommand
         this.commandId = CommandId.NO_COMMAND_ID;
         this.writeOffset = 0;
         this.delineation = delineation;
+        this.isExclusivePublication = isExclusivePublication;
     }
 
     @Override
@@ -103,7 +116,12 @@ public class SendMessage implements ConnectionUserCommand
     @Override
     public SendMessage copy()
     {
-        SendMessage copy = new SendMessage(connectionId.port(), connectionId.connectionId(), capacity, delineation);
+        return copy(false);
+    }
+
+    public SendMessage copy(final boolean copyForExclusivePublication)
+    {
+        SendMessage copy = new SendMessage(connectionId.port(), connectionId.connectionId(), capacity, delineation, copyForExclusivePublication);
         buffer.getBytes(0, copy.buffer(), 0, totalUnsentLength);
         copy.set(writeOffset, totalUnsentLength, commandId);
         return copy;
@@ -128,6 +146,11 @@ public class SendMessage implements ConnectionUserCommand
         this.totalUnsentLength = totalUnsentLength;
     }
 
+    public boolean isExclusivePublication()
+    {
+        return isExclusivePublication;
+    }
+
     @Override
     public String toString()
     {
@@ -138,6 +161,7 @@ public class SendMessage implements ConnectionUserCommand
                ", writeOffset=" + writeOffset +
                ", totalUnsentLength=" + totalUnsentLength +
                ", commandId=" + commandId +
+               ", isExclusivePublication=" + isExclusivePublication +
                '}';
     }
 }

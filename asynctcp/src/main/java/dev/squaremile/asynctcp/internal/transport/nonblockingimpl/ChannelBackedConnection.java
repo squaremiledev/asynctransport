@@ -36,8 +36,9 @@ public class ChannelBackedConnection implements AutoCloseable, Connection, OnDut
     private final SingleConnectionEvents singleConnectionEvents;
     private final ConnectionCommands connectionCommands;
     private final ConnectionConfiguration configuration;
-    private final BufferedOutgoingStream outgoingStream;
+    private final BufferedOutgoingStream bufferedOutgoingStream;
     private final int port;
+    private final OutgoingStream outgoingStream;
     private long totalBytesReceived;
     private ConnectionState connectionState;
 
@@ -54,12 +55,13 @@ public class ChannelBackedConnection implements AutoCloseable, Connection, OnDut
         this.delineation = delineation;
         this.singleConnectionEvents = singleConnectionEvents;
         this.connectionCommands = new ConnectionCommands(configuration.connectionId, configuration.outboundPduLimit, delineation);
-        this.outgoingStream = new BufferedOutgoingStream(
-                new OutgoingStream(channel, this.singleConnectionEvents, configuration.sendBufferSize),
+        this.outgoingStream = new OutgoingStream(channel, this.singleConnectionEvents, configuration.sendBufferSize);
+        this.bufferedOutgoingStream = new BufferedOutgoingStream(
+                outgoingStream,
                 relativeClock,
                 configuration.sendBufferSize
         );
-        this.connectionState = outgoingStream.state();
+        this.connectionState = bufferedOutgoingStream.state();
         this.port = configuration.connectionId.port();
     }
 
@@ -161,8 +163,8 @@ public class ChannelBackedConnection implements AutoCloseable, Connection, OnDut
 
     private void handle(final SendMessage command)
     {
-        outgoingStream.sendData(command.data(), command.commandId());
-        connectionState = outgoingStream.state();
+        bufferedOutgoingStream.sendMessage(command);
+        connectionState = bufferedOutgoingStream.state();
     }
 
     private void handle(final ReadData command)
@@ -230,6 +232,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection, OnDut
                ", connectionCommands=" + connectionCommands +
                ", configuration=" + configuration +
                ", outgoingStream=" + outgoingStream +
+               ", bufferedOutgoingStream=" + bufferedOutgoingStream +
                ", totalBytesReceived=" + totalBytesReceived +
                ", connectionState=" + connectionState +
                ", port=" + port +
@@ -239,6 +242,6 @@ public class ChannelBackedConnection implements AutoCloseable, Connection, OnDut
     @Override
     public void work()
     {
-        outgoingStream.work();
+        bufferedOutgoingStream.work();
     }
 }

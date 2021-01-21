@@ -30,6 +30,7 @@ class SourcingConnectionApplication implements ConnectionApplication
     private final ConnectionTransport connectionTransport;
     private final MutableBoolean isDone;
     private final byte[] extraData;
+    private final SendMessage sendMessage;
 
     public SourcingConnectionApplication(
             final Probe probe,
@@ -42,6 +43,7 @@ class SourcingConnectionApplication implements ConnectionApplication
         this.connectionTransport = connectionTransport;
         this.isDone = isDone;
         this.extraData = generateExtraData(extraDataLength);
+        this.sendMessage = connectionTransport.command(SendMessage.class).copy(true);
     }
 
     public static Measurements runPing(final TcpPingConfiguration configuration)
@@ -114,14 +116,13 @@ class SourcingConnectionApplication implements ConnectionApplication
     @Override
     public void work()
     {
-        final SendMessage message = connectionTransport.command(SendMessage.class);
-        final MutableDirectBuffer outboundBuffer = message.prepareToWrite();
-        boolean anythingToSend = probe.onTime(nanoTime(), outboundBuffer, message.writeOffset(), ALL_METADATA_FIELDS_TOTAL_LENGTH);
+        final MutableDirectBuffer outboundBuffer = sendMessage.prepareToWrite();
+        boolean anythingToSend = probe.onTime(nanoTime(), outboundBuffer, sendMessage.writeOffset(), ALL_METADATA_FIELDS_TOTAL_LENGTH);
         if (anythingToSend)
         {
-            outboundBuffer.putBytes(message.writeOffset() + ALL_METADATA_FIELDS_TOTAL_LENGTH, extraData);
-            message.commitWrite(ALL_METADATA_FIELDS_TOTAL_LENGTH + extraData.length);
-            connectionTransport.handle(message);
+            outboundBuffer.putBytes(sendMessage.writeOffset() + ALL_METADATA_FIELDS_TOTAL_LENGTH, extraData);
+            sendMessage.commitWrite(ALL_METADATA_FIELDS_TOTAL_LENGTH + extraData.length);
+            connectionTransport.handle(sendMessage);
         }
     }
 
