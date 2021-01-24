@@ -1,4 +1,4 @@
-package dev.squaremile.trcheck.probe.latencies;
+package dev.squaremile.asynctcp.support.transport.latencies;
 
 import java.util.concurrent.TimeUnit;
 

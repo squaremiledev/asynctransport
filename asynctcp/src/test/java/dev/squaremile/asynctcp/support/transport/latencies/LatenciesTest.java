@@ -1,4 +1,4 @@
-package dev.squaremile.trcheck.probe.latencies;
+package dev.squaremile.asynctcp.support.transport.latencies;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +14,49 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class LatenciesTest
 {
+    private static Map<String, Long> benchmark(final boolean measureLatencies, final LongSupplier timeNsSupplier)
+    {
+        Latencies latencies = new Latencies(2, timeNsSupplier);
+        long startTime = -1;
+        long counter = -1;
+        long max = -1;
+        for (int k = 0; k < 100; k++)
+        {
+            boolean warmUp = k < 40;
+            for (int i = 0; i < 100_000; i++)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    if (!warmUp)
+                    {
+                        if (startTime == -1)
+                        {
+                            startTime = System.nanoTime();
+                        }
+                        counter++;
+                    }
+                    long before = timeNsSupplier.getAsLong();
+                    long after = timeNsSupplier.getAsLong();
+                    if (measureLatencies)
+                    {
+                        latencies.iterationStart(warmUp).measure(1, before).measure(2, after).iterationDone();
+                    }
+                    if (!warmUp)
+                    {
+                        if (max < after - before)
+                        {
+                            max = after - before;
+                        }
+                    }
+                }
+            }
+        }
+        Map<String, Long> result = new HashMap<>();
+        result.put("maxNs", max);
+        result.put("avgNs", (System.nanoTime() - startTime) / counter);
+        return result;
+    }
+
     @Test
     void shouldMeasureUsingProvidedTimeSource()
     {
@@ -164,48 +207,5 @@ class LatenciesTest
         assertThat(TimeUnit.NANOSECONDS.toMicros(withMeasurements.get("maxNs"))).isLessThan(300);
         long avgOverheadMicroseconds = TimeUnit.NANOSECONDS.toMicros(withMeasurements.get("avgNs") - withoutMeasurements.get("avgNs"));
         assertThat(avgOverheadMicroseconds).isLessThanOrEqualTo(1);
-    }
-
-    private static Map<String, Long> benchmark(final boolean measureLatencies, final LongSupplier timeNsSupplier)
-    {
-        Latencies latencies = new Latencies(2, timeNsSupplier);
-        long startTime = -1;
-        long counter = -1;
-        long max = -1;
-        for (int k = 0; k < 100; k++)
-        {
-            boolean warmUp = k < 40;
-            for (int i = 0; i < 100_000; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    if (!warmUp)
-                    {
-                        if (startTime == -1)
-                        {
-                            startTime = System.nanoTime();
-                        }
-                        counter++;
-                    }
-                    long before = timeNsSupplier.getAsLong();
-                    long after = timeNsSupplier.getAsLong();
-                    if (measureLatencies)
-                    {
-                        latencies.iterationStart(warmUp).measure(1, before).measure(2, after).iterationDone();
-                    }
-                    if (!warmUp)
-                    {
-                        if (max < after - before)
-                        {
-                            max = after - before;
-                        }
-                    }
-                }
-            }
-        }
-        Map<String, Long> result = new HashMap<>();
-        result.put("maxNs", max);
-        result.put("avgNs", (System.nanoTime() - startTime) / counter);
-        return result;
     }
 }
