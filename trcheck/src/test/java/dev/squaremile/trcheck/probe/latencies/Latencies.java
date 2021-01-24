@@ -1,12 +1,21 @@
 package dev.squaremile.trcheck.probe.latencies;
 
+import java.util.Map;
+import java.util.function.IntFunction;
 import java.util.function.LongSupplier;
+import java.util.stream.Collectors;
+
+import org.agrona.collections.Int2ObjectHashMap;
+import org.agrona.collections.MutableLong;
 
 public class Latencies
 {
+    private static final IntFunction<MutableLong> NEW_MEASUREMENT_COUNT = integer -> new MutableLong(0);
+
     private final Measurement[] measurements;
     private final Latency currentMaxLatency = new Latency();
     private final LongSupplier timeSource;
+    private final Int2ObjectHashMap<MutableLong> measurementsCount = new Int2ObjectHashMap<>();
     private long currentNanoTimeMark = 0;
     private int nextMeasurementIndex = 0;
     private long iteration = 0;
@@ -49,6 +58,7 @@ public class Latencies
 
     public Latencies measure(final int measurementPoint, final long nanoTime)
     {
+        measurementsCount.computeIfAbsent(measurementPoint, NEW_MEASUREMENT_COUNT).increment();
         verifyNotGoingBackInTime(nanoTime);
         verifyIterationActive();
         measurements[nextMeasurementIndex++].set(measurementPoint, nanoTime);
@@ -118,4 +128,11 @@ public class Latencies
         return currentMaxLatency.copy();
     }
 
+    public Map<Integer, Long> measurementsCount()
+    {
+        return measurementsCount.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().get()
+        ));
+    }
 }

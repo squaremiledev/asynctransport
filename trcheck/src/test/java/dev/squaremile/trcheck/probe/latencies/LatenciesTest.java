@@ -52,6 +52,20 @@ class LatenciesTest
     }
 
     @Test
+    void shouldCountMeasurementsAcrossMultipleIterations()
+    {
+        Latencies latencies = new Latencies(4)
+                .iterationStart().measure(1, 50).measure(2, 53).measure(3, 60).iterationDone()
+                .iterationStart().measure(3, 60).measure(4, 69).measure(5, 70).measure(9, 71).iterationDone()
+                .iterationStart().measure(1, 80).measure(7, 82).measure(14, 90).iterationDone();
+
+        assertThat(latencies.measurementsCount()).hasSize(8);
+        assertThat(latencies.measurementsCount().get(1)).isEqualTo(2);
+        assertThat(latencies.measurementsCount().get(4)).isEqualTo(1);
+        assertThat(latencies.measurementsCount().get(13)).isNull();
+    }
+
+    @Test
     void shouldNotTakeIntoAccountWarUpIterations()
     {
         Latencies latencies = new Latencies(4)
