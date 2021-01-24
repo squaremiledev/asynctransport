@@ -83,4 +83,16 @@ public class TestableTransport<E extends TransportEventsListener> implements Tra
         work();
         delegate.handle(command);
     }
+
+    @Override
+    public void onStart()
+    {
+        delegate.onStart();
+    }
+
+    @Override
+    public void onStop()
+    {
+        delegate.onStop();
+    }
 }

@@ -52,4 +52,16 @@ public class TransportCommandSpy extends Spy<TransportCommand> implements Transp
     {
 
     }
+
+    @Override
+    public void onStart()
+    {
+        transport.onStart();
+    }
+
+    @Override
+    public void onStop()
+    {
+        transport.onStop();
+    }
 }

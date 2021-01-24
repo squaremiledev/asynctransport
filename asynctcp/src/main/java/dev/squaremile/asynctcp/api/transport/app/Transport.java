@@ -1,6 +1,6 @@
 package dev.squaremile.asynctcp.api.transport.app;
 
-public interface Transport extends TransportCommandHandler, OnDuty, AutoCloseable
+public interface Transport extends TransportCommandHandler, ApplicationLifecycle, OnDuty, AutoCloseable
 {
     <C extends TransportUserCommand> C command(Class<C> commandType);
 
@@ -8,4 +8,16 @@ public interface Transport extends TransportCommandHandler, OnDuty, AutoCloseabl
 
     @Override
     void close();
+
+    @Override
+    default void onStart()
+    {
+
+    }
+
+    @Override
+    default void onStop()
+    {
+
+    }
 }

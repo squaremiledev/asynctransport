@@ -332,4 +332,16 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
                "role='" + role + '\'' +
                '}';
     }
+
+    @Override
+    public void onStart()
+    {
+        connections.onStart();
+    }
+
+    @Override
+    public void onStop()
+    {
+        connections.onStop();
+    }
 }

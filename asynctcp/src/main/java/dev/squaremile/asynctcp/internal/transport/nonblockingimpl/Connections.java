@@ -6,16 +6,19 @@ import java.util.function.Consumer;
 import org.agrona.collections.Long2ObjectHashMap;
 
 
+import dev.squaremile.asynctcp.api.transport.app.ApplicationLifecycle;
 import dev.squaremile.asynctcp.api.transport.app.OnDuty;
 import dev.squaremile.asynctcp.internal.transport.domain.StatusEventListener;
 import dev.squaremile.asynctcp.internal.transport.domain.connection.Connection;
 import dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionRepository;
 
-public class Connections implements AutoCloseable, OnDuty
+public class Connections implements ApplicationLifecycle, AutoCloseable, OnDuty
 {
     public final Long2ObjectHashMap<SelectionKey> selectionKeyByConnectionId;
     public final ConnectionRepository connectionRepository;
-    private final Consumer<Connection> connectionWork = OnDuty::work;
+    private final Consumer<Connection> connectionWork = Connection::work;
+    private final Consumer<Connection> connectionOnStart = Connection::onStart;
+    private final Consumer<Connection> connectionOnStop = Connection::onStop;
 
     public Connections(final StatusEventListener statusEventListener)
     {
@@ -62,5 +65,17 @@ public class Connections implements AutoCloseable, OnDuty
     public void work()
     {
         connectionRepository.forEach(connectionWork);
+    }
+
+    @Override
+    public void onStart()
+    {
+        connectionRepository.forEach(connectionOnStart);
+    }
+
+    @Override
+    public void onStop()
+    {
+        connectionRepository.forEach(connectionOnStop);
     }
 }

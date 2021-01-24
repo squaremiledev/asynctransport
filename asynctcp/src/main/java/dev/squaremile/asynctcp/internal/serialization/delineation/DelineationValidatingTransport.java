@@ -69,4 +69,16 @@ public class DelineationValidatingTransport implements Transport
     {
         delegate.work();
     }
+
+    @Override
+    public void onStart()
+    {
+        delegate.onStart();
+    }
+
+    @Override
+    public void onStop()
+    {
+        delegate.onStop();
+    }
 }

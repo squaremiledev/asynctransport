@@ -25,6 +25,7 @@ public class TransportPoweredApplication implements TransportApplicationOnDuty
     @Override
     public void onStart()
     {
+        transport.onStart();
         app.onStart();
         transport.work();
     }
@@ -33,6 +34,7 @@ public class TransportPoweredApplication implements TransportApplicationOnDuty
     public void onStop()
     {
         app.onStop();
+        transport.onStop();
         transport.work();
     }
 

@@ -109,4 +109,16 @@ public class ConnectionImpl implements AutoCloseable, Connection
     {
         delegate.work();
     }
+
+    @Override
+    public void onStart()
+    {
+        delegate.onStart();
+    }
+
+    @Override
+    public void onStop()
+    {
+        delegate.onStop();
+    }
 }

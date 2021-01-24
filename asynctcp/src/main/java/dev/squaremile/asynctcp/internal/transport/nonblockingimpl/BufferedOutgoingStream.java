@@ -3,13 +3,14 @@ package dev.squaremile.asynctcp.internal.transport.nonblockingimpl;
 import java.nio.ByteBuffer;
 
 
+import dev.squaremile.asynctcp.api.transport.app.ApplicationLifecycle;
 import dev.squaremile.asynctcp.api.transport.app.OnDuty;
 import dev.squaremile.asynctcp.api.transport.values.CommandId;
 import dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionState;
 
 import static dev.squaremile.asynctcp.internal.transport.nonblockingimpl.SocketProtection.socketCoolDownNs;
 
-public class BufferedOutgoingStream implements OnDuty
+public class BufferedOutgoingStream implements ApplicationLifecycle, OnDuty
 {
     private final String role;
     private final ByteBuffer buffer;
@@ -87,5 +88,17 @@ public class BufferedOutgoingStream implements OnDuty
         nextSendingSlot = nowNs + socketCoolDownNs(socketProtectionSendDataRequestCountResetNs, nowNs, socketProtectionSendDataRequestCount);
         socketProtectionSendDataRequestCount = 0;
         socketProtectionSendDataRequestCountResetNs = nowNs;
+    }
+
+    @Override
+    public void onStart()
+    {
+
+    }
+
+    @Override
+    public void onStop()
+    {
+
     }
 }

@@ -243,4 +243,16 @@ public class ChannelBackedConnection implements AutoCloseable, Connection, OnDut
     {
         outgoingStream.work();
     }
+
+    @Override
+    public void onStart()
+    {
+        outgoingStream.onStart();
+    }
+
+    @Override
+    public void onStop()
+    {
+        outgoingStream.onStop();
+    }
 }
