@@ -20,6 +20,7 @@ import dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionCo
 
 public class Server implements AutoCloseable
 {
+    private final String role;
     private final int port;
     private final long commandIdThatTriggeredListening;
     private final ConnectionIdSource connectionIdSource;
@@ -28,6 +29,7 @@ public class Server implements AutoCloseable
     private final ServerSocketChannel serverSocketChannel;
 
     Server(
+            final String role,
             final int port,
             final long commandIdThatTriggeredListening,
             final ConnectionIdSource connectionIdSource,
@@ -35,6 +37,7 @@ public class Server implements AutoCloseable
             final CommandFactory commandFactory
     ) throws IOException
     {
+        this.role = role;
         this.port = port;
         this.commandIdThatTriggeredListening = commandIdThatTriggeredListening;
         this.connectionIdSource = connectionIdSource;
@@ -86,7 +89,7 @@ public class Server implements AutoCloseable
                 acceptedSocketChannel.socket().getSendBufferSize() * 16,
                 acceptedSocketChannel.socket().getReceiveBufferSize()
         );
-        return new ConnectionImpl(configuration, new RelativeClock.SystemRelativeClock(), new SocketBackedChannel(acceptedSocketChannel), delineation, eventListener::onEvent);
+        return new ConnectionImpl(role, configuration, new RelativeClock.SystemRelativeClock(), new SocketBackedChannel(acceptedSocketChannel), delineation, eventListener::onEvent);
     }
 
     SocketChannel acceptChannel() throws IOException

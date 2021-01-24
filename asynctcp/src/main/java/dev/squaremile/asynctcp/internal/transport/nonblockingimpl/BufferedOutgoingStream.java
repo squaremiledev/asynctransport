@@ -11,6 +11,7 @@ import static dev.squaremile.asynctcp.internal.transport.nonblockingimpl.SocketP
 
 public class BufferedOutgoingStream implements OnDuty
 {
+    private final String role;
     private final ByteBuffer buffer;
     private final OutgoingStream outgoingStream;
     private final RelativeClock relativeClock;
@@ -22,8 +23,9 @@ public class BufferedOutgoingStream implements OnDuty
     long socketProtectionSendDataRequestCount = 0;
     long socketProtectionSendDataRequestCountResetNs = 0;
 
-    BufferedOutgoingStream(final OutgoingStream outgoingStream, final RelativeClock relativeClock, final int bufferSize)
+    BufferedOutgoingStream(final String role, final OutgoingStream outgoingStream, final RelativeClock relativeClock, final int bufferSize)
     {
+        this.role = role;
         this.buffer = ByteBuffer.allocate(bufferSize);
         this.outgoingStream = outgoingStream;
         this.relativeClock = relativeClock;
@@ -53,7 +55,15 @@ public class BufferedOutgoingStream implements OnDuty
     public String toString()
     {
         return "BufferedOutgoingStream{" +
-               "outgoingStream=" + outgoingStream +
+               "role='" + role + '\'' +
+               ", buffer=" + buffer +
+               ", outgoingStream=" + outgoingStream +
+               ", relativeClock=" + relativeClock +
+               ", nextSendingSlot=" + nextSendingSlot +
+               ", requestedToSendData=" + requestedToSendData +
+               ", lastCommandId=" + lastCommandId +
+               ", socketProtectionSendDataRequestCount=" + socketProtectionSendDataRequestCount +
+               ", socketProtectionSendDataRequestCountResetNs=" + socketProtectionSendDataRequestCountResetNs +
                '}';
     }
 

@@ -26,6 +26,7 @@ public class Servers implements AutoCloseable
     }
 
     public void start(
+            final String role,
             final int port,
             final long commandIdThatTriggeredListening,
             final ConnectionIdSource connectionIdSource,
@@ -33,7 +34,7 @@ public class Servers implements AutoCloseable
             final CommandFactory commandFactory
     ) throws IOException
     {
-        final Server server = new Server(port, commandIdThatTriggeredListening, connectionIdSource, eventListener, commandFactory);
+        final Server server = new Server(role, port, commandIdThatTriggeredListening, connectionIdSource, eventListener, commandFactory);
         server.listen();
         listeningSocketsByPort.put(server.port(), server);
     }

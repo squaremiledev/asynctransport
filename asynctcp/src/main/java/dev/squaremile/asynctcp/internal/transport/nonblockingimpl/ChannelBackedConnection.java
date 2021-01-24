@@ -42,6 +42,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection, OnDut
     private ConnectionState connectionState;
 
     ChannelBackedConnection(
+            final String role,
             final ConnectionConfiguration configuration,
             final RelativeClock relativeClock,
             final Channel channel,
@@ -55,6 +56,7 @@ public class ChannelBackedConnection implements AutoCloseable, Connection, OnDut
         this.singleConnectionEvents = singleConnectionEvents;
         this.connectionCommands = new ConnectionCommands(configuration.connectionId, configuration.outboundPduLimit, delineation);
         this.outgoingStream = new BufferedOutgoingStream(
+                role,
                 new OutgoingStream(channel, this.singleConnectionEvents, configuration.sendBufferSize),
                 relativeClock,
                 configuration.sendBufferSize

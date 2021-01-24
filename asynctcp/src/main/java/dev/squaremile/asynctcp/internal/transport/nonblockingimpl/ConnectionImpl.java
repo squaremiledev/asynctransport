@@ -16,6 +16,7 @@ public class ConnectionImpl implements AutoCloseable, Connection
     private final Connection delegate;
 
     ConnectionImpl(
+            final String role,
             final ConnectionConfiguration configuration,
             final RelativeClock relativeClock,
             final Channel channel,
@@ -33,6 +34,7 @@ public class ConnectionImpl implements AutoCloseable, Connection
                         configuration.sendBufferSize
                 ),
                 new ChannelBackedConnection(
+                        role,
                         configuration,
                         relativeClock,
                         channel,

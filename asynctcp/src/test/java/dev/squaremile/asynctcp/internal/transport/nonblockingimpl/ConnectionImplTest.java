@@ -359,12 +359,12 @@ class ConnectionImplTest
 
     private ConnectionImpl newConnection(final FakeChannel channel)
     {
-        return new ConnectionImpl(config(), new MonotonicRelativeClock(ofMillis(1)), channel, delineation(), events);
+        return new ConnectionImpl("role", config(), new MonotonicRelativeClock(ofMillis(1)), channel, delineation(), events);
     }
 
     private ConnectionImpl newConnection(final ConnectionConfiguration config)
     {
-        return new ConnectionImpl(config, new MonotonicRelativeClock(ofMillis(1)), new FakeChannel(), delineation(), events);
+        return new ConnectionImpl("role", config, new MonotonicRelativeClock(ofMillis(1)), new FakeChannel(), delineation(), events);
     }
 
     private static class MonotonicRelativeClock implements RelativeClock

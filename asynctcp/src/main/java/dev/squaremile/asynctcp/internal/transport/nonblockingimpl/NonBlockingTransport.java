@@ -147,6 +147,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
                             registerConnection(
                                     socketChannel,
                                     new ConnectionImpl(
+                                            role,
                                             configuration,
                                             new RelativeClock.SystemRelativeClock(),
                                             new SocketBackedChannel(socketChannel),
@@ -282,7 +283,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
         }
         try
         {
-            servers.start(command.port(), command.commandId(), connectionIdSource, eventListener, commandFactory);
+            servers.start(role, command.port(), command.commandId(), connectionIdSource, eventListener, commandFactory);
             Server server = servers.serverListeningOn(command.port());
             final ServerSocketChannel serverSocketChannel = server.serverSocketChannel();
             final SelectionKey selectionKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
