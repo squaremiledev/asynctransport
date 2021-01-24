@@ -171,10 +171,10 @@ public class SerializingTransport implements Transport, EventListener
                     .connectionId(command.connectionId())
                     .commandId(command.commandId());
 
-            encoder.data().length(command.totalUnsentLength());
+            encoder.data().length(command.length());
             int dstDataOffset = encoder.data().offset() + encoder.data().encodedLength();
-            encoder.data().buffer().putBytes(dstDataOffset, command.buffer(), 0, command.totalUnsentLength());
-            serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + encoder.encodedLength() + command.totalUnsentLength());
+            encoder.data().buffer().putBytes(dstDataOffset, command.buffer(), 0, command.length());
+            serializedCommandListener.onSerialized(this.buffer, this.offset, headerEncoder.encodedLength() + encoder.encodedLength() + command.length());
         }
         else
         {

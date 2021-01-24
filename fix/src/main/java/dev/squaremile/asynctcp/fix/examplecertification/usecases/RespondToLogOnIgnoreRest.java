@@ -29,8 +29,8 @@ public class RespondToLogOnIgnoreRest implements FixHandler
             if (FixUtils.isLogon(content, i))
             {
                 final SendMessage sendMessage = transport.command(SendMessage.class);
-                sendMessage.prepareToWrite().putBytes(sendMessage.writeOffset(), logonMessage);
-                sendMessage.commitWrite(logonMessage.length);
+                sendMessage.prepare().putBytes(sendMessage.offset(), logonMessage);
+                sendMessage.commit(logonMessage.length);
                 transport.handle(sendMessage);
                 break;
             }

@@ -34,13 +34,13 @@ class EchoConnectionApplication implements ConnectionApplication
             boolean anythingToSend = probeClient.onMessage(
                     messageReceived.buffer(),
                     messageReceived.offset(),
-                    sendMessage.prepareToWrite(),
-                    sendMessage.writeOffset(),
+                    sendMessage.prepare(),
+                    sendMessage.offset(),
                     ALL_METADATA_FIELDS_TOTAL_LENGTH
             );
             if (anythingToSend)
             {
-                sendMessage.commitWrite(ALL_METADATA_FIELDS_TOTAL_LENGTH);
+                sendMessage.commit(ALL_METADATA_FIELDS_TOTAL_LENGTH);
                 connectionTransport.handle(sendMessage);
             }
         }

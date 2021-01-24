@@ -82,7 +82,7 @@ class Fixtures
 
     private static SendMessage set(final SendMessage command, final int index, byte[] src, final int offset, final int length)
     {
-        command.prepareToWrite().putBytes(index, src, offset, length);
-        return command.commitWrite(length);
+        command.prepare().putBytes(index, src, offset, length);
+        return command.commit(length);
     }
 }

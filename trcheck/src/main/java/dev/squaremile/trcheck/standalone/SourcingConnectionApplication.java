@@ -115,12 +115,12 @@ class SourcingConnectionApplication implements ConnectionApplication
     public void work()
     {
         final SendMessage message = connectionTransport.command(SendMessage.class);
-        final MutableDirectBuffer outboundBuffer = message.prepareToWrite();
-        boolean anythingToSend = probe.onTime(nanoTime(), outboundBuffer, message.writeOffset(), ALL_METADATA_FIELDS_TOTAL_LENGTH);
+        final MutableDirectBuffer outboundBuffer = message.prepare();
+        boolean anythingToSend = probe.onTime(nanoTime(), outboundBuffer, message.offset(), ALL_METADATA_FIELDS_TOTAL_LENGTH);
         if (anythingToSend)
         {
-            outboundBuffer.putBytes(message.writeOffset() + ALL_METADATA_FIELDS_TOTAL_LENGTH, extraData);
-            message.commitWrite(ALL_METADATA_FIELDS_TOTAL_LENGTH + extraData.length);
+            outboundBuffer.putBytes(message.offset() + ALL_METADATA_FIELDS_TOTAL_LENGTH, extraData);
+            message.commit(ALL_METADATA_FIELDS_TOTAL_LENGTH + extraData.length);
             connectionTransport.handle(message);
         }
     }

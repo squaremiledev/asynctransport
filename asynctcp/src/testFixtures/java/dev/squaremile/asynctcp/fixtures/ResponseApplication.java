@@ -25,9 +25,9 @@ public class ResponseApplication implements ConnectionApplication
         {
             for (int i = 0; i < messageReceived.length(); i++)
             {
-                outSendMessage.prepareToWrite().putByte(outSendMessage.writeOffset() + i, byteConverter.convert(messageReceived.buffer().getByte(messageReceived.offset() + i)));
+                outSendMessage.prepare().putByte(outSendMessage.offset() + i, byteConverter.convert(messageReceived.buffer().getByte(messageReceived.offset() + i)));
             }
-            outSendMessage.commitWrite(messageReceived.length());
+            outSendMessage.commit(messageReceived.length());
         });
     }
 

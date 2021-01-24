@@ -58,13 +58,13 @@ public class SendMessage implements ConnectionUserCommand
         return connectionId.connectionId();
     }
 
-    public MutableDirectBuffer prepareToWrite()
+    public MutableDirectBuffer prepare()
     {
         this.writeOffset = totalUnsentLength + delineation.padding() + delineation.type().lengthFieldLength;
         return buffer;
     }
 
-    public int writeOffset()
+    public int offset()
     {
         return writeOffset;
     }
@@ -82,7 +82,7 @@ public class SendMessage implements ConnectionUserCommand
         return buffer;
     }
 
-    public int totalUnsentLength()
+    public int length()
     {
         return totalUnsentLength;
     }
@@ -93,11 +93,17 @@ public class SendMessage implements ConnectionUserCommand
         return this;
     }
 
-    public SendMessage commitWrite(final int length)
+    @Override
+    public String toString()
     {
-        this.delineation.type().writeLength(buffer, this.totalUnsentLength + delineation.padding(), length - delineation.extraLength());
-        this.totalUnsentLength += delineation.padding() + delineation.type().lengthFieldLength + length;
-        return this;
+        return "SendMessage{" +
+               "connectionId=" + connectionId +
+               ", delineation=" + delineation +
+               ", capacity=" + capacity +
+               ", writeOffset=" + writeOffset +
+               ", totalUnsentLength=" + totalUnsentLength +
+               ", commandId=" + commandId +
+               '}';
     }
 
     @Override
@@ -107,6 +113,13 @@ public class SendMessage implements ConnectionUserCommand
         buffer.getBytes(0, copy.buffer(), 0, totalUnsentLength);
         copy.set(writeOffset, totalUnsentLength, commandId);
         return copy;
+    }
+
+    public SendMessage commit(final int length)
+    {
+        this.delineation.type().writeLength(buffer, this.totalUnsentLength + delineation.padding(), length - delineation.extraLength());
+        this.totalUnsentLength += delineation.padding() + delineation.type().lengthFieldLength + length;
+        return this;
     }
 
     public ByteBuffer data()
@@ -123,21 +136,8 @@ public class SendMessage implements ConnectionUserCommand
         return this;
     }
 
-    public void setTotalUnsentLength(final int totalUnsentLength)
+    public void setLength(final int totalUnsentLength)
     {
         this.totalUnsentLength = totalUnsentLength;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "SendMessage{" +
-               "connectionId=" + connectionId +
-               ", delineation=" + delineation +
-               ", capacity=" + capacity +
-               ", writeOffset=" + writeOffset +
-               ", totalUnsentLength=" + totalUnsentLength +
-               ", commandId=" + commandId +
-               '}';
     }
 }
