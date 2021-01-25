@@ -51,6 +51,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
     private final TransportCommandHandler commandHandler;
     private final String role;
     private final RelativeClock relativeClock;
+    private final WorkProtection workProtection;
 
     public NonBlockingTransport(final EventListener eventListener, final TransportCommandHandler commandHandler, final EpochClock clock, final String role)
     {
@@ -63,6 +64,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
         this.commandHandler = commandHandler;
         this.pendingConnections = new PendingConnections(clock, eventListener);
         this.connectionIdSource = new ConnectionIdSource();
+        this.workProtection = new WorkProtection(role);
         try
         {
             this.selector = Selector.open();
@@ -77,6 +79,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
 
     private void handle(final ConnectionUserCommand command)
     {
+        workProtection.onHandle();
         Connection connection = connections.get(command.connectionId());
         if (connection == null)
         {
@@ -94,6 +97,12 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
     @Override
     public void work()
     {
+        workProtection.onWork();
+        if (!workProtection.nextWorkAllowedNs(relativeClock.relativeNanoTime()))
+        {
+            return;
+        }
+
         pendingConnections.work();
         try
         {
@@ -197,6 +206,18 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
             throw new IllegalArgumentException("There is no connection " + connectionId);
         }
         return connection.command(commandType);
+    }
+
+    @Override
+    public void onStart()
+    {
+        connections.onStart();
+    }
+
+    @Override
+    public void onStop()
+    {
+        connections.onStop();
     }
 
     @Override
@@ -309,17 +330,5 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
         return "NonBlockingTransport{" +
                "role='" + role + '\'' +
                '}';
-    }
-
-    @Override
-    public void onStart()
-    {
-        connections.onStart();
-    }
-
-    @Override
-    public void onStop()
-    {
-        connections.onStop();
     }
 }

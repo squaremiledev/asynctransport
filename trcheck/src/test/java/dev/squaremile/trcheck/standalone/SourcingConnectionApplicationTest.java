@@ -62,47 +62,54 @@ public class SourcingConnectionApplicationTest
 
     @Test
     @Disabled
-    void shouldExchangeMessagesAtHighRate() throws InterruptedException
+    void shouldExchangeMillionsOfMessagesASecondWithAcceptableLatency() throws InterruptedException
     {
         exchangeMessages(
                 new TcpPingConfiguration.Builder()
-                        .sendingRatePerSecond(10_000)
-                        .respondToNth(32)
-                        .secondsWarmUp(40)
-                        .secondsRun(10)
-                        .extraDataLength(64)
+                        .sendingRatePerSecond(4_500_000)
+                        .respondToNth(4500)
+                        .secondsWarmUp(30)
+                        .secondsRun(20)
+                        .extraDataLength(0)
                         .remoteHost("localhost")
                         .remotePort(freePort())
+                        .useRingBuffers(false)
                         .create()
         ).printResults();
     }
 
     @Test
     @Disabled
-    void shouldExchangeMessagesAtHigherRate() throws InterruptedException
+    void shouldExchangeManyMessagesASecondWithAcceptableLatency() throws InterruptedException
     {
-        exchangeAtHigherRate(false, 2_100_000, 2000);
+        exchangeMessages(
+                new TcpPingConfiguration.Builder()
+                        .sendingRatePerSecond(600_000)
+                        .respondToNth(600)
+                        .secondsWarmUp(30)
+                        .secondsRun(20)
+                        .extraDataLength(0)
+                        .remoteHost("localhost")
+                        .remotePort(freePort())
+                        .useRingBuffers(false)
+                        .create()
+        ).printResults();
     }
 
     @Test
     @Disabled
     void shouldExchangeMessagesAtHigherRateUsingRingBuffers() throws InterruptedException
     {
-        exchangeAtHigherRate(true, 1_200_000, 2000);
-    }
-
-    private void exchangeAtHigherRate(final boolean useRingBuffers, final int sendingRatePerSecond, final int respondToNth) throws InterruptedException
-    {
         exchangeMessages(
                 new TcpPingConfiguration.Builder()
-                        .sendingRatePerSecond(sendingRatePerSecond)
-                        .respondToNth(respondToNth)
+                        .sendingRatePerSecond(600_000)
+                        .respondToNth(600)
                         .secondsWarmUp(30)
                         .secondsRun(20)
-                        .extraDataLength(64)
+                        .extraDataLength(0)
                         .remoteHost("localhost")
                         .remotePort(freePort())
-                        .useRingBuffers(useRingBuffers)
+                        .useRingBuffers(true)
                         .create()
         ).printResults();
     }

@@ -17,12 +17,11 @@ public class BufferedOutgoingStream implements ApplicationLifecycle, OnDuty
     private final OutgoingStream outgoingStream;
     private final RelativeClock relativeClock;
 
+    private long socketProtectionSendDataRequestCount = 0;
+    private long socketProtectionSendDataRequestCountResetNs = 0;
     private long nextSendingSlot;
     private boolean requestedToSendData = false;
     private long lastCommandId = CommandId.NO_COMMAND_ID;
-
-    long socketProtectionSendDataRequestCount = 0;
-    long socketProtectionSendDataRequestCountResetNs = 0;
 
     BufferedOutgoingStream(final String role, final OutgoingStream outgoingStream, final RelativeClock relativeClock, final int bufferSize)
     {
@@ -75,7 +74,8 @@ public class BufferedOutgoingStream implements ApplicationLifecycle, OnDuty
             return;
         }
 
-        if (relativeClock.relativeNanoTime() < nextSendingSlot)
+        long nowNsBefore = relativeClock.relativeNanoTime();
+        if (nowNsBefore < nextSendingSlot)
         {
             return;
         }
@@ -83,8 +83,8 @@ public class BufferedOutgoingStream implements ApplicationLifecycle, OnDuty
         buffer.flip();
         outgoingStream.sendData(buffer, lastCommandId);
         buffer.clear();
-        requestedToSendData = false;
         final long nowNs = relativeClock.relativeNanoTime();
+        requestedToSendData = false;
         nextSendingSlot = nowNs + socketCoolDownNs(socketProtectionSendDataRequestCountResetNs, nowNs, socketProtectionSendDataRequestCount);
         socketProtectionSendDataRequestCount = 0;
         socketProtectionSendDataRequestCountResetNs = nowNs;

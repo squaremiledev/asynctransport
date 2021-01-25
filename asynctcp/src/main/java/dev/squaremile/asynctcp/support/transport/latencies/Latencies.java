@@ -135,4 +135,18 @@ public class Latencies
                 entry -> entry.getValue().get()
         ));
     }
+
+    @Override
+    public String toString()
+    {
+        return "Latencies{" +
+               ", currentMaxLatency=" + currentMaxLatency +
+               ", measurementsCount=" + measurementsCount() +
+               ", currentNanoTimeMark=" + currentNanoTimeMark +
+               ", nextMeasurementIndex=" + nextMeasurementIndex +
+               ", iteration=" + iteration +
+               ", iterationActive=" + iterationActive +
+               ", warmUp=" + warmUp +
+               '}';
+    }
 }
