@@ -50,12 +50,14 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
     private final EpochClock clock;
     private final TransportCommandHandler commandHandler;
     private final String role;
+    private final RelativeClock relativeClock;
 
     public NonBlockingTransport(final EventListener eventListener, final TransportCommandHandler commandHandler, final EpochClock clock, final String role)
     {
         this.role = role;
         this.clock = clock;
-        this.servers = new Servers();
+        this.relativeClock = new RelativeClock.SystemRelativeClock();
+        this.servers = new Servers(relativeClock);
         this.connections = new Connections(eventListener::onEvent);
         this.eventListener = eventListener;
         this.commandHandler = commandHandler;
@@ -82,7 +84,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
             return;
         }
         connection.handle(command);
-        updateSelectionKeyInterest(connection.state(), connections.getSelectionKey(command.connectionId()));
+        connections.updateBasedOnState(connection);
         if (connection.state() == ConnectionState.CLOSED)
         {
             connections.remove(command.connectionId());
@@ -149,7 +151,7 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
                                     new ConnectionImpl(
                                             role,
                                             configuration,
-                                            new RelativeClock.SystemRelativeClock(),
+                                            relativeClock,
                                             new SocketBackedChannel(socketChannel),
                                             connectedNotification.command.delineation(),
                                             eventListener::onEvent
@@ -248,30 +250,6 @@ public class NonBlockingTransport extends TransportPoller implements AutoCloseab
                 )
         ));
         return connection.connectionId();
-    }
-
-    private void updateSelectionKeyInterest(final ConnectionState state, final SelectionKey key)
-    {
-        switch (state)
-        {
-            case NO_OUTSTANDING_DATA:
-                if ((key.interestOps() & SelectionKey.OP_WRITE) != 0)
-                {
-                    key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
-                }
-                break;
-            case DATA_TO_SEND_BUFFERED:
-                if ((key.interestOps() & SelectionKey.OP_WRITE) == 0)
-                {
-                    key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
-                }
-                key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
-                break;
-            case CLOSED:
-                key.cancel();
-                key.attach(null);
-                break;
-        }
     }
 
     private void handle(final Listen command)

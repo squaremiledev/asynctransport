@@ -27,11 +27,13 @@ public class Server implements AutoCloseable
     private final EventListener eventListener;
     private final CommandFactory commandFactory;
     private final ServerSocketChannel serverSocketChannel;
+    private final RelativeClock relativeClock;
 
     Server(
             final String role,
             final int port,
             final long commandIdThatTriggeredListening,
+            final RelativeClock relativeClock,
             final ConnectionIdSource connectionIdSource,
             final EventListener eventListener,
             final CommandFactory commandFactory
@@ -47,6 +49,7 @@ public class Server implements AutoCloseable
         // non-blocking mode, but in case something was missed, it should fail fast
         serverSocketChannel.socket().setSoTimeout(1);
         serverSocketChannel.configureBlocking(false);
+        this.relativeClock = relativeClock;
     }
 
     private static String hostname(final SocketAddress remoteSocketAddress)
@@ -89,7 +92,7 @@ public class Server implements AutoCloseable
                 acceptedSocketChannel.socket().getSendBufferSize() * 16,
                 acceptedSocketChannel.socket().getReceiveBufferSize()
         );
-        return new ConnectionImpl(role, configuration, new RelativeClock.SystemRelativeClock(), new SocketBackedChannel(acceptedSocketChannel), delineation, eventListener::onEvent);
+        return new ConnectionImpl(role, configuration, relativeClock, new SocketBackedChannel(acceptedSocketChannel), delineation, eventListener::onEvent);
     }
 
     SocketChannel acceptChannel() throws IOException

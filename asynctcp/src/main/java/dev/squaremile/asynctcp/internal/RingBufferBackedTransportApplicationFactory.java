@@ -63,7 +63,7 @@ public class RingBufferBackedTransportApplicationFactory implements TransportApp
                         serializedMessageListener::onSerialized
                 ),
                 createTransport(
-                        "networkFacing",
+                        role + ":transport",
                         userToNetwork::read,
                         (sourceBuffer, sourceOffset, length) -> networkToUser.write(MSG_TYPE_ID, sourceBuffer, sourceOffset, length)
                 )

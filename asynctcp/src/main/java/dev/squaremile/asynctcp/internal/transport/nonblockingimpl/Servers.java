@@ -14,6 +14,12 @@ import dev.squaremile.asynctcp.internal.transport.domain.CommandFactory;
 public class Servers implements AutoCloseable
 {
     private final Int2ObjectHashMap<Server> listeningSocketsByPort = new Int2ObjectHashMap<>();
+    private final RelativeClock relativeClock;
+
+    public Servers(final RelativeClock relativeClock)
+    {
+        this.relativeClock = relativeClock;
+    }
 
     public Server serverListeningOn(final int port)
     {
@@ -34,7 +40,7 @@ public class Servers implements AutoCloseable
             final CommandFactory commandFactory
     ) throws IOException
     {
-        final Server server = new Server(role, port, commandIdThatTriggeredListening, connectionIdSource, eventListener, commandFactory);
+        final Server server = new Server(role, port, commandIdThatTriggeredListening, relativeClock, connectionIdSource, eventListener, commandFactory);
         server.listen();
         listeningSocketsByPort.put(server.port(), server);
     }

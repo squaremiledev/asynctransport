@@ -11,10 +11,12 @@ import dev.squaremile.asynctcp.api.transport.app.OnDuty;
 import dev.squaremile.asynctcp.internal.transport.domain.StatusEventListener;
 import dev.squaremile.asynctcp.internal.transport.domain.connection.Connection;
 import dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionRepository;
+import dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionState;
 
 public class Connections implements ApplicationLifecycle, AutoCloseable, OnDuty
 {
     public final Long2ObjectHashMap<SelectionKey> selectionKeyByConnectionId;
+    public final Long2ObjectHashMap<ConnectionState> lastUpdatedConnectionStateKeyByConnectionId;
     public final ConnectionRepository connectionRepository;
     private final Consumer<Connection> connectionWork = Connection::work;
     private final Consumer<Connection> connectionOnStart = Connection::onStart;
@@ -23,7 +25,46 @@ public class Connections implements ApplicationLifecycle, AutoCloseable, OnDuty
     public Connections(final StatusEventListener statusEventListener)
     {
         this.selectionKeyByConnectionId = new Long2ObjectHashMap<>();
+        this.lastUpdatedConnectionStateKeyByConnectionId = new Long2ObjectHashMap<>();
         this.connectionRepository = new ConnectionRepository(new ConnectionRepository.StatusRepositoryUpdates(statusEventListener));
+    }
+
+    private static void updateSelectionKeyInterest(final ConnectionState state, final SelectionKey key)
+    {
+        switch (state)
+        {
+            case NO_OUTSTANDING_DATA:
+                if ((key.interestOps() & SelectionKey.OP_WRITE) != 0)
+                {
+                    key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
+                }
+                break;
+            case DATA_TO_SEND_BUFFERED:
+                if ((key.interestOps() & SelectionKey.OP_WRITE) == 0)
+                {
+                    key.interestOps(key.interestOps() & ~SelectionKey.OP_WRITE);
+                }
+                key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
+                break;
+            case CLOSED:
+                key.cancel();
+                key.attach(null);
+                break;
+        }
+    }
+
+    public void updateBasedOnState(final Connection connection)
+    {
+        ConnectionState lastConnectionState = lastUpdatedConnectionStateKeyByConnectionId.get(connection.connectionId());
+        if (lastConnectionState == null || lastConnectionState != connection.state())
+        {
+            updateSelectionKeyInterest(connection.state(), getSelectionKey(connection.connectionId()));
+            lastUpdatedConnectionStateKeyByConnectionId.put(connection.connectionId(), connection.state());
+            if (connection.state() == ConnectionState.CLOSED)
+            {
+                lastUpdatedConnectionStateKeyByConnectionId.remove(connection.connectionId());
+            }
+        }
     }
 
     public void add(final Connection connection, final SelectionKey selectionKey)
