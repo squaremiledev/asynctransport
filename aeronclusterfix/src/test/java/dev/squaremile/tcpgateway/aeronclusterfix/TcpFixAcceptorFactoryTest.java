@@ -45,6 +45,7 @@ public class TcpFixAcceptorFactoryTest
     );
 
     @Test
+        // TODO: identify the source of an infrequent failure when run by the Github Actions
     void shouldRunApplication(@TempDir Path tempDir) throws IOException
     {
         final FixHandler fixHandler = new RespondToLogOnIgnoreRest("someUsername");

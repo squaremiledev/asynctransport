@@ -196,9 +196,9 @@ Sent total (including warm up) 331176096 bytes with a throughput of 11.521 Mbps
 
 #### High rate, 3 million msg/s over TCP
 
-- 1 million msg/s, load skewed 1/10000 (one box mostly sends, another mostly receives)
+- 3 million msg/s, load skewed 1/3000 (one box mostly sends, another mostly receives)
 
-- (A) 1M msg/s send -> (B) 1M msg/s received -> (B) 100 msg/s send -> (A) 100 msg/s received
+- (A) 3M msg/s send -> (B) 3M msg/s received -> (B) 1k msg/s send -> (A) 1k msg/s received
 
 ```bash
 # Command run on box ip-172-31-35-37:
