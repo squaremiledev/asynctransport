@@ -84,6 +84,7 @@ public class OutgoingStream
         }
         catch (IOException e)
         {
+            // TODO: when reset by peer it's better not to throw as the method does not mention such possibility
             rethrowUnchecked(e);
         }
     }

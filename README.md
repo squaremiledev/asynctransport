@@ -103,58 +103,58 @@ Scenario: A single box exchanges small messages over localhost. Used to measure 
 
 - CPU: Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz
 
-#### Medium rate, 60 000 msg/s over TCP
+#### Medium rate, 50 000 msg/s over TCP
 
 ``` bash
 # First command run:
-./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
 
 # Second command run:
-./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 60000 -r 1000 -x 0
+./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 50000 -r 1 -x 0
 ```
 
 ```
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |             7 |             14 |
-99th percentile        |            10 |             19 |
-99.9th percentile      |            15 |             29 |
-99.99th percentile     |            16 |             31 |
-99.999th percentile    |            16 |             31 |
-worst                  |            16 |             31 |
+mean                   |             6 |             12 |
+99th percentile        |             8 |             15 |
+99.9th percentile      |            14 |             28 |
+99.99th percentile     |            22 |             43 |
+99.999th percentile    |            83 |            165 |
+worst                  |           106 |            211 |
 
-Based on 1800 measurements.
-It took 29982 ms between the first measured message sent and the last received
-Sent total (including warm up) 2999001 messages of average size (TCP headers excluded) 24 bytes
-Sent total (including warm up) 71976024 bytes with a throughput of 11.521 Mbps
+Based on 1500000 measurements.
+It took 30000 ms between the first measured message sent and the last received
+Sent total (including warm up) 2500000 messages of average size (TCP headers excluded) 24 bytes
+Sent total (including warm up) 60000000 bytes with a throughput of 9.600 Mbps
 ```
 
-#### High rate, 2 million msg/s over TCP
+#### High rate, 5 million msg/s over TCP
 
 ``` bash
 # First command run:
-./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
 
 # Second command run:
-./trcheck/build/distributions/trcheck-shadow-0.8.0/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 2000000 -r 4000 -x 0
+./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 5000000 -r 5000 -x 0
 ```
 
 ```
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |            47 |             93 |
-99th percentile        |            71 |            141 |
-99.9th percentile      |            90 |            180 |
-99.99th percentile     |           653 |           1306 |
-99.999th percentile    |           699 |           1398 |
-worst                  |           699 |           1398 |
+mean                   |            71 |            142 |
+99th percentile        |            94 |            187 |
+99.9th percentile      |          1110 |           2219 |
+99.99th percentile     |          1851 |           3701 |
+99.999th percentile    |          1992 |           3983 |
+worst                  |          1992 |           3983 |
 
-Based on 15000 measurements.
-It took 29998 ms between the first measured message sent and the last received
-Sent total (including warm up) 99996239 messages of average size (TCP headers excluded) 24 bytes
-Sent total (including warm up) 2399907816 bytes with a throughput of 384.008 Mbps
+Based on 30000 measurements.
+It took 29999 ms between the first measured message sent and the last received
+Sent total (including warm up) 249995870 messages of average size (TCP headers excluded) 24 bytes
+Sent total (including warm up) 5999900880 bytes with a throughput of 960.023 Mbps
 ```
 
 ### Cloud (AWS EC2)
@@ -163,7 +163,7 @@ Scenario: 2 Boxes with a network connection between them adding an average ping 
 
 - Instance: c5n.xlarge boxes
 
-- same availability zone, ping rtt min/avg/max/mdev = 0.059/0.068/0.273/0.013 ms
+- same availability zone, ping rtt min/avg/max/mdev = 0.060/0.068/0.118/0.007 ms
 
 - Ubuntu 20.04.1 LTS, Java OpenJDK Runtime Environment (build 11.0.9+11-Ubuntu-0ubuntu1.20.04)
 
@@ -171,22 +171,22 @@ Scenario: 2 Boxes with a network connection between them adding an average ping 
 
 ``` bash
 # Command run on box ip-172-31-35-37:
-trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
 
 # Command run on box ip-172-31-43-169:
-trcheck-shadow-0.8.0/bin/trcheck benchmark client -h 172.31.35.37 -p 9998     --warm-up-time=30 --run-time=200 --send-rate=60000 --respond-rate=1000 --extra-data-length=0
+trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h 172.31.35.37 -p 9998     --warm-up-time=30 --run-time=200 --send-rate=60000 --respond-rate=1000 --extra-data-length=0
 ```
 
 ```
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |            34 |             67 |
-99th percentile        |            48 |             95 |
-99.9th percentile      |            55 |            109 |
-99.99th percentile     |           134 |            267 |
-99.999th percentile    |           136 |            271 |
-worst                  |           136 |            271 |
+mean                   |            39 |             78 |
+99th percentile        |            58 |            116 |
+99.9th percentile      |            63 |            126 |
+99.99th percentile     |            79 |            158 |
+99.999th percentile    |           111 |            222 |
+worst                  |           111 |            222 |
 
 Based on 12000 measurements.
 It took 199975 ms between the first measured message sent and the last received
@@ -194,7 +194,7 @@ Sent total (including warm up) 13799004 messages of average size (TCP headers ex
 Sent total (including warm up) 331176096 bytes with a throughput of 11.521 Mbps
 ```
 
-#### High rate, 1 million msg/s over TCP
+#### High rate, 3 million msg/s over TCP
 
 - 1 million msg/s, load skewed 1/10000 (one box mostly sends, another mostly receives)
 
@@ -202,28 +202,27 @@ Sent total (including warm up) 331176096 bytes with a throughput of 11.521 Mbps
 
 ```bash
 # Command run on box ip-172-31-35-37:
-trcheck-shadow-0.8.0/bin/trcheck benchmark server -p 9998
+trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
 
 # Command run on box ip-172-31-43-169:
-trcheck-shadow-0.8.0/bin/trcheck benchmark client -h 172.31.35.37 -p 9998 \
-    --warm-up-time=30 --run-time=200 --send-rate=1000000 --respond-rate=10000 --extra-data-length=140
+trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h 172.31.35.37 -p 9998     --warm-up-time=30 --run-time=20 --send-rate=3000000 --respond-rate=3000 --extra-data-length=0
 ```
 
 ```
-Results
+Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |            74 |            147 |
-99th percentile        |           119 |            238 |
-99.9th percentile      |           134 |            268 |
-99.99th percentile     |           182 |            364 |
-99.999th percentile    |           492 |            984 |
-worst                  |           492 |            984 |
+mean                   |            83 |            165 |
+99th percentile        |           108 |            215 |
+99.9th percentile      |           127 |            254 |
+99.99th percentile     |           132 |            263 |
+99.999th percentile    |           137 |            274 |
+worst                  |           137 |            274 |
 
 Based on 20000 measurements.
-It took 199990 ms between the first measured message sent and the last received
-Sent total (including warm up) 229990177 messages of average size (TCP headers excluded) 164 bytes
-Sent total (including warm up) 37718389028 bytes with a throughput of 1312.007 Mbps
+It took 19979 ms between the first measured message sent and the last received
+Sent total (including warm up) 149997493 messages of average size (TCP headers excluded) 24 bytes
+Sent total (including warm up) 3599939832 bytes with a throughput of 576.590 Mbps
 ```
 
 ## Usage
