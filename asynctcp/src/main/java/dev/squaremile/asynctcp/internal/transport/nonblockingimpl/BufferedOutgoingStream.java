@@ -23,7 +23,12 @@ public class BufferedOutgoingStream implements ApplicationLifecycle, OnDuty
     private boolean requestedToSendData = false;
     private long lastCommandId = CommandId.NO_COMMAND_ID;
 
-    BufferedOutgoingStream(final String role, final OutgoingStream outgoingStream, final RelativeClock relativeClock, final int bufferSize)
+    BufferedOutgoingStream(
+            final String role,
+            final OutgoingStream outgoingStream,
+            final RelativeClock relativeClock,
+            final int bufferSize
+    )
     {
         this.role = role;
         this.buffer = ByteBuffer.allocate(bufferSize);
@@ -31,13 +36,13 @@ public class BufferedOutgoingStream implements ApplicationLifecycle, OnDuty
         this.relativeClock = relativeClock;
     }
 
-    void sendData(final ByteBuffer newDataToSend, final long commandId)
+    String sendData(final ByteBuffer newDataToSend, final long commandId)
     {
         socketProtectionSendDataRequestCount++;
         requestedToSendData = true;
         lastCommandId = commandId;
         buffer.put(newDataToSend);
-        work();
+        return sendDataIfReady();
     }
 
     public ConnectionState state()
@@ -67,27 +72,28 @@ public class BufferedOutgoingStream implements ApplicationLifecycle, OnDuty
                '}';
     }
 
-    private void sendDataIfReady()
+    private String sendDataIfReady()
     {
         if (!requestedToSendData)
         {
-            return;
+            return null;
         }
 
         long nowNsBefore = relativeClock.relativeNanoTime();
         if (nowNsBefore < nextSendingSlot)
         {
-            return;
+            return null;
         }
 
         buffer.flip();
-        outgoingStream.sendData(buffer, lastCommandId);
+        final String errorResult = outgoingStream.sendData(buffer, lastCommandId);
         buffer.clear();
         final long nowNs = relativeClock.relativeNanoTime();
         requestedToSendData = false;
         nextSendingSlot = nowNs + socketCoolDownNs(socketProtectionSendDataRequestCountResetNs, nowNs, socketProtectionSendDataRequestCount);
         socketProtectionSendDataRequestCount = 0;
         socketProtectionSendDataRequestCountResetNs = nowNs;
+        return errorResult;
     }
 
     @Override

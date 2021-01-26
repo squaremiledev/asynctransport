@@ -26,14 +26,14 @@ import dev.squaremile.asynctcp.internal.transport.domain.NumberOfConnectionsChan
 import dev.squaremile.asynctcp.support.transport.FreePort;
 import dev.squaremile.asynctcp.support.transport.Worker;
 
-import static dev.squaremile.asynctcpacceptance.Assertions.assertEqual;
 import static dev.squaremile.asynctcp.fixtures.transport.BackgroundRunner.completed;
-import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
-import static dev.squaremile.asynctcp.support.transport.FreePort.freePortOtherThan;
 import static dev.squaremile.asynctcp.fixtures.transport.StringFixtures.byteArrayWith;
 import static dev.squaremile.asynctcp.fixtures.transport.StringFixtures.stringWith;
-import static dev.squaremile.asynctcp.support.transport.Worker.runUntil;
 import static dev.squaremile.asynctcp.fixtures.transport.network.SampleClient.ReadDataConsumer.DEV_NULL;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
+import static dev.squaremile.asynctcp.support.transport.FreePort.freePortOtherThan;
+import static dev.squaremile.asynctcp.support.transport.Worker.runUntil;
+import static dev.squaremile.asynctcpacceptance.Assertions.assertEqual;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -243,6 +243,31 @@ class ServerSendsDataTest extends TransportTestBase
         assertThat(dataSentEvent).usingRecursiveComparison()
                 .isEqualTo(new DataSent(conn.port(), conn.connectionId(), dataSentEvent.bytesSent(), data.length, data.length, dataSentEvent.sendBufferSize()));
 
+    }
+
+    @Test
+    @Tag("tcperror")
+    void shouldInformAboutTheConnectionErrorThatOccurredDuringSendingData()
+    {
+        final int serverPort = freePort(8080);
+        final int clientPort = freePortOtherThan(serverPort);
+        final ConnectionAccepted conn = new TransportDriver(serverTransport).listenAndConnect(clients.client(1), serverPort, clientPort);
+        final byte[] dataThatFitsTheBuffer = generateData(conn.outboundPduLimit(), 2);
+
+        //When
+        runUntil(() ->
+                 {
+                     if (!serverTransport.events().contains(CommandFailed.class))
+                     {
+                         serverTransport.handle(serverTransport.command(conn.connectionId(), SendData.class).set(dataThatFitsTheBuffer));
+                     }
+                     if (serverTransport.connectionEvents().contains(DataSent.class, conn.connectionId()))
+                     {
+                         clients.client(1).close();
+                         return serverTransport.events().contains(CommandFailed.class);
+                     }
+                     return false;
+                 });
     }
 
     @Test

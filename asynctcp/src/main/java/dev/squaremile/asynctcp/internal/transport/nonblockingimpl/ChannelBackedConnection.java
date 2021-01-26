@@ -157,13 +157,31 @@ public class ChannelBackedConnection implements AutoCloseable, Connection, OnDut
 
     private void handle(final SendData command)
     {
-        outgoingStream.sendData(command.data(), command.commandId());
+        if (connectionState == CLOSED)
+        {
+            singleConnectionEvents.commandFailed(command, "Connection is closed");
+            return;
+        }
+        final String errorResult = outgoingStream.sendData(command.data(), command.commandId());
+        if (errorResult != null)
+        {
+            singleConnectionEvents.commandFailed(command, errorResult);
+        }
         connectionState = outgoingStream.state();
     }
 
     private void handle(final SendMessage command)
     {
-        outgoingStream.sendData(command.data(), command.commandId());
+        if (connectionState == CLOSED)
+        {
+            singleConnectionEvents.commandFailed(command, "Connection is closed");
+            return;
+        }
+        final String errorResult = outgoingStream.sendData(command.data(), command.commandId());
+        if (errorResult != null)
+        {
+            singleConnectionEvents.commandFailed(command, errorResult);
+        }
         connectionState = outgoingStream.state();
     }
 

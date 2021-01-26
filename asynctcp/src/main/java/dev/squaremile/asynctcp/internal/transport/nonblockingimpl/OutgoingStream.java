@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
-import static org.agrona.LangUtil.rethrowUnchecked;
-
 
 import dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionState;
 import dev.squaremile.asynctcp.internal.transport.domain.connection.SingleConnectionEvents;
 
+import static dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionState.CLOSED;
 import static dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionState.DATA_TO_SEND_BUFFERED;
 import static dev.squaremile.asynctcp.internal.transport.domain.connection.ConnectionState.NO_OUTSTANDING_DATA;
 import static java.lang.Math.max;
@@ -37,7 +36,7 @@ public class OutgoingStream
         return state;
     }
 
-    void sendData(final ByteBuffer newDataToSend, final long commandId)
+    String sendData(final ByteBuffer newDataToSend, final long commandId)
     {
         try
         {
@@ -84,9 +83,10 @@ public class OutgoingStream
         }
         catch (IOException e)
         {
-            // TODO: when reset by peer it's better not to throw as the method does not mention such possibility
-            rethrowUnchecked(e);
+            this.state = CLOSED;
+            return e.getMessage();
         }
+        return null;
     }
 
     private int sendNewData(final int bufferedBytesSent, final ByteBuffer newDataToSend, final WritableByteChannel channel) throws IOException
