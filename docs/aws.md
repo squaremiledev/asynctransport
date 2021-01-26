@@ -16,51 +16,6 @@
 rtt min/avg/max/mdev = 0.052/0.064/0.167/0.008 ms
 ```
 
-### AsyncTcp
-
-Using AsyncTCP library with a high message rate (600 000 messages a second).
-
-At this rate the overhead of using the library is on average ~8 microseconds and
-worst ~40 microseconds (one way) ICMP (ping) traffic. 
-
-
-```
-Scenario: remoteHost 172.31.35.37, remotePort 9998, sendingRatePerSecond 600000, skippedWarmUpResponses 60000 , messagesSent 12000000, 120000 expected responses with a response rate 1 for 100, use buffers: true, extra data 64 bytes
-
-Based on 60000 measurements.
-It took 9995 ms between the first measured message sent and the last received
-
-Results:
----------------------------------------------------------
-latency (microseconds) |     ~ one way |     round trip |
-mean                   |            40 |             80 |
-99th percentile        |            74 |            148 |
-99.9th percentile      |           100 |            200 |
-99.99th percentile     |           110 |            219 |
-99.999th percentile    |           128 |            255 |
-worst                  |           128 |            255 |
-
-Results:
----------------------------------------------------------
-latency (microseconds) |     ~ one way |     round trip |
-mean                   |            41 |             81 |
-99th percentile        |            76 |            151 |
-99.9th percentile      |            93 |            185 |
-99.99th percentile     |           106 |            211 |
-99.999th percentile    |           136 |            271 |
-worst                  |           136 |            271 |
-
-Results:
----------------------------------------------------------
-latency (microseconds) |     ~ one way |     round trip |
-mean                   |            40 |             80 |
-99th percentile        |            74 |            148 |
-99.9th percentile      |            93 |            186 |
-99.99th percentile     |           104 |            207 |
-99.999th percentile    |           110 |            219 |
-worst                  |           110 |            219 |
-```
-
 ### Netperf statistics
 
 ```

@@ -2,7 +2,7 @@
 
 [![Tests_Java_8_11 Build Status](https://github.com/squaremiledev/asynctransport/workflows/Tests_Java_8_11/badge.svg)](https://github.com/squaremiledev/asynctransport/actions?query=workflow%3ATests_Java_8_11)
 
-The main artifact of the Async Transport family is AsyncTCP.
+The main artifact of the Async Transport family is AsyncTCP (dev.squaremile:asynctcp).
 AsyncTCP is a fully composable library to be used as a building block for
 a low latency, message-driven, high performance TCP applications written in Java.
 
@@ -20,9 +20,9 @@ a low latency, message-driven, high performance TCP applications written in Java
 
 - single threaded, single CPU utilisation even for multiple connections
 
-- low latency end to end TCP connection with single digit microseconds overhead for up to hundreds of thousands messages a second on a commodity hardware
+- single digit microseconds latency end to end TCP connection for up to hundreds of thousands messages a second on a commodity hardware
 
-- predictable worst case latency end to end TCP connection for up to millions of messages a second
+- microseconds latency end to end TCP connection for up to millions of messages a second
 
 - no Java NIO/Socket knowledge necessary to use it efficiently
 
@@ -30,8 +30,7 @@ a low latency, message-driven, high performance TCP applications written in Java
 
 - ideal for event-sourced systems
 
-- useful for measuring a latency distribution and quality of the network stack between boxes (trcheck tool) 
- 
+- useful for measuring an impact of the underlying network/hosts topology on the latency distribution (trcheck tool) 
 
 ## Evaluation
 
@@ -43,7 +42,7 @@ Maven
 <dependency>
 	<groupId>dev.squaremile</groupId>
 	<artifactId>asynctcp</artifactId>
-	<version>0.8.0</version>
+	<version>0.9.0</version>
 	<type>pom</type>
 </dependency>
 ```
@@ -51,7 +50,7 @@ Maven
 Gradle
 
 ```
-implementation 'dev.squaremile:asynctcp:0.8.0'
+implementation 'dev.squaremile:asynctcp:0.9.0'
 ```
 
 ### See some examples
@@ -105,24 +104,24 @@ Scenario: A single box exchanges small messages over localhost. Used to measure 
 
 #### Medium rate, 50 000 msg/s over TCP
 
-``` bash
+```bash
 # First command run:
-./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
+./trcheck/build/distributions/trcheck-shadow-0.9.0/bin/trcheck benchmark server -p 9998
 
 # Second command run:
-./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 50000 -r 1 -x 0
+./trcheck/build/distributions/trcheck-shadow-0.9.0/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 50000 -r 1 -x 0
 ```
 
 ```
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |             6 |             12 |
-99th percentile        |             8 |             15 |
-99.9th percentile      |            14 |             28 |
-99.99th percentile     |            22 |             43 |
-99.999th percentile    |            83 |            165 |
-worst                  |           106 |            211 |
+mean                   |             5 |             10 |
+99th percentile        |             6 |             12 |
+99.9th percentile      |             9 |             18 |
+99.99th percentile     |            14 |             27 |
+99.999th percentile    |            73 |            145 |
+worst                  |            98 |            195 |
 
 Based on 1500000 measurements.
 It took 30000 ms between the first measured message sent and the last received
@@ -132,29 +131,29 @@ Sent total (including warm up) 60000000 bytes with a throughput of 9.600 Mbps
 
 #### High rate, 5 million msg/s over TCP
 
-``` bash
+```bash
 # First command run:
-./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
+./trcheck/build/distributions/trcheck-shadow-0.9.0/bin/trcheck benchmark server -p 9998
 
 # Second command run:
-./trcheck/build/distributions/trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 5000000 -r 5000 -x 0
+./trcheck/build/distributions/trcheck-shadow-0.9.0/bin/trcheck benchmark client -h localhost -p 9998 -t 30 -w 20 -s 5000000 -r 5000 -x 0
 ```
 
 ```
 Results:
 ---------------------------------------------------------
 latency (microseconds) |     ~ one way |     round trip |
-mean                   |            71 |            142 |
+mean                   |            69 |            138 |
 99th percentile        |            94 |            187 |
-99.9th percentile      |          1110 |           2219 |
-99.99th percentile     |          1851 |           3701 |
-99.999th percentile    |          1992 |           3983 |
-worst                  |          1992 |           3983 |
+99.9th percentile      |            97 |            194 |
+99.99th percentile     |           262 |            524 |
+99.999th percentile    |           347 |            694 |
+worst                  |           347 |            694 |
 
 Based on 30000 measurements.
 It took 29999 ms between the first measured message sent and the last received
-Sent total (including warm up) 249995870 messages of average size (TCP headers excluded) 24 bytes
-Sent total (including warm up) 5999900880 bytes with a throughput of 960.023 Mbps
+Sent total (including warm up) 249995842 messages of average size (TCP headers excluded) 24 bytes
+Sent total (including warm up) 5999900208 bytes with a throughput of 960.022 Mbps
 ```
 
 ### Cloud (AWS EC2)
@@ -169,12 +168,12 @@ Scenario: 2 Boxes with a network connection between them adding an average ping 
 
 #### Medium rate, 60 000 msg/s over TCP
 
-``` bash
+```bash
 # Command run on box ip-172-31-35-37:
-trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
+trcheck-shadow-0.9.0/bin/trcheck benchmark server -p 9998
 
 # Command run on box ip-172-31-43-169:
-trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h 172.31.35.37 -p 9998     --warm-up-time=30 --run-time=200 --send-rate=60000 --respond-rate=1000 --extra-data-length=0
+trcheck-shadow-0.9.0/bin/trcheck benchmark client -h 172.31.35.37 -p 9998     --warm-up-time=30 --run-time=200 --send-rate=60000 --respond-rate=1000 --extra-data-length=0
 ```
 
 ```
@@ -202,10 +201,10 @@ Sent total (including warm up) 331176096 bytes with a throughput of 11.521 Mbps
 
 ```bash
 # Command run on box ip-172-31-35-37:
-trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark server -p 9998
+trcheck-shadow-0.9.0/bin/trcheck benchmark server -p 9998
 
 # Command run on box ip-172-31-43-169:
-trcheck-shadow-0.9.0-SNAPSHOT/bin/trcheck benchmark client -h 172.31.35.37 -p 9998     --warm-up-time=30 --run-time=20 --send-rate=3000000 --respond-rate=3000 --extra-data-length=0
+trcheck-shadow-0.9.0/bin/trcheck benchmark client -h 172.31.35.37 -p 9998     --warm-up-time=30 --run-time=20 --send-rate=3000000 --respond-rate=3000 --extra-data-length=0
 ```
 
 ```
