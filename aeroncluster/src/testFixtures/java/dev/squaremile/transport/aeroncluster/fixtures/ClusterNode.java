@@ -62,6 +62,7 @@ public class ClusterNode
                         .clusterMemberId(node.nodeId())
                         .clusterMembers(memberURIs)
                         .clusterDir(clusterDirectory.resolve("consensusDir").toFile())
+                        //.replicationChannel("aeron:udp?endpoint=localhost:0")
                         .ingressChannel("aeron:udp?term-length=" + termLength.asChannelParameter())
                         .logChannel(
                                 new ChannelUriStringBuilder()
@@ -74,10 +75,10 @@ public class ClusterNode
                         .archiveContext(
                                 new AeronArchive.Context()
                                         .lock(NoOpLock.INSTANCE)
-                                        .controlRequestChannel(archiveContext.controlChannel())
-                                        .controlRequestStreamId(archiveContext.controlStreamId())
+                                        .controlRequestChannel(archiveContext.localControlChannel())
+                                        .controlRequestStreamId(archiveContext.localControlStreamId())
                                         .recordingEventsChannel(archiveContext.recordingEventsChannel())
-                                        .controlResponseChannel("aeron:udp?endpoint=localhost:0|term-length=" + termLength.asChannelParameter())
+                                        .controlResponseChannel(archiveContext.localControlChannel() + "|term-length=" + termLength.asChannelParameter())
                                         .aeronDirectoryName(aeronDirectory.toString()).clone()
                         ),
                 new ClusteredServiceContainer.Context()
@@ -86,9 +87,9 @@ public class ClusterNode
                         .archiveContext(
                                 new AeronArchive.Context()
                                         .lock(NoOpLock.INSTANCE)
-                                        .controlRequestChannel(archiveContext.controlChannel())
-                                        .controlRequestStreamId(archiveContext.controlStreamId())
-                                        .controlResponseChannel("aeron:udp?endpoint=localhost:0|term-length=" + termLength.asChannelParameter())
+                                        .controlRequestChannel(archiveContext.localControlChannel())
+                                        .controlRequestStreamId(archiveContext.localControlStreamId())
+                                        .controlResponseChannel(archiveContext.localControlChannel() + "|term-length=" + termLength.asChannelParameter())
                                         .aeronDirectoryName(aeronDirectory.toString()).clone()
                         )
                         .clusterDir(clusterDirectory.resolve("clusterDir").toFile())

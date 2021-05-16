@@ -14,7 +14,6 @@ import dev.squaremile.transport.aeroncluster.fixtures.ClusterNode;
 import dev.squaremile.transport.aeroncluster.fixtures.applications.AccumulatorClusteredService;
 import dev.squaremile.transport.aeroncluster.fixtures.applications.NumberGeneratorClusterClientApp;
 import io.aeron.cluster.client.AeronCluster;
-import io.aeron.exceptions.RegistrationException;
 import io.github.artsok.RepeatedIfExceptionsTest;
 
 import static dev.squaremile.asynctcp.support.transport.FreePort.freePortPools;
@@ -24,7 +23,7 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 class ClientFactoryTest
 {
-    @RepeatedIfExceptionsTest(repeats = 2, exceptions = RegistrationException.class)
+    @RepeatedIfExceptionsTest(repeats = 2)
     void shouldWorkWithAThreeNodeCluster(@TempDir Path tempDir)
     {
         final Map<String, List<Integer>> freePortPools = freePortPools("node0:6", "node1:6", "node2:6", "ingress:3");
@@ -65,7 +64,7 @@ class ClientFactoryTest
         ).connect();
     }
 
-    @RepeatedIfExceptionsTest(repeats = 2, exceptions = RegistrationException.class)
+    @RepeatedIfExceptionsTest(repeats = 2)
     void shouldWorkWithASingleNodeCluster(@TempDir Path tempDir)
     {
         final Map<String, List<Integer>> freePortPools = freePortPools("node0:6", "ingress:1");
