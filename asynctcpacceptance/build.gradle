@@ -24,9 +24,9 @@ dependencies {
     implementation project(':asynctcp')
     implementation project(':trcheck')
     implementation testFixtures(project(':asynctcp'))
-    implementation 'org.agrona:agrona:1.8.0'
+    implementation 'org.agrona:agrona:1.10.0'
 
     testImplementation testFixtures(project(':asynctcp'))
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
-    testImplementation 'org.assertj:assertj-core:3.16.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+    testImplementation 'org.assertj:assertj-core:3.19.0'
 }

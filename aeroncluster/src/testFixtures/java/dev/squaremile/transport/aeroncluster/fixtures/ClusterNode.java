@@ -62,7 +62,7 @@ public class ClusterNode
                         .clusterMemberId(node.nodeId())
                         .clusterMembers(memberURIs)
                         .clusterDir(clusterDirectory.resolve("consensusDir").toFile())
-                        //.replicationChannel("aeron:udp?endpoint=localhost:0")
+                        .replicationChannel("aeron:udp?endpoint=localhost:0")
                         .ingressChannel("aeron:udp?term-length=" + termLength.asChannelParameter())
                         .logChannel(
                                 new ChannelUriStringBuilder()
