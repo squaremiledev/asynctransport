@@ -11,20 +11,27 @@ import org.junit.jupiter.params.provider.MethodSource;
 import dev.squaremile.asynctcp.api.transport.app.Transport;
 import dev.squaremile.asynctcp.api.transport.app.TransportCommand;
 import dev.squaremile.asynctcp.api.transport.app.TransportUserCommand;
+import dev.squaremile.asynctcp.api.transport.events.Connected;
 import dev.squaremile.asynctcp.fixtures.transport.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.fixtures.transport.TransportCommandSpy;
 
-import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 import static dev.squaremile.asynctcp.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
+import static dev.squaremile.asynctcp.internal.serialization.Fixtures.connectedEvent;
 
 class TransportCommandDeserializationTest
 {
     private static final int OFFSET = 6;
-    private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(Fixtures.connectedEvent().outboundPduLimit(), rawStreaming()));
+    private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(eventForConnectionUsedInTest().outboundPduLimit(), rawStreaming(), connectedEvent().port()));
 
     static Stream<Function<Transport, TransportUserCommand>> commands()
     {
         return Fixtures.commands();
+    }
+
+    private static Connected eventForConnectionUsedInTest()
+    {
+        return Fixtures.connectedEvent();
     }
 
     @ParameterizedTest
@@ -49,7 +56,7 @@ class TransportCommandDeserializationTest
                 OFFSET,
                 serializedCommandListener
         );
-        transport.onEvent(Fixtures.connectedEvent());
+        transport.onEvent(eventForConnectionUsedInTest());
         return transport;
     }
 }

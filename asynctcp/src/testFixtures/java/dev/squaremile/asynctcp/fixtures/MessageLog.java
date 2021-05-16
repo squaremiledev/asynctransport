@@ -21,7 +21,7 @@ import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelin
 public class MessageLog implements SerializedMessageListener
 {
     private final TransportEventDecoders transportEventDecoders = new TransportEventDecoders();
-    private final TransportCommandDecoders transportCommandDecoders = new TransportCommandDecoders(new CommandsProvidingTransport(1234, rawStreaming()));
+    private final TransportCommandDecoders transportCommandDecoders = new TransportCommandDecoders(new CommandsProvidingTransport(1234, rawStreaming(), 1234));
     private final MessageHeaderDecoder headerDecoder = new MessageHeaderDecoder();
     private final ExpandableRingBuffer applicationMessagesLog = new ExpandableRingBuffer();
     private final StringBuilder humanReadableLog = new StringBuilder();

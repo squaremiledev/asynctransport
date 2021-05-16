@@ -22,16 +22,28 @@ import dev.squaremile.asynctcp.api.transport.values.ConnectionIdValue;
 import dev.squaremile.asynctcp.fixtures.transport.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.fixtures.transport.TransportCommandSpy;
 
-import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 import static dev.squaremile.asynctcp.Assertions.assertEqual;
+import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 
 class SerializingTransportTest
 {
     private static final int OFFSET = 6;
-    private static final Connected CONNECTED_EVENT = Fixtures.connectedEvent();
 
-    private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(1024, rawStreaming()));
-    private final TransportCommandDecoders decoders = new TransportCommandDecoders(new CommandsProvidingTransport(CONNECTED_EVENT.outboundPduLimit(), rawStreaming()));
+    private final TransportCommandSpy commandsSpy = new TransportCommandSpy(new CommandsProvidingTransport(
+            eventForConnectionUsedInTest().outboundPduLimit(),
+            rawStreaming(),
+            eventForConnectionUsedInTest().port()
+    ));
+    private final TransportCommandDecoders decoders = new TransportCommandDecoders(new CommandsProvidingTransport(
+            eventForConnectionUsedInTest().outboundPduLimit(),
+            rawStreaming(),
+            eventForConnectionUsedInTest().port()
+    ));
+
+    private static Connected eventForConnectionUsedInTest()
+    {
+        return Fixtures.connectedEvent();
+    }
 
     static Stream<Function<Transport, TransportUserCommand>> commands()
     {
@@ -48,14 +60,15 @@ class SerializingTransportTest
                 OFFSET,
                 (buffer, offset, length) -> commandsSpy.handle(decoders.decode(buffer, offset, length))
         );
-        transport.onEvent(CONNECTED_EVENT);
+        transport.onEvent(eventForConnectionUsedInTest());
         TransportCommand command = commandProvider.apply(transport);
+        TransportCommand copy = command.copy();
 
         // When
         transport.handle(command);
 
         // Then
-        assertEqual(commandsSpy.all(), command.copy());
+        assertEqual(commandsSpy.all(), copy);
     }
 
     @Test
@@ -67,17 +80,17 @@ class SerializingTransportTest
                 OFFSET,
                 (buffer, offset, length) -> commandsSpy.handle(decoders.decode(buffer, offset, length))
         );
-        transport.onEvent(CONNECTED_EVENT);
+        transport.onEvent(eventForConnectionUsedInTest());
 
         // When
-        CloseConnection command = transport.command(CONNECTED_EVENT.connectionId(), CloseConnection.class).set(123);
+        CloseConnection command = transport.command(eventForConnectionUsedInTest().connectionId(), CloseConnection.class).set(123);
 
         // Then
         assertThat(command.commandId()).isEqualTo(123);
-        assertThat(command.connectionId()).isEqualTo(CONNECTED_EVENT.connectionId());
-        assertThat(command.port()).isEqualTo(CONNECTED_EVENT.port());
+        assertThat(command.connectionId()).isEqualTo(eventForConnectionUsedInTest().connectionId());
+        assertThat(command.port()).isEqualTo(eventForConnectionUsedInTest().port());
         assertThrows(IllegalArgumentException.class, () -> transport.command(
-                ((ConnectionId)new ConnectionIdValue(CONNECTED_EVENT.port(), CONNECTED_EVENT.connectionId() + 10)).connectionId(),
+                ((ConnectionId)new ConnectionIdValue(eventForConnectionUsedInTest().port(), eventForConnectionUsedInTest().connectionId() + 10)).connectionId(),
                 CloseConnection.class
         ));
     }
