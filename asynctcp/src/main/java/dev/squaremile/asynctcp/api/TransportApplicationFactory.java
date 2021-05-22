@@ -4,11 +4,11 @@ package dev.squaremile.asynctcp.api;
 import dev.squaremile.asynctcp.api.serialization.SerializedCommandListener;
 import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
 import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
-import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedCommandSupplier;
-import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedEventSupplier;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFactory;
 import dev.squaremile.asynctcp.api.transport.app.TransportOnDuty;
+import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedCommandSupplier;
+import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedEventSupplier;
 
 public interface TransportApplicationFactory
 {
@@ -18,7 +18,7 @@ public interface TransportApplicationFactory
      *
      * <p>
      * Use this factory if you want transport commands and events to be serialized and exchanged via buffers,
-     * and nod directly by a method invocations. If the overhead is acceptable, this can be used a default
+     * and not directly by a method invocations. If the overhead is acceptable, this can be used a default
      * method of communication for audit purposes.
      *
      * @param role                      A simple label, no other special meaning at the moment

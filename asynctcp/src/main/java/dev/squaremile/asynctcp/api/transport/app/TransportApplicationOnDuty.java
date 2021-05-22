@@ -19,4 +19,7 @@ public interface TransportApplicationOnDuty extends TransportApplication, Applic
     {
 
     }
+
+    @Override
+    void onEvent(Event event);
 }
