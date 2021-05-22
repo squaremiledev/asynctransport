@@ -1,7 +1,6 @@
 package dev.squaremile.asynctcp.internal.serialization.messaging;
 
 import org.agrona.DirectBuffer;
-import org.agrona.concurrent.MessageHandler;
 
 
 import dev.squaremile.asynctcp.api.serialization.MessageDrivenTransport;
@@ -16,7 +15,7 @@ public class SerializedMessageDrivenTransport implements MessageDrivenTransport
     {
         this.messageDrivenTransport = messageDrivenTransport;
         this.commandSupplier = commandSupplier;
-        this.messageHandler = (msgTypeId, buffer, index, length) -> messageDrivenTransport.onSerialized(buffer, index, length);
+        this.messageHandler = messageDrivenTransport::onSerialized;
     }
 
     @Override

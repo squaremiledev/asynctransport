@@ -3,13 +3,13 @@ package dev.squaremile.asynctcp.fix.examplecertification;
 import java.util.function.Consumer;
 
 import org.agrona.AsciiSequenceView;
-import org.agrona.MutableDirectBuffer;
-import org.agrona.concurrent.MessageHandler;
+import org.agrona.DirectBuffer;
 
 
 import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
-import dev.squaremile.asynctcp.internal.serialization.TransportEventsDeserialization;
 import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
+import dev.squaremile.asynctcp.internal.serialization.TransportEventsDeserialization;
+import dev.squaremile.asynctcp.internal.serialization.messaging.MessageHandler;
 
 public class ReceivedFixMessagesHandler implements MessageHandler
 {
@@ -30,8 +30,8 @@ public class ReceivedFixMessagesHandler implements MessageHandler
     }
 
     @Override
-    public void onMessage(final int msgTypeId, final MutableDirectBuffer buffer, final int index, final int length)
+    public void onMessage(final DirectBuffer buffer, final int offset, final int length)
     {
-        serializedEventsListener.onSerialized(buffer, index, length);
+        serializedEventsListener.onSerialized(buffer, offset, length);
     }
 }

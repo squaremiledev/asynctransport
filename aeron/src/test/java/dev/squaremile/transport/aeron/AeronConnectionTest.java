@@ -1,7 +1,6 @@
 package dev.squaremile.transport.aeron;
 
 import org.agrona.collections.MutableBoolean;
-import org.agrona.concurrent.MessageHandler;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.agrona.concurrent.ringbuffer.RingBuffer;
@@ -21,6 +20,7 @@ import dev.squaremile.asynctcp.api.transport.commands.Listen;
 import dev.squaremile.asynctcp.api.transport.events.Connected;
 import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 import dev.squaremile.asynctcp.internal.ApplicationWithThingsOnDuty;
+import dev.squaremile.asynctcp.internal.serialization.messaging.MessageHandler;
 import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedCommandSupplier;
 import dev.squaremile.asynctcp.support.transport.FreePort;
 import dev.squaremile.asynctcp.support.transport.ThingsOnDutyRunner;
@@ -41,7 +41,7 @@ class AeronConnectionTest
     @BeforeEach
     void setUp()
     {
-        mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED));
+        mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
     }
 
     @AfterEach
@@ -173,6 +173,7 @@ class AeronConnectionTest
                             @Override
                             public int poll(final MessageHandler handler)
                             {
+                                userToNetworkSubscription.poll((buffer, offset, length, header) -> handler.onMessage(buffer, offset, length), 10);
                                 return userToNetwork.read(handler);
                             }
                         },
@@ -186,5 +187,9 @@ class AeronConnectionTest
         runUntil(thingsOnDutyRunner.reached(testerStartedListening::get));
         applicationWithThingsOnDuty.onStart();
         runUntil(thingsOnDutyRunner.reached(sutConnected::get));
+
+
+        aeronUserInstance.close();
+        aeronNetworkInstance.close();
     }
 }

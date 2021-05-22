@@ -2,7 +2,6 @@ package dev.squaremile.asynctcp.fixtures;
 
 import org.agrona.DirectBuffer;
 import org.agrona.ExpandableRingBuffer;
-import org.agrona.concurrent.MessageHandler;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 
@@ -13,6 +12,7 @@ import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
 import dev.squaremile.asynctcp.fixtures.transport.CommandsProvidingTransport;
 import dev.squaremile.asynctcp.internal.serialization.TransportCommandDecoders;
 import dev.squaremile.asynctcp.internal.serialization.TransportEventDecoders;
+import dev.squaremile.asynctcp.internal.serialization.messaging.MessageHandler;
 import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedEventSupplier;
 import dev.squaremile.asynctcp.internal.serialization.sbe.MessageHeaderDecoder;
 

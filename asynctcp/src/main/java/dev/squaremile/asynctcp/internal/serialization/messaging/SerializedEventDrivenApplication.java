@@ -1,13 +1,11 @@
 package dev.squaremile.asynctcp.internal.serialization.messaging;
 
-import org.agrona.concurrent.MessageHandler;
-
 
 import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
-import dev.squaremile.asynctcp.internal.serialization.TransportEventsDeserialization;
 import dev.squaremile.asynctcp.api.transport.app.Event;
 import dev.squaremile.asynctcp.api.transport.app.EventListener;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.internal.serialization.TransportEventsDeserialization;
 
 public class SerializedEventDrivenApplication implements TransportApplicationOnDuty
 {
@@ -30,17 +28,11 @@ public class SerializedEventDrivenApplication implements TransportApplicationOnD
                     eventListener.onEvent(event);
                     application.onEvent(event);
                 });
-        this.messageHandler = (msgTypeId, buffer, index, length) ->
+        this.messageHandler = (buffer, offset, length) ->
         {
-            serializedEventListener.onSerialized(buffer, index, length);
-            serializedEventsListener.onSerialized(buffer, index, length);
+            serializedEventListener.onSerialized(buffer, offset, length);
+            serializedEventsListener.onSerialized(buffer, offset, length);
         };
-    }
-
-    @Override
-    public void onEvent(final Event event)
-    {
-        throw new UnsupportedOperationException("There should be no need to send events to the app directly");
     }
 
     @Override
@@ -60,5 +52,11 @@ public class SerializedEventDrivenApplication implements TransportApplicationOnD
     {
         eventSupplier.poll(messageHandler);
         application.work();
+    }
+
+    @Override
+    public void onEvent(final Event event)
+    {
+        throw new UnsupportedOperationException("There should be no need to send events to the app directly");
     }
 }

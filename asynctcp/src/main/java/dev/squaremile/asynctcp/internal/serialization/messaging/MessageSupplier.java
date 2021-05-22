@@ -1,7 +1,5 @@
 package dev.squaremile.asynctcp.internal.serialization.messaging;
 
-import org.agrona.concurrent.MessageHandler;
-
 public interface MessageSupplier
 {
     /**
