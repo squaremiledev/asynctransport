@@ -1,6 +1,7 @@
 package dev.squaremile.transport.aeron;
 
 import org.agrona.collections.MutableBoolean;
+import org.agrona.concurrent.MessageHandler;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.ringbuffer.OneToOneRingBuffer;
 import org.agrona.concurrent.ringbuffer.RingBuffer;
@@ -20,6 +21,7 @@ import dev.squaremile.asynctcp.api.transport.commands.Listen;
 import dev.squaremile.asynctcp.api.transport.events.Connected;
 import dev.squaremile.asynctcp.api.transport.events.StartedListening;
 import dev.squaremile.asynctcp.internal.ApplicationWithThingsOnDuty;
+import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedCommandSupplier;
 import dev.squaremile.asynctcp.support.transport.FreePort;
 import dev.squaremile.asynctcp.support.transport.ThingsOnDutyRunner;
 import io.aeron.Aeron;
@@ -123,6 +125,27 @@ class AeronConnectionTest
                 }
             }
         };
+
+        final AeronConnection aeronConnection = new AeronConnection(10, 11, mediaDriver.aeronDirectoryName());
+        Aeron aeronNetworkInstance = Aeron.connect(aeronConnection.aeronContext());
+        Aeron aeronUserInstance = Aeron.connect(aeronConnection.aeronContext());
+
+        Subscription userToNetworkSubscription = aeronNetworkInstance.addSubscription(aeronConnection.channel(), aeronConnection.toNetworAeronStreamId());
+        Subscription networkToUserSubscription = aeronUserInstance.addSubscription(aeronConnection.channel(), aeronConnection.fromNetworAeronStreamId());
+
+        ExclusivePublication userToNetworkPublication = aeronUserInstance.addExclusivePublication(aeronConnection.channel(), aeronConnection.toNetworAeronStreamId());
+        ExclusivePublication networkToUserPublication = aeronNetworkInstance.addExclusivePublication(aeronConnection.channel(), aeronConnection.fromNetworAeronStreamId());
+
+        while (!userToNetworkPublication.isConnected())
+        {
+
+        }
+        while (!networkToUserPublication.isConnected())
+        {
+
+        }
+
+
         final RingBuffer networkToUser = new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 + TRAILER_LENGTH]));
         final RingBuffer userToNetwork = new OneToOneRingBuffer(new UnsafeBuffer(new byte[1024 + TRAILER_LENGTH]));
         ApplicationWithThingsOnDuty applicationWithThingsOnDuty = new ApplicationWithThingsOnDuty(
@@ -145,7 +168,14 @@ class AeronConnectionTest
                 ),
                 asyncTcp.createTransport(
                         "role:transport",
-                        userToNetwork::read,
+                        new SerializedCommandSupplier()
+                        {
+                            @Override
+                            public int poll(final MessageHandler handler)
+                            {
+                                return userToNetwork.read(handler);
+                            }
+                        },
                         (sourceBuffer, sourceOffset, length) -> networkToUser.write(1, sourceBuffer, sourceOffset, length)
                 )
         );
