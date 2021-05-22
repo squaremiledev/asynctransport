@@ -1,15 +1,15 @@
 package dev.squaremile.asynctcp.internal;
 
 import dev.squaremile.asynctcp.api.transport.app.Event;
-import dev.squaremile.asynctcp.api.transport.app.OnDuty;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
+import dev.squaremile.asynctcp.api.transport.app.TransportOnDuty;
 
 public class ApplicationWithThingsOnDuty implements TransportApplicationOnDuty
 {
     private final TransportApplicationOnDuty delegate;
-    private final OnDuty additionalThingOnDuty;
+    private final TransportOnDuty additionalThingOnDuty;
 
-    public ApplicationWithThingsOnDuty(final TransportApplicationOnDuty delegate, final OnDuty additionalThingOnDuty)
+    public ApplicationWithThingsOnDuty(final TransportApplicationOnDuty delegate, final TransportOnDuty additionalThingOnDuty)
     {
         this.delegate = delegate;
         this.additionalThingOnDuty = additionalThingOnDuty;
@@ -33,6 +33,13 @@ public class ApplicationWithThingsOnDuty implements TransportApplicationOnDuty
         delegate.work();
         additionalThingOnDuty.work();
 
+    }
+
+    @Override
+    public void close()
+    {
+        delegate.close();
+        additionalThingOnDuty.close();
     }
 
     @Override
