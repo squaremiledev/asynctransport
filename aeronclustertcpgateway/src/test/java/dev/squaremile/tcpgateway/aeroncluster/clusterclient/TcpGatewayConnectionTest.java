@@ -25,7 +25,6 @@ import dev.squaremile.transport.aeroncluster.api.ClientFactory;
 import dev.squaremile.transport.aeroncluster.api.ClusterClientApplication;
 import dev.squaremile.transport.aeroncluster.api.IngressDefinition;
 import dev.squaremile.transport.aeroncluster.fixtures.ClusterDefinition;
-import io.aeron.CommonContext;
 import io.aeron.logbuffer.Header;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixedLengthDelineation;
@@ -128,8 +127,8 @@ class TcpGatewayConnectionTest
         ).connect());
 
         // Then
-        runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(0)) != null));
-        runUntil(noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(1)) != null));
+        runUntil(5_000, noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(0)) != null));
+        runUntil(5_000, noExceptionAnd(() -> new SampleClient().connectedTo(freePortPools.get("tcp").get(1)) != null));
         assertThat(receivedMessageOnNonTcpGatewayClient.get()).describedAs("Does not expect any messages here, it's not a tcp gateway after all").isFalse();
     }
 }
