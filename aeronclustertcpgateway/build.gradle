@@ -17,7 +17,7 @@ dependencies {
     api project(':aeroncluster')
 
     implementation 'org.agrona:agrona:1.10.0'
-    implementation 'io.aeron:aeron-cluster:1.33.1'
+    implementation 'io.aeron:aeron-all:1.33.1'
 
     testImplementation testFixtures(project(':asynctcp'))
     testImplementation testFixtures(project(':aeroncluster'))

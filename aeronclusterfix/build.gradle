@@ -18,7 +18,7 @@ dependencies {
     implementation project(':fix')
 
     testImplementation 'org.agrona:agrona:1.10.0'
-    testImplementation 'io.aeron:aeron-cluster:1.33.1'
+    testImplementation 'io.aeron:aeron-all:1.33.1'
 
     testImplementation project(':aeroncluster')
     testImplementation testFixtures(project(':asynctcp'))
