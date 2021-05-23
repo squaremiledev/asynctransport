@@ -9,7 +9,7 @@ import io.aeron.Aeron;
 import io.aeron.ExclusivePublication;
 import io.aeron.Subscription;
 
-public class AeronGatewayClient implements OnDuty
+public class AeronTcpGatewayClient implements OnDuty
 {
     private final AeronConnection aeronConnection;
     private Aeron aeron;
@@ -17,7 +17,7 @@ public class AeronGatewayClient implements OnDuty
     private TransportApplicationOnDuty application;
     private Subscription subscription;
 
-    public AeronGatewayClient(final AeronConnection aeronConnection)
+    public AeronTcpGatewayClient(final AeronConnection aeronConnection)
     {
         this.aeronConnection = aeronConnection;
     }

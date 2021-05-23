@@ -28,8 +28,8 @@ class AeronTcpGatewayTest
     private final int port = FreePort.freePort();
     private MediaDriver mediaDriver;
     private TransportApplicationOnDuty fakeServer;
-    private AeronTcpGateway aeronTcpGateway;
-    private AeronGatewayClient aeronGatewayClient;
+    private AeronTcpGateway gateway;
+    private AeronTcpGatewayClient gatewayClient;
     private ThingsOnDutyRunner runner;
 
     @BeforeEach
@@ -37,16 +37,16 @@ class AeronTcpGatewayTest
     {
         mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
         fakeServer = FakeServer.startFakeServerListeningOn(port);
-        aeronTcpGateway = new AeronTcpGateway(new AeronConnection(10, 11, mediaDriver.aeronDirectoryName()));
-        aeronGatewayClient = new AeronGatewayClient(new AeronConnection(10, 11, mediaDriver.aeronDirectoryName()));
-        runner = new ThingsOnDutyRunner(fakeServer, aeronGatewayClient, aeronTcpGateway);
+        gateway = new AeronTcpGateway(new AeronConnection(10, 11, mediaDriver.aeronDirectoryName()));
+        gatewayClient = new AeronTcpGatewayClient(new AeronConnection(10, 11, mediaDriver.aeronDirectoryName()));
+        runner = new ThingsOnDutyRunner(fakeServer, gatewayClient, gateway);
     }
 
     @AfterEach
     void tearDown()
     {
-        aeronGatewayClient.close();
-        aeronTcpGateway.close();
+        gatewayClient.close();
+        gateway.close();
         fakeServer.close();
         mediaDriver.close();
     }
@@ -54,42 +54,42 @@ class AeronTcpGatewayTest
     @Test
     void shouldConnectToTheGateway()
     {
-        assertThat(aeronTcpGateway.isConnected()).isFalse();
-        assertThat(aeronGatewayClient.isConnected()).isFalse();
+        assertThat(gateway.isConnected()).isFalse();
+        assertThat(gatewayClient.isConnected()).isFalse();
 
-        aeronTcpGateway.connect();
-        aeronGatewayClient.connect();
-        runUntil(runner.reached(() -> aeronGatewayClient.isConnected() && aeronTcpGateway.isConnected()));
+        gateway.connect();
+        gatewayClient.connect();
+        runUntil(runner.reached(() -> gatewayClient.isConnected() && gateway.isConnected()));
 
-        assertThat(aeronTcpGateway.isConnected()).isTrue();
-        assertThat(aeronGatewayClient.isConnected()).isTrue();
+        assertThat(gateway.isConnected()).isTrue();
+        assertThat(gatewayClient.isConnected()).isTrue();
     }
 
     @Test
     void shouldNotAllowToStartApplicationUntilGatewayIsConnected()
     {
-        assertThat(aeronTcpGateway.isConnected()).isFalse();
-        assertThat(aeronGatewayClient.isConnected()).isFalse();
+        assertThat(gateway.isConnected()).isFalse();
+        assertThat(gatewayClient.isConnected()).isFalse();
 
-        assertThatThrownBy(() -> aeronGatewayClient.startApplication("", __ -> TransportApplicationOnDuty.NO_OP, SerializedEventListener.NO_OP))
+        assertThatThrownBy(() -> gatewayClient.startApplication("", __ -> TransportApplicationOnDuty.NO_OP, SerializedEventListener.NO_OP))
                 .isInstanceOf(IllegalStateException.class);
 
-        aeronTcpGateway.connect();
-        aeronGatewayClient.connect();
-        runUntil(runner.reached(() -> aeronGatewayClient.isConnected() && aeronTcpGateway.isConnected()));
+        gateway.connect();
+        gatewayClient.connect();
+        runUntil(runner.reached(() -> gatewayClient.isConnected() && gateway.isConnected()));
 
-        aeronGatewayClient.startApplication("", __ -> TransportApplicationOnDuty.NO_OP, SerializedEventListener.NO_OP);
+        gatewayClient.startApplication("", __ -> TransportApplicationOnDuty.NO_OP, SerializedEventListener.NO_OP);
     }
 
     @Test
     void shouldUseAeronToInitiateTcpConnection()
     {
-        aeronTcpGateway.connect();
-        aeronGatewayClient.connect();
-        runUntil(runner.reached(() -> aeronGatewayClient.isConnected() && aeronTcpGateway.isConnected()));
+        gateway.connect();
+        gatewayClient.connect();
+        runUntil(runner.reached(() -> gatewayClient.isConnected() && gateway.isConnected()));
 
         final MutableBoolean hasEstablishedTcpConnection = new MutableBoolean(false);
-        aeronGatewayClient.startApplication(
+        gatewayClient.startApplication(
                 "app <-> aeron",
                 transport -> new TransportApplicationOnDuty()
                 {
