@@ -2,6 +2,11 @@ package dev.squaremile.asynctcp.api.transport.app;
 
 public interface TransportApplicationOnDuty extends AutoCloseable, TransportApplication, ApplicationOnDuty, EventListener
 {
+    TransportApplicationOnDuty NO_OP = event ->
+    {
+
+    };
+
     @Override
     default void onStart()
     {
