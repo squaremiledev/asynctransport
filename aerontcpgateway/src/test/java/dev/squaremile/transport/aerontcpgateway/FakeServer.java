@@ -1,4 +1,4 @@
-package dev.squaremile.transport.aeron;
+package dev.squaremile.transport.aerontcpgateway;
 
 import org.agrona.collections.MutableBoolean;
 

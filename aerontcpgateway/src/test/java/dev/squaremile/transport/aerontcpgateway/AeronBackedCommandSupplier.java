@@ -1,4 +1,4 @@
-package dev.squaremile.transport.aeron;
+package dev.squaremile.transport.aerontcpgateway;
 
 import dev.squaremile.asynctcp.internal.serialization.messaging.MessageHandler;
 import dev.squaremile.asynctcp.internal.serialization.messaging.SerializedCommandSupplier;

@@ -1,4 +1,4 @@
-package dev.squaremile.transport.aeron;
+package dev.squaremile.transport.aerontcpgateway;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
