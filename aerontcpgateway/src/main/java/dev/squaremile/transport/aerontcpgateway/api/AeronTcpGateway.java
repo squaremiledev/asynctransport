@@ -1,4 +1,4 @@
-package dev.squaremile.transport.aerontcpgateway;
+package dev.squaremile.transport.aerontcpgateway.api;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.transport.app.OnDuty;
@@ -11,7 +11,7 @@ public class AeronTcpGateway implements OnDuty, AutoCloseable
 {
     private final AeronConnection aeronConnection;
     private TransportOnDuty transport;
-    private ExclusivePublication aeronPublication;
+    private ExclusivePublication publication;
     private Aeron aeron;
 
     public AeronTcpGateway(final AeronConnection aeronConnection)
@@ -22,21 +22,21 @@ public class AeronTcpGateway implements OnDuty, AutoCloseable
     void connect()
     {
         final Aeron aeron = Aeron.connect(aeronConnection.aeronContext());
-        final Subscription aeronSubscription = aeron.addSubscription(aeronConnection.channel(), aeronConnection.toNetworAeronStreamId());
-        final ExclusivePublication aeronPublication = aeron.addExclusivePublication(aeronConnection.channel(), aeronConnection.fromNetworAeronStreamId());
+        final Subscription subscription = aeron.addSubscription(aeronConnection.channel(), aeronConnection.toNetworAeronStreamId());
+        final ExclusivePublication publication = aeron.addExclusivePublication(aeronConnection.channel(), aeronConnection.fromNetworAeronStreamId());
 
         this.transport = new AsyncTcp().createTransport(
                 "aeron <-> tcp",
-                new AeronBackedCommandSupplier(aeronSubscription),
-                new AeronSerializedEventPublisher(aeronPublication)
+                new SubscribedMessageSupplier(subscription)::poll,
+                new SerializedMessagePublisher(publication)::onSerialized
         );
-        this.aeronPublication = aeronPublication;
+        this.publication = publication;
         this.aeron = aeron;
     }
 
     public boolean isConnected()
     {
-        return aeronPublication != null && aeronPublication.isConnected();
+        return publication != null && publication.isConnected();
     }
 
     @Override

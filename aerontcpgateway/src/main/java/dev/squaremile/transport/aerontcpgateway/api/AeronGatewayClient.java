@@ -1,4 +1,4 @@
-package dev.squaremile.transport.aerontcpgateway;
+package dev.squaremile.transport.aerontcpgateway.api;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
@@ -22,6 +22,14 @@ public class AeronGatewayClient implements OnDuty
         this.aeronConnection = aeronConnection;
     }
 
+    public void connect()
+    {
+        final Aeron aeron = Aeron.connect(aeronConnection.aeronContext());
+        this.subscription = aeron.addSubscription(aeronConnection.channel(), aeronConnection.fromNetworAeronStreamId());
+        this.publication = aeron.addExclusivePublication(aeronConnection.channel(), aeronConnection.toNetworAeronStreamId());
+        this.aeron = aeron;
+    }
+
     void startApplication(
             final String role,
             final TransportApplicationOnDutyFactory applicationFactory,
@@ -35,20 +43,12 @@ public class AeronGatewayClient implements OnDuty
         TransportApplicationOnDuty application = new AsyncTcp().createWithoutTransport(
                 role,
                 applicationFactory,
-                new AeronBackedEventSupplier(subscription),
-                new AeronSerializedCommandPublisher(publication),
+                new SubscribedMessageSupplier(subscription)::poll,
+                new SerializedMessagePublisher(publication)::onSerialized,
                 serializedEventListener
         );
         application.onStart();
         this.application = application;
-    }
-
-    public void connect()
-    {
-        final Aeron aeron = Aeron.connect(aeronConnection.aeronContext());
-        subscription = aeron.addSubscription(aeronConnection.channel(), aeronConnection.fromNetworAeronStreamId());
-        this.publication = aeron.addExclusivePublication(aeronConnection.channel(), aeronConnection.toNetworAeronStreamId());
-        this.aeron = aeron;
     }
 
     public boolean isConnected()
@@ -61,6 +61,10 @@ public class AeronGatewayClient implements OnDuty
         if (aeron != null)
         {
             aeron.close();
+        }
+        if (application != null)
+        {
+            application.close();
         }
     }
 

@@ -1,16 +1,16 @@
-package dev.squaremile.transport.aerontcpgateway;
+package dev.squaremile.transport.aerontcpgateway.api;
 
 import org.agrona.DirectBuffer;
 
 
-import dev.squaremile.asynctcp.api.serialization.SerializedCommandListener;
+import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
 import io.aeron.ExclusivePublication;
 
-class AeronSerializedCommandPublisher implements SerializedCommandListener
+class SerializedMessagePublisher implements SerializedMessageListener
 {
     private final ExclusivePublication publication;
 
-    public AeronSerializedCommandPublisher(final ExclusivePublication publication)
+    public SerializedMessagePublisher(final ExclusivePublication publication)
     {
         this.publication = publication;
     }

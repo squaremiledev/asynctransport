@@ -1,4 +1,4 @@
-package dev.squaremile.transport.aerontcpgateway;
+package dev.squaremile.transport.aerontcpgateway.api;
 
 import org.agrona.collections.MutableBoolean;
 import org.junit.jupiter.api.AfterEach;
@@ -16,15 +16,15 @@ import dev.squaremile.asynctcp.api.transport.commands.Connect;
 import dev.squaremile.asynctcp.api.transport.events.Connected;
 import dev.squaremile.asynctcp.support.transport.FreePort;
 import dev.squaremile.asynctcp.support.transport.ThingsOnDutyRunner;
+import dev.squaremile.transport.aerontcpgateway.FakeServer;
 import io.aeron.driver.MediaDriver;
 import io.aeron.driver.ThreadingMode;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 import static dev.squaremile.asynctcp.support.transport.Worker.runUntil;
 
-class AeronConnectionTest
+class AeronTcpGatewayTest
 {
-
     private final int port = FreePort.freePort();
     private MediaDriver mediaDriver;
     private TransportApplicationOnDuty fakeServer;
@@ -82,7 +82,7 @@ class AeronConnectionTest
     }
 
     @Test
-    void tcpSandbox()
+    void shouldUseAeronToInitiateTcpConnection()
     {
         aeronTcpGateway.connect();
         aeronGatewayClient.connect();

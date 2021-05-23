@@ -14,6 +14,7 @@ test {
 }
 
 dependencies {
+    implementation project(':asynctcp')
     implementation 'org.agrona:agrona:1.10.0'
     implementation 'io.aeron:aeron-all:1.33.1'
 

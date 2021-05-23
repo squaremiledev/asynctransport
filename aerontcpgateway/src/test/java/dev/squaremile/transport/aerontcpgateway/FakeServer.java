@@ -13,9 +13,9 @@ import dev.squaremile.asynctcp.support.transport.ThingsOnDutyRunner;
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.fixedLengthDelineation;
 import static dev.squaremile.asynctcp.support.transport.Worker.runUntil;
 
-class FakeServer
+public class FakeServer
 {
-    static TransportApplicationOnDuty startFakeServerListeningOn(final int port)
+    public static TransportApplicationOnDuty startFakeServerListeningOn(final int port)
     {
         MutableBoolean testerStartedListening = new MutableBoolean(false);
         TransportApplicationOnDuty listeningApplication = new AsyncTcp().createSharedStack("tester", transport -> new TransportApplicationOnDuty()
