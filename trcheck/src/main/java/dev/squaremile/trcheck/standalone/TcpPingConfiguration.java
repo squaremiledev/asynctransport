@@ -13,7 +13,7 @@ public class TcpPingConfiguration
     private final String remoteHost;
     private final int remotePort;
     private final int extraDataLength;
-    private boolean useRingBuffers;
+    private final boolean useRingBuffers;
 
     private TcpPingConfiguration(
             final int sendingRatePerSecond,
