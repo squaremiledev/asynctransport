@@ -108,7 +108,8 @@ public class TcpPingConfiguration
     public enum Mode
     {
         SHARED_STACK,
-        RING_BUFFERS
+        RING_BUFFERS,
+        AERON
     }
 
     public static class Builder

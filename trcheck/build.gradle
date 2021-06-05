@@ -25,8 +25,10 @@ test {
 
 dependencies {
     implementation project(':asynctcp')
+    implementation project(':aerontcpgateway')
     implementation testFixtures(project(':asynctcp'))
     implementation 'org.agrona:agrona:1.10.0'
+    implementation 'io.aeron:aeron-all:1.33.1'
     implementation "org.hdrhistogram:HdrHistogram:2.1.12"
     implementation "info.picocli:picocli:4.6.1"
 

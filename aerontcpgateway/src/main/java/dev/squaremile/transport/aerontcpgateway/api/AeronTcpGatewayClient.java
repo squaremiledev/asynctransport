@@ -30,7 +30,7 @@ public class AeronTcpGatewayClient implements OnDuty
         this.aeron = aeron;
     }
 
-    void startApplication(
+    public TransportApplicationOnDuty create(
             final String role,
             final TransportApplicationOnDutyFactory applicationFactory,
             final SerializedEventListener serializedEventListener
@@ -40,15 +40,23 @@ public class AeronTcpGatewayClient implements OnDuty
         {
             throw new IllegalStateException("Connect to the Aeron Gateway first");
         }
-        TransportApplicationOnDuty application = new AsyncTcp().createWithoutTransport(
+        return new AsyncTcp().createWithoutTransport(
                 role,
                 applicationFactory,
                 new SubscribedMessageSupplier(subscription)::poll,
                 new SerializedMessagePublisher(publication)::onSerialized,
                 serializedEventListener
         );
-        application.onStart();
-        this.application = application;
+    }
+
+    public void startApplication(
+            final String role,
+            final TransportApplicationOnDutyFactory applicationFactory,
+            final SerializedEventListener serializedEventListener
+    )
+    {
+        this.application = create(role, applicationFactory, serializedEventListener);
+        this.application.onStart();
     }
 
     public boolean isConnected()

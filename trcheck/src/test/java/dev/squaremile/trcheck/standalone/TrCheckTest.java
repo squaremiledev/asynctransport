@@ -40,6 +40,7 @@ class TrCheckTest
                 Integer.toString(respondToNth),
                 "-x",
                 Integer.toString(extraDataLength),
-                });
+                "-ua"
+        });
     }
 }

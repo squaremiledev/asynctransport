@@ -6,21 +6,31 @@ import org.agrona.collections.MutableBoolean;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
 import dev.squaremile.asynctcp.api.TransportApplicationFactory;
+import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
 import dev.squaremile.asynctcp.api.transport.app.ApplicationOnDuty;
 import dev.squaremile.asynctcp.api.transport.app.CommandFailed;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionApplication;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionEvent;
 import dev.squaremile.asynctcp.api.transport.app.ConnectionTransport;
+import dev.squaremile.asynctcp.api.transport.app.Event;
+import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFactory;
 import dev.squaremile.asynctcp.api.transport.commands.SendMessage;
 import dev.squaremile.asynctcp.api.transport.events.DataSent;
 import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 import dev.squaremile.asynctcp.api.transport.values.Delineation;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
+import dev.squaremile.asynctcp.support.transport.ThingsOnDutyRunner;
+import dev.squaremile.transport.aerontcpgateway.api.AeronConnection;
+import dev.squaremile.transport.aerontcpgateway.api.AeronTcpGateway;
+import dev.squaremile.transport.aerontcpgateway.api.AeronTcpGatewayClient;
 import dev.squaremile.trcheck.probe.Measurements;
 import dev.squaremile.trcheck.probe.Probe;
+import io.aeron.driver.MediaDriver;
+import io.aeron.driver.ThreadingMode;
 
 import static dev.squaremile.asynctcp.api.serialization.SerializedMessageListener.NO_OP;
+import static dev.squaremile.asynctcp.support.transport.Worker.runUntil;
 import static dev.squaremile.trcheck.probe.Metadata.ALL_METADATA_FIELDS_TOTAL_LENGTH;
 import static java.lang.System.nanoTime;
 
@@ -96,6 +106,56 @@ class SourcingConnectionApplication implements ConnectionApplication
                         applicationFactory
                 );
             }
+            case AERON:
+                System.out.println("Creating an app that uses aeron");
+                final MediaDriver mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
+                final AeronTcpGateway gateway = new AeronTcpGateway(new AeronConnection(10, 11, mediaDriver.aeronDirectoryName()));
+                final AeronTcpGatewayClient gatewayClient = new AeronTcpGatewayClient(new AeronConnection(10, 11, mediaDriver.aeronDirectoryName()));
+                gateway.connect();
+                gatewayClient.connect();
+                runUntil(new ThingsOnDutyRunner(gatewayClient, gateway).reached(() -> gatewayClient.isConnected() && gateway.isConnected()));
+                System.out.println("Connected to Aeron Gateway");
+                final TransportApplicationOnDuty gatewayClientApplication = gatewayClient.create(
+                        "source",
+                        applicationFactory,
+                        SerializedEventListener.NO_OP
+                );
+                return new TransportApplicationOnDuty()
+                {
+                    @Override
+                    public void onStart()
+                    {
+                        gatewayClientApplication.onStart();
+                    }
+
+                    @Override
+                    public void onStop()
+                    {
+                        gatewayClientApplication.onStop();
+                    }
+
+                    @Override
+                    public void work()
+                    {
+                        gateway.work();
+                        gatewayClient.work();
+                        gatewayClientApplication.work();
+                    }
+
+                    @Override
+                    public void close()
+                    {
+                        gatewayClientApplication.close();
+                        gatewayClient.close();
+                        gateway.close();
+                    }
+
+                    @Override
+                    public void onEvent(final Event event)
+                    {
+                        gatewayClientApplication.onEvent(event);
+                    }
+                };
             default:
                 throw new IllegalArgumentException(mode.name());
         }

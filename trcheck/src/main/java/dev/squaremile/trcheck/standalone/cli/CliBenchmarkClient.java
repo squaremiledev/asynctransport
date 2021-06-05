@@ -3,6 +3,10 @@ package dev.squaremile.trcheck.standalone.cli;
 import dev.squaremile.trcheck.standalone.TcpPingConfiguration;
 import picocli.CommandLine;
 
+import static dev.squaremile.trcheck.standalone.TcpPingConfiguration.Mode.AERON;
+import static dev.squaremile.trcheck.standalone.TcpPingConfiguration.Mode.RING_BUFFERS;
+import static dev.squaremile.trcheck.standalone.TcpPingConfiguration.Mode.SHARED_STACK;
+
 @CommandLine.Command(name = "client")
 public class CliBenchmarkClient
 {
@@ -30,8 +34,15 @@ public class CliBenchmarkClient
     @CommandLine.Option(names = {"-u", "--use-ring-buffers"}, description = "use ring buffers to communicate with the transport layer")
     public boolean useRingBuffers = false;
 
+    @CommandLine.Option(names = {"-ua", "--use-aeron"}, description = "use Aeron to communicate with the transport layer")
+    public boolean useAeron = false;
+
     public TcpPingConfiguration asConfiguration()
     {
+        if (useAeron && useRingBuffers)
+        {
+            throw new IllegalArgumentException("--use-ring-buffers and --use-aeron can't be both set");
+        }
         return new TcpPingConfiguration.Builder()
                 .remoteHost(remoteHost)
                 .remotePort(remotePort)
@@ -40,7 +51,7 @@ public class CliBenchmarkClient
                 .sendingRatePerSecond(sendingRatePerSecond)
                 .respondToNth(respondToNth)
                 .extraDataLength(extraDataLength)
-                .mode(useRingBuffers ? TcpPingConfiguration.Mode.RING_BUFFERS : TcpPingConfiguration.Mode.SHARED_STACK)
+                .mode(useAeron ? AERON : useRingBuffers ? RING_BUFFERS : SHARED_STACK)
                 .create();
     }
 }

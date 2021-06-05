@@ -18,6 +18,11 @@ class SerializedMessagePublisher implements SerializedMessageListener
     @Override
     public void onSerialized(final DirectBuffer sourceBuffer, final int sourceOffset, final int length)
     {
-        publication.offer(sourceBuffer, sourceOffset, length);
+        long offer;
+        do
+        {
+            offer = publication.offer(sourceBuffer, sourceOffset, length);
+        }
+        while (offer < 0);
     }
 }

@@ -19,7 +19,7 @@ public class AeronTcpGateway implements OnDuty, AutoCloseable
         this.aeronConnection = aeronConnection;
     }
 
-    void connect()
+    public void connect()
     {
         final Aeron aeron = Aeron.connect(aeronConnection.aeronContext());
         final Subscription subscription = aeron.addSubscription(aeronConnection.channel(), aeronConnection.toNetworAeronStreamId());

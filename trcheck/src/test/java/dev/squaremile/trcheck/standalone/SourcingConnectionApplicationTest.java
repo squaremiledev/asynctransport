@@ -6,6 +6,8 @@ import java.util.concurrent.ExecutorService;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,8 +24,9 @@ public class SourcingConnectionApplicationTest
 
     public static final int METADATA_SIZE_IN_BYTES = 24;
 
-    @Test
-    void shouldExchangeMessages() throws InterruptedException
+    @ParameterizedTest
+    @EnumSource
+    void shouldExchangeMessages(final TcpPingConfiguration.Mode mode) throws InterruptedException
     {
         int sendingRatePerSecond = 100;
         int secondsRun = 2;
@@ -41,6 +44,7 @@ public class SourcingConnectionApplicationTest
                         .extraDataLength(extraData)
                         .remoteHost("localhost")
                         .remotePort(freePort())
+                        .mode(mode)
                         .create()
         );
 

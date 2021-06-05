@@ -4,6 +4,7 @@ import org.agrona.DirectBuffer;
 
 
 import dev.squaremile.asynctcp.api.serialization.SerializedEventListener;
+import dev.squaremile.asynctcp.api.transport.app.TransportEvent;
 import dev.squaremile.asynctcp.api.transport.app.TransportEventsListener;
 
 public class TransportEventsDeserialization implements SerializedEventListener
@@ -19,6 +20,7 @@ public class TransportEventsDeserialization implements SerializedEventListener
     @Override
     public void onSerialized(final DirectBuffer sourceBuffer, final int sourceOffset, final int length)
     {
-        transportEventsListener.onEvent(decoders.decode(sourceBuffer, sourceOffset, length));
+        TransportEvent decodedEvent = decoders.decode(sourceBuffer, sourceOffset, length);
+        transportEventsListener.onEvent(decodedEvent);
     }
 }
