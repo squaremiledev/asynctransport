@@ -139,11 +139,6 @@ public class Probe
                '}';
     }
 
-    public void onMessageSent()
-    {
-
-    }
-
     public static class Configuration
     {
         private final String description;

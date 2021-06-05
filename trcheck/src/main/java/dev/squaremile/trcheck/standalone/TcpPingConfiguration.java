@@ -13,7 +13,7 @@ public class TcpPingConfiguration
     private final String remoteHost;
     private final int remotePort;
     private final int extraDataLength;
-    private final boolean useRingBuffers;
+    private final Mode mode;
 
     private TcpPingConfiguration(
             final int sendingRatePerSecond,
@@ -23,7 +23,7 @@ public class TcpPingConfiguration
             final int extraDataLength,
             final String remoteHost,
             final int remotePort,
-            boolean useRingBuffers
+            final Mode mode
     )
     {
         this.extraDataLength = extraDataLength;
@@ -38,7 +38,7 @@ public class TcpPingConfiguration
         this.secondsWarmUp = secondsWarmUp;
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
-        this.useRingBuffers = useRingBuffers;
+        this.mode = mode;
     }
 
     public Probe.Configuration probeConfig()
@@ -85,9 +85,9 @@ public class TcpPingConfiguration
         return remotePort;
     }
 
-    public boolean useBuffers()
+    public Mode mode()
     {
-        return useRingBuffers;
+        return mode;
     }
 
     @Override
@@ -101,7 +101,14 @@ public class TcpPingConfiguration
                ", remoteHost='" + remoteHost + '\'' +
                ", remotePort=" + remotePort +
                ", extraDataLength=" + extraDataLength +
+               ", mode=" + mode +
                '}';
+    }
+
+    public enum Mode
+    {
+        SHARED_STACK,
+        RING_BUFFERS
     }
 
     public static class Builder
@@ -113,7 +120,7 @@ public class TcpPingConfiguration
         private String remoteHost;
         private int remotePort;
         private int extraDataLength;
-        private boolean useRingBuffers;
+        private Mode mode = Mode.SHARED_STACK;
 
         public Builder sendingRatePerSecond(final int sendingRatePerSecond)
         {
@@ -157,15 +164,15 @@ public class TcpPingConfiguration
             return this;
         }
 
-        public Builder useRingBuffers(boolean useRingBuffers)
+        public Builder mode(Mode mode)
         {
-            this.useRingBuffers = useRingBuffers;
+            this.mode = mode;
             return this;
         }
 
         public TcpPingConfiguration create()
         {
-            return new TcpPingConfiguration(sendingRatePerSecond, respondToNth, secondsRun, secondsWarmUp, extraDataLength, remoteHost, remotePort, useRingBuffers);
+            return new TcpPingConfiguration(sendingRatePerSecond, respondToNth, secondsRun, secondsWarmUp, extraDataLength, remoteHost, remotePort, mode);
         }
     }
 }

@@ -49,7 +49,7 @@ class SourcingConnectionApplication implements ConnectionApplication
         final Probe probe = configuration.probeConfig().createProbe();
 
         final MutableBoolean isDone = new MutableBoolean(false);
-        final ApplicationOnDuty source = createApplication(configuration.useBuffers(), transport -> new ConnectingApplication(
+        final ApplicationOnDuty source = createApplication(configuration.mode(), transport -> new ConnectingApplication(
                 transport,
                 configuration.remoteHost(),
                 configuration.remotePort(),
@@ -73,26 +73,31 @@ class SourcingConnectionApplication implements ConnectionApplication
         return probe.measurementsCopy();
     }
 
-    private static ApplicationOnDuty createApplication(final boolean useBuffers, final TransportApplicationOnDutyFactory applicationFactory)
+    private static ApplicationOnDuty createApplication(final TcpPingConfiguration.Mode mode, final TransportApplicationOnDutyFactory applicationFactory)
     {
         final TransportApplicationFactory asyncTcp = new AsyncTcp();
-        if (useBuffers)
+        switch (mode)
         {
-            System.out.println("Creating an app that uses ring buffers");
-            return asyncTcp.create(
-                    "source",
-                    1024 * 1024,
-                    NO_OP,
-                    applicationFactory
-            );
-        }
-        else
-        {
-            System.out.println("Creating an app without ring buffers");
-            return asyncTcp.createSharedStack(
-                    "source",
-                    applicationFactory
-            );
+            case SHARED_STACK:
+            {
+                System.out.println("Creating an app without ring buffers");
+                return asyncTcp.createSharedStack(
+                        "source",
+                        applicationFactory
+                );
+            }
+            case RING_BUFFERS:
+            {
+                System.out.println("Creating an app that uses ring buffers");
+                return asyncTcp.create(
+                        "source",
+                        1024 * 1024,
+                        NO_OP,
+                        applicationFactory
+                );
+            }
+            default:
+                throw new IllegalArgumentException(mode.name());
         }
     }
 

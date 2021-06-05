@@ -13,6 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.squaremile.trcheck.probe.Measurements;
 
 import static dev.squaremile.asynctcp.support.transport.FreePort.freePort;
+import static dev.squaremile.trcheck.standalone.TcpPingConfiguration.Mode.RING_BUFFERS;
+import static dev.squaremile.trcheck.standalone.TcpPingConfiguration.Mode.SHARED_STACK;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 public class SourcingConnectionApplicationTest
@@ -73,7 +75,7 @@ public class SourcingConnectionApplicationTest
                         .extraDataLength(0)
                         .remoteHost("localhost")
                         .remotePort(freePort())
-                        .useRingBuffers(false)
+                        .mode(SHARED_STACK)
                         .create()
         ).printResults();
     }
@@ -91,7 +93,7 @@ public class SourcingConnectionApplicationTest
                         .extraDataLength(0)
                         .remoteHost("localhost")
                         .remotePort(freePort())
-                        .useRingBuffers(false)
+                        .mode(SHARED_STACK)
                         .create()
         ).printResults();
     }
@@ -109,7 +111,7 @@ public class SourcingConnectionApplicationTest
                         .extraDataLength(0)
                         .remoteHost("localhost")
                         .remotePort(freePort())
-                        .useRingBuffers(true)
+                        .mode(RING_BUFFERS)
                         .create()
         ).printResults();
     }

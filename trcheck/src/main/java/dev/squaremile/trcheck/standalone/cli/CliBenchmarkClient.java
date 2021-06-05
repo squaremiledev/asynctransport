@@ -40,7 +40,7 @@ public class CliBenchmarkClient
                 .sendingRatePerSecond(sendingRatePerSecond)
                 .respondToNth(respondToNth)
                 .extraDataLength(extraDataLength)
-                .useRingBuffers(useRingBuffers)
+                .mode(useRingBuffers ? TcpPingConfiguration.Mode.RING_BUFFERS : TcpPingConfiguration.Mode.SHARED_STACK)
                 .create();
     }
 }
