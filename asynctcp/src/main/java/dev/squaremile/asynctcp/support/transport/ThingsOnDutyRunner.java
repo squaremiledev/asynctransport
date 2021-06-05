@@ -10,7 +10,7 @@ import dev.squaremile.asynctcp.api.transport.app.OnDuty;
 
 import static java.util.Arrays.asList;
 
-public class ThingsOnDutyRunner
+public class ThingsOnDutyRunner implements OnDuty
 {
     private static final Consumer<OnDuty> WORK = OnDuty::work;
 
@@ -39,5 +39,14 @@ public class ThingsOnDutyRunner
             }
             return allConditionsMet;
         };
+    }
+
+    @Override
+    public void work()
+    {
+        for (OnDuty duty : onDuty)
+        {
+            duty.work();
+        }
     }
 }

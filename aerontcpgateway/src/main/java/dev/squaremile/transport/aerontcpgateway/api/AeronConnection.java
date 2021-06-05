@@ -26,7 +26,7 @@ public class AeronConnection
 
     public Aeron.Context aeronContext()
     {
-        return new Aeron.Context().aeronDirectoryName(aeronDirectoryName);
+        return new Aeron.Context().aeronDirectoryName(aeronDirectoryName).clone();
     }
 
     public int toNetworAeronStreamId()

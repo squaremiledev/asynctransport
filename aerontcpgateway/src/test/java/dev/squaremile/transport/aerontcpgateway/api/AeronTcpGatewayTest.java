@@ -2,7 +2,6 @@ package dev.squaremile.transport.aerontcpgateway.api;
 
 import org.agrona.collections.MutableBoolean;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,8 +16,6 @@ import dev.squaremile.asynctcp.api.transport.events.Connected;
 import dev.squaremile.asynctcp.support.transport.FreePort;
 import dev.squaremile.asynctcp.support.transport.ThingsOnDutyRunner;
 import dev.squaremile.transport.aerontcpgateway.FakeServer;
-import io.aeron.driver.MediaDriver;
-import io.aeron.driver.ThreadingMode;
 
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 import static dev.squaremile.asynctcp.support.transport.Worker.runUntil;
@@ -26,93 +23,103 @@ import static dev.squaremile.asynctcp.support.transport.Worker.runUntil;
 class AeronTcpGatewayTest
 {
     private final int port = FreePort.freePort();
-    private MediaDriver mediaDriver;
-    private TransportApplicationOnDuty fakeServer;
-    private AeronTcpGateway gateway;
-    private AeronTcpGatewayClient gatewayClient;
-    private ThingsOnDutyRunner runner;
-
-    @BeforeEach
-    void setUp()
-    {
-        mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
-        fakeServer = FakeServer.startFakeServerListeningOn(port);
-        gateway = new AeronTcpGateway(new AeronConnection(10, 11, mediaDriver.aeronDirectoryName()));
-        gatewayClient = new AeronTcpGatewayClient(new AeronConnection(10, 11, mediaDriver.aeronDirectoryName()));
-        runner = new ThingsOnDutyRunner(fakeServer, gatewayClient, gateway);
-    }
+    private final TransportApplicationOnDuty fakeServer = FakeServer.startFakeServerListeningOn(port);
 
     @AfterEach
     void tearDown()
     {
-        gatewayClient.close();
-        gateway.close();
         fakeServer.close();
-        mediaDriver.close();
-    }
-
-    @Test
-    void shouldConnectToTheGateway()
-    {
-        assertThat(gateway.isConnected()).isFalse();
-        assertThat(gatewayClient.isConnected()).isFalse();
-
-        gateway.connect();
-        gatewayClient.connect();
-        runUntil(runner.reached(() -> gatewayClient.isConnected() && gateway.isConnected()));
-
-        assertThat(gateway.isConnected()).isTrue();
-        assertThat(gatewayClient.isConnected()).isTrue();
-    }
-
-    @Test
-    void shouldNotAllowToStartApplicationUntilGatewayIsConnected()
-    {
-        assertThat(gateway.isConnected()).isFalse();
-        assertThat(gatewayClient.isConnected()).isFalse();
-
-        assertThatThrownBy(() -> gatewayClient.startApplication("", __ -> TransportApplicationOnDuty.NO_OP, SerializedEventListener.NO_OP))
-                .isInstanceOf(IllegalStateException.class);
-
-        gateway.connect();
-        gatewayClient.connect();
-        runUntil(runner.reached(() -> gatewayClient.isConnected() && gateway.isConnected()));
-
-        gatewayClient.startApplication("", __ -> TransportApplicationOnDuty.NO_OP, SerializedEventListener.NO_OP);
     }
 
     @Test
     void shouldUseAeronToInitiateTcpConnection()
     {
-        gateway.connect();
-        gatewayClient.connect();
-        runUntil(runner.reached(() -> gatewayClient.isConnected() && gateway.isConnected()));
-
-        final MutableBoolean hasEstablishedTcpConnection = new MutableBoolean(false);
-        gatewayClient.startApplication(
-                "app <-> aeron",
-                transport -> new TransportApplicationOnDuty()
-                {
-                    @Override
-                    public void onStart()
+        try (
+                final AeronTcpGateway gateway = new AeronTcpGateway(10, 11).start();
+                final AeronTcpGatewayClient client = new AeronTcpGatewayClient(gateway.aeronConnection()).start()
+        )
+        {
+            final MutableBoolean hasEstablishedTcpConnection = new MutableBoolean(false);
+            TransportApplicationOnDuty application = client.create(
+                    "app <-> aeron",
+                    transport -> new TransportApplicationOnDuty()
                     {
-                        transport.handle(transport.command(Connect.class).set("localhost", port, 2, 5_000, rawStreaming()));
-                    }
-
-                    @Override
-                    public void onEvent(final Event event)
-                    {
-                        if (event instanceof Connected && ((Connected)event).remotePort() == port)
+                        @Override
+                        public void onStart()
                         {
-                            hasEstablishedTcpConnection.set(true);
+                            transport.handle(transport.command(Connect.class).set(
+                                    "localhost",
+                                    port,
+                                    2,
+                                    5_000,
+                                    rawStreaming()
+                            ));
                         }
-                    }
-                },
-                SerializedEventListener.NO_OP
-        );
 
-        assertThat(hasEstablishedTcpConnection.value).isFalse();
-        runUntil(runner.reached(hasEstablishedTcpConnection::get));
-        assertThat(hasEstablishedTcpConnection.value).isTrue();
+                        @Override
+                        public void onEvent(final Event event)
+                        {
+                            if (event instanceof Connected &&
+                                ((Connected)event).remotePort() == port)
+                            {
+                                hasEstablishedTcpConnection.set(true);
+                            }
+                        }
+                    },
+                    SerializedEventListener.NO_OP
+            );
+            application.onStart();
+            assertThat(hasEstablishedTcpConnection.value).isFalse();
+            runUntil(new ThingsOnDutyRunner(gateway, application).reached(hasEstablishedTcpConnection::get));
+            assertThat(hasEstablishedTcpConnection.value).isTrue();
+        }
+    }
+
+    @Test
+    void shouldConnectToTheGateway()
+    {
+        try (
+                final AeronTcpGateway gateway = new AeronTcpGateway(123, 45).start();
+                final AeronTcpGatewayClient client = new AeronTcpGatewayClient(gateway.aeronConnection()).start()
+        )
+        {
+            assertThat(gateway.hasClientConnected()).isFalse();
+            client.create("foo", transport -> event ->
+            {
+            }, SerializedEventListener.NO_OP);
+            runUntil(new ThingsOnDutyRunner(gateway).reached(gateway::hasClientConnected));
+
+            assertThat(gateway.hasClientConnected()).isTrue();
+        }
+    }
+
+    @Test
+    void shouldProvideConnectionDetailsAfterStarted()
+    {
+        try (final AeronTcpGateway gateway = new AeronTcpGateway(10, 11))
+        {
+            assertThatThrownBy(gateway::aeronConnection).isInstanceOf(IllegalStateException.class);
+            gateway.start();
+            assertThat(gateway.aeronConnection().aeronContext()).isNotNull();
+        }
+    }
+
+    @Test
+    void shouldRequireStartedClientBeforeApplicationCanBeCreated()
+    {
+        try (
+                final AeronTcpGateway gateway = new AeronTcpGateway(10, 11).start();
+                final AeronTcpGatewayClient notStartedClient = new AeronTcpGatewayClient(gateway.aeronConnection())
+        )
+        {
+            assertThatThrownBy(() -> notStartedClient.create("foo", transport -> event ->
+            {
+            }, SerializedEventListener.NO_OP)).isInstanceOf(IllegalStateException.class);
+
+            notStartedClient.start();
+            assertThat(notStartedClient.create("foo", transport -> event ->
+            {
+            }, SerializedEventListener.NO_OP)).isNotNull();
+        }
     }
 }
