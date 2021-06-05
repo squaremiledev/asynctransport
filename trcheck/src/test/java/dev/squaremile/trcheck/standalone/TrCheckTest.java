@@ -20,8 +20,8 @@ class TrCheckTest
     void measureRoundTripTime()
     {
         final String remoteHost = "localhost";
-        final int sendingRatePerSecond = 200000;
-        final int respondToNth = 32;
+        final int sendingRatePerSecond = 50000;
+        final int respondToNth = 1;
         final int extraDataLength = 0;
         TrCheck.main(new String[]{
                 "benchmark",
@@ -31,9 +31,9 @@ class TrCheckTest
                 "-p",
                 Integer.toString(PORT),
                 "-w",
-                Integer.toString(10),
+                Integer.toString(20),
                 "-t",
-                Integer.toString(5),
+                Integer.toString(30),
                 "-s",
                 Integer.toString(sendingRatePerSecond),
                 "-r",
