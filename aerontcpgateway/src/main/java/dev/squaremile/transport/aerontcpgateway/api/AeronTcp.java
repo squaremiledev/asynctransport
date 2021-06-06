@@ -7,11 +7,32 @@ import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFacto
 
 public class AeronTcp
 {
-    public TransportApplicationOnDuty createInProcess(
-            final String role, final SerializedMessageListener serializedMessageListener, final TransportApplicationOnDutyFactory applicationFactory
+    public TransportApplicationOnDuty createUsingExistingMediaDriver(
+            final String role,
+            final String aeronDirectoryName,
+            final SerializedMessageListener serializedMessageListener,
+            final TransportApplicationOnDutyFactory applicationFactory
     )
     {
-        final AeronTcpGateway gateway = new AeronTcpGateway(10, 11).start();
+        return create(role, serializedMessageListener, applicationFactory, new AeronTcpGateway(10, 11, aeronDirectoryName).start());
+    }
+
+    public TransportApplicationOnDuty createWithEmbeddedMediaDriver(
+            final String role,
+            final SerializedMessageListener serializedMessageListener,
+            final TransportApplicationOnDutyFactory applicationFactory
+    )
+    {
+        return create(role, serializedMessageListener, applicationFactory, new AeronTcpGateway(10, 11).start());
+    }
+
+    private TransportApplicationOnDuty create(
+            final String role,
+            final SerializedMessageListener serializedMessageListener,
+            final TransportApplicationOnDutyFactory applicationFactory,
+            final AeronTcpGateway gateway
+    )
+    {
         final AeronTcpGatewayClient gatewayClient = new AeronTcpGatewayClient(gateway.aeronConnection()).start();
         final TransportApplicationOnDuty application = gatewayClient.create(role, applicationFactory, serializedMessageListener);
         return new TransportApplicationOnDuty()

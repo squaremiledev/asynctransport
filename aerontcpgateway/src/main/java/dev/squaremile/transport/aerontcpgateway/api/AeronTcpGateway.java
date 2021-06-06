@@ -18,11 +18,18 @@ public class AeronTcpGateway implements OnDuty, AutoCloseable
     private ExclusivePublication publication;
     private Aeron aeron;
     private MediaDriver mediaDriver;
+    private String aeronDirectoryName;
 
     public AeronTcpGateway(final int toNetworkStreamId, final int fromNetworStreamId)
     {
+        this(toNetworkStreamId, fromNetworStreamId, null);
+    }
+
+    public AeronTcpGateway(final int toNetworkStreamId, final int fromNetworStreamId, String aeronDirectoryName)
+    {
         this.toNetworkStreamId = toNetworkStreamId;
         this.fromNetworStreamId = fromNetworStreamId;
+        this.aeronDirectoryName = aeronDirectoryName;
     }
 
     public boolean hasClientConnected()
@@ -61,8 +68,12 @@ public class AeronTcpGateway implements OnDuty, AutoCloseable
 
     public AeronTcpGateway start()
     {
-        this.mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
-        this.aeronConnection = new AeronConnection(toNetworkStreamId, fromNetworStreamId, mediaDriver.aeronDirectoryName());
+        if (aeronDirectoryName == null)
+        {
+            this.mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
+            this.aeronDirectoryName = mediaDriver.aeronDirectoryName();
+        }
+        this.aeronConnection = new AeronConnection(toNetworkStreamId, fromNetworStreamId, aeronDirectoryName);
         this.aeron = Aeron.connect(aeronConnection.aeronContext());
 
         final Subscription subscription = aeron.addSubscription(aeronConnection.channel(), aeronConnection.toNetworAeronStreamId());
