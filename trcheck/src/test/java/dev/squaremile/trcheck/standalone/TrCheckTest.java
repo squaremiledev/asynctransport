@@ -1,5 +1,9 @@
 package dev.squaremile.trcheck.standalone;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -7,7 +11,7 @@ class TrCheckTest
 {
     private static final int PORT = 8889;
 
-    // run as first, when started run, measureRoundTripTime
+    // run first, when started, run measureRoundTripTime
     @Test
     @Disabled
     void runEchoApplication()
@@ -17,13 +21,40 @@ class TrCheckTest
 
     @Test
     @Disabled
-    void measureRoundTripTime()
+    void measureRoundTripTimeSharedStack()
+    {
+        measureRoundTripTime();
+    }
+
+    @Test
+    @Disabled
+    void measureRoundTripTimeUsingAeronAndEmbeddedDriver()
+    {
+        measureRoundTripTime("-ua");
+    }
+
+    // run first, when started, run measureRoundTripTimeUsingAeronAndExternalDriver
+    @Test
+    @Disabled
+    void startExternalDriver()
+    {
+        TrCheck.main(new String[]{"benchmark", "driver", "-d", "/dev/shm/aeron-tcp"});
+    }
+
+    @Test
+    @Disabled
+    void measureRoundTripTimeUsingAeronAndExternalDriver()
+    {
+        measureRoundTripTime("-ua", "-dd", "/dev/shm/aeron-tcp");
+    }
+
+    private void measureRoundTripTime(String... extraArgs)
     {
         final String remoteHost = "localhost";
         final int sendingRatePerSecond = 50000;
         final int respondToNth = 1;
         final int extraDataLength = 0;
-        TrCheck.main(new String[]{
+        final List<String> baseArgs = Arrays.asList(
                 "benchmark",
                 "client",
                 "-h",
@@ -39,8 +70,10 @@ class TrCheckTest
                 "-r",
                 Integer.toString(respondToNth),
                 "-x",
-                Integer.toString(extraDataLength),
-                "-ua"
-        });
+                Integer.toString(extraDataLength)
+        );
+        final List<String> finalArgsList = new ArrayList<>(baseArgs);
+        finalArgsList.addAll(Arrays.asList(extraArgs));
+        TrCheck.main(finalArgsList.toArray(new String[0]));
     }
 }

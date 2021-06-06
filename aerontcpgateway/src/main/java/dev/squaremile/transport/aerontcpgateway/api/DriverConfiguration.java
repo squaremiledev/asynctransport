@@ -38,4 +38,14 @@ public class DriverConfiguration
     {
         return fromNetworStreamId;
     }
+
+    @Override
+    public String toString()
+    {
+        return "DriverConfiguration{" +
+               "toNetworkStreamId=" + toNetworkStreamId +
+               ", fromNetworStreamId=" + fromNetworStreamId +
+               ", aeronDirectoryName='" + aeronDirectoryName + '\'' +
+               '}';
+    }
 }

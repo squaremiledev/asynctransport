@@ -37,11 +37,18 @@ public class CliBenchmarkClient
     @CommandLine.Option(names = {"-ua", "--use-aeron"}, description = "use Aeron to communicate with the transport layer")
     public boolean useAeron = false;
 
+    @CommandLine.Option(names = {"-dd", "--driver-directory"}, description = "use Aeron to communicate with the transport layer")
+    public String driverDirectory = "";
+
     public TcpPingConfiguration asConfiguration()
     {
         if (useAeron && useRingBuffers)
         {
             throw new IllegalArgumentException("--use-ring-buffers and --use-aeron can't be both set");
+        }
+        if (!driverDirectory.isEmpty() && !useAeron)
+        {
+            throw new IllegalArgumentException("--driver-directory can be specified only when Aeron used");
         }
         return new TcpPingConfiguration.Builder()
                 .remoteHost(remoteHost)
@@ -52,6 +59,7 @@ public class CliBenchmarkClient
                 .respondToNth(respondToNth)
                 .extraDataLength(extraDataLength)
                 .mode(useAeron ? AERON : useRingBuffers ? RING_BUFFERS : SHARED_STACK)
+                .directory(driverDirectory)
                 .create();
     }
 }

@@ -69,7 +69,7 @@ class AeronTcpTest
         final TcpConnectionInitiator tcpConnectionInitiator = new TcpConnectionInitiator();
         try (
                 final MediaDriver mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
-                final TcpDriver tcpDriver = new AeronTcp().createTcpDriver(10, 11, mediaDriver.aeronDirectoryName()).start();
+                final TcpDriver tcpDriver = new AeronTcp().createTcpDriver(10, 11, false, mediaDriver.aeronDirectoryName()).start();
                 final TransportApplicationOnDuty tcpApplication = new AeronTcp().create("role", NO_OP, tcpConnectionInitiator, tcpDriver.configuration())
         )
         {

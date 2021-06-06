@@ -13,6 +13,7 @@ public class TcpDriver implements AutoCloseableOnDuty
 {
     private final int toNetworkStreamId;
     private final int fromNetworStreamId;
+    private final boolean launchMediaDriver;
     private DriverConfiguration driverConfiguration;
     private TransportOnDuty transport;
     private ExclusivePublication publication;
@@ -22,14 +23,15 @@ public class TcpDriver implements AutoCloseableOnDuty
 
     public TcpDriver(final int toNetworkStreamId, final int fromNetworStreamId)
     {
-        this(toNetworkStreamId, fromNetworStreamId, null);
+        this(toNetworkStreamId, fromNetworStreamId, true, null);
     }
 
-    public TcpDriver(final int toNetworkStreamId, final int fromNetworStreamId, String aeronDirectoryName)
+    public TcpDriver(final int toNetworkStreamId, final int fromNetworStreamId, final boolean launchMediaDriver, String aeronDirectoryName)
     {
         this.toNetworkStreamId = toNetworkStreamId;
         this.fromNetworStreamId = fromNetworStreamId;
         this.aeronDirectoryName = aeronDirectoryName;
+        this.launchMediaDriver = launchMediaDriver;
     }
 
     public boolean hasClientConnected()
@@ -68,9 +70,19 @@ public class TcpDriver implements AutoCloseableOnDuty
 
     public TcpDriver start()
     {
-        if (aeronDirectoryName == null)
+        if (launchMediaDriver)
         {
-            this.embeddedMediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
+            final MediaDriver.Context ctx = new MediaDriver.Context().threadingMode(ThreadingMode.SHARED);
+            if (aeronDirectoryName == null)
+            {
+                ctx.dirDeleteOnShutdown(true);
+            }
+            else
+            {
+                ctx.dirDeleteOnShutdown(false);
+                ctx.aeronDirectoryName(aeronDirectoryName);
+            }
+            this.embeddedMediaDriver = MediaDriver.launchEmbedded(ctx);
             this.aeronDirectoryName = embeddedMediaDriver.aeronDirectoryName();
         }
         this.driverConfiguration = new DriverConfiguration(toNetworkStreamId, fromNetworStreamId, aeronDirectoryName);

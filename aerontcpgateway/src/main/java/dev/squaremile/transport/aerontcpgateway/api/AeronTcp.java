@@ -8,6 +8,17 @@ import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFacto
 
 public class AeronTcp
 {
+
+    public TcpDriver createTcpDriver(final int toNetworkStreamId, final int fromNetworStreamId, final boolean launchMediaDriver, final String aeronDirectoryName)
+    {
+        return new TcpDriver(toNetworkStreamId, fromNetworStreamId, launchMediaDriver, aeronDirectoryName);
+    }
+
+    public TcpDriver createEmbeddedTcpDriver(final int toNetworkStreamId, final int fromNetworStreamId)
+    {
+        return new TcpDriver(toNetworkStreamId, fromNetworStreamId, true, null);
+    }
+
     public TransportApplicationOnDuty create(
             final String role,
             final SerializedMessageListener serializedMessageListener,
@@ -74,15 +85,5 @@ public class AeronTcp
                 application.onEvent(event);
             }
         };
-    }
-
-    public TcpDriver createTcpDriver(final int toNetworkStreamId, final int fromNetworStreamId, final String aeronDirectoryName)
-    {
-        return new TcpDriver(toNetworkStreamId, fromNetworStreamId, aeronDirectoryName);
-    }
-
-    public TcpDriver createEmbeddedTcpDriver(final int toNetworkStreamId, final int fromNetworStreamId)
-    {
-        return createTcpDriver(toNetworkStreamId, fromNetworStreamId, null);
     }
 }

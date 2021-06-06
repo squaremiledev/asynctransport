@@ -17,6 +17,7 @@ import dev.squaremile.asynctcp.api.transport.events.MessageReceived;
 import dev.squaremile.asynctcp.api.transport.values.Delineation;
 import dev.squaremile.asynctcp.api.wiring.ConnectingApplication;
 import dev.squaremile.transport.aerontcpgateway.api.AeronTcp;
+import dev.squaremile.transport.aerontcpgateway.api.DriverConfiguration;
 import dev.squaremile.trcheck.probe.Measurements;
 import dev.squaremile.trcheck.probe.Probe;
 
@@ -49,7 +50,7 @@ class SourcingConnectionApplication implements ConnectionApplication
         final Probe probe = configuration.probeConfig().createProbe();
 
         final MutableBoolean isDone = new MutableBoolean(false);
-        final ApplicationOnDuty source = createApplication(configuration.mode(), transport -> new ConnectingApplication(
+        final ApplicationOnDuty source = createApplication(configuration, transport -> new ConnectingApplication(
                 transport,
                 configuration.remoteHost(),
                 configuration.remotePort(),
@@ -73,9 +74,9 @@ class SourcingConnectionApplication implements ConnectionApplication
         return probe.measurementsCopy();
     }
 
-    private static ApplicationOnDuty createApplication(final TcpPingConfiguration.Mode mode, final TransportApplicationOnDutyFactory applicationFactory)
+    private static ApplicationOnDuty createApplication(final TcpPingConfiguration tcpPingConfiguration, final TransportApplicationOnDutyFactory applicationFactory)
     {
-        switch (mode)
+        switch (tcpPingConfiguration.mode())
         {
             case SHARED_STACK:
             {
@@ -88,10 +89,23 @@ class SourcingConnectionApplication implements ConnectionApplication
                 return new AsyncTcp().create("source", 1024 * 1024, NO_OP, applicationFactory);
             }
             case AERON:
-                System.out.println("Creating an app that uses aeron");
-                return new AeronTcp().create("source", NO_OP, applicationFactory);
+                if (tcpPingConfiguration.driverDirectory().isEmpty())
+                {
+                    System.out.println("Creating an app that uses aeron with randomized driver directory");
+                    return new AeronTcp().create("source", NO_OP, applicationFactory);
+                }
+                else
+                {
+                    System.out.println("Creating an app that uses aeron with driver directory " + tcpPingConfiguration.driverDirectory());
+                    return new AeronTcp().create(
+                            "source",
+                            NO_OP,
+                            applicationFactory,
+                            new DriverConfiguration(10, 11, tcpPingConfiguration.driverDirectory())
+                    );
+                }
             default:
-                throw new IllegalArgumentException(mode.name());
+                throw new IllegalArgumentException(tcpPingConfiguration.mode().name());
         }
     }
 

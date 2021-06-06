@@ -3,6 +3,7 @@ package dev.squaremile.trcheck.standalone;
 import dev.squaremile.trcheck.probe.Probe;
 
 import static dev.squaremile.trcheck.probe.Probe.probe;
+import static java.util.Objects.requireNonNull;
 
 public class TcpPingConfiguration
 {
@@ -13,6 +14,7 @@ public class TcpPingConfiguration
     private final String remoteHost;
     private final int remotePort;
     private final int extraDataLength;
+    private final String driverDirectory;
     private final Mode mode;
 
     private TcpPingConfiguration(
@@ -23,10 +25,12 @@ public class TcpPingConfiguration
             final int extraDataLength,
             final String remoteHost,
             final int remotePort,
-            final Mode mode
+            final Mode mode,
+            final String driverDirectory
     )
     {
         this.extraDataLength = extraDataLength;
+        this.driverDirectory = driverDirectory;
         if (sendingRatePerSecond <= 0 || respondToNth <= 0 || secondsRun <= 0 || secondsWarmUp <= 0 || extraDataLength < 0 || remoteHost == null || remoteHost.trim().isEmpty() || remotePort <= 0)
         {
             throw new IllegalArgumentException();
@@ -48,6 +52,11 @@ public class TcpPingConfiguration
                 .skippedResponses((sendingRatePerSecond() * secondsWarmUp()) / respondToNth())
                 .respondToEveryNthRequest(respondToNth())
                 .sendingRatePerSecond(sendingRatePerSecond());
+    }
+
+    public String driverDirectory()
+    {
+        return driverDirectory;
     }
 
     public int sendingRatePerSecond()
@@ -101,6 +110,7 @@ public class TcpPingConfiguration
                ", remoteHost='" + remoteHost + '\'' +
                ", remotePort=" + remotePort +
                ", extraDataLength=" + extraDataLength +
+               ", driverDirectory='" + driverDirectory + '\'' +
                ", mode=" + mode +
                '}';
     }
@@ -122,6 +132,7 @@ public class TcpPingConfiguration
         private int remotePort;
         private int extraDataLength;
         private Mode mode = Mode.SHARED_STACK;
+        private String driverDirectory = "";
 
         public Builder sendingRatePerSecond(final int sendingRatePerSecond)
         {
@@ -155,7 +166,7 @@ public class TcpPingConfiguration
 
         public Builder remoteHost(final String remoteHost)
         {
-            this.remoteHost = remoteHost;
+            this.remoteHost = requireNonNull(remoteHost);
             return this;
         }
 
@@ -167,13 +178,19 @@ public class TcpPingConfiguration
 
         public Builder mode(Mode mode)
         {
-            this.mode = mode;
+            this.mode = requireNonNull(mode);
+            return this;
+        }
+
+        public Builder directory(final String driverDirectory)
+        {
+            this.driverDirectory = requireNonNull(driverDirectory);
             return this;
         }
 
         public TcpPingConfiguration create()
         {
-            return new TcpPingConfiguration(sendingRatePerSecond, respondToNth, secondsRun, secondsWarmUp, extraDataLength, remoteHost, remotePort, mode);
+            return new TcpPingConfiguration(sendingRatePerSecond, respondToNth, secondsRun, secondsWarmUp, extraDataLength, remoteHost, remotePort, mode, driverDirectory);
         }
     }
 }
