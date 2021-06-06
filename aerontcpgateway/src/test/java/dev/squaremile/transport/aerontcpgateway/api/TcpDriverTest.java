@@ -20,7 +20,7 @@ import dev.squaremile.transport.aerontcpgateway.FakeServer;
 import static dev.squaremile.asynctcp.api.serialization.PredefinedTransportDelineation.rawStreaming;
 import static dev.squaremile.asynctcp.support.transport.Worker.runUntil;
 
-class AeronTcpGatewayTest
+class TcpDriverTest
 {
     private final int port = FreePort.freePort();
     private final TransportApplicationOnDuty fakeServer = FakeServer.startFakeServerListeningOn(port);
@@ -35,8 +35,8 @@ class AeronTcpGatewayTest
     void shouldUseAeronToInitiateTcpConnection()
     {
         try (
-                final AeronTcpGateway gateway = new AeronTcpGateway(10, 11).start();
-                final AeronTcpGatewayClient client = new AeronTcpGatewayClient(gateway.aeronConnection()).start()
+                final TcpDriver gateway = new TcpDriver(10, 11).start();
+                final Tcp client = new Tcp(gateway.configuration()).start()
         )
         {
             final MutableBoolean hasEstablishedTcpConnection = new MutableBoolean(false);
@@ -79,8 +79,8 @@ class AeronTcpGatewayTest
     void shouldConnectToTheGateway()
     {
         try (
-                final AeronTcpGateway gateway = new AeronTcpGateway(123, 45).start();
-                final AeronTcpGatewayClient client = new AeronTcpGatewayClient(gateway.aeronConnection()).start()
+                final TcpDriver gateway = new TcpDriver(123, 45).start();
+                final Tcp client = new Tcp(gateway.configuration()).start()
         )
         {
             assertThat(gateway.hasClientConnected()).isFalse();
@@ -96,11 +96,11 @@ class AeronTcpGatewayTest
     @Test
     void shouldProvideConnectionDetailsAfterStarted()
     {
-        try (final AeronTcpGateway gateway = new AeronTcpGateway(10, 11))
+        try (final TcpDriver gateway = new TcpDriver(10, 11))
         {
-            assertThatThrownBy(gateway::aeronConnection).isInstanceOf(IllegalStateException.class);
+            assertThatThrownBy(gateway::configuration).isInstanceOf(IllegalStateException.class);
             gateway.start();
-            assertThat(gateway.aeronConnection().aeronContext()).isNotNull();
+            assertThat(gateway.configuration().aeronContext()).isNotNull();
         }
     }
 
@@ -108,8 +108,8 @@ class AeronTcpGatewayTest
     void shouldRequireStartedClientBeforeApplicationCanBeCreated()
     {
         try (
-                final AeronTcpGateway gateway = new AeronTcpGateway(10, 11).start();
-                final AeronTcpGatewayClient notStartedClient = new AeronTcpGatewayClient(gateway.aeronConnection())
+                final TcpDriver gateway = new TcpDriver(10, 11).start();
+                final Tcp notStartedClient = new Tcp(gateway.configuration())
         )
         {
             assertThatThrownBy(() -> notStartedClient.create("foo", transport -> event ->

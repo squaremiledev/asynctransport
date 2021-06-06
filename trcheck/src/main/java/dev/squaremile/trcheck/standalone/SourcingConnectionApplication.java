@@ -89,7 +89,7 @@ class SourcingConnectionApplication implements ConnectionApplication
             }
             case AERON:
                 System.out.println("Creating an app that uses aeron");
-                return new AeronTcp().createWithEmbeddedMediaDriver("source", NO_OP, applicationFactory);
+                return new AeronTcp().create("source", NO_OP, applicationFactory);
             default:
                 throw new IllegalArgumentException(mode.name());
         }

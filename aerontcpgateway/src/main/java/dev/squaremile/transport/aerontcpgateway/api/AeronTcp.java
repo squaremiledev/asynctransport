@@ -1,39 +1,43 @@
 package dev.squaremile.transport.aerontcpgateway.api;
 
 import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
+import dev.squaremile.asynctcp.api.transport.app.AutoCloseableOnDuty;
 import dev.squaremile.asynctcp.api.transport.app.Event;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDuty;
 import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFactory;
 
 public class AeronTcp
 {
-    public TransportApplicationOnDuty createUsingExistingMediaDriver(
+    public TransportApplicationOnDuty create(
             final String role,
-            final String aeronDirectoryName,
             final SerializedMessageListener serializedMessageListener,
-            final TransportApplicationOnDutyFactory applicationFactory
+            final TransportApplicationOnDutyFactory applicationFactory,
+            final DriverConfiguration driverConfiguration
     )
     {
-        return create(role, serializedMessageListener, applicationFactory, new AeronTcpGateway(10, 11, aeronDirectoryName).start());
+        return create(role, serializedMessageListener, applicationFactory, AutoCloseableOnDuty.NO_OP, driverConfiguration);
     }
 
-    public TransportApplicationOnDuty createWithEmbeddedMediaDriver(
+    public TransportApplicationOnDuty create(
             final String role,
             final SerializedMessageListener serializedMessageListener,
             final TransportApplicationOnDutyFactory applicationFactory
     )
     {
-        return create(role, serializedMessageListener, applicationFactory, new AeronTcpGateway(10, 11).start());
+        final TcpDriver tcpDriver = createEmbeddedTcpDriver(10, 11).start();
+        return create(role, serializedMessageListener, applicationFactory, tcpDriver, tcpDriver.configuration());
     }
+
 
     private TransportApplicationOnDuty create(
             final String role,
             final SerializedMessageListener serializedMessageListener,
             final TransportApplicationOnDutyFactory applicationFactory,
-            final AeronTcpGateway gateway
+            final AutoCloseableOnDuty media,
+            final DriverConfiguration driverConfiguration
     )
     {
-        final AeronTcpGatewayClient gatewayClient = new AeronTcpGatewayClient(gateway.aeronConnection()).start();
+        final Tcp gatewayClient = new Tcp(driverConfiguration).start();
         final TransportApplicationOnDuty application = gatewayClient.create(role, applicationFactory, serializedMessageListener);
         return new TransportApplicationOnDuty()
         {
@@ -52,7 +56,7 @@ public class AeronTcp
             @Override
             public void work()
             {
-                gateway.work();
+                media.work();
                 application.work();
             }
 
@@ -61,7 +65,7 @@ public class AeronTcp
             {
                 application.close();
                 gatewayClient.close();
-                gateway.close();
+                media.close();
             }
 
             @Override
@@ -70,5 +74,15 @@ public class AeronTcp
                 application.onEvent(event);
             }
         };
+    }
+
+    public TcpDriver createTcpDriver(final int toNetworkStreamId, final int fromNetworStreamId, final String aeronDirectoryName)
+    {
+        return new TcpDriver(toNetworkStreamId, fromNetworStreamId, aeronDirectoryName);
+    }
+
+    public TcpDriver createEmbeddedTcpDriver(final int toNetworkStreamId, final int fromNetworStreamId)
+    {
+        return createTcpDriver(toNetworkStreamId, fromNetworStreamId, null);
     }
 }

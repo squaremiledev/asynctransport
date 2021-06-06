@@ -2,13 +2,13 @@ package dev.squaremile.transport.aerontcpgateway.api;
 
 import io.aeron.Aeron;
 
-public class AeronConnection
+public class DriverConfiguration
 {
     private final int toNetworkStreamId;
     private final int fromNetworStreamId;
     private final String aeronDirectoryName;
 
-    public AeronConnection(final int toNetworkStreamId, final int fromNetworStreamId, final String aeronDirectoryName)
+    public DriverConfiguration(final int toNetworkStreamId, final int fromNetworStreamId, final String aeronDirectoryName)
     {
         if (toNetworkStreamId == fromNetworStreamId)
         {

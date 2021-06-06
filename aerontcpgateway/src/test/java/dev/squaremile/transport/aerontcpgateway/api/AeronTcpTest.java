@@ -28,6 +28,7 @@ class AeronTcpTest
 {
     private final int port = FreePort.freePort();
     private final TransportApplicationOnDuty fakeServer = FakeServer.startFakeServerListeningOn(port);
+    private final TcpConnectionInitiator tcpConnectionInitiator = new TcpConnectionInitiator();
 
     @AfterEach
     void tearDown()
@@ -36,10 +37,9 @@ class AeronTcpTest
     }
 
     @Test
-    void shouldUseAeronToEstablishTcpConnection()
+    void shouldProvideClientWithDriverEmbedded()
     {
-        final TcpConnectionInitiator tcpConnectionInitiator = new TcpConnectionInitiator();
-        try (final TransportApplicationOnDuty tcpApplication = new AeronTcp().createWithEmbeddedMediaDriver("role", NO_OP, tcpConnectionInitiator))
+        try (final TransportApplicationOnDuty tcpApplication = new AeronTcp().create("role", NO_OP, tcpConnectionInitiator))
         {
             tcpApplication.onStart();
             assertThat(tcpConnectionInitiator.portOnWhichTCPConnectionHasBeenEstablished()).isEmpty();
@@ -49,18 +49,35 @@ class AeronTcpTest
     }
 
     @Test
+    void shouldProvideSeparateTcpDriver()
+    {
+        try (
+                final TcpDriver tcpDriver = new AeronTcp().createEmbeddedTcpDriver(10, 11).start();
+                final TransportApplicationOnDuty tcpApplication = new AeronTcp().create("role", NO_OP, tcpConnectionInitiator, tcpDriver.configuration())
+        )
+        {
+            tcpApplication.onStart();
+            assertThat(tcpConnectionInitiator.portOnWhichTCPConnectionHasBeenEstablished()).isEmpty();
+            runUntil(new ThingsOnDutyRunner(tcpApplication, tcpDriver).reached(() -> tcpConnectionInitiator.portOnWhichTCPConnectionHasBeenEstablished().isPresent()));
+            assertThat(tcpConnectionInitiator.portOnWhichTCPConnectionHasBeenEstablished().get()).isEqualTo(port);
+        }
+    }
+
+    @Test
     void shouldUtilizeExistingMediaDriver()
     {
-        try (final MediaDriver mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true)))
+        final TcpConnectionInitiator tcpConnectionInitiator = new TcpConnectionInitiator();
+        try (
+                final MediaDriver mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
+                final TcpDriver tcpDriver = new AeronTcp().createTcpDriver(10, 11, mediaDriver.aeronDirectoryName()).start();
+                final TransportApplicationOnDuty tcpApplication = new AeronTcp().create("role", NO_OP, tcpConnectionInitiator, tcpDriver.configuration())
+        )
         {
-            final TcpConnectionInitiator tcpConnectionInitiator = new TcpConnectionInitiator();
-            try (final TransportApplicationOnDuty tcpApplication = new AeronTcp().createUsingExistingMediaDriver("role", mediaDriver.aeronDirectoryName(), NO_OP, tcpConnectionInitiator))
-            {
-                tcpApplication.onStart();
-                assertThat(tcpConnectionInitiator.portOnWhichTCPConnectionHasBeenEstablished()).isEmpty();
-                runUntil(new ThingsOnDutyRunner(tcpApplication).reached(() -> tcpConnectionInitiator.portOnWhichTCPConnectionHasBeenEstablished().isPresent()));
-                assertThat(tcpConnectionInitiator.portOnWhichTCPConnectionHasBeenEstablished().get()).isEqualTo(port);
-            }
+
+            tcpApplication.onStart();
+            assertThat(tcpConnectionInitiator.portOnWhichTCPConnectionHasBeenEstablished()).isEmpty();
+            runUntil(new ThingsOnDutyRunner(tcpApplication, tcpDriver).reached(() -> tcpConnectionInitiator.portOnWhichTCPConnectionHasBeenEstablished().isPresent()));
+            assertThat(tcpConnectionInitiator.portOnWhichTCPConnectionHasBeenEstablished().get()).isEqualTo(port);
         }
     }
 

@@ -7,19 +7,19 @@ import dev.squaremile.asynctcp.api.transport.app.TransportApplicationOnDutyFacto
 import io.aeron.Aeron;
 import io.aeron.ExclusivePublication;
 
-public class AeronTcpGatewayClient implements AutoCloseable
+public class Tcp implements AutoCloseable
 {
-    private final AeronConnection aeronConnection;
+    private final DriverConfiguration driverConfiguration;
     private Aeron aeron;
 
-    public AeronTcpGatewayClient(final AeronConnection aeronConnection)
+    public Tcp(final DriverConfiguration driverConfiguration)
     {
-        this.aeronConnection = aeronConnection;
+        this.driverConfiguration = driverConfiguration;
     }
 
-    public AeronTcpGatewayClient start()
+    public Tcp start()
     {
-        aeron = Aeron.connect(aeronConnection.aeronContext());
+        aeron = Aeron.connect(driverConfiguration.aeronContext());
         return this;
     }
 
@@ -34,7 +34,7 @@ public class AeronTcpGatewayClient implements AutoCloseable
             throw new IllegalStateException("Start the client before creating an application");
         }
 
-        final ExclusivePublication publication = aeron.addExclusivePublication(aeronConnection.channel(), aeronConnection.toNetworAeronStreamId());
+        final ExclusivePublication publication = aeron.addExclusivePublication(driverConfiguration.channel(), driverConfiguration.toNetworAeronStreamId());
         while (!publication.isConnected())
         {
 
@@ -43,7 +43,7 @@ public class AeronTcpGatewayClient implements AutoCloseable
         return new AsyncTcp().createWithoutTransport(
                 role,
                 applicationFactory,
-                new SubscribedMessageSupplier(aeron.addSubscription(aeronConnection.channel(), aeronConnection.fromNetworAeronStreamId()))::poll,
+                new SubscribedMessageSupplier(aeron.addSubscription(driverConfiguration.channel(), driverConfiguration.fromNetworAeronStreamId()))::poll,
                 (sourceBuffer, sourceOffset, length) ->
                 {
                     serializedMessagePublisher.onSerialized(sourceBuffer, sourceOffset, length);

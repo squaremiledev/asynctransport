@@ -1,7 +1,7 @@
 package dev.squaremile.transport.aerontcpgateway.api;
 
 import dev.squaremile.asynctcp.api.AsyncTcp;
-import dev.squaremile.asynctcp.api.transport.app.OnDuty;
+import dev.squaremile.asynctcp.api.transport.app.AutoCloseableOnDuty;
 import dev.squaremile.asynctcp.api.transport.app.TransportOnDuty;
 import io.aeron.Aeron;
 import io.aeron.ExclusivePublication;
@@ -9,23 +9,23 @@ import io.aeron.Subscription;
 import io.aeron.driver.MediaDriver;
 import io.aeron.driver.ThreadingMode;
 
-public class AeronTcpGateway implements OnDuty, AutoCloseable
+public class TcpDriver implements AutoCloseableOnDuty
 {
     private final int toNetworkStreamId;
     private final int fromNetworStreamId;
-    private AeronConnection aeronConnection;
+    private DriverConfiguration driverConfiguration;
     private TransportOnDuty transport;
     private ExclusivePublication publication;
     private Aeron aeron;
-    private MediaDriver mediaDriver;
+    private MediaDriver embeddedMediaDriver;
     private String aeronDirectoryName;
 
-    public AeronTcpGateway(final int toNetworkStreamId, final int fromNetworStreamId)
+    public TcpDriver(final int toNetworkStreamId, final int fromNetworStreamId)
     {
         this(toNetworkStreamId, fromNetworStreamId, null);
     }
 
-    public AeronTcpGateway(final int toNetworkStreamId, final int fromNetworStreamId, String aeronDirectoryName)
+    public TcpDriver(final int toNetworkStreamId, final int fromNetworStreamId, String aeronDirectoryName)
     {
         this.toNetworkStreamId = toNetworkStreamId;
         this.fromNetworStreamId = fromNetworStreamId;
@@ -59,25 +59,25 @@ public class AeronTcpGateway implements OnDuty, AutoCloseable
             aeron.close();
             aeron = null;
         }
-        if (mediaDriver != null)
+        if (embeddedMediaDriver != null)
         {
-            mediaDriver.close();
-            mediaDriver = null;
+            embeddedMediaDriver.close();
+            embeddedMediaDriver = null;
         }
     }
 
-    public AeronTcpGateway start()
+    public TcpDriver start()
     {
         if (aeronDirectoryName == null)
         {
-            this.mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
-            this.aeronDirectoryName = mediaDriver.aeronDirectoryName();
+            this.embeddedMediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().threadingMode(ThreadingMode.SHARED).dirDeleteOnShutdown(true));
+            this.aeronDirectoryName = embeddedMediaDriver.aeronDirectoryName();
         }
-        this.aeronConnection = new AeronConnection(toNetworkStreamId, fromNetworStreamId, aeronDirectoryName);
-        this.aeron = Aeron.connect(aeronConnection.aeronContext());
+        this.driverConfiguration = new DriverConfiguration(toNetworkStreamId, fromNetworStreamId, aeronDirectoryName);
+        this.aeron = Aeron.connect(driverConfiguration.aeronContext());
 
-        final Subscription subscription = aeron.addSubscription(aeronConnection.channel(), aeronConnection.toNetworAeronStreamId());
-        this.publication = aeron.addExclusivePublication(aeronConnection.channel(), aeronConnection.fromNetworAeronStreamId());
+        final Subscription subscription = aeron.addSubscription(driverConfiguration.channel(), driverConfiguration.toNetworAeronStreamId());
+        this.publication = aeron.addExclusivePublication(driverConfiguration.channel(), driverConfiguration.fromNetworAeronStreamId());
         this.transport = new AsyncTcp().createTransport(
                 "aeron <-> tcp",
                 new SubscribedMessageSupplier(subscription)::poll,
@@ -86,12 +86,12 @@ public class AeronTcpGateway implements OnDuty, AutoCloseable
         return this;
     }
 
-    public AeronConnection aeronConnection()
+    public DriverConfiguration configuration()
     {
-        if (aeronConnection == null)
+        if (driverConfiguration == null)
         {
-            throw new IllegalStateException("start the gateway to retrieve the connection details");
+            throw new IllegalStateException("start the driver to retrieve the connection details");
         }
-        return aeronConnection;
+        return driverConfiguration;
     }
 }
