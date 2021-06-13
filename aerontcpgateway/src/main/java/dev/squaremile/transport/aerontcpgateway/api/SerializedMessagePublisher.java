@@ -1,6 +1,9 @@
 package dev.squaremile.transport.aerontcpgateway.api;
 
+import java.util.concurrent.TimeUnit;
+
 import org.agrona.DirectBuffer;
+import org.agrona.concurrent.YieldingIdleStrategy;
 
 
 import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
@@ -8,24 +11,53 @@ import io.aeron.ExclusivePublication;
 
 class SerializedMessagePublisher implements SerializedMessageListener
 {
-    private final ExclusivePublication publication;
+    public static final int FAILED_OFFER_TIMEOUT_MS = 10_000;
 
-    public SerializedMessagePublisher(final ExclusivePublication publication)
+    private final ExclusivePublication publication;
+    private final YieldingIdleStrategy idleStrategy = new YieldingIdleStrategy();
+    private final String role;
+    private long totalNumberOfSuccessfulOffers = 0;
+
+    public SerializedMessagePublisher(final String role, final ExclusivePublication publication)
     {
         this.publication = publication;
+        this.role = role;
     }
 
     @Override
     public void onSerialized(final DirectBuffer sourceBuffer, final int sourceOffset, final int length)
     {
-        long offer = Long.MIN_VALUE;
+        long offerResult = Long.MIN_VALUE;
+        long firstFailedAttemptNs = Long.MIN_VALUE;
         do
         {
             if (publication.isConnected())
             {
-                offer = publication.offer(sourceBuffer, sourceOffset, length);
+                offerResult = publication.offer(sourceBuffer, sourceOffset, length);
+            }
+            if (offerResult < 0)
+            {
+                if (firstFailedAttemptNs == Long.MIN_VALUE)
+                {
+                    firstFailedAttemptNs = System.nanoTime();
+                }
+                else
+                {
+                    final long timeSinceFirstFailedAttempt = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - firstFailedAttemptNs);
+                    if (timeSinceFirstFailedAttempt > FAILED_OFFER_TIMEOUT_MS)
+                    {
+                        throw new IllegalStateException(
+                                "Publisher '" + role + "' offer timeout" +
+                                ", last result=" + offerResult +
+                                ", timeout=" + timeSinceFirstFailedAttempt +
+                                ", totalNumberOfSuccessfulOffers=" + totalNumberOfSuccessfulOffers
+                        );
+                    }
+                }
+                idleStrategy.idle();
             }
         }
-        while (offer < 0);
+        while (offerResult < 0);
+        totalNumberOfSuccessfulOffers++;
     }
 }

@@ -93,7 +93,7 @@ public class TcpDriver implements AutoCloseableOnDuty
         this.transport = new AsyncTcp().createTransport(
                 "aeron <-> tcp",
                 new SubscribedMessageSupplier(subscription)::poll,
-                new SerializedMessagePublisher(publication)::onSerialized
+                new SerializedMessagePublisher("[tcp -> app] publisher", publication)::onSerialized
         );
         return this;
     }

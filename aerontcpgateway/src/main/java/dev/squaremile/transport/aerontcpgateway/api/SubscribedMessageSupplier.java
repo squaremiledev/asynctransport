@@ -5,14 +5,18 @@ import org.agrona.DirectBuffer;
 
 import dev.squaremile.asynctcp.internal.serialization.messaging.MessageHandler;
 import dev.squaremile.asynctcp.internal.serialization.messaging.MessageSupplier;
+import io.aeron.FragmentAssembler;
 import io.aeron.Subscription;
 import io.aeron.logbuffer.FragmentHandler;
 import io.aeron.logbuffer.Header;
 
 class SubscribedMessageSupplier implements MessageSupplier
 {
+    private static final int FRAGMENT_LIMIT = 32; // no particular reason why this value exactly, the impact hasn't been measured yet so any number will do
+
     private final Subscription subscription;
-    private final Fragment fragment = new Fragment();
+    private final Handler handler = new Handler();
+    private final FragmentAssembler fragmentAssembler = new FragmentAssembler(handler); // I would be nice to write a failing test showing the need for this one
 
     public SubscribedMessageSupplier(final Subscription subscription)
     {
@@ -20,41 +24,25 @@ class SubscribedMessageSupplier implements MessageSupplier
     }
 
     @Override
-    public int poll(final MessageHandler handler)
+    public int poll(final MessageHandler messageHandler)
     {
-        int poll = subscription.poll(fragment.reset(), 1);
-        if (fragment.hasData())
-        {
-            handler.onMessage(fragment.buffer, fragment.offset, fragment.length);
-        }
-        return poll;
+        handler.handleBy(messageHandler);
+        return subscription.poll(fragmentAssembler, FRAGMENT_LIMIT);
     }
 
-    private static class Fragment implements FragmentHandler
+    private static class Handler implements FragmentHandler
     {
-        DirectBuffer buffer;
-        int offset;
-        int length;
+        private MessageHandler handler;
+
+        public void handleBy(final MessageHandler handler)
+        {
+            this.handler = handler;
+        }
 
         @Override
         public void onFragment(final DirectBuffer buffer, final int offset, final int length, final Header header)
         {
-            this.buffer = buffer;
-            this.offset = offset;
-            this.length = length;
-        }
-
-        public FragmentHandler reset()
-        {
-            this.buffer = null;
-            this.offset = 0;
-            this.length = 0;
-            return this;
-        }
-
-        public boolean hasData()
-        {
-            return buffer != null && length > 0;
+            handler.onMessage(buffer, offset, length);
         }
     }
 }

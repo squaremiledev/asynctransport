@@ -39,7 +39,7 @@ public class Tcp implements AutoCloseable
         {
 
         }
-        final SerializedMessagePublisher serializedMessagePublisher = new SerializedMessagePublisher(publication);
+        final SerializedMessagePublisher serializedMessagePublisher = new SerializedMessagePublisher(role + " publisher", publication);
         return new AsyncTcp().createWithoutTransport(
                 role,
                 applicationFactory,
@@ -62,4 +62,3 @@ public class Tcp implements AutoCloseable
         }
     }
 }
-
