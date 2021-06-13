@@ -8,6 +8,7 @@ import org.agrona.concurrent.YieldingIdleStrategy;
 
 import dev.squaremile.asynctcp.api.serialization.SerializedMessageListener;
 import io.aeron.ExclusivePublication;
+import io.aeron.ReservedValueSupplier;
 
 class SerializedMessagePublisher implements SerializedMessageListener
 {
@@ -16,6 +17,8 @@ class SerializedMessagePublisher implements SerializedMessageListener
     private final ExclusivePublication publication;
     private final YieldingIdleStrategy idleStrategy = new YieldingIdleStrategy();
     private final String role;
+    private final ReservedValueSupplier systemNanoTimeSupplier = (termBuffer, termOffset, frameLength) -> System.nanoTime();
+
     private long totalNumberOfSuccessfulOffers = 0;
 
     public SerializedMessagePublisher(final String role, final ExclusivePublication publication)
@@ -33,7 +36,7 @@ class SerializedMessagePublisher implements SerializedMessageListener
         {
             if (publication.isConnected())
             {
-                offerResult = publication.offer(sourceBuffer, sourceOffset, length);
+                offerResult = publication.offer(sourceBuffer, sourceOffset, length, systemNanoTimeSupplier);
             }
             if (offerResult < 0)
             {

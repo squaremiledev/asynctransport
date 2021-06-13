@@ -43,7 +43,7 @@ public class Tcp implements AutoCloseable
         return new AsyncTcp().createWithoutTransport(
                 role,
                 applicationFactory,
-                new SubscribedMessageSupplier(aeron.addSubscription(driverConfiguration.channel(), driverConfiguration.fromNetworAeronStreamId()))::poll,
+                new SubscribedMessageSupplier("[tcp -> app] supplier", aeron.addSubscription(driverConfiguration.channel(), driverConfiguration.fromNetworAeronStreamId()))::poll,
                 (sourceBuffer, sourceOffset, length) ->
                 {
                     serializedMessagePublisher.onSerialized(sourceBuffer, sourceOffset, length);
