@@ -4,9 +4,17 @@
 
 The main artifact of the Async Transport family is AsyncTCP (dev.squaremile:asynctcp).
 AsyncTCP is a fully composable library to be used as a building block for
-a low latency, message-driven, high performance TCP applications written in Java.
+low latency, message-driven, highly performant TCP applications written in Java/JVM language.
+
+## Note from the main contributor
+
+This is my 'lockdown' project. You can use it in production, and it will probably work well enough that you will never see this package on the top of your exception stack trace. Having said that, it is not supported by any big company, and it was mainly driven by my personal goal - to use the experience acquired on various latency-sensitive projects and show that good design principles are compatible with a highly performant code (the threshold being single micros end-to-end on JVM, cannot comment on anything below this threshold).
 
 ## Key features:
+
+- (key differentiator) the library provides more data to systems that can act on the fact that endpoints (exchanges/venues/counterparties) are unable process the data at the rate supported by this library 
+
+- (key differentiator) the information about the above mentioned insusficciencies is provided as a regular input to be used by your unit-testable algorithms (have you ever considered dynamically changing your strategy having learned that that the requests cannot be processed at a particular rate that is still within the SLA? - now you can)
 
 - compatible with Java 8 and above
 
@@ -26,7 +34,7 @@ a low latency, message-driven, high performance TCP applications written in Java
 
 - no Java NIO/Socket knowledge necessary to use it efficiently
 
-- easily extendable, with some extensions under active development (Aeron Cluster, Chronicle Queue, Ring Buffer, TCP endpoints simulators)
+- easily extendable, with some extensions already developed (Aeron Cluster, Chronicle Queue, Ring Buffer, TCP endpoints simulators)
 
 - ideal for event-sourced systems
 
@@ -89,10 +97,13 @@ such as immutability and no side effects. Mutability is introduced only to meet 
 
 ## Performance
 
-In order to test the latencies, a simple echo protocol has been introduced that timestamps messages, adds some additional data,
-sends the messages at the predefined rate to another endpoint and compares the encoded timestamp with the current time when after the full round trip
-the finally arrive at the source again. Coordinated omission is taken into account and included in all the results, so when the message publication is delayed for any reason,
+In order to test the latencies, a simple echo protocol has been introduced. This protocol timestamps messages, adds some additional data,
+sends the messages at the predefined rate to another endpoint and compares the encoded timestamp with the 
+current time. The current timestamp is the timestamp of the host that originally timestamped the message, and it is compared after the full round tripped message
+arrived at at the source again.
+Coordinated omission is taken into account and included in all the results, so when the message publication is delayed for any reason,
 the time when the message was supposed to be sent is used as the start time, as this is the real delay that would be experienced on the receiving side.
+The coordinated ommision's *any reason* part is important, as it can highlight issues at any layer (useful to verify if the cloud provider is fit for purpose) 
 
 ### Localhost, round trip
 
